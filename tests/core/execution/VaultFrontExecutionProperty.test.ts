@@ -1,0 +1,193 @@
+import { VaultFrontExecution } from "../../../src/core/execution/VaultFrontExecution";
+import { MessageType, UnitType } from "../../../src/core/game/Game";
+
+function defaultRewardTuning() {
+  return {
+    minGoldReward: 120_000,
+    minTroopsReward: 900,
+    lowSignalEarlyWindowTicks: 900,
+    riskMultiplierBase: 0.88,
+    riskMultiplierScale: 0.5,
+    rewardMultiplierMin: 0.58,
+    rewardMultiplierMax: 1.5,
+    baselineGoldOwnerStrengthScale: 360,
+    baselineGoldAvgStrengthScale: 280,
+    baselineGoldRiskBase: 0.9,
+    baselineGoldRiskScale: 0.3,
+    distanceGoldMin: 320,
+    distanceGoldOwnerStrengthScale: 1.9,
+    distanceGoldFlat: 260,
+    distanceGoldRiskBase: 0.65,
+    distanceGoldRiskScale: 0.6,
+    troopsSqrtGoldScale: 2.2,
+    troopsDistanceBase: 4,
+    troopsDistanceRiskScale: 6,
+  };
+}
+
+function mockPlayer(
+  id: number,
+  {
+    tiles = 220,
+    troops = 110_000,
+    gold = 550_000,
+  }: { tiles?: number; troops?: number; gold?: number } = {},
+) {
+  return {
+    smallID: () => id,
+    isAlive: () => true,
+    isPlayer: () => true,
+    isFriendly: () => false,
+    numTilesOwned: () => tiles,
+    troops: () => troops,
+    gold: () => BigInt(gold),
+    id: () => `${id}`,
+    displayName: () => `P${id}`,
+    spawnTile: () => 0,
+    units: () => [],
+  } as any;
+}
+
+describe("VaultFrontExecution property tests", () => {
+  test("reward monotonicity: longer routes do not reduce convoy rewards", () => {
+    const execution = new VaultFrontExecution() as any;
+    const owner = mockPlayer(1, { tiles: 260, troops: 130_000, gold: 700_000 });
+    const peer = mockPlayer(2, { tiles: 240, troops: 125_000, gold: 680_000 });
+    execution.game = {
+      players: () => [owner, peer],
+      config: () => ({
+        numSpawnPhaseTurns: () => 0,
+        vaultConvoyRewardTuning: () => defaultRewardTuning(),
+      }),
+    };
+
+    for (let i = 0; i < 120; i++) {
+      const risk = Math.max(0, Math.min(1, Math.random()));
+      const near = 15 + Math.floor(Math.random() * 30);
+      const far = near + 20 + Math.floor(Math.random() * 50);
+      const a = execution.convoyRewardPlan(owner, near, risk, 3_600, 1);
+      const b = execution.convoyRewardPlan(owner, far, risk, 3_600, 1);
+      expect(b.goldReward >= a.goldReward).toBe(true);
+      expect(b.troopsReward >= a.troopsReward).toBe(true);
+    }
+  });
+
+  test("reroute stability: safest destination is min-risk then min-distance", () => {
+    const execution = new VaultFrontExecution() as any;
+    execution.game = {
+      manhattanDist: (a: number, b: number) => Math.abs(a - b),
+    };
+    const owner = {
+      units: () => [
+        { type: () => UnitType.City, tile: () => 12 },
+        { type: () => UnitType.Port, tile: () => 25 },
+        { type: () => UnitType.Factory, tile: () => 33 },
+        { type: () => UnitType.MissileSilo, tile: () => 41 },
+      ],
+      spawnTile: () => 0,
+    } as any;
+    const source = 20;
+
+    for (let i = 0; i < 80; i++) {
+      const riskByTile = new Map<number, number>([
+        [12, Math.random()],
+        [25, Math.random()],
+        [33, Math.random()],
+        [41, Math.random()],
+      ]);
+      vi.spyOn(execution, "routeRiskScore").mockImplementation(
+        (_p: unknown, _s: number, dst: number) => riskByTile.get(dst) ?? 1,
+      );
+
+      const destination = execution.bestConvoyDestination(
+        owner,
+        source,
+        undefined,
+        "reroute_safest",
+      );
+      const candidates = [...riskByTile.entries()].sort((a, b) => {
+        const riskDelta = a[1] - b[1];
+        if (Math.abs(riskDelta) > 0.0001) return riskDelta;
+        return Math.abs(a[0] - source) - Math.abs(b[0] - source);
+      });
+      expect(destination).toBe(candidates[0][0]);
+      vi.restoreAllMocks();
+    }
+  });
+
+  test("cooldown invariants: jam breaker cannot bypass its own cooldown", () => {
+    const execution = new VaultFrontExecution() as any;
+    const stats = { defenseFactoryJamBreaker: vi.fn() };
+    let gold = 400_000n;
+    const player = {
+      smallID: () => 7,
+      gold: () => gold,
+      removeGold: (value: bigint) => {
+        gold -= value;
+      },
+      id: () => "7",
+      isFriendly: () => false,
+      isPlayer: () => true,
+      isAlive: () => true,
+      spawnTile: () => 10,
+    } as any;
+
+    execution.game = {
+      displayMessage: (_msg: string, _type: MessageType, _id?: string) => {},
+      addUpdate: () => {},
+      stats: () => stats,
+      players: () => [player],
+      playerBySmallID: () => player,
+      ticks: () => 100,
+      config: () => ({
+        vaultConvoyRewardTuning: () => defaultRewardTuning(),
+        numSpawnPhaseTurns: () => 0,
+      }),
+    };
+    execution.beacons = new Map<number, any>([
+      [7, { charge: 20, cooldownUntil: 0, maskedUntil: 0 }],
+      [8, { charge: 90, cooldownUntil: 0, maskedUntil: 600 }],
+    ]);
+    execution.jamBreakerCooldownUntil = new Map<number, number>([[7, 0]]);
+
+    execution.applyJamBreakerCommand(player, 100);
+    const afterFirst = gold;
+    expect(stats.defenseFactoryJamBreaker).toHaveBeenCalledTimes(1);
+    expect(execution.jamBreakerCooldownUntil.get(7)).toBe(1_000);
+
+    execution.applyJamBreakerCommand(player, 180);
+    expect(gold).toBe(afterFirst);
+    expect(stats.defenseFactoryJamBreaker).toHaveBeenCalledTimes(1);
+  });
+
+  test("clean execution chain grants next convoy streak multiplier", () => {
+    const execution = new VaultFrontExecution() as any;
+    const player = mockPlayer(3);
+    execution.game = {
+      stats: () => ({
+        cleanExecutionStreak: vi.fn(),
+      }),
+      displayMessage: () => {},
+    };
+    execution.executionChainStep = new Map<number, number>([[3, 0]]);
+    execution.executionChainExpiresAtTick = new Map<number, number>([[3, 0]]);
+    execution.executionStreakNextConvoyMultiplier = new Map<number, number>([[3, 1]]);
+
+    execution.updateExecutionChainCapture(player, 100);
+    execution.updateExecutionChainConvoyDelivered(player, 300);
+    execution.updateExecutionChainPulseDeny(player, 420, true);
+
+    expect(execution.executionStreakNextConvoyMultiplier.get(3)).toBeGreaterThan(1);
+    expect(execution.executionChainStep.get(3)).toBe(0);
+  });
+
+  test("weekly mutator rotates effective cooldown and passive values", () => {
+    const execution = new VaultFrontExecution() as any;
+    execution.weeklyMutator = "accelerated_cooldowns";
+    expect(execution.vaultCooldownTicksEffective()).toBeLessThan(650);
+    expect(execution.jamBreakerCooldownTicksEffective()).toBeLessThan(900);
+    execution.weeklyMutator = "double_passive";
+    expect(execution.vaultPassiveIncomeIntervalTicksEffective()).toBeLessThan(600);
+    expect(execution.vaultPassiveGoldPerMinuteEffective()).toBe(180_000n);
+  });
+});

@@ -1,0 +1,105 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: "Deployment environment"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+      target_host:
+        description: "Host label used in logs and container metadata"
+        required: true
+        default: "primary"
+        type: string
+      target_subdomain:
+        description: "Subdomain to deploy (use main for the root app)"
+        required: true
+        default: "main"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.target_environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ inputs.target_environment }}
+    env:
+      DEPLOY_ENV: ${{ inputs.target_environment == 'production' && 'prod' || 'staging' }}
+      DOMAIN: ${{ vars.DOMAIN }}
+      SUBDOMAIN: ${{ inputs.target_subdomain }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare summary
+        env:
+          FQDN: ${{ inputs.target_subdomain == 'main' && vars.DOMAIN || format('{0}.{1}', inputs.target_subdomain, vars.DOMAIN) }}
+        run: |
+          echo "FQDN=$FQDN" >> $GITHUB_ENV
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### VaultFront deploy
+
+          Environment: ${{ inputs.target_environment }}
+          Host label: ${{ inputs.target_host }}
+          Target: $FQDN
+          EOF
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ vars.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Create SSH private key
+        env:
+          DEPLOY_SERVER_HOST: ${{ secrets.DEPLOY_SERVER_HOST }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          set -euxo pipefail
+          mkdir -p ~/.ssh
+          echo "${DEPLOY_SSH_KEY}" > ~/.ssh/id_rsa
+          test -n "$DEPLOY_SERVER_HOST" && ssh-keyscan -H "$DEPLOY_SERVER_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Build and deploy
+        env:
+          APP_NAME: vaultfront
+          API_KEY: ${{ secrets.API_KEY }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          DEPLOY_ALWAYS_RESTART: ${{ vars.DEPLOY_ALWAYS_RESTART || '' }}
+          DEPLOY_REMOTE_SCRIPT_PATH: ${{ vars.DEPLOY_REMOTE_SCRIPT_PATH || '' }}
+          DEPLOY_REMOTE_USER: ${{ vars.DEPLOY_REMOTE_USER || 'vaultfront' }}
+          DEPLOY_SERVER_HOST: ${{ secrets.DEPLOY_SERVER_HOST }}
+          GHCR_REPO: ${{ vars.GHCR_REPO }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GHCR_USERNAME: ${{ vars.GHCR_USERNAME }}
+          OTEL_AUTH_HEADER: ${{ secrets.OTEL_AUTH_HEADER }}
+          OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
+          SSH_KEY: ~/.ssh/id_rsa
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
+        run: |
+          set -euxo pipefail
+          ./build-deploy.sh "$DEPLOY_ENV" "${{ inputs.target_host }}" "$SUBDOMAIN"
+
+      - name: Wait for deployment to start
+        run: |
+          echo "::group::Wait for deployment to start"
+          set -euxo pipefail
+          while [ "$(curl -s https://${FQDN}/commit.txt)" != "${GITHUB_SHA}" ]; do
+            if [ "$SECONDS" -ge 300 ]; then
+              echo "Timeout: deployment did not start within 5 minutes"
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "Deployment started in ${SECONDS} seconds" >> $GITHUB_STEP_SUMMARY
+          echo "::endgroup::"

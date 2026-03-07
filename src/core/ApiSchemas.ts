@@ -1,0 +1,181 @@
+import { z } from "zod";
+import { base64urlToUuid } from "./Base64";
+import { BigIntStringSchema, PlayerStatsSchema } from "./StatsSchemas";
+import { Difficulty, GameMode, GameType, RankedType } from "./game/Game";
+
+export const RefreshResponseSchema = z.object({
+  token: z.string(),
+});
+export type RefreshResponse = z.infer<typeof RefreshResponseSchema>;
+
+export const TokenPayloadSchema = z.object({
+  jti: z.string(),
+  sub: z
+    .string()
+    .refine(
+      (val) => {
+        const uuid = base64urlToUuid(val);
+        return !!uuid;
+      },
+      {
+        message: "Invalid base64-encoded UUID",
+      },
+    )
+    .transform((val) => {
+      const uuid = base64urlToUuid(val);
+      if (!uuid) throw new Error("Invalid base64 UUID");
+      return uuid;
+    }),
+  iat: z.number(),
+  iss: z.string(),
+  aud: z.string(),
+  exp: z.number(),
+});
+export type TokenPayload = z.infer<typeof TokenPayloadSchema>;
+
+export const DiscordUserSchema = z.object({
+  id: z.string(),
+  avatar: z.string().nullable(),
+  username: z.string(),
+  global_name: z.string().nullable(),
+  discriminator: z.string(),
+});
+export type DiscordUser = z.infer<typeof DiscordUserSchema>;
+
+const SingleplayerMapAchievementSchema = z.object({
+  mapName: z.string(),
+  difficulty: z.enum(Difficulty),
+});
+
+export const UserMeResponseSchema = z.object({
+  user: z.object({
+    discord: DiscordUserSchema.optional(),
+    email: z.string().optional(),
+  }),
+  player: z.object({
+    publicId: z.string(),
+    roles: z.string().array().optional(),
+    flares: z.string().array().optional(),
+    achievements: z
+      .array(
+        z.object({
+          type: z.literal("singleplayer-map"), // TODO: change the shape to be more flexible when we have more achievements
+          data: z.array(SingleplayerMapAchievementSchema),
+        }),
+      )
+      .optional(),
+    leaderboard: z
+      .object({
+        oneVone: z
+          .object({
+            elo: z.number().optional(),
+          })
+          .optional(),
+      })
+      .optional(),
+  }),
+});
+export type UserMeResponse = z.infer<typeof UserMeResponseSchema>;
+
+export const PlayerStatsLeafSchema = z.object({
+  wins: BigIntStringSchema,
+  losses: BigIntStringSchema,
+  total: BigIntStringSchema,
+  stats: PlayerStatsSchema,
+});
+export type PlayerStatsLeaf = z.infer<typeof PlayerStatsLeafSchema>;
+
+export const PlayerStatsTreeSchema = z.partialRecord(
+  z.enum(GameType),
+  z.partialRecord(
+    z.enum(GameMode),
+    z.partialRecord(z.enum(Difficulty), PlayerStatsLeafSchema),
+  ),
+);
+export type PlayerStatsTree = z.infer<typeof PlayerStatsTreeSchema>;
+
+export const PlayerGameSchema = z.object({
+  gameId: z.string(),
+  start: z.iso.datetime(),
+  mode: z.enum(GameMode),
+  type: z.enum(GameType),
+  map: z.string(),
+  difficulty: z.enum(Difficulty),
+  clientId: z.string().optional(),
+});
+export type PlayerGame = z.infer<typeof PlayerGameSchema>;
+
+export const PlayerProfileSchema = z.object({
+  createdAt: z.iso.datetime(),
+  user: DiscordUserSchema.optional(),
+  games: PlayerGameSchema.array(),
+  stats: PlayerStatsTreeSchema,
+});
+export type PlayerProfile = z.infer<typeof PlayerProfileSchema>;
+
+export const ClanLeaderboardEntrySchema = z.object({
+  clanTag: z.string(),
+  games: z.number(),
+  wins: z.number(),
+  losses: z.number(),
+  playerSessions: z.number(),
+  weightedWins: z.number(),
+  weightedLosses: z.number(),
+  weightedWLRatio: z.number(),
+});
+export type ClanLeaderboardEntry = z.infer<typeof ClanLeaderboardEntrySchema>;
+
+export const ClanLeaderboardResponseSchema = z.object({
+  start: z.iso.datetime(),
+  end: z.iso.datetime(),
+  clans: ClanLeaderboardEntrySchema.array(),
+});
+export type ClanLeaderboardResponse = z.infer<
+  typeof ClanLeaderboardResponseSchema
+>;
+
+export const PlayerLeaderboardEntrySchema = z.object({
+  rank: z.number(),
+  playerId: z.string(),
+  username: z.string(),
+  clanTag: z.string().optional(),
+  flag: z.string().optional(),
+  elo: z.number(),
+  games: z.number(),
+  wins: z.number(),
+  losses: z.number(),
+  winRate: z.number(),
+});
+export type PlayerLeaderboardEntry = z.infer<
+  typeof PlayerLeaderboardEntrySchema
+>;
+
+export const PlayerLeaderboardResponseSchema = z.object({
+  players: PlayerLeaderboardEntrySchema.array(),
+});
+export type PlayerLeaderboardResponse = z.infer<
+  typeof PlayerLeaderboardResponseSchema
+>;
+
+export const RankedLeaderboardEntrySchema = z.object({
+  rank: z.number(),
+  elo: z.number(),
+  peakElo: z.number().nullable(),
+  wins: z.number(),
+  losses: z.number(),
+  total: z.number(),
+  public_id: z.string(),
+  user: DiscordUserSchema.nullable().optional(),
+  username: z.string(),
+  clanTag: z.string().nullable().optional(),
+});
+export type RankedLeaderboardEntry = z.infer<
+  typeof RankedLeaderboardEntrySchema
+>;
+
+export const RankedLeaderboardResponseSchema = z.object({
+  [RankedType.OneVOne]: RankedLeaderboardEntrySchema.array(),
+});
+export type RankedLeaderboardResponse = z.infer<
+  typeof RankedLeaderboardResponseSchema
+>;

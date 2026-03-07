@@ -1,0 +1,66 @@
+:root {
+  --theme: "light";
+  --breakPoint-tablet: 800px;
+  --breakPoint-Desktop: 1024px;
+  --blur-md: 4px;
+  --boxBackgroundColor: #111827cc;
+  --fontColor: #202020;
+  --fontColorLight: #fff;
+
+  /* VaultFront palette: Midnight Steel / Vault Cyan / Signal Amber / Deep Slate */
+  --vaultMidnight: #0a1822;
+  --vaultSlate: #122736;
+  --vaultCyan: #22d3ee;
+  --vaultAmber: #fbbf24;
+  --frenchBlue: var(--vaultSlate);
+  --cyanBlue: #1c8fb2;
+  --tealAccent: #1f6c5a;
+
+  --primaryColor: var(--frenchBlue);
+  --primaryColorHover: var(--vaultCyan);
+  --primaryColorDisabled: linear-gradient(
+    to right,
+    rgb(74, 74, 74),
+    rgb(61, 61, 61)
+  );
+  --secondaryColor: var(--vaultAmber);
+  --secondaryColorHover: #ffd166;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --primaryColorDark: var(--frenchBlue);
+  --primaryColorHoverDark: var(--tealAccent);
+  --primaryColorDisabledDark: #4b5563;
+  --secondaryColorDark: var(--tealAccent);
+  --secondaryColorHoverDark: var(--frenchBlue);
+  --fontColorDark: #f3f4f6;
+
+  /* Achievements */
+  --medal-easy: #cd7f32;
+  --medal-medium: #c0c0c0;
+  --medal-hard: #ffd700;
+  --medal-impossible: #d32f2f;
+  --medal-custom: #2196f3;
+}
+
+:root[data-vaultfront-theme="vaultfront"] {
+  --vaultMidnight: #0a1822;
+  --vaultSlate: #122736;
+  --vaultCyan: #22d3ee;
+  --vaultAmber: #fbbf24;
+  --primaryColor: var(--vaultSlate);
+  --primaryColorHover: var(--vaultCyan);
+  --secondaryColor: var(--vaultAmber);
+  --secondaryColorHover: #ffd166;
+}
+
+:root[data-vaultfront-theme="competitive"] {
+  --vaultMidnight: #141012;
+  --vaultSlate: #2a1f24;
+  --vaultCyan: #34d399;
+  --vaultAmber: #fb7185;
+  --primaryColor: #2a1f24;
+  --primaryColorHover: #34d399;
+  --secondaryColor: #fb7185;
+  --secondaryColorHover: #fda4af;
+  --boxBackgroundColor: #1e1418dd;
+}
