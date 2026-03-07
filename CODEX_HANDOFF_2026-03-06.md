@@ -78,18 +78,18 @@ Notes:
 
 - `origin` still points to `https://github.com/openfrontio/OpenFrontIO.git`
 - do not remove or overwrite `origin` unless explicitly requested
-- `.github/workflows/deploy.yml` still contains upstream infrastructure/domain assumptions and is not yet reworked for standalone VaultFront hosting
+- `.github/workflows/deploy.yml` has been reworked to a VaultFront-specific manual deployment flow using environment-scoped secrets and vars
 - GitHub accepted the push but warned that `generated/WorldMapData.json` is `57.98 MB`, above GitHub's recommended `50 MB` threshold; consider Git LFS or asset-size reduction in a follow-up cleanup
 
 ### Git author identity correction
 
-Fixed an author identity leak where recent commits were being created as `DarkWolfCrypto`.
+Fixed an author identity leak where recent commits were being created with the wrong Git identity.
 
 - global Git identity now uses:
   - `VaultSpark Studios`
   - `87046611+VaultSparkStudios@users.noreply.github.com`
 - local repo Git identity now uses the same values
-- the public `VaultSparkStudios/VaultFront` snapshot commit was rewritten so GitHub no longer shows `DarkWolfCrypto` as the current author
+- the public `VaultSparkStudios/VaultFront` snapshot commit was rewritten so GitHub shows `VaultSpark Studios` as the current author
 - the last 3 local Codex commits in this working repo were rewritten to `VaultSpark Studios`
 
 Future safeguard:
