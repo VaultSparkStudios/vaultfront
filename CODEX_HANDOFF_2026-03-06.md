@@ -81,6 +81,21 @@ Notes:
 - `.github/workflows/deploy.yml` still contains upstream infrastructure/domain assumptions and is not yet reworked for standalone VaultFront hosting
 - GitHub accepted the push but warned that `generated/WorldMapData.json` is `57.98 MB`, above GitHub's recommended `50 MB` threshold; consider Git LFS or asset-size reduction in a follow-up cleanup
 
+### Git author identity correction
+
+Fixed an author identity leak where recent commits were being created as `DarkWolfCrypto`.
+
+- global Git identity now uses:
+  - `VaultSpark Studios`
+  - `87046611+VaultSparkStudios@users.noreply.github.com`
+- local repo Git identity now uses the same values
+- the public `VaultSparkStudios/VaultFront` snapshot commit was rewritten so GitHub no longer shows `DarkWolfCrypto` as the current author
+- the last 3 local Codex commits in this working repo were rewritten to `VaultSpark Studios`
+
+Future safeguard:
+
+- `git config --global user.useConfigOnly true` is enabled so Git will not silently fall back to an unintended identity
+
 ### Footer and solo game start issue
 
 Root cause was main layout shrink/overflow pressure after the play page visual refresh.
