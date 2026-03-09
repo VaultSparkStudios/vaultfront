@@ -7,6 +7,11 @@ This repo can build a static client bundle for deployment at:
 The bundle is intended to be copied into the separate studio landing-page repo,
 not published as a standalone Pages site from this repository.
 
+Backend/runtime deployment is separate. The default studio runtime plan is
+documented in:
+
+- `docs/STUDIO_BACKEND_PLAN.md`
+
 ## Required GitHub variables
 
 Set these repo variables in `VaultSparkStudios/VaultFront`:

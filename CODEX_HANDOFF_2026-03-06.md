@@ -139,6 +139,12 @@ Applied Pages deployment work for `https://vaultsparkstudios.com/vaultfront/`:
   - `scripts/postbuild-pages.mjs`
 - added documentation:
   - `docs/DEPLOY_PAGES.md`
+  - `docs/STUDIO_DEPLOYMENT_STANDARD.md`
+  - `docs/STUDIO_BACKEND_PLAN.md`
+  - `docs/templates/deploy-pages.template.yml`
+  - `docs/templates/deploy-backend.docker-compose.template.yml`
+  - `docs/templates/Caddyfile.studio-backend.template`
+  - `docs/templates/GAME_LAUNCH_CHECKLIST.template.md`
 
 Notes:
 
@@ -220,7 +226,10 @@ Applied fixes:
 - `.github/workflows/deploy-pages.yml`
 - `docs/DEPLOY_PAGES.md`
 - `docs/STUDIO_DEPLOYMENT_STANDARD.md`
+- `docs/STUDIO_BACKEND_PLAN.md`
 - `docs/templates/deploy-pages.template.yml`
+- `docs/templates/deploy-backend.docker-compose.template.yml`
+- `docs/templates/Caddyfile.studio-backend.template`
 - `docs/templates/GAME_LAUNCH_CHECKLIST.template.md`
 - `AGENTS.md`
 
@@ -280,11 +289,25 @@ Note:
 
 ## Pending limitation
 
-- The main `OpenFrontIO` worktree is still dirty, so the VaultFront repo changes for Pages deployment were implemented locally but not committed/pushed from this session.
-- The studio landing-page repo (`VaultSparkStudios.github.io`) was inspected and patched locally in a temporary clone, but not pushed.
-- A reusable studio-wide deployment standard and future-game Pages workflow template were added locally:
+- The main `OpenFrontIO` worktree is still dirty because unrelated VaultFront HUD files remain modified and unstaged:
+  - `src/client/graphics/layers/ControlPanel.ts`
+  - `src/client/graphics/layers/GameRightSidebar.ts`
+  - `tests/client/graphics/layers/ControlPanelVaultHud.test.ts`
+  - `tests/client/graphics/layers/GameRightSidebarVaultFeed.test.ts`
+- Pages/deployment docs work has been committed locally in `VaultFront`, including:
+  - the initial Pages/deployment prep commit
+  - the studio backend plan and runtime template docs
+- The studio landing-page repo (`VaultSparkStudios.github.io`) was inspected, refreshed to current `origin/main`, and patched locally in a temporary clone.
+- The studio landing-page/docs change has been committed locally in that clone, including:
+  - the `VaultFront` `Vault-Forged` card
+  - canonical studio deployment docs
+  - canonical studio backend plan/templates
+- A reusable studio-wide deployment standard, backend plan, and templates were added locally:
   - `docs/STUDIO_DEPLOYMENT_STANDARD.md`
+  - `docs/STUDIO_BACKEND_PLAN.md`
   - `docs/templates/deploy-pages.template.yml`
+  - `docs/templates/deploy-backend.docker-compose.template.yml`
+  - `docs/templates/Caddyfile.studio-backend.template`
   - `docs/templates/GAME_LAUNCH_CHECKLIST.template.md`
 - Root agent instructions now point future agents to those files automatically:
   - `AGENTS.md`
@@ -296,7 +319,16 @@ Note:
   - fetched `origin/main`
   - confirmed the clone had been behind by 1 commit (`de99ea6 Update index.html`)
   - confirmed the live `vaultsparkstudios.com` homepage matched the upstream four-portal/Football-GM state
-  - replayed and restaged the `VaultFront` card/docs changes cleanly on top of current upstream
+  - replayed the `VaultFront` card/docs changes cleanly on top of current upstream
+  - committed the refreshed change set locally after refresh/reapply
+- Studio backend standard now exists and has been mirrored to the canonical studio repo clone:
+  - default runtime host model: shared VPS + Docker Compose + Caddy + shared Postgres + shared Redis
+  - default domain model:
+    - `https://play-{slug}.vaultsparkstudios.com`
+    - `https://api-{slug}.vaultsparkstudios.com`
+  - reusable templates now exist for:
+    - Docker Compose
+    - Caddy
 
 - A real manual in-game pass has not been performed from this terminal-only environment. Current confidence comes from code inspection plus passing typecheck, lint, and targeted tests.
 

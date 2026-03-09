@@ -36,6 +36,7 @@ Each game repo must still remain self-sufficient.
 That means every game repo should carry enough local documentation to explain:
 
 - the studio-wide URL and backend naming standards
+- the backend runtime hosting pattern
 - the GitHub Pages deployment pattern
 - the studio-site integration pattern
 - the current game's public URL and backend origins
@@ -234,6 +235,9 @@ Before launch, every game must have:
 Reusable template:
 
 - `docs/templates/GAME_LAUNCH_CHECKLIST.template.md`
+- `docs/STUDIO_BACKEND_PLAN.md`
+- `docs/templates/deploy-backend.docker-compose.template.yml`
+- `docs/templates/Caddyfile.studio-backend.template`
 
 ## Handoff standard
 

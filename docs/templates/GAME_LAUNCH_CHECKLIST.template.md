@@ -32,6 +32,11 @@ Replace:
   - `https://play-__GAME_SLUG__.vaultsparkstudios.com`
 - [ ] API origin is finalized:
   - `https://api-__GAME_SLUG__.vaultsparkstudios.com`
+- [ ] Backend runtime plan reviewed in `docs/STUDIO_BACKEND_PLAN.md`
+- [ ] Docker runtime template copied or adapted:
+  - `docs/templates/deploy-backend.docker-compose.template.yml`
+- [ ] Caddy runtime template copied or adapted:
+  - `docs/templates/Caddyfile.studio-backend.template`
 - [ ] DNS exists for gameplay/socket origin
 - [ ] DNS exists for API origin
 - [ ] SSL is valid on both backend origins
