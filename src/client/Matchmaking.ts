@@ -2,6 +2,7 @@ import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { UserMeResponse } from "../core/ApiSchemas";
 import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
+import { workerApiUrl } from "../core/RuntimeUrls";
 import { getUserMe, hasLinkedAccount } from "./Api";
 import { getPlayToken } from "./Auth";
 import { BaseModal } from "./components/BaseModal";
@@ -183,7 +184,10 @@ export class MatchmakingModal extends BaseModal {
       return;
     }
     const config = await getServerConfigFromClient();
-    const url = `/${config.workerPath(this.gameID)}/api/game/${this.gameID}/exists`;
+    const url = workerApiUrl(
+      config.workerPath(this.gameID),
+      `game/${this.gameID}/exists`,
+    );
 
     const response = await fetch(url, {
       method: "GET",

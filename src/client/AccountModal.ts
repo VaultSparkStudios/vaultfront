@@ -6,6 +6,7 @@ import {
   UserMeResponse,
 } from "../core/ApiSchemas";
 import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
+import { workerGamePath } from "../core/RuntimeUrls";
 import { fetchPlayerById, getUserMe } from "./Api";
 import { discordLogin, logOut, sendMagicLink } from "./Auth";
 import "./components/baseComponents/stats/DiscordUserHeader";
@@ -218,7 +219,7 @@ export class AccountModal extends BaseModal {
     this.close();
     const config = await getServerConfigFromClient();
     const encodedGameId = encodeURIComponent(gameId);
-    const newUrl = `/${config.workerPath(gameId)}/game/${encodedGameId}`;
+    const newUrl = workerGamePath(config.workerPath(gameId), gameId);
 
     history.pushState({ join: gameId }, "", newUrl);
     window.dispatchEvent(

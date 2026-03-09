@@ -2,6 +2,7 @@ import { decodeJwt } from "jose";
 import { z } from "zod";
 import { TokenPayload, TokenPayloadSchema } from "../core/ApiSchemas";
 import { base64urlToUuid } from "../core/Base64";
+import { appUrl } from "../core/RuntimeUrls";
 import { getApiBase, getAudience } from "./Api";
 import { generateCryptoRandomUUID } from "./Utils";
 
@@ -184,7 +185,7 @@ export async function sendMagicLink(email: string): Promise<boolean> {
       },
       credentials: "include",
       body: JSON.stringify({
-        redirectDomain: window.location.origin,
+        redirectDomain: appUrl(""),
         email: email,
       }),
     });

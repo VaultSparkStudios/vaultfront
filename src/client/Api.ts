@@ -9,6 +9,7 @@ import {
   UserMeResponse,
   UserMeResponseSchema,
 } from "../core/ApiSchemas";
+import { appUrl } from "../core/RuntimeUrls";
 import { AnalyticsRecord, AnalyticsRecordSchema } from "../core/Schemas";
 import { getAuthHeader, getPlayToken, logOut, userAuth } from "./Auth";
 
@@ -104,7 +105,7 @@ export async function createCheckoutSession(
         },
         body: JSON.stringify({
           priceId: priceId,
-          hostname: window.location.origin,
+          hostname: appUrl(""),
           colorPaletteName: colorPaletteName,
         }),
       },
@@ -126,13 +127,13 @@ export async function createCheckoutSession(
 }
 
 export function getApiBase() {
-  const domainname = getAudience();
+  const apiDomain = process?.env?.API_DOMAIN;
+  if (apiDomain) {
+    return /^https?:\/\//.test(apiDomain) ? apiDomain : `https://${apiDomain}`;
+  }
 
+  const domainname = getAudience();
   if (domainname === "localhost") {
-    const apiDomain = process?.env?.API_DOMAIN;
-    if (apiDomain) {
-      return `https://${apiDomain}`;
-    }
     return localStorage.getItem("apiHost") ?? "http://localhost:8787";
   }
 

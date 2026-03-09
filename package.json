@@ -11,6 +11,7 @@
   "scripts": {
     "build-dev": "concurrently \"tsc --noEmit\" \"vite build --mode development\"",
     "build-prod": "concurrently --kill-others-on-fail \"tsc --noEmit\" \"vite build\"",
+    "build:pages": "concurrently --kill-others-on-fail \"tsc --noEmit\" \"vite build\" && node scripts/postbuild-pages.mjs",
     "start:client": "vite",
     "start:server": "tsx src/server/Server.ts",
     "start:server-dev": "cross-env GAME_ENV=dev tsx src/server/Server.ts",

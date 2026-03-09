@@ -10,6 +10,12 @@ import {
 } from "../core/Schemas";
 import { GameEnv } from "../core/configuration/Config";
 import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
+import {
+  appRelativePath,
+  appRootPath,
+  currentAppPathname,
+  workerGamePath,
+} from "../core/RuntimeUrls";
 import { GameType } from "../core/game/Game";
 import { UserSettings } from "../core/game/UserSettings";
 import "./AccountModal";
@@ -683,7 +689,7 @@ class Client {
       return;
     }
 
-    const pathMatch = window.location.pathname.match(
+    const pathMatch = currentAppPathname().match(
       /^\/(?:w\d+\/)?game\/([^/]+)/,
     );
     const lobbyId =
@@ -702,7 +708,7 @@ class Client {
       }
     }
     if (decodedHash.startsWith("#refresh")) {
-      window.location.href = "/";
+      window.location.href = appRootPath();
     }
 
     // Handle requeue parameter for ranked matchmaking
@@ -832,12 +838,12 @@ class Client {
 
         // Ensure there's a homepage entry in history before adding the lobby entry
         if (window.location.hash === "" || window.location.hash === "#") {
-          history.replaceState(null, "", window.location.origin + "#refresh");
+          history.replaceState(null, "", `${appRelativePath("")}#refresh`);
         }
         history.pushState(
           null,
           "",
-          `/${config.workerPath(lobby.gameID)}/game/${lobby.gameID}?live`,
+          workerGamePath(config.workerPath(lobby.gameID), lobby.gameID, "?live"),
         );
 
         // Store current URL for popstate confirmation
@@ -850,8 +856,8 @@ class Client {
     lobbyId: string,
     config: Awaited<ReturnType<typeof getServerConfigFromClient>>,
   ) {
-    const targetUrl = `/${config.workerPath(lobbyId)}/game/${lobbyId}`;
-    const currentUrl = window.location.pathname;
+    const targetUrl = workerGamePath(config.workerPath(lobbyId), lobbyId);
+    const currentUrl = window.location.pathname + window.location.search;
 
     if (currentUrl !== targetUrl) {
       history.replaceState(null, "", targetUrl);
@@ -868,7 +874,7 @@ class Client {
     this.currentUrl = null;
 
     try {
-      history.replaceState(null, "", "/");
+      history.replaceState(null, "", appRootPath());
     } catch (e) {
       console.warn("Failed to restore URL on leave:", e);
     }

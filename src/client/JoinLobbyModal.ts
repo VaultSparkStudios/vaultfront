@@ -19,6 +19,7 @@ import {
   PublicGameInfo,
 } from "../core/Schemas";
 import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
+import { appRootPath, workerApiUrl } from "../core/RuntimeUrls";
 import { GameMode, GameType, HumansVsNations } from "../core/game/Game";
 import { getApiBase } from "./Api";
 import { crazyGamesSDK } from "./CrazyGamesSDK";
@@ -389,7 +390,7 @@ export class JoinLobbyModal extends BaseModal {
   public closeAndLeave() {
     this.leaveLobby();
     try {
-      this.updateHistory("/");
+      this.updateHistory(appRootPath());
     } catch (error) {
       console.warn("Failed to restore URL on leave:", error);
     }
@@ -722,7 +723,7 @@ export class JoinLobbyModal extends BaseModal {
 
   private async checkActiveLobby(lobbyId: string): Promise<boolean> {
     const config = await getServerConfigFromClient();
-    const url = `/${config.workerPath(lobbyId)}/api/game/${lobbyId}/exists`;
+    const url = workerApiUrl(config.workerPath(lobbyId), `game/${lobbyId}/exists`);
 
     const response = await fetch(url, {
       method: "GET",

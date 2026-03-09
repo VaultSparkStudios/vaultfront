@@ -7,8 +7,8 @@
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <title data-i18n="main.title">VaultFront (ALPHA)</title>
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/x-icon" href="/images/Favicon.svg" />
+    <link rel="manifest" href="%BASE_URL%manifest.json" />
+    <link rel="icon" type="image/x-icon" href="%BASE_URL%images/Favicon.svg" />
 
     <!-- Preload styles -->
     <style>
@@ -37,14 +37,14 @@
     </style>
 
     <!-- SEO -->
-    <link rel="canonical" href="https://openfront.io/" />
+    <link rel="canonical" href="%VITE_CANONICAL_URL%" />
     <meta
       name="description"
       content="Lead your nation in VaultFront, a fast multiplayer strategy battle royale focused on timing, objectives, and tactical comebacks."
     />
 
     <!-- Open Graph -->
-    <meta property="og:url" content="https://openfront.io/" />
+    <meta property="og:url" content="%VITE_CANONICAL_URL%" />
     <meta property="og:title" content="VaultFront - Battle Royale" />
     <meta
       property="og:description"
@@ -52,7 +52,7 @@
     />
     <meta
       property="og:image"
-      content="https://openfront.io/images/GameplayScreenshot.png"
+      content="%VITE_OG_IMAGE_URL%"
     />
     <meta property="og:type" content="game" />
 
@@ -84,7 +84,7 @@
     <script>
       window.googletag = window.googletag || { cmd: [] };
       googletag.cmd.push(function () {
-        googletag.pubads().set("page_url", "http://openfront.io ");
+        googletag.pubads().set("page_url", "%VITE_CANONICAL_URL%");
       });
     </script>
 
@@ -127,7 +127,7 @@
         id="background-layer"
         class="absolute inset-0 bg-cover bg-center opacity-50 [filter:brightness(1.0)] dark:[filter:sepia(0.2)_saturate(1.2)_hue-rotate(180deg)_brightness(0.9)]"
         style="
-          background-image: url(&quot;/resources/images/background.webp&quot;);
+          background-image: url(&quot;%BASE_URL%resources/images/background.webp&quot;);
         "
       ></div>
       <div

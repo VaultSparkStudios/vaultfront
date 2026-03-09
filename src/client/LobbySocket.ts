@@ -1,4 +1,5 @@
 import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
+import { workerSocketUrl } from "../core/RuntimeUrls";
 import { PublicGames, PublicGamesSchema } from "../core/Schemas";
 
 interface LobbySocketOptions {
@@ -50,8 +51,7 @@ export class PublicLobbySocket {
         this.ws = null;
       }
 
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${protocol}//${window.location.host}${this.workerPath}/lobbies`;
+      const wsUrl = workerSocketUrl(this.workerPath, "lobbies");
 
       this.ws = new WebSocket(wsUrl);
       this.wsAttemptCounted = false;

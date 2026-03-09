@@ -4,6 +4,7 @@ import { Config, GameEnv, ServerConfig } from "./Config";
 import { DefaultConfig } from "./DefaultConfig";
 import { DevConfig, DevServerConfig } from "./DevConfig";
 import { Env } from "./Env";
+import { gameServiceHttpUrl } from "../RuntimeUrls";
 import { preprodConfig } from "./PreprodConfig";
 import { prodConfig } from "./ProdConfig";
 
@@ -30,7 +31,7 @@ export async function getServerConfigFromClient(): Promise<ServerConfig> {
   if (cachedSC) {
     return cachedSC;
   }
-  const response = await fetch("/api/env");
+  const response = await fetch(gameServiceHttpUrl("/api/env"));
 
   if (!response.ok) {
     throw new Error(

@@ -1,5 +1,6 @@
 import { GameEnv } from "./Config";
 import { DefaultServerConfig } from "./DefaultConfig";
+import { Env } from "./Env";
 
 export const prodConfig = new (class extends DefaultServerConfig {
   numWorkers(): number {
@@ -9,7 +10,7 @@ export const prodConfig = new (class extends DefaultServerConfig {
     return GameEnv.Prod;
   }
   jwtAudience(): string {
-    return "openfront.io";
+    return Env.DOMAIN ?? "vaultsparkstudios.com";
   }
   turnstileSiteKey(): string {
     return "0x4AAAAAACFLkaecN39lS8sk";

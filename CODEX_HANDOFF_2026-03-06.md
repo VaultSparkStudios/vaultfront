@@ -79,6 +79,7 @@ Notes:
 - `origin` still points to `https://github.com/openfrontio/OpenFrontIO.git`
 - do not remove or overwrite `origin` unless explicitly requested
 - `.github/workflows/deploy.yml` has been reworked to a VaultFront-specific manual deployment flow using environment-scoped secrets and vars
+- `.github/workflows/deploy-pages.yml` now builds a GitHub Pages-ready `/vaultfront/` bundle and syncs it into `VaultSparkStudios/VaultSparkStudios.github.io`
 - GitHub accepted the push but warned that `generated/WorldMapData.json` is `57.98 MB`, above GitHub's recommended `50 MB` threshold; consider Git LFS or asset-size reduction in a follow-up cleanup
 
 ### Git author identity correction
@@ -109,6 +110,53 @@ Applied fixes:
 - `src/client/styles.css`
   - added short-screen fallback so hero subhead/chips collapse on shorter viewports
 
+### GitHub Pages / studio-site deployment prep
+
+Applied Pages deployment work for `https://vaultsparkstudios.com/vaultfront/`:
+
+- added `src/core/RuntimeUrls.ts`
+  - shared helpers for app-base paths, worker game URLs, worker API URLs, and worker websocket URLs
+- updated client routing/history/share URL call sites to respect Vite `BASE_URL`
+  - `src/client/Main.ts`
+  - `src/client/HostLobbyModal.ts`
+  - `src/client/components/CopyButton.ts`
+  - `src/client/AccountModal.ts`
+  - `src/client/JoinLobbyModal.ts`
+- updated remote API/socket callers to support a separate gameplay backend origin
+  - `src/core/configuration/ConfigLoader.ts`
+  - `src/client/LobbySocket.ts`
+  - `src/client/Transport.ts`
+  - `src/client/Matchmaking.ts`
+- made production audience/domain configurable instead of hardcoded upstream values
+  - `src/core/configuration/ProdConfig.ts`
+  - `src/core/configuration/PreprodConfig.ts`
+  - `vite.config.ts`
+- made index/manifest subpath-safe for Pages
+  - `index.html`
+  - `resources/manifest.json`
+- added a dedicated Pages build and SPA fallback:
+  - `package.json` -> `build:pages`
+  - `scripts/postbuild-pages.mjs`
+- added documentation:
+  - `docs/DEPLOY_PAGES.md`
+
+Notes:
+
+- `build:pages` validated locally with:
+  - `VITE_APP_BASE_PATH=/vaultfront/`
+  - `VITE_CANONICAL_URL=https://vaultsparkstudios.com/vaultfront/`
+  - `VITE_OG_IMAGE_URL=https://vaultsparkstudios.com/vaultfront/images/GameplayScreenshot.png`
+  - `VITE_DOMAIN=vaultsparkstudios.com`
+  - `VITE_GAME_SERVICE_ORIGIN=https://play-vaultfront.vaultsparkstudios.com`
+  - `API_DOMAIN=api-vaultfront.vaultsparkstudios.com`
+  - `DOMAIN=vaultsparkstudios.com`
+  - `GAME_ENV=prod`
+- Vite build warnings remain for large chunks and a runtime-resolved background asset path; build completed successfully
+- the separate studio landing-page repo was cloned locally into a temporary folder for inspection
+  - repo: `VaultSparkStudios/VaultSparkStudios.github.io`
+  - `index.html` was patched locally to add a `VaultFront` card in the `Vault-Forged` section matching the existing card pattern
+  - that separate repo clone has **not** been pushed yet
+
 ### Vault / convoy "idle" issue and visibility improvements
 
 Applied fixes:
@@ -135,6 +183,9 @@ Applied fixes:
   - timeline now includes `vault_passive_income`
   - added objective rail CTAs (`Capture`, `Defend`, `Intercept`)
   - added a compact prioritized Vault event feed for passive income and convoy outcomes
+  - clarified rail convoy labels to `Your Convoy`, `Ally Convoy`, and `Enemy Convoy`
+  - rail convoy prioritization is now explicit: self > ally > enemy
+  - `feedAgeLabel()` now safely degrades if timing context is partial instead of assuming `game.ticks()` exists
   - froze feed behavior into explicit rules:
     - priority order: self > ally > global > global passive
     - repeated passive income merges within a short window
@@ -165,6 +216,13 @@ Applied fixes:
 - `src/client/components/MainLayout.ts`
 - `src/client/GameModeSelector.ts`
 - `src/client/styles.css`
+- `src/core/RuntimeUrls.ts`
+- `.github/workflows/deploy-pages.yml`
+- `docs/DEPLOY_PAGES.md`
+- `docs/STUDIO_DEPLOYMENT_STANDARD.md`
+- `docs/templates/deploy-pages.template.yml`
+- `docs/templates/GAME_LAUNCH_CHECKLIST.template.md`
+- `AGENTS.md`
 
 ## Validation already run
 
@@ -173,6 +231,8 @@ Passing at last check:
 - `.\node_modules\.bin\tsc.cmd --noEmit`
 - `.\node_modules\.bin\eslint.cmd src/client/graphics/layers/ControlPanel.ts src/client/graphics/layers/GameRightSidebar.ts src/core/execution/VaultFrontExecution.ts tests/client/graphics/layers/ControlPanelVaultHud.test.ts tests/client/graphics/layers/GameRightSidebarVaultFeed.test.ts tests/core/execution/VaultFrontExecution.test.ts`
 - `.\node_modules\.bin\vitest.cmd run tests/core/execution/VaultFrontExecution.test.ts tests/client/graphics/layers/ControlPanelVaultHud.test.ts tests/client/graphics/layers/GameRightSidebarVaultFeed.test.ts`
+- `.\node_modules\.bin\vitest.cmd run tests/client/graphics/layers/ControlPanelVaultHud.test.ts tests/client/graphics/layers/GameRightSidebarVaultFeed.test.ts` -> 17/17 passing after final HUD/sidebar QA punch-list cleanup
+- `cmd /c npm run build:pages` with VaultFront Pages env vars -> passed after sandbox escalation
 
 Additional targeted coverage added:
 
@@ -183,6 +243,7 @@ Additional targeted coverage added:
 - `?vaultDebug=1` enables persistent VaultFront debug mode
 - Vault QA checklist renders when debug mode is active
 - passive-income feed entries merge and render as a single readable item
+- objective rail prefers allied convoy over enemy convoy when the player has no active convoy
 - floating Vault HUD and right-side feed anchors do not conflict on desktop
 
 Note:
@@ -207,16 +268,35 @@ Note:
    - `VaultFrontExecution` logs for `start_convoy` and `publish_status`
    - `ControlPanel` logs for `status_update` and `selection`
    - the floating Vault HUD QA checklist while reproducing capture -> passive -> delivery/intercept flow
-3. Tighten convoy launch/delivery/intercept readability with stronger in-world effects if needed.
-4. Recommended next major gameplay slice:
+3. If the manual pass is clean, treat VaultFront as code-complete and move remaining work into polish-only follow-ups.
+4. Tighten convoy launch/delivery/intercept readability with stronger in-world effects if needed.
+5. Recommended next major gameplay slice:
    - deeper VaultFront polish before submarines or broader UI cleanup
-5. If requested, implement submarine slice:
+6. If requested, implement submarine slice:
    - dual-state movement: surfaced vs submerged
    - sonar ping + torpedo attack + stealth/silent run
    - counterplay with warships via detection / depth-charge style mechanics
    - animation direction: wake on surface, bubble/ripple trail underwater, torpedo corkscrew trail, sonar pulse ring
 
 ## Pending limitation
+
+- The main `OpenFrontIO` worktree is still dirty, so the VaultFront repo changes for Pages deployment were implemented locally but not committed/pushed from this session.
+- The studio landing-page repo (`VaultSparkStudios.github.io`) was inspected and patched locally in a temporary clone, but not pushed.
+- A reusable studio-wide deployment standard and future-game Pages workflow template were added locally:
+  - `docs/STUDIO_DEPLOYMENT_STANDARD.md`
+  - `docs/templates/deploy-pages.template.yml`
+  - `docs/templates/GAME_LAUNCH_CHECKLIST.template.md`
+- Root agent instructions now point future agents to those files automatically:
+  - `AGENTS.md`
+- The parent repo now excludes the temporary studio-site clone from accidental staging:
+  - `.git/info/exclude` contains `.codex-temp-studio-site/`
+- Studio policy now explicitly requires every game repo to remain self-sufficient and carry local deployment/domain/workflow context, even though the studio repo remains canonical.
+- Studio policy now explicitly requires fetching the latest studio-site remote state and checking the live/upstream landing page before committing homepage changes.
+- Verification completed for the temporary studio-site clone:
+  - fetched `origin/main`
+  - confirmed the clone had been behind by 1 commit (`de99ea6 Update index.html`)
+  - confirmed the live `vaultsparkstudios.com` homepage matched the upstream four-portal/Football-GM state
+  - replayed and restaged the `VaultFront` card/docs changes cleanly on top of current upstream
 
 - A real manual in-game pass has not been performed from this terminal-only environment. Current confidence comes from code inspection plus passing typecheck, lint, and targeted tests.
 

@@ -1,0 +1,103 @@
+name: Deploy Pages Bundle
+
+on:
+  workflow_dispatch:
+    inputs:
+      studio_site_branch:
+        description: "Branch to update in the studio site repo"
+        required: true
+        default: "main"
+        type: string
+      deploy_path:
+        description: "Folder inside the studio site repo for this game bundle"
+        required: true
+        default: "__GAME_SLUG__"
+        type: string
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/deploy-pages.yml"
+      - "index.html"
+      - "package.json"
+      - "resources/**"
+      - "scripts/postbuild-pages.mjs"
+      - "src/**"
+      - "vite.config.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-pages:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DEPLOY_PATH: ${{ github.event.inputs.deploy_path || '__GAME_SLUG__' }}
+      STUDIO_SITE_BRANCH: ${{ github.event.inputs.studio_site_branch || vars.STUDIO_SITE_BRANCH || 'main' }}
+      STUDIO_SITE_REPOSITORY: VaultSparkStudios/VaultSparkStudios.github.io
+      VITE_APP_BASE_PATH: /__GAME_SLUG__/
+      VITE_CANONICAL_URL: https://vaultsparkstudios.com/__GAME_SLUG__/
+      VITE_OG_IMAGE_URL: https://vaultsparkstudios.com/__GAME_SLUG__/images/cover.png
+      VITE_DOMAIN: vaultsparkstudios.com
+      VITE_GAME_SERVICE_ORIGIN: ${{ vars.GAME_SERVICE_ORIGIN }}
+      API_DOMAIN: ${{ vars.API_DOMAIN }}
+      DOMAIN: vaultsparkstudios.com
+      GAME_ENV: prod
+    steps:
+      - name: Validate deployment variables
+        run: |
+          set -euo pipefail
+          if [ -z "${VITE_GAME_SERVICE_ORIGIN}" ]; then
+            echo "GAME_SERVICE_ORIGIN is not configured in repo variables."
+            exit 1
+          fi
+          if [ -z "${API_DOMAIN}" ]; then
+            echo "API_DOMAIN is not configured in repo variables."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build Pages bundle
+        run: npm run build:pages
+
+      - name: Checkout studio site repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.STUDIO_SITE_REPOSITORY }}
+          ref: ${{ env.STUDIO_SITE_BRANCH }}
+          token: ${{ secrets.STUDIO_SITE_TOKEN }}
+          path: studio-site
+
+      - name: Sync bundle into studio site
+        run: |
+          set -euo pipefail
+          mkdir -p "studio-site/${DEPLOY_PATH}"
+          rsync -a --delete static/ "studio-site/${DEPLOY_PATH}/"
+
+      - name: Commit and push
+        working-directory: studio-site
+        run: |
+          set -euo pipefail
+          git config user.name "VaultSpark Studios"
+          git config user.email "87046611+VaultSparkStudios@users.noreply.github.com"
+          git add "${DEPLOY_PATH}"
+          if git diff --cached --quiet; then
+            echo "No Pages changes to publish."
+            exit 0
+          fi
+          git commit -m "Deploy __GAME_NAME__ Pages bundle (${GITHUB_SHA::7})"
+          git push origin "${STUDIO_SITE_BRANCH}"
+
+# Replace:
+# - __GAME_NAME__ with the branded game name, e.g. VaultFront
+# - __GAME_SLUG__ with the lowercase public slug, e.g. vaultfront

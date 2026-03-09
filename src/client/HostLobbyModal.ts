@@ -3,6 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { translateText } from "../client/Utils";
 import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
 import { EventBus } from "../core/EventBus";
+import { workerApiUrl, workerGameUrl } from "../core/RuntimeUrls";
 import {
   Difficulty,
   GameMapSize,
@@ -117,7 +118,11 @@ export class HostLobbyModal extends BaseModal {
       }
     }
     const config = await getServerConfigFromClient();
-    return `${window.location.origin}/${config.workerPath(this.lobbyId)}/game/${this.lobbyId}?lobby&s=${encodeURIComponent(this.lobbyUrlSuffix)}`;
+    return workerGameUrl(
+      config.workerPath(this.lobbyId),
+      this.lobbyId,
+      `?lobby&s=${encodeURIComponent(this.lobbyUrlSuffix)}`,
+    );
   }
 
   private async constructUrl(): Promise<string> {
@@ -834,7 +839,7 @@ export class HostLobbyModal extends BaseModal {
 
     const config = await getServerConfigFromClient();
     const response = await fetch(
-      `${window.location.origin}/${config.workerPath(this.lobbyId)}/api/start_game/${this.lobbyId}`,
+      workerApiUrl(config.workerPath(this.lobbyId), `start_game/${this.lobbyId}`),
       {
         method: "POST",
         headers: {
@@ -886,7 +891,7 @@ async function createLobby(gameID: string): Promise<GameInfo> {
   const token = await getPlayToken();
   try {
     const response = await fetch(
-      `/${config.workerPath(gameID)}/api/create_game/${gameID}`,
+      workerApiUrl(config.workerPath(gameID), `create_game/${gameID}`),
       {
         method: "POST",
         headers: {

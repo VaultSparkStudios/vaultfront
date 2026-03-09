@@ -13,6 +13,14 @@ const __dirname = path.dirname(__filename);
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
   const isProduction = mode === "production";
+  const basePath = (() => {
+    const raw = (env.VITE_APP_BASE_PATH ?? "/").trim();
+    if (!raw || raw === "/") return "/";
+    const withLeadingSlash = raw.startsWith("/") ? raw : `/${raw}`;
+    return withLeadingSlash.endsWith("/")
+      ? withLeadingSlash
+      : `${withLeadingSlash}/`;
+  })();
   // In dev, redirect visits to /w*/game/* to "/" so Vite serves the index.html.
   const devGameHtmlBypass = (req?: {
     url?: string;
@@ -39,7 +47,7 @@ export default defineConfig(({ mode }) => {
       setupFiles: "./tests/setup.ts",
     },
     root: "./",
-    base: "/",
+    base: basePath,
     publicDir: "resources", // Access static assets via import or explicit copy
 
     resolve: {
@@ -85,6 +93,12 @@ export default defineConfig(({ mode }) => {
         isProduction ? "" : "localhost:3000",
       ),
       "process.env.GAME_ENV": JSON.stringify(isProduction ? "prod" : "dev"),
+      "process.env.DOMAIN": JSON.stringify(
+        env.VITE_DOMAIN ?? env.DOMAIN ?? "",
+      ),
+      "process.env.GAME_SERVICE_ORIGIN": JSON.stringify(
+        env.VITE_GAME_SERVICE_ORIGIN ?? env.GAME_SERVICE_ORIGIN ?? "",
+      ),
       "process.env.STRIPE_PUBLISHABLE_KEY": JSON.stringify(
         env.STRIPE_PUBLISHABLE_KEY,
       ),
