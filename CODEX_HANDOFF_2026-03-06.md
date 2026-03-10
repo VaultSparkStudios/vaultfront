@@ -411,9 +411,31 @@ Current local repo states after this continuation:
     readiness
   - updated `docs/DEPLOY_PAGES.md` to record that the live public path should
     stay on the placeholder page until runtime rollout
-- After this corrective local follow-up, another push is still required for:
-  - `vaultfront/main`
-  - `VaultSparkStudios.github.io/main`
+- Follow-up pushes have now been completed:
+  - `vaultfront/main` -> `ea2234b5 Hold VaultFront Pages deploy until runtime launch`
+  - `VaultSparkStudios.github.io/main` -> `02e7728 Replace VaultFront bundle with project page`
+
+## 2026-03-10 final rollout state
+
+- `https://vaultsparkstudios.com/vaultfront/` should now be treated as a
+  project page, not a static playable client.
+- The VaultFront studio page now follows the same general format as:
+  - `https://vaultsparkstudios.com/vaultspark-football-gm/`
+  - but with VaultFront-specific copy and runtime-launch messaging
+- The studio homepage CTA for VaultFront now reads:
+  - `View Project`
+- `VaultFront/.github/workflows/deploy-pages.yml` is now manual-only so routine
+  source pushes do not overwrite the placeholder project page before backend
+  readiness.
+- Local repo sanity after push:
+  - VaultFront clean worktree vs `vaultfront/main`: ahead `0`, behind `0`
+  - studio-site clone vs `origin/main`: ahead `0`, behind `0`
+- Live-site propagation caveat from this session:
+  - tool-based fetch of `https://vaultsparkstudios.com/` still surfaced an
+    older homepage snapshot
+  - direct tool fetch of `https://vaultsparkstudios.com/vaultfront/` was not
+    reliable enough to confirm propagation
+  - browser confirmation is still recommended after Pages propagation settles
 
 ## Suggested prompt for the next session
 
