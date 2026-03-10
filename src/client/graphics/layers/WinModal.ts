@@ -11,6 +11,7 @@ import { EventBus } from "../../../core/EventBus";
 import { RankedType } from "../../../core/game/Game";
 import { GameUpdateType } from "../../../core/game/GameUpdates";
 import { GameView } from "../../../core/game/GameView";
+import { appRelativePath, appRootPath } from "../../../core/RuntimeUrls";
 import type { WinUpdate } from "../../../core/game/GameUpdates";
 import type { AllPlayersStats, Winner } from "../../../core/Schemas";
 import {
@@ -519,7 +520,7 @@ export class WinModal extends LitElement implements Layer {
   private _handleExit() {
     void this.postOutcomeTelemetry();
     this.hide();
-    window.location.href = "/";
+    window.location.href = appRootPath();
   }
 
   private _handleRequeue() {
@@ -532,7 +533,7 @@ export class WinModal extends LitElement implements Layer {
     void this.postOutcomeTelemetry();
     this.hide();
     // Navigate to homepage and open matchmaking modal
-    window.location.href = "/?requeue";
+    window.location.href = appRelativePath("?requeue");
   }
 
   private onRecapPrimaryRequeueClick = () => {

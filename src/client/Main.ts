@@ -549,7 +549,7 @@ class Client {
 
         crazyGamesSDK.gameplayStop().then(() => {
           // redirect to the home page
-          window.location.href = "/";
+          window.location.href = appRootPath();
         });
       } else {
         console.info("Game not active, handle hash update");

@@ -4,6 +4,7 @@ import { EventBus } from "../../../core/EventBus";
 import { GameType } from "../../../core/game/Game";
 import { GameUpdateType, VaultFrontActivityUpdate, VaultFrontConvoyState, VaultFrontStatusUpdate } from "../../../core/game/GameUpdates";
 import { GameView } from "../../../core/game/GameView";
+import { appRootPath } from "../../../core/RuntimeUrls";
 import { crazyGamesSDK } from "../../CrazyGamesSDK";
 import { PauseGameIntentEvent, SendWinnerEvent } from "../../Transport";
 import { translateText } from "../../Utils";
@@ -875,7 +876,7 @@ export class GameRightSidebar extends LitElement implements Layer {
     await crazyGamesSDK.gameplayStop();
     // redirect to the home page
     logHudTelemetry("hud_exit_click");
-    window.location.href = "/";
+    window.location.href = appRootPath();
   }
 
   private onSettingsButtonClick() {

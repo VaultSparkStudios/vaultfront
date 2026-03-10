@@ -332,6 +332,59 @@ Note:
 
 - A real manual in-game pass has not been performed from this terminal-only environment. Current confidence comes from code inspection plus passing typecheck, lint, and targeted tests.
 
+## 2026-03-10 continuation
+
+- Created a clean launch worktree from `vaultfront/main` at:
+  - `.codex-temp-vaultfront-clean`
+- Created launch branch:
+  - `vaultfront-launch-stub`
+- Cherry-picked onto that clean branch:
+  - `0e524d61 Prepare VaultFront for GitHub Pages deployment and codify studio standards`
+  - `f05d87b7 Add studio backend deployment plan and runtime templates`
+- Attempted cherry-pick of:
+  - `680712fd Generalize VaultFront deployment workflow`
+  - result: empty cherry-pick, indicating `vaultfront/main` already had equivalent workflow state
+- Fixed remaining GitHub Pages root-navigation regressions in the clean branch:
+  - `src/client/Main.ts`
+  - `src/client/graphics/layers/GameRightSidebar.ts`
+  - `src/client/graphics/layers/SettingsModal.ts`
+  - `src/client/graphics/layers/WinModal.ts`
+  - all affected flows now use `appRootPath()` or `appRelativePath("?requeue")` instead of hardcoded `/`
+- Built a production-style Pages bundle from the clean launch branch with:
+  - `VITE_APP_BASE_PATH=/vaultfront/`
+  - `VITE_CANONICAL_URL=https://vaultsparkstudios.com/vaultfront/`
+  - `VITE_OG_IMAGE_URL=https://vaultsparkstudios.com/vaultfront/images/GameplayScreenshot.png`
+  - `VITE_DOMAIN=vaultsparkstudios.com`
+  - `VITE_GAME_SERVICE_ORIGIN=https://play-vaultfront.vaultsparkstudios.com`
+  - `API_DOMAIN=api-vaultfront.vaultsparkstudios.com`
+  - `DOMAIN=vaultsparkstudios.com`
+  - `GAME_ENV=prod`
+- Synced the generated static bundle into the temporary studio-site clone at:
+  - `.codex-temp-studio-site/vaultfront/`
+- Refreshed the studio-site clone from `origin` before further changes.
+- Updated the studio-site `VaultFront` card copy to match launch-stub status:
+  - status: `Launch Stub`
+  - CTA: `View Launch Stub`
+
+Validation on 2026-03-10:
+
+- `cmd /c npm run build:pages` from `.codex-temp-vaultfront-clean` -> passed after escalation
+- Build warnings still present:
+  - unresolved runtime background asset path
+  - JSON import-attribute consistency warnings
+  - large chunk warnings
+- No manual browser/live-site verification was performed from this terminal session.
+
+Current local repo states after this continuation:
+
+- `OpenFrontIO` main worktree remains dirty and unchanged for unrelated HUD/test work
+- clean VaultFront launch branch lives in:
+  - `.codex-temp-vaultfront-clean`
+- studio-site clone is locally modified with:
+  - `index.html`
+  - `vaultfront/` static bundle
+- studio-site clone remains ahead of `origin/main` with local launch/docs work that has not been pushed from this session
+
 ## Suggested prompt for the next session
 
 "Resume from `CODEX_HANDOFF_2026-03-06.md`. Read that file first, inspect the referenced VaultFront/HUD files, and continue from repo state without reverting unrelated changes."

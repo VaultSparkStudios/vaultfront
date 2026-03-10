@@ -9,6 +9,7 @@ import {
   VaultFrontActivityUpdate,
   VaultFrontStatusUpdate,
 } from "../../../core/game/GameUpdates";
+import { appRootPath } from "../../../core/RuntimeUrls";
 import { UserSettings } from "../../../core/game/UserSettings";
 import { AlternateViewEvent, RefreshGraphicsEvent } from "../../InputHandler";
 import { translateText } from "../../Utils";
@@ -219,7 +220,7 @@ export class SettingsModal extends LitElement implements Layer {
 
   private onExitButtonClick() {
     // redirect to the home page
-    window.location.href = "/";
+    window.location.href = appRootPath();
   }
 
   private onVolumeChange(event: Event) {
