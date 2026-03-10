@@ -385,6 +385,36 @@ Current local repo states after this continuation:
   - `vaultfront/` static bundle
 - studio-site clone remains ahead of `origin/main` with local launch/docs work that has not been pushed from this session
 
+## 2026-03-10 post-push update
+
+- Pushed VaultFront clean launch branch contents to:
+  - `vaultfront/main`
+  - resulting head at push time:
+    - `5932caa1 Fix VaultFront Pages root navigation for launch stub`
+- Pushed the studio-site clone to:
+  - `origin/main`
+  - resulting head at push time:
+    - `d57547b Add VaultFront launch stub bundle`
+- Follow-up requirement identified immediately after push:
+  - the published `/vaultfront/` path should not expose the static client yet
+  - the public path should remain an under-development landing page until
+    VaultFront runtime/server setup is established
+- Applied the corrective local follow-up:
+  - removed the large generated `vaultfront/` app bundle from the studio-site clone
+  - replaced it with a lightweight under-development landing page at:
+    - `vaultfront/index.html`
+    - `vaultfront/404.html`
+  - updated the studio-site `VaultFront` card to read as in-development instead
+    of a playable launch
+  - changed `VaultFront/.github/workflows/deploy-pages.yml` to manual-only so
+    normal source pushes do not overwrite the placeholder page before backend
+    readiness
+  - updated `docs/DEPLOY_PAGES.md` to record that the live public path should
+    stay on the placeholder page until runtime rollout
+- After this corrective local follow-up, another push is still required for:
+  - `vaultfront/main`
+  - `VaultSparkStudios.github.io/main`
+
 ## Suggested prompt for the next session
 
 "Resume from `CODEX_HANDOFF_2026-03-06.md`. Read that file first, inspect the referenced VaultFront/HUD files, and continue from repo state without reverting unrelated changes."

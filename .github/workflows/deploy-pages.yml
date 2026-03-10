@@ -13,17 +13,6 @@ on:
         required: true
         default: "vaultfront"
         type: string
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/deploy-pages.yml"
-      - "index.html"
-      - "package.json"
-      - "resources/**"
-      - "scripts/postbuild-pages.mjs"
-      - "src/**"
-      - "vite.config.ts"
 
 permissions:
   contents: read

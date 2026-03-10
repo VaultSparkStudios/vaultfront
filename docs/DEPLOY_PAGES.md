@@ -7,6 +7,14 @@ This repo can build a static client bundle for deployment at:
 The bundle is intended to be copied into the separate studio landing-page repo,
 not published as a standalone Pages site from this repository.
 
+Current public placeholder behavior:
+
+- `https://vaultsparkstudios.com/vaultfront/` is intentionally an
+  under-development landing page in the studio-site repo until the dedicated
+  VaultFront runtime is ready.
+- Do not run `deploy-pages.yml` for the live public path until the backend
+  rollout is ready to support an actual playable launch.
+
 Backend/runtime deployment is separate. The default studio runtime plan is
 documented in:
 
@@ -46,6 +54,12 @@ Studio-wide default naming standard:
 The studio repo target is hardcoded to:
 
 - `VaultSparkStudios/VaultSparkStudios.github.io`
+
+Workflow policy:
+
+- `deploy-pages.yml` is manual-only for now.
+- This avoids accidental replacement of the public under-development landing
+  page before the VaultFront server stack is live.
 
 ## Studio site repo follow-up
 
