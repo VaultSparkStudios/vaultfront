@@ -119,3 +119,44 @@ describe("GameRightSidebar Vault feed", () => {
     expect(sidebar.recentVaultFeed[0].label).toBe("Global jam breaker");
   });
 });
+
+test("beacon pulse enters the short vault feed with a pulse badge", () => {
+  const sidebar = new GameRightSidebar() as any;
+  const me = {
+    smallID: () => 1,
+    isFriendly: (player: { smallID: () => number }) => player.smallID() === 2,
+  };
+  sidebar.game = {
+    ticks: () => 160,
+    myPlayer: () => me,
+    playerBySmallID: (id: number) => ({
+      isPlayer: () => true,
+      smallID: () => id,
+    }),
+    config: () => ({
+      numSpawnPhaseTurns: () => 0,
+    }),
+  };
+
+  sidebar.appendVaultFeed(
+    [
+      {
+        type: GameUpdateType.VaultFrontActivity,
+        activity: "beacon_pulse",
+        tile: 12,
+        sourcePlayerID: 3,
+        targetPlayerID: null,
+        label: "Enemy pulse active",
+        durationTicks: 120,
+      },
+    ],
+    140,
+  );
+
+  const container = document.createElement("div");
+  render(sidebar.renderVaultFeed(), container);
+
+  expect(sidebar.recentVaultFeed).toHaveLength(1);
+  expect(container.textContent).toContain("Pulse");
+  expect(container.textContent).toContain("Enemy pulse active");
+});

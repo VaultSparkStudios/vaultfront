@@ -100,14 +100,14 @@ export class VaultFrontExecution implements Execution {
   private readonly vaultCaptureTicks = 90;
   private readonly vaultCooldownTicks = 650;
   private readonly vaultPassiveIncomeIntervalTicks = 600;
-  private readonly vaultPassiveGoldPerMinute = 90_000n;
+  private readonly vaultPassiveGoldPerMinute = 75_000n;
 
   // Defense Factory balance.
   private readonly beaconChargeCap = 100;
   private readonly beaconTriggerCost = 72;
   private readonly beaconPulseDurationTicks = 95;
   private readonly beaconPulseCooldownTicks = 320;
-  private readonly jamBreakerGoldCost = 130_000n;
+  private readonly jamBreakerGoldCost = 115_000n;
   private readonly jamBreakerCooldownTicks = 900;
   private readonly jamBreakerMaskClampTicks = 20;
 
@@ -834,14 +834,14 @@ export class VaultFrontExecution implements Execution {
       alive.reduce((acc, p) => acc + this.playerStrengthScore(p), 0) / alive.length;
     if (avgStrength <= 0.01) return 1;
     const ratio = this.playerStrengthScore(player) / avgStrength;
-    return Math.max(0.65, Math.min(1.35, 1.08 - (ratio - 1) * 0.5));
+    return Math.max(0.72, Math.min(1.22, 1.04 - (ratio - 1) * 0.34));
   }
 
   private phaseAdjustmentMultiplier(ticks: number): number {
     const elapsedAfterSpawn = Math.max(0, ticks - this.game.config().numSpawnPhaseTurns());
-    if (elapsedAfterSpawn < 2_400) return 1.12;
+    if (elapsedAfterSpawn < 2_400) return 1.06;
     if (elapsedAfterSpawn < 7_200) return 1;
-    return 0.92;
+    return 0.97;
   }
 
   private routeRiskScore(owner: Player, source: TileRef, destination: TileRef): number {
@@ -1510,6 +1510,11 @@ export class VaultFrontExecution implements Execution {
       weeklyMutator: this.weeklyMutator,
       captureTicksRequired: this.vaultCaptureTicks,
       cooldownTicksTotal: this.vaultCooldownTicksEffective(),
+      passiveGoldPerMinute: this.bigintToSafeNumber(
+        this.vaultPassiveGoldPerMinuteEffective(),
+      ),
+      jamBreakerGoldCost: this.bigintToSafeNumber(this.jamBreakerGoldCost),
+      escortDurationTicks: this.escortDurationTicksEffective(),
       sites: this.vaultSites.map((site) => {
         const projected = this.projectedSiteReward(site);
         return {

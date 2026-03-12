@@ -236,6 +236,18 @@ export class WinModal extends LitElement implements Layer {
             Next Match Hint
           </div>
           <div class="text-sm text-amber-100 mt-1">${this.actionableHint}</div>
+          ${this.recapActionPlan.length > 0
+            ? html`<div class="mt-2 rounded-sm border border-amber-300/25 bg-black/15 p-2 text-[12px] text-amber-50">
+                <div class="text-[11px] uppercase tracking-wide text-amber-200">
+                  Next Match Script
+                </div>
+                <div class="mt-1 space-y-1">
+                  ${this.recapActionPlan.map(
+                    (step, index) => html`<div>${index + 1}. ${step}</div>`,
+                  )}
+                </div>
+              </div>`
+            : ""}
           <div class="mt-2 flex flex-wrap gap-2">
             <button
               class="px-3 py-1.5 text-sm cursor-pointer border-0 rounded-sm transition-colors ${requeuePrimary
@@ -846,11 +858,52 @@ export class WinModal extends LitElement implements Layer {
     }
   }
 
+  private buildActionPlan(weakness: RecapCard): string[] {
+    const hud = this.hudCountersForCurrentMatch();
+    const steps =
+      weakness.key === "vault"
+        ? [
+            "Path to the nearest contestable vault before 2:30 instead of waiting for passive income.",
+            "Hold the first capture through one passive payout before rotating out.",
+          ]
+        : weakness.key === "convoy"
+          ? [
+              "Use Shield on first contact for your next convoy instead of saving it for later.",
+              "If you have no convoy, move to the shortest enemy route and play for one intercept.",
+            ]
+          : weakness.key === "pulse"
+            ? [
+                "Place a Defense Factory before the first major convoy race.",
+                "Save Jam Breaker for a live enemy pulse, then chain your own pulse window behind it.",
+              ]
+            : [
+                "Lock one Resource Focus setting per phase instead of flipping during every fight.",
+                "Only change focus after a vault payout, clean disengage, or clear macro reset.",
+              ];
+
+    if (hud.vaultNoticeJumps + hud.objectiveRailClicks === 0) {
+      steps.unshift(
+        "Use the Vault notice or objective rail once early to snap the camera to the first swing objective.",
+      );
+    }
+    if (this.behindAtMinute8) {
+      const recoveryStep =
+        "If you fall behind again, intercept once before forcing another straight capture race.";
+      if (steps.length >= 3) {
+        steps[steps.length - 1] = recoveryStep;
+      } else {
+        steps.push(recoveryStep);
+      }
+    }
+    return steps.slice(0, 3);
+  }
+
   private recomputeRecap(wu: WinUpdate) {
     const myClientID = this.game.myPlayer()?.clientID();
     if (!myClientID) {
       this.recapCards = [];
       this.actionableHint = "";
+      this.recapActionPlan = [];
       this.recapReason = "";
       this.momentRewards = [];
       this.seasonalContracts = [];

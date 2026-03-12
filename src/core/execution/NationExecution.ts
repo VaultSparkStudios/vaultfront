@@ -226,16 +226,19 @@ export class NationExecution implements Execution {
     const pressure = this.hostileNeighborPressure(player);
     const defenseStructures =
       player.unitsOwned(UnitType.DefensePost) + player.unitsOwned(UnitType.SAMLauncher);
+    const econBias = this.mg.config().nationGoldTroopEmphasis() / 100;
+    const highPressure = pressure >= 0.58;
+    const mediumPressure = pressure >= 0.34;
+    const lowPressure = pressure < 0.18;
     let command: VaultFrontCommandType | null = null;
 
-    // Jam breaker is strongest when pressure is high and we have defensive infra to exploit vision timing.
-    if (pressure >= 0.66 && defenseStructures > 0 && this.random.chance(2)) {
+    if (highPressure && defenseStructures > 0 && this.random.chance(2)) {
       command = "jam_breaker";
-    } else if (pressure >= 0.45 && this.random.chance(2)) {
+    } else if (pressure >= 0.42 && this.random.chance(2)) {
       command = "escort";
-    } else if (pressure >= 0.3 && this.random.chance(3)) {
+    } else if (mediumPressure && this.random.chance(2)) {
       command = this.nextRerouteCommand(true);
-    } else if (pressure < 0.2 && this.random.chance(5)) {
+    } else if (lowPressure && this.random.chance(econBias >= 0.55 ? 4 : 5)) {
       command = this.nextRerouteCommand(false);
     }
 
@@ -245,9 +248,17 @@ export class NationExecution implements Execution {
         type: command,
         issuedAtTick: ticks,
       });
-      this.nextVaultFrontCommandTick = ticks + this.random.nextInt(120, 260);
+      this.nextVaultFrontCommandTick =
+        command === "jam_breaker"
+          ? ticks + this.random.nextInt(70, 120)
+          : command === "escort"
+            ? ticks + this.random.nextInt(80, 135)
+            : ticks + this.random.nextInt(85, 145);
     } else {
-      this.nextVaultFrontCommandTick = ticks + this.random.nextInt(80, 150);
+      this.nextVaultFrontCommandTick =
+        highPressure
+          ? ticks + this.random.nextInt(55, 90)
+          : ticks + this.random.nextInt(90, 160);
     }
   }
 

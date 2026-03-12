@@ -380,6 +380,9 @@ export interface VaultFrontStatusUpdate {
   weeklyMutator: "none" | "lane_fog" | "accelerated_cooldowns" | "double_passive";
   captureTicksRequired: number;
   cooldownTicksTotal: number;
+  passiveGoldPerMinute?: number;
+  jamBreakerGoldCost?: number;
+  escortDurationTicks?: number;
   sites: VaultFrontSiteState[];
   convoys: VaultFrontConvoyState[];
   beacons: VaultFrontBeaconState[];

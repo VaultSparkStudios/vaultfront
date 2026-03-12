@@ -2,17 +2,27 @@ import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { EventBus } from "../../../core/EventBus";
 import { GameType } from "../../../core/game/Game";
-import { GameUpdateType, VaultFrontActivityUpdate, VaultFrontConvoyState, VaultFrontStatusUpdate } from "../../../core/game/GameUpdates";
+import {
+  GameUpdateType,
+  VaultFrontActivityUpdate,
+  VaultFrontConvoyState,
+  VaultFrontStatusUpdate,
+} from "../../../core/game/GameUpdates";
 import { GameView } from "../../../core/game/GameView";
-import { appRootPath } from "../../../core/RuntimeUrls";
 import { crazyGamesSDK } from "../../CrazyGamesSDK";
 import { PauseGameIntentEvent, SendWinnerEvent } from "../../Transport";
 import { translateText } from "../../Utils";
-import { HUD_LAYOUT_EVENT, applyGlobalHudScale, dispatchHudLayoutUpdate, readHudLayout, writeHudLayout } from "../HudLayout";
+import {
+  applyGlobalHudScale,
+  dispatchHudLayoutUpdate,
+  HUD_LAYOUT_EVENT,
+  readHudLayout,
+  writeHudLayout,
+} from "../HudLayout";
 import { logHudTelemetry } from "../HudTelemetry";
-import { GoToPositionEvent } from "./Leaderboard";
 import { ImmunityBarVisibleEvent } from "./ImmunityTimer";
 import { Layer } from "./Layer";
+import { GoToPositionEvent } from "./Leaderboard";
 import { ShowReplayPanelEvent } from "./ReplayPanel";
 import { ShowSettingsModalEvent } from "./SettingsModal";
 import { SpawnBarVisibleEvent } from "./SpawnTimer";
@@ -40,6 +50,7 @@ export class GameRightSidebar extends LitElement implements Layer {
   private static readonly FEED_PRIORITY_ALLY = 3;
   private static readonly FEED_PRIORITY_GLOBAL = 2;
   private static readonly FEED_PRIORITY_GLOBAL_PASSIVE = 1;
+  private static readonly OBJECTIVE_RAIL_MAX_ITEMS = 3;
   private static readonly VAULT_DEBUG_STORAGE_KEY = "vaultfront.debug";
   private static readonly VAULT_DEBUG_EVENT = "vaultfront-debug-toggle";
   // Frozen Vault feed rules: self > ally > global, passive income merges briefly, feed stays short-lived.
@@ -77,13 +88,15 @@ export class GameRightSidebar extends LitElement implements Layer {
   private timelineExpanded = true;
 
   @state()
-  private timelineFilters: Record<"captures" | "convoys" | "pulses" | "surge", boolean> =
-    {
-      captures: true,
-      convoys: true,
-      pulses: true,
-      surge: true,
-    };
+  private timelineFilters: Record<
+    "captures" | "convoys" | "pulses" | "surge",
+    boolean
+  > = {
+    captures: true,
+    convoys: true,
+    pulses: true,
+    surge: true,
+  };
 
   @state()
   private latestVaultStatus: VaultFrontStatusUpdate | null = null;
@@ -148,7 +161,10 @@ export class GameRightSidebar extends LitElement implements Layer {
     this.timelineExpanded = this.viewportWidth() >= 1200;
     this.loadHudLayout();
     applyGlobalHudScale(this.hudScale);
-    window.addEventListener(HUD_LAYOUT_EVENT, this.onHudLayoutUpdated as EventListener);
+    window.addEventListener(
+      HUD_LAYOUT_EVENT,
+      this.onHudLayoutUpdated as EventListener,
+    );
 
     this.eventBus.on(SpawnBarVisibleEvent, (e) => {
       this.spawnBarVisible = e.visible;
@@ -263,7 +279,11 @@ export class GameRightSidebar extends LitElement implements Layer {
     return GameRightSidebar.FEED_PRIORITY_GLOBAL;
   }
 
-  private mergePassiveFeedLabel(existing: string, next: string, count: number): string {
+  private mergePassiveFeedLabel(
+    existing: string,
+    next: string,
+    count: number,
+  ): string {
     const goldMatch = /\+([\d,]+)g/.exec(next);
     const gold = goldMatch ? goldMatch[1] : null;
     if (gold) {
@@ -278,7 +298,10 @@ export class GameRightSidebar extends LitElement implements Layer {
     );
   }
 
-  private appendVaultFeed(updates: VaultFrontActivityUpdate[], now: number): void {
+  private appendVaultFeed(
+    updates: VaultFrontActivityUpdate[],
+    now: number,
+  ): void {
     let feed = this.recentVaultFeed.filter(
       (entry) => now - entry.tick <= GameRightSidebar.VAULT_FEED_TTL_TICKS,
     );
@@ -288,7 +311,8 @@ export class GameRightSidebar extends LitElement implements Layer {
         entry.activity !== "convoy_delivered" &&
         entry.activity !== "convoy_intercepted" &&
         entry.activity !== "vault_captured" &&
-        entry.activity !== "jam_breaker"
+        entry.activity !== "jam_breaker" &&
+        entry.activity !== "beacon_pulse"
       ) {
         continue;
       }
@@ -307,7 +331,11 @@ export class GameRightSidebar extends LitElement implements Layer {
         const nextCount = (last.count ?? 1) + 1;
         last.tick = now;
         last.count = nextCount;
-        last.label = this.mergePassiveFeedLabel(last.label, entry.label, nextCount);
+        last.label = this.mergePassiveFeedLabel(
+          last.label,
+          entry.label,
+          nextCount,
+        );
         last.tile = entry.tile;
         continue;
       }
@@ -376,7 +404,10 @@ export class GameRightSidebar extends LitElement implements Layer {
 
   private toggleKpiPanel(): void {
     this.kpiPanelVisible = !this.kpiPanelVisible;
-    localStorage.setItem("vaultfront.kpi.panel", this.kpiPanelVisible ? "1" : "0");
+    localStorage.setItem(
+      "vaultfront.kpi.panel",
+      this.kpiPanelVisible ? "1" : "0",
+    );
     logHudTelemetry("hud_kpi_panel_toggle", { visible: this.kpiPanelVisible });
   }
 
@@ -391,11 +422,16 @@ export class GameRightSidebar extends LitElement implements Layer {
       this.vaultDebugActive ? "1" : "0",
     );
     window.dispatchEvent(
-      new CustomEvent<{ enabled: boolean }>(GameRightSidebar.VAULT_DEBUG_EVENT, {
-        detail: { enabled: this.vaultDebugActive },
-      }),
+      new CustomEvent<{ enabled: boolean }>(
+        GameRightSidebar.VAULT_DEBUG_EVENT,
+        {
+          detail: { enabled: this.vaultDebugActive },
+        },
+      ),
     );
-    logHudTelemetry("hud_vault_debug_toggle", { enabled: this.vaultDebugActive });
+    logHudTelemetry("hud_vault_debug_toggle", {
+      enabled: this.vaultDebugActive,
+    });
   }
 
   private toggleTimeline(): void {
@@ -457,7 +493,10 @@ export class GameRightSidebar extends LitElement implements Layer {
     return "Low";
   }
 
-  private vaultRiskTrend(siteID: number, risk: "Low" | "Medium" | "High"): string {
+  private vaultRiskTrend(
+    siteID: number,
+    risk: "Low" | "Medium" | "High",
+  ): string {
     const previous = this.lastVaultRiskBySite.get(siteID) ?? risk;
     this.lastVaultRiskBySite.set(siteID, risk);
     if (previous === risk) return "steady";
@@ -549,18 +588,40 @@ export class GameRightSidebar extends LitElement implements Layer {
     const matches = this.kpiNumber("vaultfront.kpi.matches");
     const retentionHits = this.kpiNumber("vaultfront.kpi.nextMatchRetention");
     const behindMatches = this.kpiNumber("vaultfront.kpi.minute8BehindMatches");
-    const comebackWins = this.kpiNumber("vaultfront.kpi.comebackWinsFromBehind");
-    const firstInterceptSum = this.kpiNumber("vaultfront.kpi.firstInterceptTimeSum");
-    const firstInterceptSamples = this.kpiNumber("vaultfront.kpi.firstInterceptSamples");
+    const comebackWins = this.kpiNumber(
+      "vaultfront.kpi.comebackWinsFromBehind",
+    );
+    const firstInterceptSum = this.kpiNumber(
+      "vaultfront.kpi.firstInterceptTimeSum",
+    );
+    const firstInterceptSamples = this.kpiNumber(
+      "vaultfront.kpi.firstInterceptSamples",
+    );
     const onboardingShown = this.kpiNumber("vaultfront.kpi.onboardingShown");
-    const onboardingCompleted = this.kpiNumber("vaultfront.kpi.onboardingCompleted");
-    const dockTopExposure = this.kpiNumber("vaultfront.kpi.hud.hud_ab_dock_exposure_top");
-    const dockStackExposure = this.kpiNumber("vaultfront.kpi.hud.hud_ab_dock_exposure_stack");
-    const dockTopObjective = this.kpiNumber("vaultfront.kpi.hud.hud_left_leaderboard_open_top");
-    const dockStackObjective = this.kpiNumber("vaultfront.kpi.hud.hud_left_leaderboard_open_stack");
-    const noticeJumps = this.kpiNumber("vaultfront.kpi.hud.hud_vault_notice_jump");
-    const railJumps = this.kpiNumber("vaultfront.kpi.hud.hud_objective_rail_click");
-    const timelineJumps = this.kpiNumber("vaultfront.kpi.hud.hud_timeline_jump");
+    const onboardingCompleted = this.kpiNumber(
+      "vaultfront.kpi.onboardingCompleted",
+    );
+    const dockTopExposure = this.kpiNumber(
+      "vaultfront.kpi.hud.hud_ab_dock_exposure_top",
+    );
+    const dockStackExposure = this.kpiNumber(
+      "vaultfront.kpi.hud.hud_ab_dock_exposure_stack",
+    );
+    const dockTopObjective = this.kpiNumber(
+      "vaultfront.kpi.hud.hud_left_leaderboard_open_top",
+    );
+    const dockStackObjective = this.kpiNumber(
+      "vaultfront.kpi.hud.hud_left_leaderboard_open_stack",
+    );
+    const noticeJumps = this.kpiNumber(
+      "vaultfront.kpi.hud.hud_vault_notice_jump",
+    );
+    const railJumps = this.kpiNumber(
+      "vaultfront.kpi.hud.hud_objective_rail_click",
+    );
+    const timelineJumps = this.kpiNumber(
+      "vaultfront.kpi.hud.hud_timeline_jump",
+    );
     const avgFirstIntercept =
       firstInterceptSamples > 0
         ? `${(firstInterceptSum / firstInterceptSamples).toFixed(1)}s`
@@ -570,20 +631,43 @@ export class GameRightSidebar extends LitElement implements Layer {
         class="fixed right-2 top-16 z-[1200] w-64 rounded-md border border-cyan-400/45 bg-slate-900/88 p-2 text-[11px] text-cyan-50 shadow-lg"
       >
         <div class="font-semibold text-cyan-200 mb-1">VaultFront KPI</div>
-        <div class="flex justify-between"><span>Retention Proxy</span><span>${this.kpiPercent(retentionHits, Math.max(1, matches))}</span></div>
-        <div class="flex justify-between"><span>Comeback Rate</span><span>${this.kpiPercent(comebackWins, behindMatches)}</span></div>
-        <div class="flex justify-between"><span>Avg First Intercept</span><span>${avgFirstIntercept}</span></div>
-        <div class="flex justify-between"><span>Onboarding Complete</span><span>${this.kpiPercent(onboardingCompleted, onboardingShown)}</span></div>
+        <div class="flex justify-between">
+          <span>Retention Proxy</span
+          ><span>${this.kpiPercent(retentionHits, Math.max(1, matches))}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Comeback Rate</span
+          ><span>${this.kpiPercent(comebackWins, behindMatches)}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Avg First Intercept</span><span>${avgFirstIntercept}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Onboarding Complete</span
+          ><span>${this.kpiPercent(onboardingCompleted, onboardingShown)}</span>
+        </div>
         <div class="mt-1 border-t border-cyan-300/20 pt-1">
           <div class="text-cyan-200/85">Dock A/B</div>
-          <div class="flex justify-between"><span>Exposure T/S</span><span>${dockTopExposure}/${dockStackExposure}</span></div>
-          <div class="flex justify-between"><span>Obj Opens T/S</span><span>${dockTopObjective}/${dockStackObjective}</span></div>
+          <div class="flex justify-between">
+            <span>Exposure T/S</span
+            ><span>${dockTopExposure}/${dockStackExposure}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Obj Opens T/S</span
+            ><span>${dockTopObjective}/${dockStackObjective}</span>
+          </div>
         </div>
         <div class="mt-1 border-t border-cyan-300/20 pt-1">
           <div class="text-cyan-200/85">HUD Jumps</div>
-          <div class="flex justify-between"><span>Notices</span><span>${noticeJumps}</span></div>
-          <div class="flex justify-between"><span>Objective Rail</span><span>${railJumps}</span></div>
-          <div class="flex justify-between"><span>Timeline</span><span>${timelineJumps}</span></div>
+          <div class="flex justify-between">
+            <span>Notices</span><span>${noticeJumps}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Objective Rail</span><span>${railJumps}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Timeline</span><span>${timelineJumps}</span>
+          </div>
         </div>
       </div>
     `;
@@ -612,7 +696,9 @@ export class GameRightSidebar extends LitElement implements Layer {
     }
   };
 
-  private convoyThreat(convoy: VaultFrontConvoyState): "Low" | "Medium" | "High" {
+  private convoyThreat(
+    convoy: VaultFrontConvoyState,
+  ): "Low" | "Medium" | "High" {
     const me = this.game.myPlayer();
     if (!me) return "Low";
     const srcX = this.game.x(convoy.sourceTile);
@@ -625,27 +711,56 @@ export class GameRightSidebar extends LitElement implements Layer {
       const blend = i / Math.max(1, sampleCount - 1);
       const x = Math.max(
         0,
-        Math.min(this.game.width() - 1, Math.round(srcX + (dstX - srcX) * blend)),
+        Math.min(
+          this.game.width() - 1,
+          Math.round(srcX + (dstX - srcX) * blend),
+        ),
       );
       const y = Math.max(
         0,
-        Math.min(this.game.height() - 1, Math.round(srcY + (dstY - srcY) * blend)),
+        Math.min(
+          this.game.height() - 1,
+          Math.round(srcY + (dstY - srcY) * blend),
+        ),
       );
       const owner = this.game.owner(this.game.ref(x, y));
-      if (owner.isPlayer() && owner.smallID() !== convoy.ownerID && !me.isFriendly(owner)) {
+      if (
+        owner.isPlayer() &&
+        owner.smallID() !== convoy.ownerID &&
+        !me.isFriendly(owner)
+      ) {
         hostile++;
       }
     }
-    if (hostile >= 4) return "High";
-    if (hostile >= 2) return "Medium";
+    const etaSeconds = Math.max(0, Math.ceil(convoy.ticksRemaining / 10));
+    if (hostile >= 4 || convoy.routeRisk >= 0.58 || (hostile >= 2 && etaSeconds <= 4)) {
+      return "High";
+    }
+    if (hostile >= 2 || convoy.routeRisk >= 0.3 || etaSeconds <= 7) {
+      return "Medium";
+    }
     return "Low";
   }
 
   private threatClass(level: "Low" | "Medium" | "High"): string {
     if (level === "High")
       return "border-orange-300/50 bg-orange-500/25 text-orange-100";
-    if (level === "Medium") return "border-sky-300/50 bg-sky-500/25 text-sky-100";
+    if (level === "Medium")
+      return "border-sky-300/50 bg-sky-500/25 text-sky-100";
     return "border-slate-300/50 bg-slate-500/25 text-slate-100";
+  }
+
+  private convoyRailPriority(
+    convoy: VaultFrontConvoyState,
+    myID: number | undefined,
+  ): number {
+    if (myID === undefined) return 0;
+    if (convoy.ownerID === myID) return 2;
+    const owner = this.game.playerBySmallID(convoy.ownerID);
+    if (owner?.isPlayer() === true && this.game.myPlayer()?.isFriendly(owner)) {
+      return 1;
+    }
+    return 0;
   }
 
   private objectiveRailItems(): Array<{
@@ -693,22 +808,47 @@ export class GameRightSidebar extends LitElement implements Layer {
               ? `Vault ${nearbySite.id} open`
               : `Vault ${nearbySite.id} ${eta}s`,
           tag,
-          details:
-            `${nearbySite.rewardMath} | Est +${nearbySite.projectedGoldReward.toLocaleString()}g +${nearbySite.projectedTroopsReward.toLocaleString()}t | Threat ${trend}`,
+          details: `${nearbySite.rewardMath} | Est +${nearbySite.projectedGoldReward.toLocaleString()}g +${nearbySite.projectedTroopsReward.toLocaleString()}t | Threat ${trend}`,
           actionLabel,
           actionTile: nearbySite.tile,
         });
       }
     }
 
-    for (const convoy of status.convoys.slice(0, 2)) {
+    const convoyItems = [...status.convoys]
+      .sort((a, b) => {
+        const aPriority = this.convoyRailPriority(a, myID);
+        const bPriority = this.convoyRailPriority(b, myID);
+        return bPriority - aPriority || a.ticksRemaining - b.ticksRemaining;
+      })
+      .slice(0, 1);
+    for (const convoy of convoyItems) {
       const threat = this.convoyThreat(convoy);
+      const convoyLabel =
+        convoy.ownerID === myID
+          ? "Your Convoy"
+          : this.convoyRailPriority(convoy, myID) > 0
+            ? "Ally Convoy"
+            : "Enemy Convoy";
+      const etaSeconds = Math.max(0, Math.ceil(convoy.ticksRemaining / 10));
+      const interceptGold = Math.floor(convoy.goldReward / 2);
+      const interceptTroops = Math.floor(convoy.troopsReward / 2);
       items.push({
         key: `convoy-${convoy.id}`,
         tile: convoy.destinationTile,
-        text: `Convoy ${convoy.id} ${Math.max(0, Math.ceil(convoy.ticksRemaining / 10))}s`,
+        text: `${convoyLabel} ${convoy.id} ${etaSeconds}s`,
         tag: threat,
-        details: convoy.rewardMath,
+        details:
+          convoy.ownerID === myID
+            ? `Hold for +${convoy.goldReward.toLocaleString()}g +${convoy.troopsReward.toLocaleString()}t | Threat ${threat}`
+            : this.convoyRailPriority(convoy, myID) > 0
+              ? `Escort window ${etaSeconds}s | Threat ${threat} | Reward +${convoy.goldReward.toLocaleString()}g`
+              : `Cut for +${interceptGold.toLocaleString()}g +${interceptTroops.toLocaleString()}t | Threat ${threat}`,
+        actionLabel:
+          convoy.ownerID === myID || this.convoyRailPriority(convoy, myID) > 0
+            ? "Defend"
+            : "Intercept",
+        actionTile: convoy.destinationTile,
       });
     }
 
@@ -724,11 +864,56 @@ export class GameRightSidebar extends LitElement implements Layer {
         details: `Pulse lockout ${Math.max(0, Math.ceil((activePulse.cooldownUntilTick - now) / 10))}s | Jam lockout ${Math.max(0, Math.ceil((activePulse.jamBreakerCooldownUntilTick - now) / 10))}s`,
       });
     }
-    return items.slice(0, 5);
+    return items.slice(0, GameRightSidebar.OBJECTIVE_RAIL_MAX_ITEMS);
+  }
+
+  private feedAudienceLabel(
+    audience: "self" | "ally" | "global",
+  ): "You" | "Ally" | "Map" {
+    if (audience === "self") return "You";
+    if (audience === "ally") return "Ally";
+    return "Map";
+  }
+
+  private feedActivityLabel(
+    activity: VaultFrontActivityUpdate["activity"],
+  ): string {
+    if (activity === "convoy_delivered") return "Delivery";
+    if (activity === "convoy_intercepted") return "Intercept";
+    if (activity === "vault_captured") return "Vault";
+    if (activity === "jam_breaker") return "Jam";
+    if (activity === "beacon_pulse") return "Pulse";
+    return "Income";
+  }
+
+  private feedActivityToneClass(
+    activity: VaultFrontActivityUpdate["activity"],
+  ): string {
+    if (activity === "convoy_intercepted") {
+      return "border-rose-300/30 bg-rose-500/10 text-rose-100";
+    }
+    if (activity === "convoy_delivered" || activity === "vault_captured") {
+      return "border-emerald-300/30 bg-emerald-500/10 text-emerald-100";
+    }
+    if (activity === "beacon_pulse" || activity === "jam_breaker") {
+      return "border-fuchsia-300/30 bg-fuchsia-500/10 text-fuchsia-100";
+    }
+    return "border-cyan-300/25 bg-cyan-500/10 text-cyan-100";
+  }
+
+  private feedAgeLabel(tick: number): string {
+    const now =
+      typeof this.game?.ticks === "function" ? this.game.ticks() : tick;
+    const ageTicks = Math.max(0, now - tick);
+    const ageSeconds = Math.floor(ageTicks / 10);
+    if (ageSeconds <= 0) return "now";
+    return `${ageSeconds}s ago`;
   }
 
   private focusTile(tile: number): void {
-    this.eventBus.emit(new GoToPositionEvent(this.game.x(tile), this.game.y(tile)));
+    this.eventBus.emit(
+      new GoToPositionEvent(this.game.x(tile), this.game.y(tile)),
+    );
     logHudTelemetry("hud_objective_rail_click");
   }
 
@@ -790,7 +975,8 @@ export class GameRightSidebar extends LitElement implements Layer {
     return html`
       <div
         class="fixed z-[1160] flex w-[min(92vw,320px)] flex-col gap-1"
-        style="zoom: ${this.hudScale}; right: ${this.vaultFeedRightPx()}px; top: ${this.vaultFeedTopPx()}px;"
+        style="zoom: ${this
+          .hudScale}; right: ${this.vaultFeedRightPx()}px; top: ${this.vaultFeedTopPx()}px;"
       >
         ${this.recentVaultFeed.map(
           (entry) => html`
@@ -803,17 +989,26 @@ export class GameRightSidebar extends LitElement implements Layer {
               }}
             >
               <div class="flex items-center justify-between gap-2">
-                <span class="truncate">${entry.label}</span>
-                <span class="shrink-0 text-cyan-200/70">
-                  ${this.secondsToHms(
-                    Math.max(
-                      0,
-                      Math.floor(
-                        (entry.tick - this.game.config().numSpawnPhaseTurns()) / 10,
-                      ),
-                    ),
-                  )}
-                </span>
+                <div class="min-w-0">
+                  <div class="truncate">${entry.label}</div>
+                  <div
+                    class="mt-0.5 flex items-center gap-1 text-[9px] text-cyan-200/70"
+                  >
+                    <span
+                      class="rounded border border-cyan-300/25 bg-cyan-500/10 px-1 py-0.5"
+                    >
+                      ${this.feedAudienceLabel(entry.audience)}
+                    </span>
+                    <span
+                      class="rounded border px-1 py-0.5 ${this.feedActivityToneClass(
+                        entry.activity,
+                      )}"
+                    >
+                      ${this.feedActivityLabel(entry.activity)}
+                    </span>
+                    <span>${this.feedAgeLabel(entry.tick)}</span>
+                  </div>
+                </div>
               </div>
             </button>
           `,
@@ -824,9 +1019,7 @@ export class GameRightSidebar extends LitElement implements Layer {
 
   private objectiveRailTopPx(): number {
     return (
-      8 +
-      (this.spawnBarVisible ? 26 : 0) +
-      (this.immunityBarVisible ? 26 : 0)
+      8 + (this.spawnBarVisible ? 26 : 0) + (this.immunityBarVisible ? 26 : 0)
     );
   }
 
@@ -876,7 +1069,7 @@ export class GameRightSidebar extends LitElement implements Layer {
     await crazyGamesSDK.gameplayStop();
     // redirect to the home page
     logHudTelemetry("hud_exit_click");
-    window.location.href = appRootPath();
+    window.location.href = "/";
   }
 
   private onSettingsButtonClick() {
@@ -905,7 +1098,8 @@ export class GameRightSidebar extends LitElement implements Layer {
         class=${`w-fit flex flex-row items-center gap-2 py-2 px-3 bg-gray-800/70 backdrop-blur-xs shadow-xs min-[1200px]:rounded-lg rounded-bl-lg transition-transform duration-300 ease-out transform text-white ${
           this._isVisible ? "translate-x-0" : "translate-x-full"
         }`}
-        style="margin-top: ${this.dockOffsetY}px; margin-right: ${-this.dockOffsetX}px; zoom: ${this.hudScale};"
+        style="margin-top: ${this.dockOffsetY}px; margin-right: ${-this
+          .dockOffsetX}px; zoom: ${this.hudScale};"
         @contextmenu=${(e: Event) => e.preventDefault()}
       >
         <div class="flex items-center gap-3">
@@ -926,7 +1120,8 @@ export class GameRightSidebar extends LitElement implements Layer {
             KPI
           </div>
           <div
-            class="cursor-pointer rounded px-1.5 py-0.5 text-[11px] ${this.vaultDebugActive
+            class="cursor-pointer rounded px-1.5 py-0.5 text-[11px] ${this
+              .vaultDebugActive
               ? "bg-amber-500/35 text-amber-50 hover:bg-amber-500/50"
               : "bg-slate-600/45 text-slate-100 hover:bg-slate-600/65"}"
             title="Toggle VaultFront debug checklist and logs"
@@ -945,10 +1140,16 @@ export class GameRightSidebar extends LitElement implements Layer {
                 </div>
               `
             : ""}
-          <div class="cursor-pointer p-1 rounded hover:bg-white/10" @click=${this.onSettingsButtonClick}>
+          <div
+            class="cursor-pointer p-1 rounded hover:bg-white/10"
+            @click=${this.onSettingsButtonClick}
+          >
             <img src=${settingsIcon} alt="settings" width="20" height="20" />
           </div>
-          <div class="cursor-pointer p-1 rounded hover:bg-white/10" @click=${this.onExitButtonClick}>
+          <div
+            class="cursor-pointer p-1 rounded hover:bg-white/10"
+            @click=${this.onExitButtonClick}
+          >
             <img src=${exitIcon} alt="exit" width="20" height="20" />
           </div>
         </div>
@@ -958,22 +1159,29 @@ export class GameRightSidebar extends LitElement implements Layer {
             ? "max-w-75 border-l border-white/20 pl-2 text-[11px] leading-4"
             : "hidden"}"
         >
-          <div class="text-cyan-200 font-semibold mb-0.5">Objective Timeline</div>
+          <div class="text-cyan-200 font-semibold mb-0.5">
+            Objective Timeline
+          </div>
           <div class="mb-1 flex flex-wrap gap-1">
-            ${([
-              { key: "captures", label: "Captures" },
-              { key: "convoys", label: "Convoys" },
-              { key: "pulses", label: "Pulses" },
-              { key: "surge", label: "Surge" },
-            ] as const).map(
-              (chip) => html`<button
-                class="rounded border px-1 py-0.5 ${this.timelineFilters[chip.key]
-                  ? "border-cyan-200/65 bg-cyan-500/25 text-cyan-50"
-                  : "border-slate-300/35 bg-slate-700/30 text-slate-200"}"
-                @click=${() => this.toggleTimelineFilter(chip.key)}
-              >
-                ${chip.label}
-              </button>`,
+            ${(
+              [
+                { key: "captures", label: "Captures" },
+                { key: "convoys", label: "Convoys" },
+                { key: "pulses", label: "Pulses" },
+                { key: "surge", label: "Surge" },
+              ] as const
+            ).map(
+              (chip) =>
+                html`<button
+                  class="rounded border px-1 py-0.5 ${this.timelineFilters[
+                    chip.key
+                  ]
+                    ? "border-cyan-200/65 bg-cyan-500/25 text-cyan-50"
+                    : "border-slate-300/35 bg-slate-700/30 text-slate-200"}"
+                  @click=${() => this.toggleTimelineFilter(chip.key)}
+                >
+                  ${chip.label}
+                </button>`,
             )}
           </div>
           ${filteredTimeline.length === 0
@@ -993,7 +1201,14 @@ export class GameRightSidebar extends LitElement implements Layer {
                     }}
                   >
                     [${this.secondsToHms(
-                      Math.max(0, Math.floor((entry.tick - this.game.config().numSpawnPhaseTurns()) / 10)),
+                      Math.max(
+                        0,
+                        Math.floor(
+                          (entry.tick -
+                            this.game.config().numSpawnPhaseTurns()) /
+                            10,
+                        ),
+                      ),
                     )}]
                     ${entry.label}
                   </button>`,

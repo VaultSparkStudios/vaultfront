@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RankedType } from "../../../../src/core/game/Game";
+import { WinModal } from "../../../../src/client/graphics/layers/WinModal";
 
 vi.mock("../../../../src/client/Utils", () => ({
   translateText: vi.fn((key: string) => {
@@ -17,7 +18,12 @@ vi.mock("../../../../src/client/Utils", () => ({
 }));
 
 vi.mock("../../../../src/client/Api", () => ({
+  fetchVaultFrontRecapAssignment: vi.fn(async () => false),
   getUserMe: vi.fn(async () => null),
+  recordVaultFrontFunnelTelemetry: vi.fn(async () => true),
+  recordVaultFrontOutcomeTelemetry: vi.fn(async () => true),
+  recordVaultFrontRecapEvent: vi.fn(async () => true),
+  updateVaultFrontSeasonContracts: vi.fn(async () => false),
 }));
 
 vi.mock("../../../../src/client/Cosmetics", () => ({
@@ -113,5 +119,31 @@ describe("WinModal Requeue", () => {
       const hasRequeue = url.searchParams.has("requeue");
       expect(hasRequeue).toBe(false);
     });
+  });
+});
+
+describe("VaultFront recap coaching", () => {
+  it("builds a recovery script that includes HUD usage when no anchors were used", () => {
+    const modal = new WinModal() as any;
+    modal.behindAtMinute8 = true;
+    vi.spyOn(modal, "hudCountersForCurrentMatch").mockReturnValue({
+      vaultNoticeJumps: 0,
+      objectiveRailClicks: 0,
+      timelineJumps: 0,
+    });
+
+    const plan = modal.buildActionPlan({
+      key: "vault",
+      title: "Vault Control",
+      myValue: "0",
+      winnerValue: "2",
+      deltaText: "Delta -2",
+      positive: false,
+      ratio: 0.2,
+    });
+
+    expect(plan[0]).toContain("Vault notice or objective rail");
+    expect(plan.join(" ")).toContain("nearest contestable vault");
+    expect(plan.join(" ")).toContain("fall behind again");
   });
 });

@@ -11,19 +11,27 @@ import {
 } from "../../../core/game/GameUpdates";
 import { GameView } from "../../../core/game/GameView";
 import { ClientID } from "../../../core/Schemas";
-import { AttackRatioEvent } from "../../InputHandler";
 import {
   fetchVaultFrontRuntimeAssignment,
   recordVaultFrontRuntimeEvent,
 } from "../../Api";
+import { AttackRatioEvent } from "../../InputHandler";
 import {
   SendDefenseFactoryCommandIntentEvent,
   SendResourceFocusIntentEvent,
-  SendVaultRolePingIntentEvent,
   SendVaultConvoyCommandIntentEvent,
+  SendVaultRolePingIntentEvent,
 } from "../../Transport";
 import { renderNumber, renderTroops } from "../../Utils";
-import { HUD_LAYOUT_EVENT, HudPreset, VaultNoticeSortMode, applyGlobalHudScale, dispatchHudLayoutUpdate, readHudLayout, writeHudLayout } from "../HudLayout";
+import {
+  HUD_LAYOUT_EVENT,
+  HudPreset,
+  VaultNoticeSortMode,
+  applyGlobalHudScale,
+  dispatchHudLayoutUpdate,
+  readHudLayout,
+  writeHudLayout,
+} from "../HudLayout";
 import { logHudTelemetry } from "../HudTelemetry";
 import { UIState } from "../UIState";
 import { Layer } from "./Layer";
@@ -80,7 +88,7 @@ export class ControlPanel extends LitElement implements Layer {
   private static readonly VAULT_DEBUG_QUERY_PARAM = "vaultDebug";
   private static readonly VAULT_DEBUG_EVENT = "vaultfront-debug-toggle";
   private static readonly VAULT_NOTICE_TERRITORY_RANGE = 24;
-  private static readonly JAM_BREAKER_GOLD_COST = 130_000;
+  private static readonly JAM_BREAKER_GOLD_COST = 115_000;
   private static readonly FLOATING_VAULT_HUD_WIDTH_PX = 344;
 
   public game: GameView;
@@ -307,10 +315,16 @@ export class ControlPanel extends LitElement implements Layer {
         };
       }
     }
-    const matches = Number(localStorage.getItem("vaultfront.kpi.matches") ?? "0");
+    const matches = Number(
+      localStorage.getItem("vaultfront.kpi.matches") ?? "0",
+    );
     this.tutorialLockActive = matches <= 0;
     const presetRaw = localStorage.getItem("vaultfront.quickRolePreset");
-    if (presetRaw === "aggro" || presetRaw === "economy" || presetRaw === "control") {
+    if (
+      presetRaw === "aggro" ||
+      presetRaw === "economy" ||
+      presetRaw === "control"
+    ) {
       this.quickRolePreset = presetRaw;
     }
     const nudgeRaw = localStorage.getItem("vaultfront.adaptiveNudgeKey");
@@ -327,7 +341,10 @@ export class ControlPanel extends LitElement implements Layer {
       this.coachmarkProgress.reroute &&
       this.coachmarkProgress.jamBreaker;
     this.coachmarksEnabled = matches <= 1 && !coachmarksDone;
-    window.addEventListener(HUD_LAYOUT_EVENT, this.onHudLayoutUpdated as EventListener);
+    window.addEventListener(
+      HUD_LAYOUT_EVENT,
+      this.onHudLayoutUpdated as EventListener,
+    );
     window.addEventListener("keydown", this.onGlobalKeyDown);
     window.addEventListener(
       ControlPanel.VAULT_DEBUG_EVENT,
@@ -340,8 +357,13 @@ export class ControlPanel extends LitElement implements Layer {
     });
     const endedAt = sessionStorage.getItem("vaultfront.matchEndedAt");
     if (endedAt !== null) {
-      const prev = Number(localStorage.getItem("vaultfront.kpi.nextMatchRetention") ?? "0");
-      localStorage.setItem("vaultfront.kpi.nextMatchRetention", String(prev + 1));
+      const prev = Number(
+        localStorage.getItem("vaultfront.kpi.nextMatchRetention") ?? "0",
+      );
+      localStorage.setItem(
+        "vaultfront.kpi.nextMatchRetention",
+        String(prev + 1),
+      );
       sessionStorage.removeItem("vaultfront.matchEndedAt");
     }
     const onboardingShown = Number(
@@ -454,7 +476,8 @@ export class ControlPanel extends LitElement implements Layer {
   private updateHeavyCombatState(): void {
     const troops = Math.max(1, this._troops ?? 1);
     const heavyByOutgoing = this._attackingTroops > troops * 0.28;
-    const heavyByRatio = this.attackRatio >= 0.55 && this._attackingTroops > 10_000;
+    const heavyByRatio =
+      this.attackRatio >= 0.55 && this._attackingTroops > 10_000;
     this.heavyCombatActive = heavyByOutgoing || heavyByRatio;
   }
 
@@ -589,7 +612,10 @@ export class ControlPanel extends LitElement implements Layer {
     let pulseTriggered = this.onboardingProgress.pulseTriggered;
 
     for (const update of activityUpdates) {
-      if (update.activity === "vault_captured" && update.sourcePlayerID === myID) {
+      if (
+        update.activity === "vault_captured" &&
+        update.sourcePlayerID === myID
+      ) {
         vaultCaptured = true;
       }
       if (
@@ -599,7 +625,10 @@ export class ControlPanel extends LitElement implements Layer {
       ) {
         convoyAction = true;
       }
-      if (update.activity === "beacon_pulse" && update.sourcePlayerID === myID) {
+      if (
+        update.activity === "beacon_pulse" &&
+        update.sourcePlayerID === myID
+      ) {
         pulseTriggered = true;
       }
       if (update.activity === "convoy_intercepted") {
@@ -652,8 +681,13 @@ export class ControlPanel extends LitElement implements Layer {
         ControlPanel.ONBOARDING_DURATION_TICKS
     ) {
       this.onboardingCompletionRecorded = true;
-      const prev = Number(localStorage.getItem("vaultfront.kpi.onboardingCompleted") ?? "0");
-      localStorage.setItem("vaultfront.kpi.onboardingCompleted", String(prev + 1));
+      const prev = Number(
+        localStorage.getItem("vaultfront.kpi.onboardingCompleted") ?? "0",
+      );
+      localStorage.setItem(
+        "vaultfront.kpi.onboardingCompleted",
+        String(prev + 1),
+      );
     }
   }
 
@@ -704,10 +738,15 @@ export class ControlPanel extends LitElement implements Layer {
   private shouldShowOnboarding(): boolean {
     const lockRequired =
       this.tutorialLockActive &&
-      (!this.onboardingProgress.vaultCaptured || !this.onboardingProgress.convoyAction);
+      (!this.onboardingProgress.vaultCaptured ||
+        !this.onboardingProgress.convoyAction);
     if (!lockRequired && this.hudCompactMode) return false;
-    if (this.onboardingDismissed || this.latestVaultStatus === null) return false;
-    if (!lockRequired && (this.game?.ticks() ?? 0) > ControlPanel.ONBOARDING_DURATION_TICKS) {
+    if (this.onboardingDismissed || this.latestVaultStatus === null)
+      return false;
+    if (
+      !lockRequired &&
+      (this.game?.ticks() ?? 0) > ControlPanel.ONBOARDING_DURATION_TICKS
+    ) {
       return false;
     }
     return !this.onboardingChainCompleted();
@@ -733,7 +772,8 @@ export class ControlPanel extends LitElement implements Layer {
   private dismissOnboarding() {
     if (
       this.tutorialLockActive &&
-      (!this.onboardingProgress.vaultCaptured || !this.onboardingProgress.convoyAction)
+      (!this.onboardingProgress.vaultCaptured ||
+        !this.onboardingProgress.convoyAction)
     ) {
       return;
     }
@@ -802,7 +842,10 @@ export class ControlPanel extends LitElement implements Layer {
 
   private debugVaultStatus(status: VaultFrontStatusUpdate): void {
     const key = status.convoys
-      .map((convoy) => `${convoy.id}:${convoy.ownerID}:${convoy.sourceTile}:${convoy.destinationTile}`)
+      .map(
+        (convoy) =>
+          `${convoy.id}:${convoy.ownerID}:${convoy.sourceTile}:${convoy.destinationTile}`,
+      )
       .join("|");
     if (key === this.lastVaultDebugStatusKey) return;
     this.lastVaultDebugStatusKey = key;
@@ -820,10 +863,18 @@ export class ControlPanel extends LitElement implements Layer {
 
   private initializeVaultDebugState(): void {
     const globalDebug =
-      (globalThis as { __OPENFRONT_VAULT_DEBUG__?: boolean; __VAULTFRONT_DEBUG__?: boolean })
-        .__OPENFRONT_VAULT_DEBUG__ === true ||
-      (globalThis as { __OPENFRONT_VAULT_DEBUG__?: boolean; __VAULTFRONT_DEBUG__?: boolean })
-        .__VAULTFRONT_DEBUG__ === true;
+      (
+        globalThis as {
+          __OPENFRONT_VAULT_DEBUG__?: boolean;
+          __VAULTFRONT_DEBUG__?: boolean;
+        }
+      ).__OPENFRONT_VAULT_DEBUG__ === true ||
+      (
+        globalThis as {
+          __OPENFRONT_VAULT_DEBUG__?: boolean;
+          __VAULTFRONT_DEBUG__?: boolean;
+        }
+      ).__VAULTFRONT_DEBUG__ === true;
     if (globalDebug) {
       this.vaultDebugActive = true;
       return;
@@ -871,9 +922,12 @@ export class ControlPanel extends LitElement implements Layer {
     this.setVaultDebugEnabled(!this.vaultDebugActive, true);
     if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent<VaultDebugToggleDetail>(ControlPanel.VAULT_DEBUG_EVENT, {
-          detail: { enabled: this.vaultDebugActive },
-        }),
+        new CustomEvent<VaultDebugToggleDetail>(
+          ControlPanel.VAULT_DEBUG_EVENT,
+          {
+            detail: { enabled: this.vaultDebugActive },
+          },
+        ),
       );
     }
     this.debugVaultHud("debug_toggle", { enabled: this.vaultDebugActive });
@@ -891,6 +945,9 @@ export class ControlPanel extends LitElement implements Layer {
       passiveIncomeEvents: 0,
       convoyDelivered: 0,
       convoyIntercepted: 0,
+      escortCommands: 0,
+      reroutesApplied: 0,
+      jamBreakersTriggered: 0,
     };
   }
 
@@ -903,7 +960,10 @@ export class ControlPanel extends LitElement implements Layer {
       if (update.sourcePlayerID !== myID && update.targetPlayerID !== myID) {
         continue;
       }
-      if (update.activity === "vault_captured" && update.sourcePlayerID === myID) {
+      if (
+        update.activity === "vault_captured" &&
+        update.sourcePlayerID === myID
+      ) {
         next = { ...next, vaultCaptured: true };
       } else if (
         update.activity === "vault_passive_income" &&
@@ -929,6 +989,30 @@ export class ControlPanel extends LitElement implements Layer {
           ...next,
           convoyIntercepted: next.convoyIntercepted + 1,
         };
+      } else if (
+        update.activity === "convoy_escorted" &&
+        update.sourcePlayerID === myID
+      ) {
+        next = {
+          ...next,
+          escortCommands: next.escortCommands + 1,
+        };
+      } else if (
+        update.activity === "convoy_rerouted" &&
+        update.sourcePlayerID === myID
+      ) {
+        next = {
+          ...next,
+          reroutesApplied: next.reroutesApplied + 1,
+        };
+      } else if (
+        update.activity === "jam_breaker" &&
+        update.sourcePlayerID === myID
+      ) {
+        next = {
+          ...next,
+          jamBreakersTriggered: next.jamBreakersTriggered + 1,
+        };
       }
     }
     if (next !== this.vaultQaProgress) {
@@ -938,11 +1022,12 @@ export class ControlPanel extends LitElement implements Layer {
 
   private renderVaultDebugPanel() {
     if (!this.vaultDebugActive) return "";
+    const escortDurationTicks = this.latestVaultStatus?.escortDurationTicks ?? 600;
     const checks = [
       {
         label: "Capture a vault",
         done: this.vaultQaProgress.vaultCaptured,
-        detail: this.vaultQaProgress.vaultCaptured ? "done" : "pending",
+        detail: this.vaultQaProgress.vaultCaptured ? "Done" : "Pending",
       },
       {
         label: "Passive gold twice",
@@ -961,9 +1046,16 @@ export class ControlPanel extends LitElement implements Layer {
       },
     ];
     return html`
-      <div class="mt-1 rounded border border-cyan-300/25 bg-slate-950/45 p-1.5 text-[10px]">
+      <div
+        class="mt-1 rounded border border-cyan-300/25 bg-slate-950/45 p-1.5 text-[10px]"
+      >
         <div class="flex items-center justify-between gap-2">
-          <div class="text-cyan-200 font-semibold">Vault QA</div>
+          <div>
+            <div class="text-cyan-200 font-semibold">Vault QA</div>
+            <div class="text-[9px] text-cyan-100/65">
+              Live verification checklist
+            </div>
+          </div>
           <button
             class="rounded border border-cyan-300/35 px-1 py-0.5 text-cyan-100 hover:bg-cyan-500/20"
             @click=${() => this.resetVaultQaProgress()}
@@ -974,13 +1066,28 @@ export class ControlPanel extends LitElement implements Layer {
         </div>
         <div class="mt-1 space-y-0.5">
           ${checks.map(
-            (check) => html`<div class="flex items-center justify-between gap-2">
-              <span class=${check.done ? "text-emerald-200" : "text-slate-200/85"}>
-                ${check.done ? "OK" : "TODO"} ${check.label}
-              </span>
-              <span class="tabular-nums text-cyan-100/75">${check.detail}</span>
-            </div>`,
+            (check) =>
+              html`<div class="flex items-center justify-between gap-2">
+                <span
+                  class=${check.done ? "text-emerald-200" : "text-slate-200/85"}
+                >
+                  ${check.done ? "Done" : "Pending"} ${check.label}
+                </span>
+                <span class="tabular-nums text-cyan-100/75"
+                  >${check.detail}</span
+                >
+              </div>`,
           )}
+        </div>
+        <div class="mt-1 rounded border border-cyan-300/20 bg-slate-900/35 px-1.5 py-1 text-[9px] text-cyan-100/80">
+          <div class="font-semibold text-cyan-200/90">Command Ops</div>
+          <div class="mt-0.5 tabular-nums">
+            Escort ${this.vaultQaProgress.escortCommands} | Reroute ${this.vaultQaProgress.reroutesApplied} | Jam ${this.vaultQaProgress.jamBreakersTriggered}
+          </div>
+          <div class="mt-1 font-semibold text-cyan-200/90">Live tuning</div>
+          <div class="mt-0.5 tabular-nums">
+            Passive ${this.passiveGoldPerMinuteValue().toLocaleString()}g/60s | Jam ${this.jamBreakerGoldCostValue().toLocaleString()}g | Escort ${Math.ceil(escortDurationTicks / 10)}s
+          </div>
         </div>
       </div>
     `;
@@ -1000,7 +1107,8 @@ export class ControlPanel extends LitElement implements Layer {
           </button>
         </div>
         <div class="mt-1 text-slate-100/90">
-          Waiting for VaultFront status. Start or unpause the solo match and this panel will switch to the live QA checklist.
+          Waiting for VaultFront status. Start or unpause the solo match and
+          this panel will switch to the live QA checklist.
         </div>
       </div>
     `;
@@ -1016,7 +1124,8 @@ export class ControlPanel extends LitElement implements Layer {
     const ownCount =
       me === null || me === undefined
         ? 0
-        : status.convoys.filter((convoy) => convoy.ownerID === me.smallID()).length;
+        : status.convoys.filter((convoy) => convoy.ownerID === me.smallID())
+            .length;
     const allyCount =
       me === null || me === undefined
         ? 0
@@ -1072,7 +1181,10 @@ export class ControlPanel extends LitElement implements Layer {
       const blend = progress + ((1 - progress) * i) / (sampleCount - 1);
       const x = Math.max(
         0,
-        Math.min(this.game.width() - 1, Math.round(srcX + (dstX - srcX) * blend)),
+        Math.min(
+          this.game.width() - 1,
+          Math.round(srcX + (dstX - srcX) * blend),
+        ),
       );
       const y = Math.max(
         0,
@@ -1082,7 +1194,11 @@ export class ControlPanel extends LitElement implements Layer {
         ),
       );
       const owner = this.game.owner(this.game.ref(x, y));
-      if (owner.isPlayer() && owner.smallID() !== me.smallID() && !me.isFriendly(owner)) {
+      if (
+        owner.isPlayer() &&
+        owner.smallID() !== me.smallID() &&
+        !me.isFriendly(owner)
+      ) {
         hostileSamples++;
       }
     }
@@ -1105,15 +1221,24 @@ export class ControlPanel extends LitElement implements Layer {
         .filter((site) => site.controllerID === myID && site.cooldownTicks <= 0)
         .sort((a, b) => b.controlTicks - a.controlTicks)[0];
       if (capturing) {
-        const secs = Math.max(0, Math.ceil((required - capturing.controlTicks) / 10));
+        const secs = Math.max(
+          0,
+          Math.ceil((required - capturing.controlTicks) / 10),
+        );
         return `Vault ${capturing.id} capture in ${secs}s`;
       }
 
       const passive = status.sites
-        .filter((site) => site.passiveOwnerID === myID && site.nextPassiveIncomeTick > now)
+        .filter(
+          (site) =>
+            site.passiveOwnerID === myID && site.nextPassiveIncomeTick > now,
+        )
         .sort((a, b) => a.nextPassiveIncomeTick - b.nextPassiveIncomeTick)[0];
       if (passive) {
-        const secs = Math.max(0, Math.ceil((passive.nextPassiveIncomeTick - now) / 10));
+        const secs = Math.max(
+          0,
+          Math.ceil((passive.nextPassiveIncomeTick - now) / 10),
+        );
         return `Vault ${passive.id} passive +gold in ${secs}s`;
       }
     }
@@ -1125,7 +1250,9 @@ export class ControlPanel extends LitElement implements Layer {
       return `Vault ${openSite.id} is open for capture`;
     }
 
-    const soonest = [...status.sites].sort((a, b) => a.cooldownTicks - b.cooldownTicks)[0];
+    const soonest = [...status.sites].sort(
+      (a, b) => a.cooldownTicks - b.cooldownTicks,
+    )[0];
     const secs = Math.max(0, Math.ceil(soonest.cooldownTicks / 10));
     return `Next vault opens in ${secs}s`;
   }
@@ -1215,9 +1342,14 @@ export class ControlPanel extends LitElement implements Layer {
     this.hudEditMode = layout.editMode === true;
     this.hudScale = applyGlobalHudScale(layout.uiScale ?? this.hudScale ?? 1);
     this.hudPreset = layout.preset ?? this.hudPreset;
-    this.panelOffsetX = Number(layout.controlPanelOffsetX ?? this.panelOffsetX ?? 0);
-    this.panelOffsetY = Number(layout.controlPanelOffsetY ?? this.panelOffsetY ?? 0);
-    this.vaultNoticeSortMode = layout.vaultNoticeSortMode ?? this.vaultNoticeSortMode;
+    this.panelOffsetX = Number(
+      layout.controlPanelOffsetX ?? this.panelOffsetX ?? 0,
+    );
+    this.panelOffsetY = Number(
+      layout.controlPanelOffsetY ?? this.panelOffsetY ?? 0,
+    );
+    this.vaultNoticeSortMode =
+      layout.vaultNoticeSortMode ?? this.vaultNoticeSortMode;
   }
 
   private loadHudLayout(): void {
@@ -1243,17 +1375,27 @@ export class ControlPanel extends LitElement implements Layer {
     this.hudCollisionCheckNextTick = nowTick + 10;
 
     const selfRect = this.getBoundingClientRect();
-    const eventsEl = document.querySelector("events-display") as HTMLElement | null;
-    const attacksEl = document.querySelector("attacks-display") as HTMLElement | null;
+    const eventsEl = document.querySelector(
+      "events-display",
+    ) as HTMLElement | null;
+    const attacksEl = document.querySelector(
+      "attacks-display",
+    ) as HTMLElement | null;
     const eventsRect = eventsEl?.getBoundingClientRect();
     const attacksRect = attacksEl?.getBoundingClientRect();
 
     const overlaps = (a: DOMRect, b: DOMRect | undefined): boolean => {
       if (!b) return false;
-      return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+      return !(
+        a.right < b.left ||
+        a.left > b.right ||
+        a.bottom < b.top ||
+        a.top > b.bottom
+      );
     };
 
-    const nextCompact = overlaps(selfRect, eventsRect) || overlaps(selfRect, attacksRect);
+    const nextCompact =
+      overlaps(selfRect, eventsRect) || overlaps(selfRect, attacksRect);
     if (nextCompact !== this.hudCompactMode) {
       this.hudCompactMode = nextCompact;
       this.persistHudLayout({ controlPanelCompact: this.hudCompactMode });
@@ -1329,7 +1471,9 @@ export class ControlPanel extends LitElement implements Layer {
       const baseDetails =
         `${site.rewardMath} | projected +${site.projectedGoldReward.toLocaleString()} gold, ` +
         `+${site.projectedTroopsReward.toLocaleString()} troops` +
-        (site.reducedRewardNextCapture ? " | reduced recapture value active" : "");
+        (site.reducedRewardNextCapture
+          ? " | reduced recapture value active"
+          : "");
       const baseNotice: VaultNotice = {
         key: `site-${site.id}`,
         siteID: site.id,
@@ -1346,12 +1490,14 @@ export class ControlPanel extends LitElement implements Layer {
       noticesByTile.set(site.tile, baseNotice);
 
       if (site.passiveOwnerID === myID && site.nextPassiveIncomeTick > now) {
-        const passiveEta = Math.max(0, Math.ceil((site.nextPassiveIncomeTick - now) / 10));
+        const passiveEta = Math.max(
+          0,
+          Math.ceil((site.nextPassiveIncomeTick - now) / 10),
+        );
         const passiveRiskScore = this.vaultSiteRiskScore(site.tile, myID);
         const merged = noticesByTile.get(site.tile);
         const mergedLabel = `Vault ${site.id} passive +gold in ${passiveEta}s`;
-        const passiveDetails =
-          `${site.rewardMath} | passive +${(90_000).toLocaleString()} gold every 60s while held`;
+        const passiveDetails = `${site.rewardMath} | passive +${this.passiveGoldPerMinuteValue().toLocaleString()} gold every 60s while held`;
         if (!merged) {
           noticesByTile.set(site.tile, {
             key: `passive-${site.id}`,
@@ -1382,9 +1528,13 @@ export class ControlPanel extends LitElement implements Layer {
     const notices = [...noticesByTile.values()];
 
     if (this.vaultNoticeSortMode === "risk") {
-      notices.sort((a, b) => b.riskScore - a.riskScore || a.etaSeconds - b.etaSeconds);
+      notices.sort(
+        (a, b) => b.riskScore - a.riskScore || a.etaSeconds - b.etaSeconds,
+      );
     } else {
-      notices.sort((a, b) => a.etaSeconds - b.etaSeconds || b.riskScore - a.riskScore);
+      notices.sort(
+        (a, b) => a.etaSeconds - b.etaSeconds || b.riskScore - a.riskScore,
+      );
     }
     return notices.slice(0, 1);
   }
@@ -1419,20 +1569,25 @@ export class ControlPanel extends LitElement implements Layer {
   }
 
   private riskBadgeClass(risk: "Low" | "Medium" | "High"): string {
-    if (risk === "High") return "bg-orange-500/25 text-orange-100 border-orange-300/45";
-    if (risk === "Medium") return "bg-sky-500/25 text-sky-100 border-sky-300/45";
+    if (risk === "High")
+      return "bg-orange-500/25 text-orange-100 border-orange-300/45";
+    if (risk === "Medium")
+      return "bg-sky-500/25 text-sky-100 border-sky-300/45";
     return "bg-slate-500/25 text-slate-100 border-slate-300/45";
   }
 
   private trendBadgeClass(trend: "Rising" | "Falling" | "Stable"): string {
-    if (trend === "Rising") return "bg-rose-500/20 text-rose-100 border-rose-300/40";
+    if (trend === "Rising")
+      return "bg-rose-500/20 text-rose-100 border-rose-300/40";
     if (trend === "Falling")
       return "bg-emerald-500/20 text-emerald-100 border-emerald-300/40";
     return "bg-slate-500/20 text-slate-100 border-slate-300/40";
   }
 
   private focusVault(tile: number): void {
-    this.eventBus.emit(new GoToPositionEvent(this.game.x(tile), this.game.y(tile)));
+    this.eventBus.emit(
+      new GoToPositionEvent(this.game.x(tile), this.game.y(tile)),
+    );
     logHudTelemetry("hud_vault_notice_jump");
   }
 
@@ -1451,20 +1606,29 @@ export class ControlPanel extends LitElement implements Layer {
   }
 
   private toggleVaultNoticeSortMode(): void {
-    this.vaultNoticeSortMode = this.vaultNoticeSortMode === "eta" ? "risk" : "eta";
+    this.vaultNoticeSortMode =
+      this.vaultNoticeSortMode === "eta" ? "risk" : "eta";
     this.persistHudLayout(
       { vaultNoticeSortMode: this.vaultNoticeSortMode },
       "hud_vault_notice_sort_toggle",
     );
   }
 
-  private renderVaultNotices(notices: VaultNotice[] = this.buildVaultNotices()) {
+  private renderVaultNotices(
+    notices: VaultNotice[] = this.buildVaultNotices(),
+  ) {
     if (notices.length === 0) return "";
     const compact = this.isMobilePriorityMode();
     return html`
-      <div class="mt-2 rounded-md border border-amber-300/40 bg-amber-950/25 ${compact ? "p-1.5" : "p-2"}">
+      <div
+        class="mt-2 rounded-md border border-amber-300/40 bg-amber-950/25 ${compact
+          ? "p-1.5"
+          : "p-2"}"
+      >
         <div class="flex items-center justify-between gap-2">
-          <div class="text-[9px] lg:text-[10px] uppercase tracking-wide text-amber-200 font-semibold">
+          <div
+            class="text-[9px] lg:text-[10px] uppercase tracking-wide text-amber-200 font-semibold"
+          >
             Vault Notices
           </div>
           <button
@@ -1479,7 +1643,9 @@ export class ControlPanel extends LitElement implements Layer {
           ${notices.map(
             (notice) => html`
               <div
-                class="w-full text-left ${compact ? "px-1.5 py-1.5" : "px-1.5 py-1"} rounded bg-amber-400/15 hover:bg-amber-400/25 text-amber-50 text-[10px] lg:text-[11px] pointer-events-auto touch-manipulation"
+                class="w-full text-left ${compact
+                  ? "px-1.5 py-1.5"
+                  : "px-1.5 py-1"} rounded bg-amber-400/15 hover:bg-amber-400/25 text-amber-50 text-[10px] lg:text-[11px] pointer-events-auto touch-manipulation"
                 title=${`${notice.details} | Click to center camera`}
                 role="button"
                 tabindex="0"
@@ -1492,9 +1658,11 @@ export class ControlPanel extends LitElement implements Layer {
                 }}
               >
                 <div class="flex items-center justify-between gap-2">
-                  <span class="truncate">${compact
-                    ? `V${notice.siteID} ${notice.etaSeconds}s`
-                    : notice.label}</span>
+                  <span class="truncate"
+                    >${compact
+                      ? `V${notice.siteID} ${notice.etaSeconds}s`
+                      : notice.label}</span
+                  >
                   <div class="shrink-0 flex items-center gap-1">
                     <span
                       class="rounded border px-1 py-0.5 text-[9px] lg:text-[10px] ${this.riskBadgeClass(
@@ -1512,7 +1680,9 @@ export class ControlPanel extends LitElement implements Layer {
                 </div>
                 ${compact
                   ? ""
-                  : html`<div class="mt-0.5 text-[10px] text-amber-100/85 truncate">
+                  : html`<div
+                      class="mt-0.5 text-[10px] text-amber-100/85 truncate"
+                    >
                       ${notice.details}
                     </div>`}
                 <div class="mt-1 flex justify-end">
@@ -1534,34 +1704,148 @@ export class ControlPanel extends LitElement implements Layer {
     `;
   }
 
+  private passiveGoldPerMinuteValue(): number {
+    return this.latestVaultStatus?.passiveGoldPerMinute ?? 75_000;
+  }
+
+  private jamBreakerGoldCostValue(): number {
+    return (
+      this.latestVaultStatus?.jamBreakerGoldCost ??
+      ControlPanel.JAM_BREAKER_GOLD_COST
+    );
+  }
+
+  private hasActiveEnemyPulse(): boolean {
+    const status = this.latestVaultStatus;
+    const me = this.game.myPlayer();
+    const ticks = this.game.ticks();
+    if (!status || !me) return false;
+    return status.beacons.some((beacon) => {
+      if (beacon.maskedUntilTick <= ticks) return false;
+      const player = this.game.playerBySmallID(beacon.playerID);
+      if (!player || !player.isPlayer()) return false;
+      return player.smallID() !== me.smallID() && !me.isFriendly(player);
+    });
+  }
+
+  private livePulseSummary(jamLockoutSecs: number): string {
+    const beacon = this.myBeacon();
+    if (this.hasActiveEnemyPulse()) {
+      return jamLockoutSecs > 0
+        ? `Enemy pulse live. Jam ready again in ${jamLockoutSecs}s.`
+        : "Enemy pulse live. Jam now or pre-arm Jam Next Pulse.";
+    }
+    if (!beacon) return "No Defense Factory online yet.";
+    if (beacon.cooldownUntilTick > this.game.ticks()) {
+      return `Your pulse recharges in ${Math.ceil((beacon.cooldownUntilTick - this.game.ticks()) / 10)}s.`;
+    }
+    if (beacon.charge >= 60) {
+      return `Defense Factory nearly ready at ${Math.floor(beacon.charge)}% charge.`;
+    }
+    return `Defense Factory at ${Math.floor(beacon.charge)}% charge.`;
+  }
+
+  private commandPriorityCallout(
+    ownConvoy: VaultFrontConvoyState | null,
+    leadNotice: VaultNotice | null,
+    jamLockoutSecs: number,
+    escortLockoutSecs: number,
+  ): {
+    title: string;
+    detail: string;
+    tone: "amber" | "cyan" | "fuchsia" | "emerald";
+  } {
+    if (ownConvoy) {
+      const risk = this.convoyRisk(ownConvoy);
+      if (risk === "High" && escortLockoutSecs <= 0) {
+        return {
+          title: "Act Now",
+          detail: "Shield Nearest before contact. Your active convoy is on a high-threat lane.",
+          tone: "amber",
+        };
+      }
+      if (risk !== "Low") {
+        return {
+          title: "Stabilize Route",
+          detail: "Reroute Safest if the lane stays pressured. Save Shield for first enemy touch.",
+          tone: "cyan",
+        };
+      }
+    }
+    if (this.hasActiveEnemyPulse()) {
+      return {
+        title: jamLockoutSecs > 0 ? "Pulse Pressure" : "Counter Pulse",
+        detail:
+          jamLockoutSecs > 0
+            ? `Enemy pulse is live. Survive ${jamLockoutSecs}s, then fire Jam Breaker.`
+            : "Enemy pulse is live. Jam Breaker is your cleanest answer right now.",
+        tone: "fuchsia",
+      };
+    }
+    if (leadNotice) {
+      return {
+        title: leadNotice.actionLabel === "Capture" ? "Capture Window" : "Map Call",
+        detail:
+          leadNotice.actionLabel === "Capture"
+            ? `Vault ${leadNotice.siteID} is the next swing objective. Rotate before the window closes.`
+            : leadNotice.actionLabel === "Defend"
+              ? `Hold Vault ${leadNotice.siteID} through the next passive payout before rotating out.`
+              : `Set up to cut the next enemy route near Vault ${leadNotice.siteID}.`,
+        tone: leadNotice.actionLabel === "Capture" ? "emerald" : "cyan",
+      };
+    }
+    return {
+      title: "Setup",
+      detail: "No live convoy yet. Capture the nearest vault and keep Jam available for the first enemy pulse.",
+      tone: "emerald",
+    };
+  }
+
   private currentCommandHint(): string {
     const spawnTicks = this.game?.config().numSpawnPhaseTurns() ?? 0;
     const liveTicks = Math.max(0, (this.game?.ticks() ?? 0) - spawnTicks);
-    if (liveTicks > 3_000) return "";
-    const hints = [
-      "Shield Nearest: one tap before enemy contact on risky routes.",
-      "Reroute Safest: one tap to move convoy to the lowest-risk lane.",
-      "Jam on Next Pulse: arm it once and counter the next enemy pulse.",
-      "Role Pings: call Shield/Intercept/Pulse to coordinate teammates.",
-    ];
-    const idx = Math.floor(liveTicks / 300) % hints.length;
-    return hints[idx];
+    const ownConvoy = this.myConvoy();
+    const leadNotice = this.buildVaultNotices()[0] ?? null;
+    if (ownConvoy) {
+      const risk = this.convoyRisk(ownConvoy);
+      if (risk === "High") {
+        return "High-threat convoy: Shield first, then reroute only if the lane stays red.";
+      }
+      if (risk === "Medium") {
+        return "Medium-threat convoy: Reroute Safest is usually better than spending Jam early.";
+      }
+      return "Low-threat convoy: keep Shield available and greed the safer payout line.";
+    }
+    if (this.hasActiveEnemyPulse()) {
+      return this.jamOnNextPulseArmed
+        ? "Jam Next Pulse is armed. Let it auto-fire unless you need manual Jam immediately."
+        : "Enemy pulse is live. Jam Breaker wins more value than an early reroute here.";
+    }
+    if (leadNotice?.actionLabel === "Capture") {
+      return "Open vaults matter more than passive income races. Rotate early and secure the first payout.";
+    }
+    if (leadNotice?.actionLabel === "Intercept") {
+      return "No personal convoy yet: set up on the shortest enemy lane instead of waiting idle.";
+    }
+    if (this.shouldTrimUnderusedCommands()) {
+      return "More opens pings, lane previews, and Jam Next Pulse once the core loop feels automatic.";
+    }
+    if (liveTicks > 3_600) return "";
+    return "Shield Nearest, Reroute Safest, Jam Breaker: treat them as one clean cycle, not separate buttons.";
   }
 
-  private adaptiveNudgeText():
-    | string
-    | null {
+  private adaptiveNudgeText(): string | null {
     if (!this.adaptiveNudgeKey) return null;
     if (this.adaptiveNudgeKey === "vault_first") {
-      return "Adaptive nudge: contest nearest vault before minute 4 with one early focus shift.";
+      return "Adaptive nudge: path to the first nearby vault by 2:30, then hold for one passive payout.";
     }
     if (this.adaptiveNudgeKey === "convoy_impact") {
-      return "Adaptive nudge: use Shield or Intercept once in the first convoy cycle.";
+      return "Adaptive nudge: spend one Shield or one Intercept on the very first convoy cycle.";
     }
     if (this.adaptiveNudgeKey === "pulse_chain") {
-      return "Adaptive nudge: pre-arm Jam and chain two pulse windows this match.";
+      return "Adaptive nudge: save Jam for a live enemy pulse and chain your next factory window behind it.";
     }
-    return "Adaptive nudge: avoid frequent focus slider flips during fights.";
+    return "Adaptive nudge: hold one focus setting per phase and only flip after a clean disengage.";
   }
 
   private activeCoachmark(): "shield" | "reroute" | "jamBreaker" | null {
@@ -1698,16 +1982,28 @@ export class ControlPanel extends LitElement implements Layer {
               ? "Silo"
               : "Safest";
     return html`
-      <div class="mt-1 rounded border border-cyan-300/35 bg-cyan-950/20 ${compact ? "p-1" : "p-1.5"}">
-        <div class="text-[10px] text-cyan-100/90">${compact ? "Reroute Preview" : "Pre-Action Reroute Preview"}</div>
-        <div class="mt-1 ${compact ? "grid grid-cols-3" : "flex flex-wrap"} gap-1">
+      <div
+        class="mt-1 rounded border border-cyan-300/35 bg-cyan-950/20 ${compact
+          ? "p-1"
+          : "p-1.5"}"
+      >
+        <div class="text-[10px] text-cyan-100/90">
+          ${compact ? "Reroute Preview" : "Pre-Action Reroute Preview"}
+        </div>
+        <div
+          class="mt-1 ${compact ? "grid grid-cols-3" : "flex flex-wrap"} gap-1"
+        >
           ${previews.map(
             (preview) => html`
               <button
-                class="rounded border ${compact ? "px-1 py-1" : "px-1.5 py-0.5"} text-[10px] ${this.selectedPreviewCommand === preview.command
+                class="rounded border ${compact
+                  ? "px-1 py-1"
+                  : "px-1.5 py-0.5"} text-[10px] ${this
+                  .selectedPreviewCommand === preview.command
                   ? "border-cyan-200/70 bg-cyan-500/25 text-cyan-50"
                   : "border-cyan-300/35 bg-cyan-500/10 text-cyan-100 hover:bg-cyan-500/20"}"
-                @mouseenter=${() => (this.selectedPreviewCommand = preview.command)}
+                @mouseenter=${() =>
+                  (this.selectedPreviewCommand = preview.command)}
                 @focus=${() => (this.selectedPreviewCommand = preview.command)}
                 @click=${() => (this.selectedPreviewCommand = preview.command)}
               >
@@ -1717,13 +2013,26 @@ export class ControlPanel extends LitElement implements Layer {
           )}
         </div>
         <div class="mt-1 text-[10px] text-cyan-50 tabular-nums">
-          ETA ${selected.etaSeconds}s (${selected.deltaEtaSeconds >= 0 ? "+" : ""}${selected.deltaEtaSeconds}s) | Risk ${selected.routeRisk.toFixed(2)} (${selected.deltaRisk >= 0 ? "+" : ""}${selected.deltaRisk.toFixed(2)})
+          ETA ${selected.etaSeconds}s
+          (${selected.deltaEtaSeconds >= 0
+            ? "+"
+            : ""}${selected.deltaEtaSeconds}s)
+          | Risk ${selected.routeRisk.toFixed(2)}
+          (${selected.deltaRisk >= 0 ? "+" : ""}${selected.deltaRisk.toFixed(
+            2,
+          )})
         </div>
         <div class="text-[10px] text-cyan-100/90 tabular-nums">
-          Est +${selected.goldReward.toLocaleString()}g (${selected.deltaGold >= 0 ? "+" : ""}${selected.deltaGold.toLocaleString()}g)
+          Est +${selected.goldReward.toLocaleString()}g
+          (${selected.deltaGold >= 0
+            ? "+"
+            : ""}${selected.deltaGold.toLocaleString()}g)
           ${compact
             ? ""
-            : html` +${selected.troopsReward.toLocaleString()}t (${selected.deltaTroops >= 0 ? "+" : ""}${selected.deltaTroops.toLocaleString()}t)`}
+            : html` +${selected.troopsReward.toLocaleString()}t
+              (${selected.deltaTroops >= 0
+                ? "+"
+                : ""}${selected.deltaTroops.toLocaleString()}t)`}
         </div>
         <button
           class="mt-1 rounded border border-cyan-200/50 bg-cyan-500/25 px-1.5 py-0.5 text-[10px] text-cyan-50 hover:bg-cyan-500/35"
@@ -1748,28 +2057,40 @@ export class ControlPanel extends LitElement implements Layer {
       convoy.riskMultiplier *
       convoy.rewardScale;
     return html`
-      <div class="mt-1 rounded border border-amber-300/35 bg-amber-950/20 ${compact ? "p-1" : "p-1.5"}">
+      <div
+        class="mt-1 rounded border border-amber-300/35 bg-amber-950/20 ${compact
+          ? "p-1"
+          : "p-1.5"}"
+      >
         <button
           class="w-full text-left text-[10px] text-amber-100 hover:text-amber-50"
-          @click=${() => (this.rewardExplainExpanded = !this.rewardExplainExpanded)}
+          @click=${() =>
+            (this.rewardExplainExpanded = !this.rewardExplainExpanded)}
         >
-          ${this.rewardExplainExpanded ? "Hide" : "Show"} ${compact ? "Explain" : "Reward Explain"}
+          ${this.rewardExplainExpanded ? "Hide" : "Show"}
+          ${compact ? "Explain" : "Reward Explain"}
         </button>
         ${compact
           ? html`<div class="mt-0.5 text-[10px] text-amber-100/90 tabular-nums">
-              x${convoy.rewardMultiplier.toFixed(2)} | risk ${convoy.routeRisk.toFixed(2)} | d${convoy.routeDistance}
+              x${convoy.rewardMultiplier.toFixed(2)} | risk
+              ${convoy.routeRisk.toFixed(2)} | d${convoy.routeDistance}
             </div>`
           : ""}
         ${this.rewardExplainExpanded
           ? html`
               <div class="mt-1 text-[10px] text-amber-50 tabular-nums">
-                Distance: ${convoy.routeDistance} | Route risk: ${convoy.routeRisk.toFixed(2)}
+                Distance: ${convoy.routeDistance} | Route risk:
+                ${convoy.routeRisk.toFixed(2)}
               </div>
               <div class="text-[10px] text-amber-100/90 tabular-nums">
-                Strength ${convoy.strengthMultiplier.toFixed(2)} x Phase ${convoy.phaseMultiplier.toFixed(2)} x Risk ${convoy.riskMultiplier.toFixed(2)}
+                Strength ${convoy.strengthMultiplier.toFixed(2)} x Phase
+                ${convoy.phaseMultiplier.toFixed(2)} x Risk
+                ${convoy.riskMultiplier.toFixed(2)}
               </div>
               <div class="text-[10px] text-amber-100/90 tabular-nums">
-                Penalty scale ${convoy.rewardScale.toFixed(2)} | Raw ${expectedRaw.toFixed(2)} | Applied ${convoy.rewardMultiplier.toFixed(2)}
+                Penalty scale ${convoy.rewardScale.toFixed(2)} | Raw
+                ${expectedRaw.toFixed(2)} | Applied
+                ${convoy.rewardMultiplier.toFixed(2)}
               </div>
               <div class="text-[10px] text-amber-200/90">${penaltyText}</div>
               ${compact
@@ -1802,7 +2123,7 @@ export class ControlPanel extends LitElement implements Layer {
       ? `Risk ${this.convoyRisk(convoy)} | +${convoy.goldReward.toLocaleString()}g +${convoy.troopsReward.toLocaleString()}t`
       : leadNotice
         ? `Next vault ${leadNotice.etaSeconds}s | Est +${status.sites.find((site) => site.id === leadNotice.siteID)?.projectedGoldReward.toLocaleString() ?? "0"}g`
-        : this.nextProjectedConvoyText() ?? "Waiting for next vault window";
+        : (this.nextProjectedConvoyText() ?? "Waiting for next vault window");
     const recommendedAction = leadNotice
       ? `${leadNotice.actionLabel} Vault ${leadNotice.siteID}`
       : ownConvoy
@@ -1815,8 +2136,14 @@ export class ControlPanel extends LitElement implements Layer {
     let jamLockoutSecs = 0;
     let escortLockoutSecs = 0;
     if (beacon) {
-      const activeSecs = Math.max(0, Math.ceil((beacon.maskedUntilTick - now) / 10));
-      const cooldownSecs = Math.max(0, Math.ceil((beacon.cooldownUntilTick - now) / 10));
+      const activeSecs = Math.max(
+        0,
+        Math.ceil((beacon.maskedUntilTick - now) / 10),
+      );
+      const cooldownSecs = Math.max(
+        0,
+        Math.ceil((beacon.cooldownUntilTick - now) / 10),
+      );
       jamLockoutSecs = Math.max(
         0,
         Math.ceil((beacon.jamBreakerCooldownUntilTick - now) / 10),
@@ -1837,10 +2164,9 @@ export class ControlPanel extends LitElement implements Layer {
     const rerouteDisabled = ownConvoy === null;
     const jamBreakerDisabled = jamLockoutSecs > 0;
     const jamNextDisabled = jamLockoutSecs > 0 && !this.jamOnNextPulseArmed;
-    const oneTapButtonClass =
-      compact
-        ? "px-2.5 py-1.5 text-[11px] min-h-8"
-        : "px-1.5 py-1";
+    const oneTapButtonClass = compact
+      ? "px-2.5 py-1.5 text-[11px] min-h-8"
+      : "px-1.5 py-1";
     const escortRingStyle = this.cooldownRingStyle(
       escortLockoutSecs,
       60,
@@ -1857,7 +2183,9 @@ export class ControlPanel extends LitElement implements Layer {
       "rgba(232,121,249,0.42)",
     );
     const escortLabel =
-      escortLockoutSecs > 0 ? `Shield Nearest ${escortLockoutSecs}s` : "Shield Nearest";
+      escortLockoutSecs > 0
+        ? `Shield Nearest ${escortLockoutSecs}s`
+        : "Shield Nearest";
     const reroutePresetLabel =
       this.quickRolePreset === "aggro"
         ? "Reroute Aggro"
@@ -1874,25 +2202,51 @@ export class ControlPanel extends LitElement implements Layer {
       : jamNextDisabled
         ? `Jam Next Pulse ${jamLockoutSecs}s`
         : "Jam on Next Pulse";
-    const jamCostText = `${ControlPanel.JAM_BREAKER_GOLD_COST.toLocaleString()} gold`;
-    const lockedSites = status.sites.filter((site) => site.cooldownTicks > 0).length;
-    const nextOpenSite = [...status.sites].sort((a, b) => a.cooldownTicks - b.cooldownTicks)[0];
+    const jamCostText = `${this.jamBreakerGoldCostValue().toLocaleString()} gold`;
+    const lockedSites = status.sites.filter(
+      (site) => site.cooldownTicks > 0,
+    ).length;
+    const nextOpenSite = [...status.sites].sort(
+      (a, b) => a.cooldownTicks - b.cooldownTicks,
+    )[0];
     const nextOpenSecs = nextOpenSite
       ? Math.max(0, Math.ceil(nextOpenSite.cooldownTicks / 10))
       : 0;
+    const passiveGoldText = `${this.passiveGoldPerMinuteValue().toLocaleString()}g`;
+    const commandCallout = this.commandPriorityCallout(
+      ownConvoy,
+      leadNotice,
+      jamLockoutSecs,
+      escortLockoutSecs,
+    );
+    const trimUnderused = this.shouldTrimUnderusedCommands();
+    const adaptiveNudge = this.adaptiveNudgeText();
+    const commandHint = this.currentCommandHint();
     const primaryRowClass = compact
       ? "mt-1.5 grid grid-cols-3 gap-1"
       : "mt-1.5 grid grid-cols-3 gap-1";
 
     return html`
-      <div class="vf-hud-surface mt-1.5 rounded-lg ${compact ? "p-1.5" : "p-2"} text-[10px] lg:text-[11px]">
+      <div
+        class="vf-hud-surface mt-1.5 rounded-lg ${compact
+          ? "p-1.5"
+          : "p-2"} text-[10px] lg:text-[11px]"
+      >
         <div class="vf-hud-title mb-1">VaultFront HUD</div>
-        <div class="text-slate-100 tabular-nums">${this.nextVaultObjectiveText()}</div>
-        <div class="mt-1 rounded border border-amber-300/35 bg-amber-950/18 p-1.5">
-          <div class="text-[12px] lg:text-[13px] font-semibold text-amber-100 tabular-nums">
+        <div class="text-slate-100 tabular-nums">
+          ${this.nextVaultObjectiveText()}
+        </div>
+        <div
+          class="mt-1 rounded border border-amber-300/35 bg-amber-950/18 p-1.5"
+        >
+          <div
+            class="text-[12px] lg:text-[13px] font-semibold text-amber-100 tabular-nums"
+          >
             ${primaryTitle}
           </div>
-          <div class="text-amber-200/90 tabular-nums text-[10px] lg:text-[11px]">
+          <div
+            class="text-amber-200/90 tabular-nums text-[10px] lg:text-[11px]"
+          >
             ${primarySubtitle}
           </div>
           <div class="mt-0.5 text-cyan-100/90 text-[10px] lg:text-[11px]">
@@ -1901,14 +2255,30 @@ export class ControlPanel extends LitElement implements Layer {
         </div>
         ${convoyDisplay.source === "ally"
           ? html`<div class="text-amber-100/70 tabular-nums text-[10px]">
-              Tracking allied convoy. Shield/reroute commands apply only to your convoy.
+              Tracking allied convoy. Shield/reroute commands apply only to your
+              convoy.
             </div>`
           : ""}
+        <div
+          class="mt-1 rounded border px-1.5 py-1 text-[10px] ${commandCallout.tone === "amber"
+            ? "border-amber-300/40 bg-amber-900/18 text-amber-100"
+            : commandCallout.tone === "fuchsia"
+              ? "border-fuchsia-300/40 bg-fuchsia-900/18 text-fuchsia-100"
+              : commandCallout.tone === "cyan"
+                ? "border-cyan-300/35 bg-cyan-950/18 text-cyan-100"
+                : "border-emerald-300/35 bg-emerald-950/18 text-emerald-100"}"
+        >
+          <div class="font-semibold uppercase tracking-wide text-[9px] lg:text-[10px]">
+            ${commandCallout.title}
+          </div>
+          <div class="mt-0.5 text-[10px] lg:text-[11px]">${commandCallout.detail}</div>
+        </div>
         <div class="mt-1 text-blue-100/85 tabular-nums text-[10px]">
-          ${beaconText} | Jam ${jamLockoutSecs}s | Escort ${escortLockoutSecs}s | Cost ${jamCostText}
+          ${beaconText} | ${this.livePulseSummary(jamLockoutSecs)} | Cost ${jamCostText}
         </div>
         <div class="text-slate-200/75 tabular-nums text-[10px]">
-          Vault lockouts ${lockedSites}/${status.sites.length} | next open ${nextOpenSecs}s
+          Vault lockouts ${lockedSites}/${status.sites.length} | next open
+          ${nextOpenSecs}s | passive hold ${passiveGoldText}/60s
         </div>
         <div class=${primaryRowClass}>
           <button
@@ -1924,7 +2294,10 @@ export class ControlPanel extends LitElement implements Layer {
             ?disabled=${escortDisabled}
             @click=${() => this.sendEscortCommand()}
           >
-            ${this.renderCoachmark("shield", "Use before contested convoy lanes.")}
+            ${this.renderCoachmark(
+              "shield",
+              "Use before contested convoy lanes.",
+            )}
             ${escortLabel}
           </button>
           <button
@@ -1939,7 +2312,10 @@ export class ControlPanel extends LitElement implements Layer {
             ?disabled=${rerouteDisabled}
             @click=${() => this.sendRerouteSafestCommand()}
           >
-            ${this.renderCoachmark("reroute", "Switch lane when pressure flips.")}
+            ${this.renderCoachmark(
+              "reroute",
+              "Switch lane when pressure flips.",
+            )}
             ${rerouteLabel}
           </button>
           <button
@@ -1955,29 +2331,37 @@ export class ControlPanel extends LitElement implements Layer {
             ?disabled=${jamBreakerDisabled}
             @click=${() => this.sendJamBreakerCommand()}
           >
-            ${this.renderCoachmark("jamBreaker", "Fire right before pulse windows.")}
+            ${this.renderCoachmark(
+              "jamBreaker",
+              "Fire right before pulse windows.",
+            )}
             ${compact ? "Jam" : jamLabel}
           </button>
         </div>
         <div class="mt-1">
           <button
             class="w-full rounded bg-slate-500/20 px-1.5 py-1 text-slate-100 hover:bg-slate-500/35"
-            title=${showAdvanced ? "Hide secondary Vault controls" : "Show presets, pings, and advanced Vault controls"}
+            title=${showAdvanced
+              ? "Hide secondary Vault controls"
+              : "Show presets, pings, and advanced Vault controls"}
             aria-label="Toggle secondary Vault controls"
             aria-keyshortcuts="5"
             @click=${() => this.expandAdvancedCommands()}
           >
-            ${showAdvanced ? "Hide More" : "More"}
+            ${showAdvanced ? "Hide More" : "More Commands"}
           </button>
         </div>
         ${showAdvanced
           ? html`
-              <div class="mt-1.5 rounded border border-cyan-300/25 bg-slate-950/35 p-1.5">
+              <div
+                class="mt-1.5 rounded border border-cyan-300/25 bg-slate-950/35 p-1.5"
+              >
                 <div class="flex flex-wrap gap-1">
                   ${(["aggro", "economy", "control"] as const).map(
                     (preset) => html`
                       <button
-                        class="rounded border px-1.5 py-0.5 text-[10px] ${this.quickRolePreset === preset
+                        class="rounded border px-1.5 py-0.5 text-[10px] ${this
+                          .quickRolePreset === preset
                           ? "border-cyan-200/65 bg-cyan-500/25 text-cyan-50"
                           : "border-slate-300/35 bg-slate-700/25 text-slate-100 hover:bg-slate-700/40"}"
                         @click=${() => this.setQuickRolePreset(preset)}
@@ -1991,9 +2375,17 @@ export class ControlPanel extends LitElement implements Layer {
                     `,
                   )}
                 </div>
+                ${trimUnderused
+                  ? html`<div class="mt-1 text-[10px] text-slate-200/80">
+                      Core loop first. Advanced pings and lane rotation live here once Shield, Reroute, and Jam feel automatic.
+                    </div>`
+                  : ""}
                 <div class="mt-1 grid grid-cols-2 gap-1">
                   <button
-                    class="${compact ? "px-2 py-1.5" : "px-1.5 py-1"} rounded bg-fuchsia-500/20 text-fuchsia-100 hover:bg-fuchsia-500/30 ${jamNextDisabled && !this.jamOnNextPulseArmed
+                    class="${compact
+                      ? "px-2 py-1.5"
+                      : "px-1.5 py-1"} rounded bg-fuchsia-500/20 text-fuchsia-100 hover:bg-fuchsia-500/30 ${jamNextDisabled &&
+                    !this.jamOnNextPulseArmed
                       ? "opacity-60 cursor-not-allowed"
                       : ""}"
                     title=${jamNextDisabled
@@ -2006,28 +2398,36 @@ export class ControlPanel extends LitElement implements Layer {
                     ${jamNextLabel}
                   </button>
                   <button
-                    class="${compact ? "px-2 py-1.5" : "px-1.5 py-1"} rounded bg-cyan-500/20 text-cyan-100 hover:bg-cyan-500/35"
+                    class="${compact
+                      ? "px-2 py-1.5"
+                      : "px-1.5 py-1"} rounded bg-cyan-500/20 text-cyan-100 hover:bg-cyan-500/35"
                     title="Advanced manual reroute: rotate target structure lane."
                     @click=${() => this.sendRerouteCommand()}
                   >
                     Reroute Lane: ${this.convoyRoutePreference}
                   </button>
                   <button
-                    class="${compact ? "px-2 py-1.5" : "px-1.5 py-1"} rounded bg-sky-500/25 text-sky-100 hover:bg-sky-500/35"
+                    class="${compact
+                      ? "px-2 py-1.5"
+                      : "px-1.5 py-1"} rounded bg-sky-500/25 text-sky-100 hover:bg-sky-500/35"
                     title="Ask team to shield your convoy lane."
                     @click=${() => this.sendRolePing("escort_convoy")}
                   >
                     Ping Shield
                   </button>
                   <button
-                    class="${compact ? "px-2 py-1.5" : "px-1.5 py-1"} rounded bg-sky-500/25 text-sky-100 hover:bg-sky-500/35"
+                    class="${compact
+                      ? "px-2 py-1.5"
+                      : "px-1.5 py-1"} rounded bg-sky-500/25 text-sky-100 hover:bg-sky-500/35"
                     title="Ask team to cut enemy convoy routes."
                     @click=${() => this.sendRolePing("intercept_lane")}
                   >
                     Ping Intercept
                   </button>
                   <button
-                    class="col-span-2 ${compact ? "px-2 py-1.5" : "px-1.5 py-1"} rounded bg-sky-500/25 text-sky-100 hover:bg-sky-500/35"
+                    class="col-span-2 ${compact
+                      ? "px-2 py-1.5"
+                      : "px-1.5 py-1"} rounded bg-sky-500/25 text-sky-100 hover:bg-sky-500/35"
                     title="Notify team about upcoming Defense Factory pulse timing."
                     @click=${() => this.sendRolePing("pulse_soon")}
                   >
@@ -2036,14 +2436,18 @@ export class ControlPanel extends LitElement implements Layer {
                 </div>
                 ${ownConvoy ? this.renderReroutePreviewPanel(ownConvoy) : ""}
                 ${this.renderRewardExplainPanel(convoy)}
-                ${this.adaptiveNudgeText()
-                  ? html`<div class="mt-1 rounded border border-emerald-300/35 bg-emerald-900/20 px-1.5 py-1 text-[10px] text-emerald-100">
-                      ${this.adaptiveNudgeText()}
+                ${adaptiveNudge
+                  ? html`<div
+                      class="mt-1 rounded border border-emerald-300/35 bg-emerald-900/20 px-1.5 py-1 text-[10px] text-emerald-100"
+                    >
+                      ${adaptiveNudge}
                     </div>`
                   : ""}
-                ${this.currentCommandHint()
-                  ? html`<div class="mt-1.5 text-[10px] lg:text-[11px] text-cyan-100/90">
-                      Tip: ${this.currentCommandHint()}
+                ${commandHint
+                  ? html`<div
+                      class="mt-1.5 text-[10px] lg:text-[11px] text-cyan-100/90"
+                    >
+                      Tip: ${commandHint}
                     </div>`
                   : ""}
               </div>
@@ -2115,7 +2519,9 @@ export class ControlPanel extends LitElement implements Layer {
     this.eventBus.emit(new SendDefenseFactoryCommandIntentEvent("jam_breaker"));
     this.markCoachmarkComplete("jamBreaker");
     logHudTelemetry(
-      trigger === "auto" ? "hud_command_jam_next_autofired" : "hud_command_jam_breaker",
+      trigger === "auto"
+        ? "hud_command_jam_next_autofired"
+        : "hud_command_jam_breaker",
     );
     void recordVaultFrontRuntimeEvent({
       event: trigger === "auto" ? "command_jam_auto" : "command_jam_manual",
@@ -2135,7 +2541,9 @@ export class ControlPanel extends LitElement implements Layer {
       armed: this.jamOnNextPulseArmed,
     });
     void recordVaultFrontRuntimeEvent({
-      event: this.jamOnNextPulseArmed ? "command_jam_next_arm" : "command_jam_next_disarm",
+      event: this.jamOnNextPulseArmed
+        ? "command_jam_next_arm"
+        : "command_jam_next_disarm",
       rewardVariant: this.runtimeRewardVariant,
       hudVariant: this.runtimeHudVariant,
       value: 1,
@@ -2176,19 +2584,26 @@ export class ControlPanel extends LitElement implements Layer {
     if (this.quickRolePreset === preset) return;
     this.quickRolePreset = preset;
     localStorage.setItem("vaultfront.quickRolePreset", preset);
-    if (preset === "control" && this.game.ticks() >= this.jamBreakerCooldownUntilTick) {
+    if (
+      preset === "control" &&
+      this.game.ticks() >= this.jamBreakerCooldownUntilTick
+    ) {
       this.jamOnNextPulseArmed = true;
     }
     logHudTelemetry("hud_quick_role_preset", { preset });
   }
 
-  private sendRolePing(ping: "escort_convoy" | "intercept_lane" | "pulse_soon") {
+  private sendRolePing(
+    ping: "escort_convoy" | "intercept_lane" | "pulse_soon",
+  ) {
     this.eventBus.emit(new SendVaultRolePingIntentEvent(ping));
     logHudTelemetry("hud_role_ping", { ping });
   }
 
   private shouldTrimUnderusedCommands(): boolean {
-    const matches = Number(localStorage.getItem("vaultfront.kpi.matches") ?? "0");
+    const matches = Number(
+      localStorage.getItem("vaultfront.kpi.matches") ?? "0",
+    );
     if (matches < 3) return false;
     if (this.coachmarksEnabled) return false;
     const shieldUses = Number(
@@ -2202,7 +2617,9 @@ export class ControlPanel extends LitElement implements Layer {
     const jamUses = Number(
       localStorage.getItem("vaultfront.kpi.hud.hud_command_jam_breaker") ?? "0",
     );
-    const pingUses = Number(localStorage.getItem("vaultfront.kpi.hud.hud_role_ping") ?? "0");
+    const pingUses = Number(
+      localStorage.getItem("vaultfront.kpi.hud.hud_role_ping") ?? "0",
+    );
     const combined = shieldUses + rerouteUses + jamUses + pingUses;
     return combined < 8;
   }
@@ -2210,9 +2627,15 @@ export class ControlPanel extends LitElement implements Layer {
   private renderNextGoalTracker() {
     if (!this.nextMatchGoal && !this.nextMatchGoalKey) return "";
     return html`
-      <div class="mt-1.5 border border-amber-300/45 rounded-md bg-amber-900/25 p-1.5 text-[10px] lg:text-[11px]">
+      <div
+        class="mt-1.5 border border-amber-300/45 rounded-md bg-amber-900/25 p-1.5 text-[10px] lg:text-[11px]"
+      >
         <div class="font-semibold text-amber-200">Next Match Goal</div>
-        <div class="${this.nextMatchGoalCompleted ? "text-emerald-200" : "text-amber-50"} mt-1">
+        <div
+          class="${this.nextMatchGoalCompleted
+            ? "text-emerald-200"
+            : "text-amber-50"} mt-1"
+        >
           ${this.nextMatchGoalCompleted ? "[x] " : ""}${this.nextMatchGoal}
         </div>
       </div>
@@ -2223,11 +2646,18 @@ export class ControlPanel extends LitElement implements Layer {
     if (!this.shouldShowOnboarding()) return "";
     const lockRequired =
       this.tutorialLockActive &&
-      (!this.onboardingProgress.vaultCaptured || !this.onboardingProgress.convoyAction);
+      (!this.onboardingProgress.vaultCaptured ||
+        !this.onboardingProgress.convoyAction);
 
     const steps: Array<{ done: boolean; label: string }> = [
-      { done: this.onboardingProgress.focusSet, label: "Set Resource Focus once" },
-      { done: this.onboardingProgress.vaultCaptured, label: "Capture one vault" },
+      {
+        done: this.onboardingProgress.focusSet,
+        label: "Set Resource Focus once",
+      },
+      {
+        done: this.onboardingProgress.vaultCaptured,
+        label: "Capture one vault",
+      },
       {
         done: this.onboardingProgress.convoyAction,
         label: "Shield or intercept one Vault Convoy",
@@ -2240,7 +2670,9 @@ export class ControlPanel extends LitElement implements Layer {
     const activeIndex = steps.findIndex((step) => !step.done);
 
     return html`
-      <div class="mt-1.5 border border-emerald-400/50 rounded-md bg-emerald-950/35 p-1.5 text-[10px] lg:text-[11px]">
+      <div
+        class="mt-1.5 border border-emerald-400/50 rounded-md bg-emerald-950/35 p-1.5 text-[10px] lg:text-[11px]"
+      >
         <div class="flex items-center justify-between">
           <div class="font-semibold text-emerald-200">
             First 3 Minutes Objectives
@@ -2266,7 +2698,8 @@ export class ControlPanel extends LitElement implements Layer {
                     ? "text-white"
                     : "text-slate-300"}"
               >
-                ${step.done ? "[x]" : index === activeIndex ? ">" : "-"} ${step.label}
+                ${step.done ? "[x]" : index === activeIndex ? ">" : "-"}
+                ${step.label}
               </div>
             `,
           )}
@@ -2303,13 +2736,17 @@ export class ControlPanel extends LitElement implements Layer {
         <div class="h-full flex">
           ${greenPercent > 0
             ? html`<div
-                class="h-full bg-green-500 ${this.reducedMotion ? "" : "transition-[width] duration-200"}"
+                class="h-full bg-green-500 ${this.reducedMotion
+                  ? ""
+                  : "transition-[width] duration-200"}"
                 style="width: ${greenPercent}%;"
               ></div>`
             : ""}
           ${orangePercent > 0
             ? html`<div
-                class="h-full bg-orange-400 ${this.reducedMotion ? "" : "transition-[width] duration-200"}"
+                class="h-full bg-orange-400 ${this.reducedMotion
+                  ? ""
+                  : "transition-[width] duration-200"}"
                 style="width: ${orangePercent}%;"
               ></div>`
             : ""}
@@ -2352,7 +2789,10 @@ export class ControlPanel extends LitElement implements Layer {
   private toggleHudEditMode(): void {
     this.hudEditMode = !this.hudEditMode;
     if (this.hudEditMode) this.hudEditExpanded = true;
-    this.persistHudLayout({ editMode: this.hudEditMode }, "hud_edit_mode_toggle");
+    this.persistHudLayout(
+      { editMode: this.hudEditMode },
+      "hud_edit_mode_toggle",
+    );
   }
 
   private toggleHudEditExpanded(): void {
@@ -2446,7 +2886,9 @@ export class ControlPanel extends LitElement implements Layer {
   private renderHudEditControls() {
     const expanded = this.hudEditExpanded || this.hudEditMode;
     return html`
-      <div class="mt-1.5 rounded border border-cyan-300/30 bg-slate-950/35 p-1.5 text-[10px] lg:text-[11px]">
+      <div
+        class="mt-1.5 rounded border border-cyan-300/30 bg-slate-950/35 p-1.5 text-[10px] lg:text-[11px]"
+      >
         <div class="flex items-center justify-between">
           <div class="text-cyan-200 font-semibold">HUD Edit</div>
           <div class="flex items-center gap-1">
@@ -2471,7 +2913,8 @@ export class ControlPanel extends LitElement implements Layer {
                   ${(["compact", "competitive", "mobile"] as HudPreset[]).map(
                     (preset) => html`
                       <button
-                        class="rounded border px-1.5 py-0.5 ${this.hudPreset === preset
+                        class="rounded border px-1.5 py-0.5 ${this.hudPreset ===
+                        preset
                           ? "border-amber-300/60 bg-amber-400/20 text-amber-100"
                           : "border-slate-400/40 text-slate-100 hover:bg-slate-600/30"}"
                         @click=${() => this.applyHudPreset(preset)}
@@ -2502,7 +2945,9 @@ export class ControlPanel extends LitElement implements Layer {
                     @click=${() => this.toggleVaultDebug()}
                     title="Toggle persistent VaultFront debug logs and in-HUD QA checklist"
                   >
-                    ${this.vaultDebugActive ? "Vault Debug On" : "Vault Debug Off"}
+                    ${this.vaultDebugActive
+                      ? "Vault Debug On"
+                      : "Vault Debug Off"}
                   </button>
                   <button
                     class="rounded border border-cyan-300/35 px-1.5 py-0.5 text-cyan-100 hover:bg-cyan-500/20"
@@ -2520,7 +2965,8 @@ export class ControlPanel extends LitElement implements Layer {
               </div>
             `
           : html`<div class="mt-1 text-slate-200/70">
-              Layout controls hidden during play. Open when you need to adjust placement.
+              Layout controls hidden during play. Open when you need to adjust
+              placement.
             </div>`}
       </div>
     `;
@@ -2561,10 +3007,10 @@ export class ControlPanel extends LitElement implements Layer {
       return html`
         <div
           class="fixed right-2 z-[1180] w-[min(92vw,344px)] pointer-events-auto"
-          style="top: ${this.floatingVaultHudTopPx()}px; zoom: ${this.hudScale};"
+          style="top: ${this.floatingVaultHudTopPx()}px; zoom: ${this
+            .hudScale};"
         >
-          ${this.renderVaultDebugWaitingCard()}
-          ${this.renderVaultDebugPanel()}
+          ${this.renderVaultDebugWaitingCard()} ${this.renderVaultDebugPanel()}
         </div>
       `;
     }
@@ -2592,8 +3038,7 @@ export class ControlPanel extends LitElement implements Layer {
               >
                 ${this.vaultHudPinnedExpanded ? "Unpin" : "Pin"}
               </button>
-              ${this.renderVaultHud()}
-              ${this.renderVaultDebugPanel()}
+              ${this.renderVaultHud()} ${this.renderVaultDebugPanel()}
             </div>`}
       </div>
     `;
@@ -2602,11 +3047,13 @@ export class ControlPanel extends LitElement implements Layer {
   render() {
     return html`
       ${this.renderFloatingVaultHud()}
-        <div
-          class="relative pointer-events-auto ${this._isVisible
+      <div
+        class="relative pointer-events-auto ${this._isVisible
           ? "vf-hud-dock relative z-[60] w-full lg:max-w-[312px] text-xs lg:text-sm p-1.5 pr-1.5 lg:p-2.5 sm:rounded-tr-lg min-[1200px]:rounded-lg"
           : "hidden"}"
-        style="transform: translate(${this.panelOffsetX}px, ${this.panelOffsetY}px) scale(${this.hudScale}); transform-origin: bottom left;"
+        style="transform: translate(${this.panelOffsetX}px, ${this
+          .panelOffsetY}px) scale(${this
+          .hudScale}); transform-origin: bottom left;"
         @contextmenu=${(e: MouseEvent) => e.preventDefault()}
       >
         <div class="flex gap-2 lg:gap-3 items-center">
@@ -2747,8 +3194,7 @@ export class ControlPanel extends LitElement implements Layer {
             class="w-full h-2 accent-yellow-400 cursor-pointer"
           />
         </div>
-        ${this.renderOnboarding()}
-        ${this.renderHudEditControls()}
+        ${this.renderOnboarding()} ${this.renderHudEditControls()}
         ${this.hudCompactMode ? "" : this.renderNextGoalTracker()}
       </div>
     `;

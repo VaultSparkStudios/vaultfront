@@ -188,6 +188,6 @@ describe("VaultFrontExecution property tests", () => {
     expect(execution.jamBreakerCooldownTicksEffective()).toBeLessThan(900);
     execution.weeklyMutator = "double_passive";
     expect(execution.vaultPassiveIncomeIntervalTicksEffective()).toBeLessThan(600);
-    expect(execution.vaultPassiveGoldPerMinuteEffective()).toBe(180_000n);
+    expect(execution.vaultPassiveGoldPerMinuteEffective()).toBe(150_000n);
   });
 });
