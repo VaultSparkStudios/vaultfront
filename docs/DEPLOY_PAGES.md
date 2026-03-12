@@ -1,73 +1,91 @@
 # VaultFront Pages Deployment
 
-This repo can build a static client bundle for deployment at:
+VaultFront now uses the own-repo GitHub Pages model.
+
+The public URL remains:
 
 - `https://vaultsparkstudios.com/vaultfront/`
 
-The bundle is intended to be copied into the separate studio landing-page repo,
-not published as a standalone Pages site from this repository.
+But until the dedicated runtime is live, this repo publishes a launch stub, not
+the playable client.
 
-Current public placeholder behavior:
+## Current public publish source
 
-- `https://vaultsparkstudios.com/vaultfront/` is intentionally an
-  under-development landing page in the studio-site repo until the dedicated
-  VaultFront runtime is ready.
-- Do not run `deploy-pages.yml` for the live public path until the backend
-  rollout is ready to support an actual playable launch.
+The current workflow publishes:
 
-Backend/runtime deployment is separate. The default studio runtime plan is
-documented in:
+- `pages-stub/index.html`
+- `pages-stub/404.html`
+
+Workflow:
+
+- `.github/workflows/deploy-pages.yml`
+
+Behavior:
+
+- manual-only via `workflow_dispatch`
+- uploads the repo-local `pages-stub/` folder as the GitHub Pages artifact
+- deploys directly from `VaultSparkStudios/VaultFront`
+- does not sync into `VaultSparkStudios.github.io`
+
+## One-time GitHub setup
+
+In `VaultSparkStudios/VaultFront`:
+
+1. Open `Settings -> Pages`
+2. Set `Source` to `GitHub Actions`
+
+If this is not configured, the workflow can succeed in GitHub Actions while the
+public URL still returns `404`.
+
+## Why the playable client is not published yet
+
+The static app bundle is still intentionally held back.
+
+Reasons:
+
+- the public path should not expose a half-live client
+- gameplay still depends on the dedicated runtime/backend rollout
+- the public launch requires:
+  - `https://play-vaultfront.vaultsparkstudios.com`
+  - `https://api-vaultfront.vaultsparkstudios.com`
+
+Current rule:
+
+- `deploy-pages.yml` publishes the stub only
+- the playable client must not replace the stub until the runtime stack is live
+  and verified
+
+## Future live-client rollout
+
+The repo still supports a real Pages client build for the eventual launch.
+
+Relevant command:
+
+- `npm run build:pages`
+
+That build uses the production subpath values for:
+
+- `VITE_APP_BASE_PATH=/vaultfront/`
+- `VITE_CANONICAL_URL=https://vaultsparkstudios.com/vaultfront/`
+- `VITE_DOMAIN=vaultsparkstudios.com`
+- `VITE_GAME_SERVICE_ORIGIN=https://play-vaultfront.vaultsparkstudios.com`
+- `API_DOMAIN=api-vaultfront.vaultsparkstudios.com`
+
+When runtime launch readiness exists, replace the stub-publish workflow with
+the standard GitHub Pages bundle workflow from:
+
+- `docs/templates/deploy-pages.template.yml`
+
+## Required variables for the eventual playable client
+
+These are not required for the current stub deployment, but they are required
+before publishing the real client bundle:
+
+- `GAME_SERVICE_ORIGIN`
+  - `https://play-vaultfront.vaultsparkstudios.com`
+- `API_DOMAIN`
+  - `api-vaultfront.vaultsparkstudios.com`
+
+Backend/runtime deployment remains separate and is documented in:
 
 - `docs/STUDIO_BACKEND_PLAN.md`
-
-## Required GitHub variables
-
-Set these repo variables in `VaultSparkStudios/VaultFront`:
-
-- `STUDIO_SITE_BRANCH`
-  - Example: `main`
-- `GAME_SERVICE_ORIGIN`
-  - Default standard: `https://play-vaultfront.vaultsparkstudios.com`
-- `API_DOMAIN`
-  - Default standard: `api-vaultfront.vaultsparkstudios.com`
-
-Studio-wide default naming standard:
-
-- `play-{slug}.vaultsparkstudios.com`
-- `api-{slug}.vaultsparkstudios.com`
-
-## Required GitHub secret
-
-- `STUDIO_SITE_TOKEN`
-  - Personal access token with write access to the studio site repo
-
-## What the workflow does
-
-`deploy-pages.yml`:
-
-1. Builds the client with `VITE_APP_BASE_PATH=/vaultfront/`
-2. Copies `static/index.html` to `static/404.html` for SPA deep-link fallback
-3. Checks out the studio site repo
-4. Syncs the built bundle into `/vaultfront/`
-5. Commits and pushes the updated bundle
-
-The studio repo target is hardcoded to:
-
-- `VaultSparkStudios/VaultSparkStudios.github.io`
-
-Workflow policy:
-
-- `deploy-pages.yml` is manual-only for now.
-- This avoids accidental replacement of the public under-development landing
-  page before the VaultFront server stack is live.
-
-## Studio site repo follow-up
-
-The studio site repo still needs a separate content change:
-
-1. Add a `VaultFront` card under the `Vault-Forged` area
-2. Link it to `/vaultfront/`
-3. Reuse the same card/template pattern as the existing games
-
-This repo does not contain the studio landing-page source, so that step is
-documented here but not implemented locally.

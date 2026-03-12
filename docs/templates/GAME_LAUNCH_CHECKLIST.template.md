@@ -45,11 +45,10 @@ Replace:
 
 ## GitHub Configuration
 
-- [ ] Repo variable `GAME_SERVICE_ORIGIN` is set
-- [ ] Repo variable `API_DOMAIN` is set
-- [ ] Repo variable `STUDIO_SITE_BRANCH` is set
-- [ ] Secret `STUDIO_SITE_TOKEN` is set
+- [ ] Repo Settings -> Pages -> Source set to `GitHub Actions`
 - [ ] `deploy-pages.yml` is configured for `__GAME_SLUG__`
+- [ ] Optional: repo variable `GAME_SERVICE_ORIGIN` is set
+- [ ] Optional: repo variable `API_DOMAIN` is set
 - [ ] Optional backend deploy workflow is configured
 
 ## Studio Site Integration
@@ -78,7 +77,7 @@ Replace:
 
 ## Launch
 
-- [ ] Pages bundle is published into `VaultSparkStudios.github.io/__GAME_SLUG__/`
+- [ ] Pages bundle is deployed at `https://vaultsparkstudios.com/__GAME_SLUG__/`
 - [ ] Studio homepage changes are pushed
 - [ ] Public URL loads correctly
 - [ ] Core gameplay/API connectivity is live

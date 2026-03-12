@@ -162,8 +162,11 @@ Recommended next step after launch:
 
 Frontend deployment:
 
-- GitHub Pages workflow publishes static files into
-  `VaultSparkStudios.github.io/{slug}/`
+- each game repo deploys its own GitHub Pages artifact directly from its own
+  `deploy-pages.yml`
+- the public result is served at `https://vaultsparkstudios.com/{slug}/`
+- temporary launch stubs may be published from the game repo while backend
+  readiness is still incomplete
 
 Backend deployment:
 
@@ -189,7 +192,8 @@ Do not couple frontend Pages publishing to backend rollout.
    - `API_DOMAIN=api-vaultfront.vaultsparkstudios.com`
 8. Verify CORS and websocket behavior from:
    - `https://vaultsparkstudios.com/vaultfront/`
-9. Run `deploy-pages.yml`
+9. Replace the launch stub workflow with the real client-bundle Pages workflow
+10. Run `deploy-pages.yml`
 
 ## Scaling path
 

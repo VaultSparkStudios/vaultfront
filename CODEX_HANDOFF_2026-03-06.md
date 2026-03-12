@@ -437,6 +437,20 @@ Current local repo states after this continuation:
     reliable enough to confirm propagation
   - browser confirmation is still recommended after Pages propagation settles
 
+## 2026-03-11 memory-stack update
+
+- Added a stable repo memory file:
+  - `PROJECT_MEMORY.md`
+- `AGENTS.md` now instructs future sessions to read the repo memory stack in
+  this order:
+  - `AGENTS.md`
+  - `PROJECT_MEMORY.md`
+  - latest `CODEX_HANDOFF_YYYY-MM-DD.md`
+  - task-specific docs
+- Purpose:
+  - reduce reliance on chat history
+  - keep future sessions resumable from repo files alone
+
 ## Suggested prompt for the next session
 
 "Resume from `CODEX_HANDOFF_2026-03-06.md`. Read that file first, inspect the referenced VaultFront/HUD files, and continue from repo state without reverting unrelated changes."

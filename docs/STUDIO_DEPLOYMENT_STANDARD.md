@@ -59,7 +59,7 @@ Keep one repo per game plus one studio-site repo.
 
 Rules:
 
-- repo names may follow branding and may contain caps/hyphens
+- repo names may follow branding and may contain caps or hyphens
 - public URLs must not depend on repo name casing
 - do not use the studio-site repo as the gameplay source repo
 - every game repo must keep local copies of the studio deployment standard,
@@ -147,16 +147,19 @@ Each game repo should have:
 2. `deploy-pages.yml`
    - build static client for `/{slug}/`
    - copy `index.html` to `404.html`
-   - sync built bundle into `VaultSparkStudios.github.io/{slug}/`
-   - commit/push via token
+   - upload the built output as a GitHub Pages artifact
+   - deploy directly from the game repo to GitHub Pages
 
 3. `deploy-backend.yml` if the game has a dedicated runtime/backend
 
 Rules:
 
+- set `Settings -> Pages -> Source` to `GitHub Actions` in each game repo
 - frontend deploy and backend deploy must be separate workflows
 - do not couple Pages publishing to backend rollout
-- studio-site publishing should update only the target subfolder for the game
+- do not rely on cross-repo sync into `VaultSparkStudios.github.io/{slug}/`
+- temporary stub pages may be published from the game repo instead of the live
+  client when runtime readiness is not complete
 
 ## Temporary clone safety standard
 
@@ -172,18 +175,16 @@ Rules:
 
 ## GitHub variables and secrets standard
 
-Per game repo, define the same variable names.
+Per game repo, define consistent variable names.
 
 Variables:
 
 - `GAME_SLUG`
 - `GAME_SERVICE_ORIGIN`
 - `API_DOMAIN`
-- `STUDIO_SITE_BRANCH`
 
 Secrets:
 
-- `STUDIO_SITE_TOKEN`
 - backend deploy credentials
 - game-specific API/auth secrets
 
@@ -191,6 +192,7 @@ Rules:
 
 - keep variable names identical across all game repos
 - only values should change per game
+- GitHub Pages deployment should not require a cross-repo Pages publish token
 
 ## Landing-page integration standard
 
@@ -281,7 +283,7 @@ For a new game with slug `shadow-rift`:
 - one studio site
 - one repo per game
 - one stable slug per game
-- one Pages subfolder per game
+- one public Pages path per game
 - one backend origin pair per game
 - one reusable deployment workflow pattern across all games
 - one self-sufficient documentation set per game repo
