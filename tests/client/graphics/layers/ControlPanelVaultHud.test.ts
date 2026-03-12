@@ -1,6 +1,6 @@
+import { render } from "lit";
 import { ControlPanel } from "../../../../src/client/graphics/layers/ControlPanel";
 import { GameRightSidebar } from "../../../../src/client/graphics/layers/GameRightSidebar";
-import { render } from "lit";
 
 describe("ControlPanel vault HUD automation", () => {
   test("jam-on-next-pulse respects jam breaker cooldown", () => {
@@ -176,7 +176,9 @@ describe("ControlPanel vault HUD automation", () => {
     vi.spyOn(panel, "renderRewardExplainPanel").mockReturnValue("");
     vi.spyOn(panel, "currentCommandHint").mockReturnValue("");
     vi.spyOn(panel, "adaptiveNudgeText").mockReturnValue(null);
-    vi.spyOn(panel, "nextVaultObjectiveText").mockReturnValue("Next vault opens in 20s");
+    vi.spyOn(panel, "nextVaultObjectiveText").mockReturnValue(
+      "Next vault opens in 20s",
+    );
 
     const container = document.createElement("div");
     render(panel.renderVaultHud(), container);
@@ -245,7 +247,9 @@ describe("ControlPanel vault HUD automation", () => {
     vi.spyOn(panel, "renderRewardExplainPanel").mockReturnValue("");
     vi.spyOn(panel, "currentCommandHint").mockReturnValue("");
     vi.spyOn(panel, "adaptiveNudgeText").mockReturnValue(null);
-    vi.spyOn(panel, "nextVaultObjectiveText").mockReturnValue("Next vault opens in 20s");
+    vi.spyOn(panel, "nextVaultObjectiveText").mockReturnValue(
+      "Next vault opens in 20s",
+    );
 
     const container = document.createElement("div");
     render(panel.renderVaultHud(), container);
@@ -301,12 +305,127 @@ describe("ControlPanel vault HUD automation", () => {
     render(panel.renderVaultDebugPanel(), container);
 
     expect(container.textContent).toContain("Vault QA");
-    expect(container.textContent).toContain("OK Capture a vault");
-    expect(container.textContent).toContain("TODO Passive gold twice");
+    expect(container.textContent).toContain("Live verification checklist");
+    expect(container.textContent).toContain("Done Capture a vault");
+    expect(container.textContent).toContain("Pending Passive gold twice");
     expect(container.textContent).toContain("1/2");
     expect(container.textContent).toContain("2");
     expect(container.textContent).toContain("Command Ops");
     expect(container.textContent).toContain("Live tuning");
+  });
+
+  test("vault notices only show the nearest in-range site", () => {
+    const panel = new ControlPanel() as any;
+    const me = {
+      smallID: () => 1,
+      isFriendly: () => false,
+    };
+    panel.game = {
+      ticks: () => 100,
+      myPlayer: () => me,
+      x: (tile: number) => tile % 20,
+      y: (tile: number) => Math.floor(tile / 20),
+      width: () => 20,
+      height: () => 20,
+      ref: (x: number, y: number) => y * 20 + x,
+      owner: (tile: number) => ({
+        isPlayer: () => tile === 22 || tile === 23,
+        smallID: () => 1,
+      }),
+    };
+    panel.latestVaultStatus = {
+      weeklyMutator: "none",
+      captureTicksRequired: 90,
+      cooldownTicksTotal: 650,
+      sites: [
+        {
+          id: 1,
+          tile: 24,
+          controllerID: null,
+          controlTicks: 0,
+          cooldownTicks: 40,
+          passiveOwnerID: null,
+          nextPassiveIncomeTick: 0,
+          reducedRewardNextCapture: false,
+          projectedGoldReward: 100000,
+          projectedTroopsReward: 1000,
+          projectedRewardMultiplier: 1,
+          projectedDistance: 10,
+          projectedRisk: 1,
+          rewardMath: "math 1",
+        },
+        {
+          id: 2,
+          tile: 399,
+          controllerID: null,
+          controlTicks: 0,
+          cooldownTicks: 10,
+          passiveOwnerID: null,
+          nextPassiveIncomeTick: 0,
+          reducedRewardNextCapture: false,
+          projectedGoldReward: 200000,
+          projectedTroopsReward: 2000,
+          projectedRewardMultiplier: 1,
+          projectedDistance: 20,
+          projectedRisk: 2,
+          rewardMath: "math 2",
+        },
+      ],
+      convoys: [],
+      beacons: [],
+    };
+
+    const notices = panel.buildVaultNotices();
+
+    expect(notices).toHaveLength(1);
+    expect(notices[0].siteID).toBe(1);
+  });
+
+  test("vault notices stay hidden when no territory is near a site", () => {
+    const panel = new ControlPanel() as any;
+    const me = {
+      smallID: () => 1,
+      isFriendly: () => false,
+    };
+    panel.game = {
+      ticks: () => 100,
+      myPlayer: () => me,
+      x: (tile: number) => tile % 20,
+      y: (tile: number) => Math.floor(tile / 20),
+      width: () => 20,
+      height: () => 20,
+      ref: (x: number, y: number) => y * 20 + x,
+      owner: () => ({
+        isPlayer: () => false,
+      }),
+    };
+    panel.latestVaultStatus = {
+      weeklyMutator: "none",
+      captureTicksRequired: 90,
+      cooldownTicksTotal: 650,
+      sites: [
+        {
+          id: 7,
+          tile: 310,
+          controllerID: null,
+          controlTicks: 0,
+          cooldownTicks: 20,
+          passiveOwnerID: null,
+          nextPassiveIncomeTick: 0,
+          reducedRewardNextCapture: false,
+          projectedGoldReward: 100000,
+          projectedTroopsReward: 1000,
+          projectedRewardMultiplier: 1,
+          projectedDistance: 10,
+          projectedRisk: 1,
+          rewardMath: "math",
+        },
+      ],
+      convoys: [],
+      beacons: [],
+    };
+
+    expect(panel.buildVaultNotices()).toEqual([]);
   });
 
   test("vault debug waiting card renders before status arrives", () => {
