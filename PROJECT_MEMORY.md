@@ -26,9 +26,13 @@ Read this after `AGENTS.md` and before the dated handoff file.
 
 - The public `vaultfront` path is a project page, not a playable client.
 - The studio homepage VaultFront card CTA is `View Project`.
-- The project page content is now published from this repo's own GitHub Pages
+- The project page content is published from this repo's own GitHub Pages
   workflow, not from the studio-site repo.
-- The playable launch is blocked on the dedicated runtime/backend rollout.
+- The repo-local launch stub has already been pushed and verified live over
+  HTTPS at `https://vaultsparkstudios.com/vaultfront/`.
+- A gameplay/HUD clarity and tuning pass was pushed to `vaultfront/main` on
+  March 12, 2026.
+- The playable launch remains blocked on the dedicated runtime/backend rollout.
 
 ## Deployment posture
 
@@ -63,36 +67,42 @@ Read order for future sessions:
 - `docs/templates/Caddyfile.studio-backend.template`
 - `docs/templates/GAME_LAUNCH_CHECKLIST.template.md`
 
-## Remotes
+## Remotes and branches
 
-- upstream source remote retained locally:
-  - `origin -> https://github.com/openfrontio/OpenFrontIO.git`
-- game remote:
-  - `vaultfront -> https://github.com/VaultSparkStudios/VaultFront.git`
+- canonical working remote:
+  - `origin -> https://github.com/VaultSparkStudios/vaultfront.git`
+- upstream reference remote:
+  - `openfront-upstream -> https://github.com/openfrontio/OpenFrontIO.git`
+- canonical local branch for day-to-day VaultFront work:
+  - `main -> origin/main`
+- archived pre-migration local branch:
+  - `openfront-main-archive-2026-03-12`
+- clean publish worktree branch used for curated pushes:
+  - `.codex-temp-vaultfront-clean`
+  - branch: `codex/project-memory-stack`
 
 ## Resume pointers
 
 - Latest operational handoff file:
   - `CODEX_HANDOFF_2026-03-12.md`
-- The main local `OpenFrontIO` worktree may be dirty with unrelated HUD/test
-  edits.
-- A clean VaultFront worktree has been used for deployment/repo-sync work:
-  - `.codex-temp-vaultfront-clean`
+- The canonical repo of record is now `VaultSparkStudios/VaultFront`.
+- Do not treat `openfront-upstream/main` as the branch to push VaultFront work.
+- The archived branch `openfront-main-archive-2026-03-12` preserves the old
+  OpenFront-tracking local history and should not be used as the default
+  working branch.
 - A temporary studio-site clone has been used for studio homepage and project
   page work:
   - `.codex-temp-studio-site`
 
 ## Next launch-critical work
 
-1. Confirm `VaultFront` repo Pages is set to `GitHub Actions`.
-2. Run the manual stub publish workflow from this repo.
-3. Verify `https://vaultsparkstudios.com/vaultfront/` loads from repo-local
-   Pages instead of returning `404`.
-4. Provision the shared VPS runtime stack.
-5. Bring up Caddy, Postgres, Redis, and the VaultFront play/api services.
-6. Configure DNS and TLS for `play-vaultfront` and `api-vaultfront`.
-7. Verify websocket, CORS, and health endpoints from the public game path.
-8. Only then replace the stub workflow with the real Pages client rollout.
+1. Keep the public path on the repo-local launch stub until runtime readiness
+   exists.
+2. Provision the shared VPS runtime stack.
+3. Bring up Caddy, Postgres, Redis, and the VaultFront play/api services.
+4. Configure DNS and TLS for `play-vaultfront` and `api-vaultfront`.
+5. Verify websocket, CORS, and health endpoints from the public game path.
+6. Only then replace the stub workflow with the real Pages client rollout.
 
 ## Maintenance rule
 
