@@ -107,3 +107,17 @@ Remote state after push:
 3. Verify websocket, health, and CORS behavior from the public path.
 4. Later, replace the stub workflow with the standard client-bundle Pages
    workflow from `docs/templates/deploy-pages.template.yml`.
+
+## Closeout snapshot
+
+- canonical repo state at closeout:
+  - local `main` tracks `origin/main`
+  - `origin` is `https://github.com/VaultSparkStudios/vaultfront.git`
+  - working tree is clean
+- supporting closeout files written:
+  - `context/CURRENT_STATE.md`
+  - `context/TASK_BOARD.md`
+  - `handoffs/LATEST_HANDOFF.md`
+  - `logs/SESSION_LOG.md`
+- local archive branch intentionally retained:
+  - `openfront-main-archive-2026-03-12`
