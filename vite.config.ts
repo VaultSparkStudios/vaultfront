@@ -93,9 +93,7 @@ export default defineConfig(({ mode }) => {
         isProduction ? "" : "localhost:3000",
       ),
       "process.env.GAME_ENV": JSON.stringify(isProduction ? "prod" : "dev"),
-      "process.env.DOMAIN": JSON.stringify(
-        env.VITE_DOMAIN ?? env.DOMAIN ?? "",
-      ),
+      "process.env.DOMAIN": JSON.stringify(env.VITE_DOMAIN ?? env.DOMAIN ?? ""),
       "process.env.GAME_SERVICE_ORIGIN": JSON.stringify(
         env.VITE_GAME_SERVICE_ORIGIN ?? env.GAME_SERVICE_ORIGIN ?? "",
       ),

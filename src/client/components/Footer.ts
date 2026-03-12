@@ -12,7 +12,9 @@ export class Footer extends LitElement {
       <footer
         class="[.in-game_&]:hidden bg-slate-950/70 backdrop-blur-md flex flex-col items-center justify-center gap-1 pt-1 pb-3 text-white/50 w-full border-t border-white/10 shrink-0 mt-auto"
       >
-        <div class="text-[11px] uppercase tracking-[0.16em] font-semibold text-cyan-300/75 pt-2">
+        <div
+          class="text-[11px] uppercase tracking-[0.16em] font-semibold text-cyan-300/75 pt-2"
+        >
           VaultFront Network
         </div>
         <div class="flex items-center justify-center gap-4 lg:gap-6 pt-2">

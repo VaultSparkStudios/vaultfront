@@ -1,8 +1,8 @@
 import { LitElement, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { getServerConfigFromClient } from "../../core/configuration/ConfigLoader";
-import { workerGameUrl } from "../../core/RuntimeUrls";
 import { UserSettings } from "../../core/game/UserSettings";
+import { workerGameUrl } from "../../core/RuntimeUrls";
 import { crazyGamesSDK } from "../CrazyGamesSDK";
 import { copyToClipboard, translateText } from "../Utils";
 

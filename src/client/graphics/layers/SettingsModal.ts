@@ -3,17 +3,20 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { crazyGamesSDK } from "src/client/CrazyGamesSDK";
 import { PauseGameIntentEvent } from "src/client/Transport";
 import { EventBus } from "../../../core/EventBus";
-import { GameView } from "../../../core/game/GameView";
+import { appRootPath } from "../../../core/RuntimeUrls";
 import {
   GameUpdateType,
   VaultFrontActivityUpdate,
   VaultFrontStatusUpdate,
 } from "../../../core/game/GameUpdates";
-import { appRootPath } from "../../../core/RuntimeUrls";
+import { GameView } from "../../../core/game/GameView";
 import { UserSettings } from "../../../core/game/UserSettings";
+import {
+  applyVaultFrontBrandTheme,
+  VaultFrontBrandTheme,
+} from "../../BrandTheme";
 import { AlternateViewEvent, RefreshGraphicsEvent } from "../../InputHandler";
 import { translateText } from "../../Utils";
-import { applyVaultFrontBrandTheme, VaultFrontBrandTheme } from "../../BrandTheme";
 import SoundManager from "../../sound/SoundManager";
 import { Layer } from "./Layer";
 import structureIcon from "/images/CityIconWhite.svg?url";
@@ -267,7 +270,9 @@ export class SettingsModal extends LitElement implements Layer {
 
     return html`
       <div class="p-4 flex flex-col gap-3 text-white/90">
-        <div class="rounded-sm border border-yellow-400/40 bg-yellow-400/10 p-3">
+        <div
+          class="rounded-sm border border-yellow-400/40 bg-yellow-400/10 p-3"
+        >
           <div class="font-semibold text-yellow-100">Live Resource Focus</div>
           <div class="text-sm text-slate-200 mt-1">
             The in-game Resource Focus slider shifts income between gold and
@@ -288,13 +293,11 @@ export class SettingsModal extends LitElement implements Layer {
         </div>
 
         <div class="rounded-sm border border-blue-400/40 bg-blue-400/10 p-3">
-          <div class="font-semibold text-blue-200">
-            Defense Factories
-          </div>
+          <div class="font-semibold text-blue-200">Defense Factories</div>
           <div class="text-sm text-slate-200 mt-1">
-            Build a Defense Factory (same cost and slot as Factory).
-            It charges over time and pulses automatically, hiding your troop
-            total and attack troop data from other players for a short window.
+            Build a Defense Factory (same cost and slot as Factory). It charges
+            over time and pulses automatically, hiding your troop total and
+            attack troop data from other players for a short window.
           </div>
           <div class="text-xs text-blue-100/90 mt-2">
             ${myBeacon
@@ -303,7 +306,9 @@ export class SettingsModal extends LitElement implements Layer {
           </div>
         </div>
 
-        <div class="rounded-sm border border-fuchsia-400/40 bg-fuchsia-400/10 p-3">
+        <div
+          class="rounded-sm border border-fuchsia-400/40 bg-fuchsia-400/10 p-3"
+        >
           <div class="font-semibold text-fuchsia-200">Vault Convoy Combat</div>
           <div class="text-sm text-slate-200 mt-1">
             Vault Convoys are visible in motion on their route and can be
@@ -319,7 +324,9 @@ export class SettingsModal extends LitElement implements Layer {
           </div>
         </div>
 
-        <div class="rounded-sm border border-emerald-400/40 bg-emerald-400/10 p-3">
+        <div
+          class="rounded-sm border border-emerald-400/40 bg-emerald-400/10 p-3"
+        >
           <div class="font-semibold text-emerald-200">
             Next Renewable Resource Concepts
           </div>
@@ -331,13 +338,15 @@ export class SettingsModal extends LitElement implements Layer {
             warships.
           </div>
           <div class="text-sm text-slate-200">
-            Signal Arrays: map vision bursts and faster Defense Factory charge while
-            controlled.
+            Signal Arrays: map vision bursts and faster Defense Factory charge
+            while controlled.
           </div>
         </div>
 
         <div class="rounded-sm border border-slate-500/40 bg-slate-900/50 p-3">
-          <div class="font-semibold text-slate-100">Recent VaultFront Activity</div>
+          <div class="font-semibold text-slate-100">
+            Recent VaultFront Activity
+          </div>
           <div class="mt-2 text-xs text-slate-300 space-y-1">
             ${this.recentVaultActivity.length === 0
               ? html`<div>No activity recorded yet.</div>`
@@ -411,345 +420,382 @@ export class SettingsModal extends LitElement implements Layer {
 
           ${this.activeTab === "basic"
             ? html`<div class="p-4 flex flex-col gap-3">
-            <div
-              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-            >
-              <img src=${musicIcon} alt="musicIcon" width="20" height="20" />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${translateText("user_setting.background_music_volume")}
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  .value=${this.userSettings.backgroundMusicVolume() * 100}
-                  @input=${this.onVolumeChange}
-                  class="w-full border border-slate-500 rounded-lg"
-                />
-              </div>
-              <div class="text-sm text-slate-400">
-                ${Math.round(this.userSettings.backgroundMusicVolume() * 100)}%
-              </div>
-            </div>
-
-            <div
-              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-            >
-              <img
-                src=${musicIcon}
-                alt="soundEffectsIcon"
-                width="20"
-                height="20"
-              />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${translateText("user_setting.sound_effects_volume")}
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  .value=${this.userSettings.soundEffectsVolume() * 100}
-                  @input=${this.onSoundEffectsVolumeChange}
-                  class="w-full border border-slate-500 rounded-lg"
-                />
-              </div>
-              <div class="text-sm text-slate-400">
-                ${Math.round(this.userSettings.soundEffectsVolume() * 100)}%
-              </div>
-            </div>
-
-            <button
-              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-              @click="${this.onTerrainButtonClick}"
-            >
-              <img src=${treeIcon} alt="treeIcon" width="20" height="20" />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${translateText("user_setting.toggle_terrain")}
-                </div>
-                <div class="text-sm text-slate-400">
-                  ${translateText("user_setting.toggle_view_desc")}
-                </div>
-              </div>
-              <div class="text-sm text-slate-400">
-                ${this.alternateView
-                  ? translateText("user_setting.on")
-                  : translateText("user_setting.off")}
-              </div>
-            </button>
-
-            <button
-              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-              @click="${this.onToggleEmojisButtonClick}"
-            >
-              <img src=${emojiIcon} alt="emojiIcon" width="20" height="20" />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${translateText("user_setting.emojis_label")}
-                </div>
-                <div class="text-sm text-slate-400">
-                  ${translateText("user_setting.emojis_desc")}
-                </div>
-              </div>
-              <div class="text-sm text-slate-400">
-                ${this.userSettings.emojis()
-                  ? translateText("user_setting.on")
-                  : translateText("user_setting.off")}
-              </div>
-            </button>
-
-            <button
-              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-              @click="${this.onToggleDarkModeButtonClick}"
-            >
-              <img
-                src=${darkModeIcon}
-                alt="darkModeIcon"
-                width="20"
-                height="20"
-              />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${translateText("user_setting.dark_mode_label")}
-                </div>
-                <div class="text-sm text-slate-400">
-                  ${translateText("user_setting.dark_mode_desc")}
-                </div>
-              </div>
-              <div class="text-sm text-slate-400">
-                ${this.userSettings.darkMode()
-                  ? translateText("user_setting.on")
-                  : translateText("user_setting.off")}
-              </div>
-            </button>
-
-            <div
-              class="flex gap-3 items-start w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-            >
-              <img
-                src=${settingsIcon}
-                alt="brandThemeIcon"
-                width="20"
-                height="20"
-              />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${this.tr("user_setting.brand_theme_label", "Brand Theme")}
-                </div>
-                <div class="text-sm text-slate-400">
-                  ${this.tr(
-                    "user_setting.brand_theme_desc",
-                    "Choose the in-game VaultFront visual palette.",
-                  )}
-                </div>
-                <div class="mt-2 flex gap-2">
-                  ${(["vaultfront", "competitive"] as VaultFrontBrandTheme[]).map(
-                    (theme) => html`
-                      <button
-                        class="px-2 py-1 text-xs rounded border ${this.userSettings.brandTheme() === theme
-                          ? "border-amber-300/60 bg-amber-500/20 text-amber-100"
-                          : "border-slate-500 text-slate-200 hover:bg-slate-600/40"}"
-                        @click=${() => this.onSetBrandTheme(theme)}
-                      >
-                        ${theme === "vaultfront"
-                          ? this.tr(
-                              "user_setting.brand_theme_vaultfront",
-                              "VaultFront",
-                            )
-                          : this.tr(
-                              "user_setting.brand_theme_competitive",
-                              "Competitive",
-                            )}
-                      </button>
-                    `,
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <button
-              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-              @click="${this.onToggleSpecialEffectsButtonClick}"
-            >
-              <img
-                src=${explosionIcon}
-                alt="specialEffects"
-                width="20"
-                height="20"
-              />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${translateText("user_setting.special_effects_label")}
-                </div>
-                <div class="text-sm text-slate-400">
-                  ${translateText("user_setting.special_effects_desc")}
-                </div>
-              </div>
-              <div class="text-sm text-slate-400">
-                ${this.userSettings.fxLayer()
-                  ? translateText("user_setting.on")
-                  : translateText("user_setting.off")}
-              </div>
-            </button>
-
-            <button
-              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-              @click="${this.onToggleAlertFrameButtonClick}"
-            >
-              <img src=${sirenIcon} alt="alertFrame" width="20" height="20" />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${translateText("user_setting.alert_frame_label")}
-                </div>
-                <div class="text-sm text-slate-400">
-                  ${translateText("user_setting.alert_frame_desc")}
-                </div>
-              </div>
-              <div class="text-sm text-slate-400">
-                ${this.userSettings.alertFrame()
-                  ? translateText("user_setting.on")
-                  : translateText("user_setting.off")}
-              </div>
-            </button>
-
-            <button
-              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-              @click="${this.onToggleStructureSpritesButtonClick}"
-            >
-              <img
-                src=${structureIcon}
-                alt="structureSprites"
-                width="20"
-                height="20"
-              />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${translateText("user_setting.structure_sprites_label")}
-                </div>
-                <div class="text-sm text-slate-400">
-                  ${translateText("user_setting.structure_sprites_desc")}
-                </div>
-              </div>
-              <div class="text-sm text-slate-400">
-                ${this.userSettings.structureSprites()
-                  ? translateText("user_setting.on")
-                  : translateText("user_setting.off")}
-              </div>
-            </button>
-
-            <button
-              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-              @click="${this.onToggleCursorCostLabelButtonClick}"
-            >
-              <img
-                src=${cursorPriceIcon}
-                alt="cursorCostLabel"
-                width="20"
-                height="20"
-              />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${translateText("user_setting.cursor_cost_label_label")}
-                </div>
-                <div class="text-sm text-slate-400">
-                  ${translateText("user_setting.cursor_cost_label_desc")}
-                </div>
-              </div>
-              <div class="text-sm text-slate-400">
-                ${this.userSettings.cursorCostLabel()
-                  ? translateText("user_setting.on")
-                  : translateText("user_setting.off")}
-              </div>
-            </button>
-
-            <button
-              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-              @click="${this.onToggleRandomNameModeButtonClick}"
-            >
-              <img src=${ninjaIcon} alt="ninjaIcon" width="20" height="20" />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${translateText("user_setting.anonymous_names_label")}
-                </div>
-                <div class="text-sm text-slate-400">
-                  ${translateText("user_setting.anonymous_names_desc")}
-                </div>
-              </div>
-              <div class="text-sm text-slate-400">
-                ${this.userSettings.anonymousNames()
-                  ? translateText("user_setting.on")
-                  : translateText("user_setting.off")}
-              </div>
-            </button>
-
-            <button
-              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-              @click="${this.onToggleLeftClickOpensMenu}"
-            >
-              <img src=${mouseIcon} alt="mouseIcon" width="20" height="20" />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${translateText("user_setting.left_click_menu")}
-                </div>
-                <div class="text-sm text-slate-400">
-                  ${translateText("user_setting.left_click_desc")}
-                </div>
-              </div>
-              <div class="text-sm text-slate-400">
-                ${this.userSettings.leftClickOpensMenu()
-                  ? translateText("user_setting.on")
-                  : translateText("user_setting.off")}
-              </div>
-            </button>
-
-            <button
-              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
-              @click="${this.onTogglePerformanceOverlayButtonClick}"
-            >
-              <img
-                src=${settingsIcon}
-                alt="performanceIcon"
-                width="20"
-                height="20"
-              />
-              <div class="flex-1">
-                <div class="font-medium">
-                  ${translateText("user_setting.performance_overlay_label")}
-                </div>
-                <div class="text-sm text-slate-400">
-                  ${translateText("user_setting.performance_overlay_desc")}
-                </div>
-              </div>
-              <div class="text-sm text-slate-400">
-                ${this.userSettings.performanceOverlay()
-                  ? translateText("user_setting.on")
-                  : translateText("user_setting.off")}
-              </div>
-            </button>
-
-            <div class="border-t border-slate-600 pt-3 mt-4">
-              <button
-                class="flex gap-3 items-center w-full text-left p-3 hover:bg-red-600/20 rounded-sm text-red-400 transition-colors"
-                @click="${this.onExitButtonClick}"
-              >
-                <img src=${exitIcon} alt="exitIcon" width="20" height="20" />
-                <div class="flex-1">
-                  <div class="font-medium">
-                    ${translateText("user_setting.exit_game_label")}
+                <div
+                  class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                >
+                  <img
+                    src=${musicIcon}
+                    alt="musicIcon"
+                    width="20"
+                    height="20"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${translateText("user_setting.background_music_volume")}
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      .value=${this.userSettings.backgroundMusicVolume() * 100}
+                      @input=${this.onVolumeChange}
+                      class="w-full border border-slate-500 rounded-lg"
+                    />
                   </div>
                   <div class="text-sm text-slate-400">
-                    ${translateText("user_setting.exit_game_info")}
+                    ${Math.round(
+                      this.userSettings.backgroundMusicVolume() * 100,
+                    )}%
                   </div>
                 </div>
-              </button>
-            </div>
-          </div>`
+
+                <div
+                  class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                >
+                  <img
+                    src=${musicIcon}
+                    alt="soundEffectsIcon"
+                    width="20"
+                    height="20"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${translateText("user_setting.sound_effects_volume")}
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      .value=${this.userSettings.soundEffectsVolume() * 100}
+                      @input=${this.onSoundEffectsVolumeChange}
+                      class="w-full border border-slate-500 rounded-lg"
+                    />
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    ${Math.round(this.userSettings.soundEffectsVolume() * 100)}%
+                  </div>
+                </div>
+
+                <button
+                  class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                  @click="${this.onTerrainButtonClick}"
+                >
+                  <img src=${treeIcon} alt="treeIcon" width="20" height="20" />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${translateText("user_setting.toggle_terrain")}
+                    </div>
+                    <div class="text-sm text-slate-400">
+                      ${translateText("user_setting.toggle_view_desc")}
+                    </div>
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    ${this.alternateView
+                      ? translateText("user_setting.on")
+                      : translateText("user_setting.off")}
+                  </div>
+                </button>
+
+                <button
+                  class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                  @click="${this.onToggleEmojisButtonClick}"
+                >
+                  <img
+                    src=${emojiIcon}
+                    alt="emojiIcon"
+                    width="20"
+                    height="20"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${translateText("user_setting.emojis_label")}
+                    </div>
+                    <div class="text-sm text-slate-400">
+                      ${translateText("user_setting.emojis_desc")}
+                    </div>
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    ${this.userSettings.emojis()
+                      ? translateText("user_setting.on")
+                      : translateText("user_setting.off")}
+                  </div>
+                </button>
+
+                <button
+                  class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                  @click="${this.onToggleDarkModeButtonClick}"
+                >
+                  <img
+                    src=${darkModeIcon}
+                    alt="darkModeIcon"
+                    width="20"
+                    height="20"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${translateText("user_setting.dark_mode_label")}
+                    </div>
+                    <div class="text-sm text-slate-400">
+                      ${translateText("user_setting.dark_mode_desc")}
+                    </div>
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    ${this.userSettings.darkMode()
+                      ? translateText("user_setting.on")
+                      : translateText("user_setting.off")}
+                  </div>
+                </button>
+
+                <div
+                  class="flex gap-3 items-start w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                >
+                  <img
+                    src=${settingsIcon}
+                    alt="brandThemeIcon"
+                    width="20"
+                    height="20"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${this.tr(
+                        "user_setting.brand_theme_label",
+                        "Brand Theme",
+                      )}
+                    </div>
+                    <div class="text-sm text-slate-400">
+                      ${this.tr(
+                        "user_setting.brand_theme_desc",
+                        "Choose the in-game VaultFront visual palette.",
+                      )}
+                    </div>
+                    <div class="mt-2 flex gap-2">
+                      ${(
+                        ["vaultfront", "competitive"] as VaultFrontBrandTheme[]
+                      ).map(
+                        (theme) => html`
+                          <button
+                            class="px-2 py-1 text-xs rounded border ${this.userSettings.brandTheme() ===
+                            theme
+                              ? "border-amber-300/60 bg-amber-500/20 text-amber-100"
+                              : "border-slate-500 text-slate-200 hover:bg-slate-600/40"}"
+                            @click=${() => this.onSetBrandTheme(theme)}
+                          >
+                            ${theme === "vaultfront"
+                              ? this.tr(
+                                  "user_setting.brand_theme_vaultfront",
+                                  "VaultFront",
+                                )
+                              : this.tr(
+                                  "user_setting.brand_theme_competitive",
+                                  "Competitive",
+                                )}
+                          </button>
+                        `,
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                  @click="${this.onToggleSpecialEffectsButtonClick}"
+                >
+                  <img
+                    src=${explosionIcon}
+                    alt="specialEffects"
+                    width="20"
+                    height="20"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${translateText("user_setting.special_effects_label")}
+                    </div>
+                    <div class="text-sm text-slate-400">
+                      ${translateText("user_setting.special_effects_desc")}
+                    </div>
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    ${this.userSettings.fxLayer()
+                      ? translateText("user_setting.on")
+                      : translateText("user_setting.off")}
+                  </div>
+                </button>
+
+                <button
+                  class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                  @click="${this.onToggleAlertFrameButtonClick}"
+                >
+                  <img
+                    src=${sirenIcon}
+                    alt="alertFrame"
+                    width="20"
+                    height="20"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${translateText("user_setting.alert_frame_label")}
+                    </div>
+                    <div class="text-sm text-slate-400">
+                      ${translateText("user_setting.alert_frame_desc")}
+                    </div>
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    ${this.userSettings.alertFrame()
+                      ? translateText("user_setting.on")
+                      : translateText("user_setting.off")}
+                  </div>
+                </button>
+
+                <button
+                  class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                  @click="${this.onToggleStructureSpritesButtonClick}"
+                >
+                  <img
+                    src=${structureIcon}
+                    alt="structureSprites"
+                    width="20"
+                    height="20"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${translateText("user_setting.structure_sprites_label")}
+                    </div>
+                    <div class="text-sm text-slate-400">
+                      ${translateText("user_setting.structure_sprites_desc")}
+                    </div>
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    ${this.userSettings.structureSprites()
+                      ? translateText("user_setting.on")
+                      : translateText("user_setting.off")}
+                  </div>
+                </button>
+
+                <button
+                  class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                  @click="${this.onToggleCursorCostLabelButtonClick}"
+                >
+                  <img
+                    src=${cursorPriceIcon}
+                    alt="cursorCostLabel"
+                    width="20"
+                    height="20"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${translateText("user_setting.cursor_cost_label_label")}
+                    </div>
+                    <div class="text-sm text-slate-400">
+                      ${translateText("user_setting.cursor_cost_label_desc")}
+                    </div>
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    ${this.userSettings.cursorCostLabel()
+                      ? translateText("user_setting.on")
+                      : translateText("user_setting.off")}
+                  </div>
+                </button>
+
+                <button
+                  class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                  @click="${this.onToggleRandomNameModeButtonClick}"
+                >
+                  <img
+                    src=${ninjaIcon}
+                    alt="ninjaIcon"
+                    width="20"
+                    height="20"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${translateText("user_setting.anonymous_names_label")}
+                    </div>
+                    <div class="text-sm text-slate-400">
+                      ${translateText("user_setting.anonymous_names_desc")}
+                    </div>
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    ${this.userSettings.anonymousNames()
+                      ? translateText("user_setting.on")
+                      : translateText("user_setting.off")}
+                  </div>
+                </button>
+
+                <button
+                  class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                  @click="${this.onToggleLeftClickOpensMenu}"
+                >
+                  <img
+                    src=${mouseIcon}
+                    alt="mouseIcon"
+                    width="20"
+                    height="20"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${translateText("user_setting.left_click_menu")}
+                    </div>
+                    <div class="text-sm text-slate-400">
+                      ${translateText("user_setting.left_click_desc")}
+                    </div>
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    ${this.userSettings.leftClickOpensMenu()
+                      ? translateText("user_setting.on")
+                      : translateText("user_setting.off")}
+                  </div>
+                </button>
+
+                <button
+                  class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+                  @click="${this.onTogglePerformanceOverlayButtonClick}"
+                >
+                  <img
+                    src=${settingsIcon}
+                    alt="performanceIcon"
+                    width="20"
+                    height="20"
+                  />
+                  <div class="flex-1">
+                    <div class="font-medium">
+                      ${translateText("user_setting.performance_overlay_label")}
+                    </div>
+                    <div class="text-sm text-slate-400">
+                      ${translateText("user_setting.performance_overlay_desc")}
+                    </div>
+                  </div>
+                  <div class="text-sm text-slate-400">
+                    ${this.userSettings.performanceOverlay()
+                      ? translateText("user_setting.on")
+                      : translateText("user_setting.off")}
+                  </div>
+                </button>
+
+                <div class="border-t border-slate-600 pt-3 mt-4">
+                  <button
+                    class="flex gap-3 items-center w-full text-left p-3 hover:bg-red-600/20 rounded-sm text-red-400 transition-colors"
+                    @click="${this.onExitButtonClick}"
+                  >
+                    <img
+                      src=${exitIcon}
+                      alt="exitIcon"
+                      width="20"
+                      height="20"
+                    />
+                    <div class="flex-1">
+                      <div class="font-medium">
+                        ${translateText("user_setting.exit_game_label")}
+                      </div>
+                      <div class="text-sm text-slate-400">
+                        ${translateText("user_setting.exit_game_info")}
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>`
             : this.renderVaultFrontRules()}
         </div>
       </div>
     `;
   }
 }
-

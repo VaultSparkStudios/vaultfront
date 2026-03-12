@@ -4,10 +4,19 @@ import { customElement, state } from "lit/decorators.js";
 import { EventBus } from "../../../core/EventBus";
 import { GameMode, Team } from "../../../core/game/Game";
 import { GameView } from "../../../core/game/GameView";
-import { fetchVaultFrontDockAssignment, recordVaultFrontDockEvent } from "../../Api";
+import {
+  fetchVaultFrontDockAssignment,
+  recordVaultFrontDockEvent,
+} from "../../Api";
 import { Platform } from "../../Platform";
 import { getTranslatedPlayerTeamLabel, translateText } from "../../Utils";
-import { HUD_LAYOUT_EVENT, applyGlobalHudScale, dispatchHudLayoutUpdate, readHudLayout, writeHudLayout } from "../HudLayout";
+import {
+  applyGlobalHudScale,
+  dispatchHudLayoutUpdate,
+  HUD_LAYOUT_EVENT,
+  readHudLayout,
+  writeHudLayout,
+} from "../HudLayout";
 import { logHudTelemetry } from "../HudTelemetry";
 import { ImmunityBarVisibleEvent } from "./ImmunityTimer";
 import { Layer } from "./Layer";
@@ -68,7 +77,10 @@ export class GameLeftSidebar extends LitElement implements Layer {
     this.loadDockLayout();
     applyGlobalHudScale(this.hudScale);
     window.addEventListener("resize", this.resizeHandler);
-    window.addEventListener(HUD_LAYOUT_EVENT, this.onHudLayoutUpdated as EventListener);
+    window.addEventListener(
+      HUD_LAYOUT_EVENT,
+      this.onHudLayoutUpdated as EventListener,
+    );
     this.eventBus.on(SpawnBarVisibleEvent, (e) => {
       this.spawnBarVisible = e.visible;
     });
@@ -211,7 +223,12 @@ export class GameLeftSidebar extends LitElement implements Layer {
   }
 
   private anyBlockingPanelOpen(): boolean {
-    const selectors = ["player-panel", "settings-modal", "win-modal", "chat-modal"];
+    const selectors = [
+      "player-panel",
+      "settings-modal",
+      "win-modal",
+      "chat-modal",
+    ];
     for (const selector of selectors) {
       const element = document.querySelector(selector) as HTMLElement | null;
       if (!element) continue;
@@ -226,7 +243,8 @@ export class GameLeftSidebar extends LitElement implements Layer {
   }
 
   private applyDockRules(forceUpdate = false): void {
-    const shouldCollapse = this.viewportWidth() < 1200 || this.anyBlockingPanelOpen();
+    const shouldCollapse =
+      this.viewportWidth() < 1200 || this.anyBlockingPanelOpen();
     if (shouldCollapse && this.isDockExpanded) {
       this.setDockExpanded(false, true);
       if (forceUpdate) this.requestUpdate();
@@ -325,7 +343,9 @@ export class GameLeftSidebar extends LitElement implements Layer {
             ? "max-[400px]:w-full max-[400px]:rounded-none"
             : ""
         } transition-all duration-300 ease-out`}
-        style="margin-top: ${this.barOffset + this.dockOffsetY}px; margin-left: ${this.dockOffsetX}px; zoom: ${this.hudScale};"
+        style="margin-top: ${this.barOffset +
+        this.dockOffsetY}px; margin-left: ${this.dockOffsetX}px; zoom: ${this
+          .hudScale};"
       >
         <div class="flex items-center gap-2 text-white shrink-0">
           <button
@@ -400,7 +420,9 @@ export class GameLeftSidebar extends LitElement implements Layer {
                 <button
                   class="cursor-pointer px-2 py-1.5 bg-slate-700/60 hover:bg-slate-600 border rounded-md border-slate-400 text-[11px]"
                   @click=${() =>
-                    this.setDockVariant(this.dockVariant === "top" ? "stack" : "top")}
+                    this.setDockVariant(
+                      this.dockVariant === "top" ? "stack" : "top",
+                    )}
                   title="Toggle A/B variant"
                 >
                   ${this.dockVariant === "top" ? "AB:Top" : "AB:Stack"}

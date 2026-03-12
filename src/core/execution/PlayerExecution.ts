@@ -82,7 +82,8 @@ export class PlayerExecution implements Execution {
       this.applyFocusDisciplineAdjustments(focus),
     );
 
-    const troopInc = this.config.troopIncreaseRate(this.player) * troopMultiplier;
+    const troopInc =
+      this.config.troopIncreaseRate(this.player) * troopMultiplier;
     this.player.addTroops(troopInc);
 
     const baseGoldFromWorkers = this.config.goldAdditionRate(this.player);

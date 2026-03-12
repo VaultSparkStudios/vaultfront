@@ -3,18 +3,19 @@ import { UnitType } from "../../../src/core/game/Game";
 
 describe("NationExecution VaultFront command tuning", () => {
   test("high pressure with defensive structures prefers jam breaker and short retry window", () => {
-    const execution = new NationExecution("test-game" as any, {
-      playerInfo: { id: "nation-1" },
-    } as any) as any;
+    const execution = new NationExecution(
+      "test-game" as any,
+      {
+        playerInfo: { id: "nation-1" },
+      } as any,
+    ) as any;
     const queueVaultFrontCommand = vi.fn();
 
     execution.player = {
       isAlive: () => true,
       smallID: () => 7,
       unitsOwned: (type: UnitType) =>
-        type === UnitType.DefensePost || type === UnitType.SAMLauncher
-          ? 1
-          : 0,
+        type === UnitType.DefensePost || type === UnitType.SAMLauncher ? 1 : 0,
     };
     execution.mg = {
       config: () => ({
@@ -40,9 +41,12 @@ describe("NationExecution VaultFront command tuning", () => {
   });
 
   test("low pressure economy bias rotates into economic reroutes", () => {
-    const execution = new NationExecution("test-game" as any, {
-      playerInfo: { id: "nation-2" },
-    } as any) as any;
+    const execution = new NationExecution(
+      "test-game" as any,
+      {
+        playerInfo: { id: "nation-2" },
+      } as any,
+    ) as any;
     const queueVaultFrontCommand = vi.fn();
 
     execution.player = {
@@ -74,4 +78,3 @@ describe("NationExecution VaultFront command tuning", () => {
     expect(execution.nextVaultFrontCommandTick).toBe(285);
   });
 });
-

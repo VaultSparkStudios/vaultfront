@@ -3,7 +3,6 @@ import { customElement, property, state } from "lit/decorators.js";
 import { translateText } from "../client/Utils";
 import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
 import { EventBus } from "../core/EventBus";
-import { workerApiUrl, workerGameUrl } from "../core/RuntimeUrls";
 import {
   Difficulty,
   GameMapSize,
@@ -11,6 +10,7 @@ import {
   GameMode,
   UnitType,
 } from "../core/game/Game";
+import { workerApiUrl, workerGameUrl } from "../core/RuntimeUrls";
 import {
   ClientInfo,
   GameConfig,
@@ -839,7 +839,10 @@ export class HostLobbyModal extends BaseModal {
 
     const config = await getServerConfigFromClient();
     const response = await fetch(
-      workerApiUrl(config.workerPath(this.lobbyId), `start_game/${this.lobbyId}`),
+      workerApiUrl(
+        config.workerPath(this.lobbyId),
+        `start_game/${this.lobbyId}`,
+      ),
       {
         method: "POST",
         headers: {
@@ -916,4 +919,3 @@ async function createLobby(gameID: string): Promise<GameInfo> {
     throw error;
   }
 }
-

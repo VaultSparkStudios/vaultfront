@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { RankedType } from "../../../../src/core/game/Game";
 import { WinModal } from "../../../../src/client/graphics/layers/WinModal";
+import { RankedType } from "../../../../src/core/game/Game";
 
 vi.mock("../../../../src/client/Utils", () => ({
   translateText: vi.fn((key: string) => {

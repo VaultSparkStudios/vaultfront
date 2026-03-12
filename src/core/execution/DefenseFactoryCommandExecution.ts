@@ -24,4 +24,3 @@ export class DefenseFactoryCommandExecution implements Execution {
     return true;
   }
 }
-

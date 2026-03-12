@@ -10,6 +10,7 @@ import { AttackExecution } from "./AttackExecution";
 import { BoatRetreatExecution } from "./BoatRetreatExecution";
 import { BotSpawner } from "./BotSpawner";
 import { ConstructionExecution } from "./ConstructionExecution";
+import { DefenseFactoryCommandExecution } from "./DefenseFactoryCommandExecution";
 import { DeleteUnitExecution } from "./DeleteUnitExecution";
 import { DonateGoldExecution } from "./DonateGoldExecution";
 import { DonateTroopsExecution } from "./DonateTroopExecution";
@@ -23,15 +24,14 @@ import { NoOpExecution } from "./NoOpExecution";
 import { PauseExecution } from "./PauseExecution";
 import { QuickChatExecution } from "./QuickChatExecution";
 import { RetreatExecution } from "./RetreatExecution";
-import { DefenseFactoryCommandExecution } from "./DefenseFactoryCommandExecution";
 import { SetResourceFocusExecution } from "./SetResourceFocusExecution";
 import { SpawnExecution } from "./SpawnExecution";
 import { TargetPlayerExecution } from "./TargetPlayerExecution";
 import { TransportShipExecution } from "./TransportShipExecution";
 import { UpgradeStructureExecution } from "./UpgradeStructureExecution";
+import { PlayerSpawner } from "./utils/PlayerSpawner";
 import { VaultConvoyCommandExecution } from "./VaultConvoyCommandExecution";
 import { VaultRolePingExecution } from "./VaultRolePingExecution";
-import { PlayerSpawner } from "./utils/PlayerSpawner";
 
 export class Executor {
   // private random = new PseudoRandom(999)

@@ -52,7 +52,9 @@ export class DesktopNavBar extends LitElement {
         class="hidden lg:flex w-full bg-gradient-to-r from-slate-950 via-slate-900 to-[#0c2a38] items-center justify-center gap-8 py-4 shrink-0 z-50 relative border-b border-cyan-400/25"
       >
         <div class="flex flex-col items-center justify-center">
-          <div class="text-[22px] font-black tracking-[0.2em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-amber-300 drop-shadow-[0_0_14px_rgba(34,211,238,0.45)]">
+          <div
+            class="text-[22px] font-black tracking-[0.2em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-amber-300 drop-shadow-[0_0_14px_rgba(34,211,238,0.45)]"
+          >
             VaultFront
           </div>
           <div

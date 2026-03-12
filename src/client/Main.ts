@@ -2,6 +2,12 @@ import version from "resources/version.txt?raw";
 import { UserMeResponse } from "../core/ApiSchemas";
 import { EventBus } from "../core/EventBus";
 import {
+  appRelativePath,
+  appRootPath,
+  currentAppPathname,
+  workerGamePath,
+} from "../core/RuntimeUrls";
+import {
   GAME_ID_REGEX,
   GameInfo,
   GameRecord,
@@ -10,18 +16,12 @@ import {
 } from "../core/Schemas";
 import { GameEnv } from "../core/configuration/Config";
 import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
-import {
-  appRelativePath,
-  appRootPath,
-  currentAppPathname,
-  workerGamePath,
-} from "../core/RuntimeUrls";
 import { GameType } from "../core/game/Game";
 import { UserSettings } from "../core/game/UserSettings";
 import "./AccountModal";
-import { applyVaultFrontBrandTheme } from "./BrandTheme";
 import { getUserMe } from "./Api";
 import { userAuth } from "./Auth";
+import { applyVaultFrontBrandTheme } from "./BrandTheme";
 import { joinLobby } from "./ClientGameRunner";
 import { getPlayerCosmeticsRefs } from "./Cosmetics";
 import { crazyGamesSDK } from "./CrazyGamesSDK";
@@ -689,9 +689,7 @@ class Client {
       return;
     }
 
-    const pathMatch = currentAppPathname().match(
-      /^\/(?:w\d+\/)?game\/([^/]+)/,
-    );
+    const pathMatch = currentAppPathname().match(/^\/(?:w\d+\/)?game\/([^/]+)/);
     const lobbyId =
       pathMatch && GAME_ID_REGEX.test(pathMatch[1]) ? pathMatch[1] : null;
     if (lobbyId) {
@@ -843,7 +841,11 @@ class Client {
         history.pushState(
           null,
           "",
-          workerGamePath(config.workerPath(lobby.gameID), lobby.gameID, "?live"),
+          workerGamePath(
+            config.workerPath(lobby.gameID),
+            lobby.gameID,
+            "?live",
+          ),
         );
 
         // Store current URL for popstate confirmation

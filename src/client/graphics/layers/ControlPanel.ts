@@ -72,6 +72,9 @@ interface VaultQaProgress {
   passiveIncomeEvents: number;
   convoyDelivered: number;
   convoyIntercepted: number;
+  escortCommands: number;
+  reroutesApplied: number;
+  jamBreakersTriggered: number;
 }
 
 interface VaultDebugToggleDetail {
@@ -250,6 +253,9 @@ export class ControlPanel extends LitElement implements Layer {
     passiveIncomeEvents: 0,
     convoyDelivered: 0,
     convoyIntercepted: 0,
+    escortCommands: 0,
+    reroutesApplied: 0,
+    jamBreakersTriggered: 0,
   };
 
   private pendingResourceFocus: number | null = null;
@@ -1022,7 +1028,8 @@ export class ControlPanel extends LitElement implements Layer {
 
   private renderVaultDebugPanel() {
     if (!this.vaultDebugActive) return "";
-    const escortDurationTicks = this.latestVaultStatus?.escortDurationTicks ?? 600;
+    const escortDurationTicks =
+      this.latestVaultStatus?.escortDurationTicks ?? 600;
     const checks = [
       {
         label: "Capture a vault",
@@ -1079,14 +1086,20 @@ export class ControlPanel extends LitElement implements Layer {
               </div>`,
           )}
         </div>
-        <div class="mt-1 rounded border border-cyan-300/20 bg-slate-900/35 px-1.5 py-1 text-[9px] text-cyan-100/80">
+        <div
+          class="mt-1 rounded border border-cyan-300/20 bg-slate-900/35 px-1.5 py-1 text-[9px] text-cyan-100/80"
+        >
           <div class="font-semibold text-cyan-200/90">Command Ops</div>
           <div class="mt-0.5 tabular-nums">
-            Escort ${this.vaultQaProgress.escortCommands} | Reroute ${this.vaultQaProgress.reroutesApplied} | Jam ${this.vaultQaProgress.jamBreakersTriggered}
+            Escort ${this.vaultQaProgress.escortCommands} | Reroute
+            ${this.vaultQaProgress.reroutesApplied} | Jam
+            ${this.vaultQaProgress.jamBreakersTriggered}
           </div>
           <div class="mt-1 font-semibold text-cyan-200/90">Live tuning</div>
           <div class="mt-0.5 tabular-nums">
-            Passive ${this.passiveGoldPerMinuteValue().toLocaleString()}g/60s | Jam ${this.jamBreakerGoldCostValue().toLocaleString()}g | Escort ${Math.ceil(escortDurationTicks / 10)}s
+            Passive ${this.passiveGoldPerMinuteValue().toLocaleString()}g/60s |
+            Jam ${this.jamBreakerGoldCostValue().toLocaleString()}g | Escort
+            ${Math.ceil(escortDurationTicks / 10)}s
           </div>
         </div>
       </div>
@@ -1760,14 +1773,16 @@ export class ControlPanel extends LitElement implements Layer {
       if (risk === "High" && escortLockoutSecs <= 0) {
         return {
           title: "Act Now",
-          detail: "Shield Nearest before contact. Your active convoy is on a high-threat lane.",
+          detail:
+            "Shield Nearest before contact. Your active convoy is on a high-threat lane.",
           tone: "amber",
         };
       }
       if (risk !== "Low") {
         return {
           title: "Stabilize Route",
-          detail: "Reroute Safest if the lane stays pressured. Save Shield for first enemy touch.",
+          detail:
+            "Reroute Safest if the lane stays pressured. Save Shield for first enemy touch.",
           tone: "cyan",
         };
       }
@@ -1784,7 +1799,8 @@ export class ControlPanel extends LitElement implements Layer {
     }
     if (leadNotice) {
       return {
-        title: leadNotice.actionLabel === "Capture" ? "Capture Window" : "Map Call",
+        title:
+          leadNotice.actionLabel === "Capture" ? "Capture Window" : "Map Call",
         detail:
           leadNotice.actionLabel === "Capture"
             ? `Vault ${leadNotice.siteID} is the next swing objective. Rotate before the window closes.`
@@ -1796,7 +1812,8 @@ export class ControlPanel extends LitElement implements Layer {
     }
     return {
       title: "Setup",
-      detail: "No live convoy yet. Capture the nearest vault and keep Jam available for the first enemy pulse.",
+      detail:
+        "No live convoy yet. Capture the nearest vault and keep Jam available for the first enemy pulse.",
       tone: "emerald",
     };
   }
@@ -2260,7 +2277,8 @@ export class ControlPanel extends LitElement implements Layer {
             </div>`
           : ""}
         <div
-          class="mt-1 rounded border px-1.5 py-1 text-[10px] ${commandCallout.tone === "amber"
+          class="mt-1 rounded border px-1.5 py-1 text-[10px] ${commandCallout.tone ===
+          "amber"
             ? "border-amber-300/40 bg-amber-900/18 text-amber-100"
             : commandCallout.tone === "fuchsia"
               ? "border-fuchsia-300/40 bg-fuchsia-900/18 text-fuchsia-100"
@@ -2268,13 +2286,18 @@ export class ControlPanel extends LitElement implements Layer {
                 ? "border-cyan-300/35 bg-cyan-950/18 text-cyan-100"
                 : "border-emerald-300/35 bg-emerald-950/18 text-emerald-100"}"
         >
-          <div class="font-semibold uppercase tracking-wide text-[9px] lg:text-[10px]">
+          <div
+            class="font-semibold uppercase tracking-wide text-[9px] lg:text-[10px]"
+          >
             ${commandCallout.title}
           </div>
-          <div class="mt-0.5 text-[10px] lg:text-[11px]">${commandCallout.detail}</div>
+          <div class="mt-0.5 text-[10px] lg:text-[11px]">
+            ${commandCallout.detail}
+          </div>
         </div>
         <div class="mt-1 text-blue-100/85 tabular-nums text-[10px]">
-          ${beaconText} | ${this.livePulseSummary(jamLockoutSecs)} | Cost ${jamCostText}
+          ${beaconText} | ${this.livePulseSummary(jamLockoutSecs)} | Cost
+          ${jamCostText}
         </div>
         <div class="text-slate-200/75 tabular-nums text-[10px]">
           Vault lockouts ${lockedSites}/${status.sites.length} | next open
@@ -2377,7 +2400,8 @@ export class ControlPanel extends LitElement implements Layer {
                 </div>
                 ${trimUnderused
                   ? html`<div class="mt-1 text-[10px] text-slate-200/80">
-                      Core loop first. Advanced pings and lane rotation live here once Shield, Reroute, and Jam feel automatic.
+                      Core loop first. Advanced pings and lane rotation live
+                      here once Shield, Reroute, and Jam feel automatic.
                     </div>`
                   : ""}
                 <div class="mt-1 grid grid-cols-2 gap-1">

@@ -14,7 +14,11 @@ export class VaultRolePingExecution implements Execution {
           ? "Intercept enemy Vault Convoy lane"
           : "Defense Factory pulse soon";
 
-    mg.displayMessage(`${this.player.displayName()}: ${label}`, MessageType.CHAT, null);
+    mg.displayMessage(
+      `${this.player.displayName()}: ${label}`,
+      MessageType.CHAT,
+      null,
+    );
   }
 
   tick(): void {}
@@ -27,4 +31,3 @@ export class VaultRolePingExecution implements Execution {
     return true;
   }
 }
-

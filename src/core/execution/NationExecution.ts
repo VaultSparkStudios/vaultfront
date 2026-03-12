@@ -225,7 +225,8 @@ export class NationExecution implements Execution {
 
     const pressure = this.hostileNeighborPressure(player);
     const defenseStructures =
-      player.unitsOwned(UnitType.DefensePost) + player.unitsOwned(UnitType.SAMLauncher);
+      player.unitsOwned(UnitType.DefensePost) +
+      player.unitsOwned(UnitType.SAMLauncher);
     const econBias = this.mg.config().nationGoldTroopEmphasis() / 100;
     const highPressure = pressure >= 0.58;
     const mediumPressure = pressure >= 0.34;
@@ -255,17 +256,20 @@ export class NationExecution implements Execution {
             ? ticks + this.random.nextInt(80, 135)
             : ticks + this.random.nextInt(85, 145);
     } else {
-      this.nextVaultFrontCommandTick =
-        highPressure
-          ? ticks + this.random.nextInt(55, 90)
-          : ticks + this.random.nextInt(90, 160);
+      this.nextVaultFrontCommandTick = highPressure
+        ? ticks + this.random.nextInt(55, 90)
+        : ticks + this.random.nextInt(90, 160);
     }
   }
 
   private hostileNeighborPressure(player: Player): number {
-    const neighbors = player.neighbors().filter((n) => n.isPlayer()) as Player[];
+    const neighbors = player
+      .neighbors()
+      .filter((n) => n.isPlayer()) as Player[];
     if (neighbors.length === 0) return 0;
-    const hostile = neighbors.filter((other) => !player.isFriendly(other)).length;
+    const hostile = neighbors.filter(
+      (other) => !player.isFriendly(other),
+    ).length;
     return hostile / neighbors.length;
   }
 

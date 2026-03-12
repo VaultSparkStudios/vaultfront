@@ -24,4 +24,3 @@ export class VaultConvoyCommandExecution implements Execution {
     return true;
   }
 }
-

@@ -171,13 +171,17 @@ describe("VaultFrontExecution property tests", () => {
     };
     execution.executionChainStep = new Map<number, number>([[3, 0]]);
     execution.executionChainExpiresAtTick = new Map<number, number>([[3, 0]]);
-    execution.executionStreakNextConvoyMultiplier = new Map<number, number>([[3, 1]]);
+    execution.executionStreakNextConvoyMultiplier = new Map<number, number>([
+      [3, 1],
+    ]);
 
     execution.updateExecutionChainCapture(player, 100);
     execution.updateExecutionChainConvoyDelivered(player, 300);
     execution.updateExecutionChainPulseDeny(player, 420, true);
 
-    expect(execution.executionStreakNextConvoyMultiplier.get(3)).toBeGreaterThan(1);
+    expect(
+      execution.executionStreakNextConvoyMultiplier.get(3),
+    ).toBeGreaterThan(1);
     expect(execution.executionChainStep.get(3)).toBe(0);
   });
 
@@ -187,7 +191,9 @@ describe("VaultFrontExecution property tests", () => {
     expect(execution.vaultCooldownTicksEffective()).toBeLessThan(650);
     expect(execution.jamBreakerCooldownTicksEffective()).toBeLessThan(900);
     execution.weeklyMutator = "double_passive";
-    expect(execution.vaultPassiveIncomeIntervalTicksEffective()).toBeLessThan(600);
+    expect(execution.vaultPassiveIncomeIntervalTicksEffective()).toBeLessThan(
+      600,
+    );
     expect(execution.vaultPassiveGoldPerMinuteEffective()).toBe(150_000n);
   });
 });

@@ -159,7 +159,11 @@ export class VaultFrontLayer implements Layer {
       } else if (site.passiveOwnerID !== null) {
         ctx.fillStyle = "rgba(167, 243, 208, 0.92)";
         ctx.font = `${Math.round(this.fontSize() - 2)}px Overpass, sans-serif`;
-        ctx.fillText(`Passive +gold in ${passiveSecs}s`, screen.x + 13, screen.y + 8);
+        ctx.fillText(
+          `Passive +gold in ${passiveSecs}s`,
+          screen.x + 13,
+          screen.y + 8,
+        );
       }
       ctx.fillStyle = "rgba(226, 232, 240, 0.9)";
       ctx.font = `${Math.round(this.fontSize() - 3)}px Overpass, sans-serif`;
@@ -206,7 +210,9 @@ export class VaultFrontLayer implements Layer {
       ctx.strokeStyle = laneGradient;
       ctx.lineWidth = 2.4;
       ctx.setLineDash([8, 6]);
-      ctx.lineDashOffset = reducedMotion ? 0 : -((this.game.ticks() % 24) * 0.75);
+      ctx.lineDashOffset = reducedMotion
+        ? 0
+        : -((this.game.ticks() % 24) * 0.75);
       ctx.beginPath();
       ctx.moveTo(src.x, src.y);
       ctx.lineTo(dst.x, dst.y);
@@ -222,10 +228,18 @@ export class VaultFrontLayer implements Layer {
       ctx.stroke();
 
       const convoyScale = Math.max(0.72, Math.min(1.5, this.markerSize() / 5));
-      const glowPulse = reducedMotion ? 0.55 : 0.45 + ((this.game.ticks() % 30) / 30) * 0.5;
+      const glowPulse = reducedMotion
+        ? 0.55
+        : 0.45 + ((this.game.ticks() % 30) / 30) * 0.5;
       ctx.fillStyle = `rgba(250, 204, 21, ${0.08 + glowPulse * 0.12})`;
       ctx.beginPath();
-      ctx.arc(dst.x, dst.y, this.markerSize() * (2.2 + glowPulse), 0, Math.PI * 2);
+      ctx.arc(
+        dst.x,
+        dst.y,
+        this.markerSize() * (2.2 + glowPulse),
+        0,
+        Math.PI * 2,
+      );
       ctx.fill();
 
       const offsets = [0, 0.045, 0.09];
@@ -252,7 +266,11 @@ export class VaultFrontLayer implements Layer {
       ctx.textAlign = "center";
       const shieldLabel =
         convoy.escortShield > 0 ? ` | Shield x${convoy.escortShield}` : "";
-      ctx.fillText(`Vault Convoy ETA ${etaSeconds}s${shieldLabel}`, midX, midY - 8);
+      ctx.fillText(
+        `Vault Convoy ETA ${etaSeconds}s${shieldLabel}`,
+        midX,
+        midY - 8,
+      );
       ctx.fillStyle = "rgba(255, 236, 179, 0.9)";
       ctx.font = `${Math.round(this.fontSize() - 3)}px Overpass, sans-serif`;
       ctx.fillText(
@@ -316,7 +334,10 @@ export class VaultFrontLayer implements Layer {
       );
       ctx.stroke();
 
-      const secondsLeft = Math.max(0, Math.ceil((beacon.maskedUntilTick - now) / 10));
+      const secondsLeft = Math.max(
+        0,
+        Math.ceil((beacon.maskedUntilTick - now) / 10),
+      );
       const label = active
         ? `Defense Factory Active ${secondsLeft}s`
         : `Defense Factory Charge ${Math.floor(beacon.charge)}%`;

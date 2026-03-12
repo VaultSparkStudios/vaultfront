@@ -181,7 +181,10 @@ interface VaultFrontFunnelSummary {
   phases: Record<"early" | "mid" | "late", Record<string, number>>;
 }
 
-const vaultFrontContractsStore = new Map<string, VaultFrontSeasonContractState>();
+const vaultFrontContractsStore = new Map<
+  string,
+  VaultFrontSeasonContractState
+>();
 const vaultFrontDockAssignments = new Map<string, VaultFrontDockAssignment>();
 const vaultFrontDockVariantStats = new Map<
   z.infer<typeof VaultFrontDockVariantSchema>,
@@ -198,8 +201,14 @@ const vaultFrontRecapVariantStats = new Map<
   ["goal_focus", { assignedUsers: 0, events: {}, eventHistory: [] }],
   ["requeue_focus", { assignedUsers: 0, events: {}, eventHistory: [] }],
 ]);
-const vaultFrontOutcomeBuckets = new Map<string, VaultFrontOutcomeBucketStats>();
-const vaultFrontRuntimeAssignments = new Map<string, VaultFrontRuntimeAssignment>();
+const vaultFrontOutcomeBuckets = new Map<
+  string,
+  VaultFrontOutcomeBucketStats
+>();
+const vaultFrontRuntimeAssignments = new Map<
+  string,
+  VaultFrontRuntimeAssignment
+>();
 const vaultFrontRuntimeRewardStats = new Map<
   z.infer<typeof VaultFrontRuntimeRewardVariantSchema>,
   VaultFrontRuntimeVariantStats
@@ -238,15 +247,12 @@ function stableHash(input: string): number {
   let h = 2166136261;
   for (let i = 0; i < input.length; i++) {
     h ^= input.charCodeAt(i);
-    h +=
-      (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
+    h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
   }
   return h >>> 0;
 }
 
-async function resolveVaultFrontIdentity(
-  req: Request,
-): Promise<string | null> {
+async function resolveVaultFrontIdentity(req: Request): Promise<string | null> {
   const authHeader = req.headers.authorization;
   if (authHeader?.startsWith("Bearer ")) {
     const token = authHeader.substring("Bearer ".length);
@@ -258,7 +264,10 @@ async function resolveVaultFrontIdentity(
 
   const rawHeader = req.headers["x-vaultfront-client-id"];
   const clientId = Array.isArray(rawHeader) ? rawHeader[0] : rawHeader;
-  if (typeof clientId === "string" && PersistentIdSchema.safeParse(clientId).success) {
+  if (
+    typeof clientId === "string" &&
+    PersistentIdSchema.safeParse(clientId).success
+  ) {
     return `anon:${clientId}`;
   }
 
@@ -340,7 +349,9 @@ function recordRecapEvent(
   return { variant };
 }
 
-function ensureRuntimeAssignment(identity: string): VaultFrontRuntimeAssignment {
+function ensureRuntimeAssignment(
+  identity: string,
+): VaultFrontRuntimeAssignment {
   const existing = vaultFrontRuntimeAssignments.get(identity);
   if (existing) return existing;
 
@@ -416,7 +427,8 @@ function recordFunnelTelemetry(
   const overall = vaultFrontFunnelSummaries.get("all") ?? emptyFunnelSummary();
   const length = matchLengthBucket(telemetry.matchLengthSeconds);
   const bucketKey = `length:${length}`;
-  const bucket = vaultFrontFunnelSummaries.get(bucketKey) ?? emptyFunnelSummary();
+  const bucket =
+    vaultFrontFunnelSummaries.get(bucketKey) ?? emptyFunnelSummary();
   for (const target of [overall, bucket]) {
     target.matches += 1;
     if (telemetry.won) target.wins += 1;
@@ -454,7 +466,9 @@ function ensureOutcomeBucket(key: string): VaultFrontOutcomeBucketStats {
   return created;
 }
 
-function matchLengthBucket(matchLengthSeconds: number): "short" | "mid" | "long" {
+function matchLengthBucket(
+  matchLengthSeconds: number,
+): "short" | "mid" | "long" {
   if (matchLengthSeconds < 600) return "short";
   if (matchLengthSeconds < 1200) return "mid";
   return "long";
@@ -544,7 +558,11 @@ function buildDockGuardrailSummary(
 
   const topObjectiveEvents = objectiveEventCount(top);
   const stackObjectiveEvents = objectiveEventCount(stack);
-  const topTrendNow = objectiveEventsInRange(top.eventHistory, thisWindowStart, now);
+  const topTrendNow = objectiveEventsInRange(
+    top.eventHistory,
+    thisWindowStart,
+    now,
+  );
   const stackTrendNow = objectiveEventsInRange(
     stack.eventHistory,
     thisWindowStart,
@@ -573,8 +591,12 @@ function buildDockGuardrailSummary(
       ? Math.min(topRate, stackRate) / Math.max(topRate, stackRate)
       : 1;
 
-  let decision: "hold" | "prefer_top" | "prefer_stack" | "disable_top" | "disable_stack" =
-    "hold";
+  let decision:
+    | "hold"
+    | "prefer_top"
+    | "prefer_stack"
+    | "disable_top"
+    | "disable_stack" = "hold";
   let reason = "Not enough sample to make a guardrail decision.";
   if (enoughSample) {
     if (worseRateRatio <= 0.7) {
@@ -589,7 +611,8 @@ function buildDockGuardrailSummary(
       }
     } else {
       decision = topRate >= stackRate ? "prefer_top" : "prefer_stack";
-      reason = "Both variants are healthy; keep ramp while preferring the current leader.";
+      reason =
+        "Both variants are healthy; keep ramp while preferring the current leader.";
     }
   }
 
@@ -602,7 +625,11 @@ function buildDockGuardrailSummary(
       deltaPctTopVsStack: Number(rateDeltaPct.toFixed(2)),
     },
     trend5m: {
-      top: { current: topTrendNow, previous: topTrendPrev, delta: topTrendDelta },
+      top: {
+        current: topTrendNow,
+        previous: topTrendPrev,
+        delta: topTrendDelta,
+      },
       stack: {
         current: stackTrendNow,
         previous: stackTrendPrev,
@@ -1025,7 +1052,9 @@ export async function startWorker() {
     return res.json({
       experimentId: "vault_runtime_v1",
       generatedAt: Date.now(),
-      rewardVariants: Object.fromEntries(vaultFrontRuntimeRewardStats.entries()),
+      rewardVariants: Object.fromEntries(
+        vaultFrontRuntimeRewardStats.entries(),
+      ),
       hudVariants: Object.fromEntries(vaultFrontRuntimeHudStats.entries()),
     });
   });
@@ -1056,19 +1085,30 @@ export async function startWorker() {
       .map(([key, value]) => ({
         key,
         matches: value.matches,
-        winRate: value.matches > 0 ? Number((value.wins / value.matches).toFixed(4)) : 0,
+        winRate:
+          value.matches > 0
+            ? Number((value.wins / value.matches).toFixed(4))
+            : 0,
         hudPerMatch: {
           vaultNoticeJumps:
             value.matches > 0
-              ? Number((value.hudTotals.vaultNoticeJumps / value.matches).toFixed(3))
+              ? Number(
+                  (value.hudTotals.vaultNoticeJumps / value.matches).toFixed(3),
+                )
               : 0,
           objectiveRailClicks:
             value.matches > 0
-              ? Number((value.hudTotals.objectiveRailClicks / value.matches).toFixed(3))
+              ? Number(
+                  (value.hudTotals.objectiveRailClicks / value.matches).toFixed(
+                    3,
+                  ),
+                )
               : 0,
           timelineJumps:
             value.matches > 0
-              ? Number((value.hudTotals.timelineJumps / value.matches).toFixed(3))
+              ? Number(
+                  (value.hudTotals.timelineJumps / value.matches).toFixed(3),
+                )
               : 0,
         },
         recapCtaRate:
@@ -1086,7 +1126,8 @@ export async function startWorker() {
       generatedAt: Date.now(),
       totals: {
         matches: all.matches,
-        winRate: all.matches > 0 ? Number((all.wins / all.matches).toFixed(4)) : 0,
+        winRate:
+          all.matches > 0 ? Number((all.wins / all.matches).toFixed(4)) : 0,
         recapCtaRate:
           all.matches > 0
             ? Number((all.recapCtaClicks / all.matches).toFixed(4))
@@ -1098,11 +1139,15 @@ export async function startWorker() {
         hudPerMatch: {
           vaultNoticeJumps:
             all.matches > 0
-              ? Number((all.hudTotals.vaultNoticeJumps / all.matches).toFixed(3))
+              ? Number(
+                  (all.hudTotals.vaultNoticeJumps / all.matches).toFixed(3),
+                )
               : 0,
           objectiveRailClicks:
             all.matches > 0
-              ? Number((all.hudTotals.objectiveRailClicks / all.matches).toFixed(3))
+              ? Number(
+                  (all.hudTotals.objectiveRailClicks / all.matches).toFixed(3),
+                )
               : 0,
           timelineJumps:
             all.matches > 0
@@ -1136,7 +1181,9 @@ export async function startWorker() {
         key,
         matches: value.matches,
         winRate:
-          value.matches > 0 ? Number((value.wins / value.matches).toFixed(4)) : 0,
+          value.matches > 0
+            ? Number((value.wins / value.matches).toFixed(4))
+            : 0,
         phases: value.phases,
       }),
     );

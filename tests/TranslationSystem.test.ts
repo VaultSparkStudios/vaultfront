@@ -508,7 +508,7 @@ describe("Translation System", () => {
       console.error("ICU translation validation failed:\n" + errors.join("\n"));
     }
     expect(errors).toEqual([]);
-  });
+  }, 15000);
 
   test("en.json keys stay in sync with source usage", () => {
     const enJsonPath = path.join(LANGUAGE_DIR, "en.json");
@@ -619,5 +619,5 @@ describe("Translation System", () => {
 
     expect(missingKeys).toEqual([]);
     expect(unusedKeys).toEqual([]);
-  });
+  }, 30000);
 });

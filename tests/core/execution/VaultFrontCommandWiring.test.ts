@@ -1,12 +1,12 @@
+import {
+  SendVaultConvoyCommandIntentEvent,
+  Transport,
+} from "../../../src/client/Transport";
 import { EventBus } from "../../../src/core/EventBus";
 import { Executor } from "../../../src/core/execution/ExecutionManager";
 import { VaultConvoyCommandExecution } from "../../../src/core/execution/VaultConvoyCommandExecution";
 import { PlayerInfo, PlayerType } from "../../../src/core/game/Game";
 import { ClientIntentMessageSchema } from "../../../src/core/Schemas";
-import {
-  SendVaultConvoyCommandIntentEvent,
-  Transport,
-} from "../../../src/client/Transport";
 import { setup } from "../../util/Setup";
 
 describe("Vault convoy command wiring", () => {

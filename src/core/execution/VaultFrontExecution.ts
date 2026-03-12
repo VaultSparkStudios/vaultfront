@@ -126,7 +126,9 @@ export class VaultFrontExecution implements Execution {
 
   init(mg: Game): void {
     this.game = mg;
-    const seed = simpleHash(`vaultfront:${mg.width()}x${mg.height()}:${mg.numLandTiles()}`);
+    const seed = simpleHash(
+      `vaultfront:${mg.width()}x${mg.height()}:${mg.numLandTiles()}`,
+    );
     this.random = new PseudoRandom(seed);
     this.weeklyMutator = this.game.config().vaultWeeklyMutator();
 
@@ -182,7 +184,10 @@ export class VaultFrontExecution implements Execution {
     for (const player of this.game.players()) {
       const playerID = player.smallID();
       const step = this.executionChainStep.get(playerID) ?? 0;
-      if (step > 0 && ticks > (this.executionChainExpiresAtTick.get(playerID) ?? 0)) {
+      if (
+        step > 0 &&
+        ticks > (this.executionChainExpiresAtTick.get(playerID) ?? 0)
+      ) {
         this.resetExecutionChain(playerID);
       }
     }
@@ -207,8 +212,14 @@ export class VaultFrontExecution implements Execution {
       }
     });
 
-    const maxSites = Math.min(5, Math.max(2, Math.floor(landTiles.length / 180_000)));
-    const minSpacing = Math.max(35, Math.floor(Math.sqrt(this.game.numLandTiles()) / 3));
+    const maxSites = Math.min(
+      5,
+      Math.max(2, Math.floor(landTiles.length / 180_000)),
+    );
+    const minSpacing = Math.max(
+      35,
+      Math.floor(Math.sqrt(this.game.numLandTiles()) / 3),
+    );
     const shuffled = this.random.shuffleArray(landTiles);
 
     const selected: TileRef[] = [];
@@ -252,7 +263,11 @@ export class VaultFrontExecution implements Execution {
     }
   }
 
-  private handleCommand(player: Player, command: VaultFrontCommand, ticks: number): void {
+  private handleCommand(
+    player: Player,
+    command: VaultFrontCommand,
+    ticks: number,
+  ): void {
     switch (command.type) {
       case "reroute_city":
       case "reroute_port":
@@ -317,13 +332,21 @@ export class VaultFrontExecution implements Execution {
     }
 
     const currentTile = this.convoyProgressTile(active);
-    const destination = this.bestConvoyDestination(player, currentTile, preferred, command);
+    const destination = this.bestConvoyDestination(
+      player,
+      currentTile,
+      preferred,
+      command,
+    );
     if (destination === active.destinationTile) {
       return;
     }
     active.destinationTile = destination;
     const distance = this.game.manhattanDist(currentTile, destination);
-    active.ticksRemaining = Math.max(35, Math.min(320, Math.floor(distance / 2)));
+    active.ticksRemaining = Math.max(
+      35,
+      Math.min(320, Math.floor(distance / 2)),
+    );
     active.totalTicks = Math.max(active.totalTicks, active.ticksRemaining + 1);
     const routeRisk = this.routeRiskScore(player, currentTile, destination);
     const updatedPlan = this.convoyRewardPlan(
@@ -393,7 +416,8 @@ export class VaultFrontExecution implements Execution {
   }
 
   private applyJamBreakerCommand(player: Player, ticks: number): void {
-    const cooldownUntil = this.jamBreakerCooldownUntil.get(player.smallID()) ?? 0;
+    const cooldownUntil =
+      this.jamBreakerCooldownUntil.get(player.smallID()) ?? 0;
     if (ticks < cooldownUntil) {
       return;
     }
@@ -408,7 +432,10 @@ export class VaultFrontExecution implements Execution {
     }
     player.removeGold(this.jamBreakerGoldCost);
     this.game.stats().defenseFactoryJamBreaker(player);
-    this.jamBreakerCooldownUntil.set(player.smallID(), ticks + this.jamBreakerCooldownTicksEffective());
+    this.jamBreakerCooldownUntil.set(
+      player.smallID(),
+      ticks + this.jamBreakerCooldownTicksEffective(),
+    );
 
     let deniedPulse = false;
     for (const [playerID, beacon] of this.beacons.entries()) {
@@ -450,8 +477,10 @@ export class VaultFrontExecution implements Execution {
     if (players.length <= 1) return;
 
     const avgStrength =
-      players.reduce((acc, player) => acc + this.playerStrengthScore(player), 0) /
-      players.length;
+      players.reduce(
+        (acc, player) => acc + this.playerStrengthScore(player),
+        0,
+      ) / players.length;
     if (avgStrength <= 0) return;
 
     const minute8Tick = this.game.config().numSpawnPhaseTurns() + 4_800;
@@ -466,7 +495,10 @@ export class VaultFrontExecution implements Execution {
       if (behind) {
         if (started < 0) {
           this.behindSinceTick.set(playerID, ticks);
-        } else if (ticks - started >= this.surgeActivationHoldTicks && ticks >= surgeUntil) {
+        } else if (
+          ticks - started >= this.surgeActivationHoldTicks &&
+          ticks >= surgeUntil
+        ) {
           const nextSurgeUntil = ticks + this.surgeDurationTicks;
           this.surgeUntilTick.set(playerID, nextSurgeUntil);
           this.behindSinceTick.set(playerID, ticks);
@@ -569,12 +601,18 @@ export class VaultFrontExecution implements Execution {
       this.updateExecutionChainCapture(owner, ticks);
       this.openSquadObjectiveWindow(owner, site, ticks);
 
-      this.startConvoy(owner, site, ticks, site.reducedRewardNextCapture ? 0.72 : 1);
+      this.startConvoy(
+        owner,
+        site,
+        ticks,
+        site.reducedRewardNextCapture ? 0.72 : 1,
+      );
       site.controllerID = null;
       site.controlTicks = 0;
       site.cooldownTicks = this.vaultCooldownTicksEffective();
       site.passiveOwnerID = owner.smallID();
-      site.nextPassiveGoldTick = ticks + this.vaultPassiveIncomeIntervalTicksEffective();
+      site.nextPassiveGoldTick =
+        ticks + this.vaultPassiveIncomeIntervalTicksEffective();
       site.reducedRewardNextCapture = false;
     }
   }
@@ -625,7 +663,8 @@ export class VaultFrontExecution implements Execution {
       `Vault ${site.id} passive +${this.bigintToSafeNumber(passiveGold).toLocaleString()}g`,
       120,
     );
-    site.nextPassiveGoldTick = ticks + this.vaultPassiveIncomeIntervalTicksEffective();
+    site.nextPassiveGoldTick =
+      ticks + this.vaultPassiveIncomeIntervalTicksEffective();
   }
 
   private hasSurgeActive(player: Player): boolean {
@@ -649,7 +688,9 @@ export class VaultFrontExecution implements Execution {
     if (!this.hasSurgeActive(interceptor)) {
       return;
     }
-    const bonus = BigInt(Math.floor(30_000 * this.surgeInterceptGoldMultiplier));
+    const bonus = BigInt(
+      Math.floor(30_000 * this.surgeInterceptGoldMultiplier),
+    );
     interceptor.addGold(bonus, tile);
     interceptor.addTroops(650);
     this.game.displayMessage(
@@ -668,7 +709,10 @@ export class VaultFrontExecution implements Execution {
 
   private vaultPassiveIncomeIntervalTicksEffective(): number {
     if (this.weeklyMutator === "double_passive") {
-      return Math.max(300, Math.floor(this.vaultPassiveIncomeIntervalTicks * 0.5));
+      return Math.max(
+        300,
+        Math.floor(this.vaultPassiveIncomeIntervalTicks * 0.5),
+      );
     }
     return this.vaultPassiveIncomeIntervalTicks;
   }
@@ -736,7 +780,10 @@ export class VaultFrontExecution implements Execution {
     );
   }
 
-  private updateExecutionChainConvoyDelivered(player: Player, ticks: number): void {
+  private updateExecutionChainConvoyDelivered(
+    player: Player,
+    ticks: number,
+  ): void {
     const playerID = player.smallID();
     const step = this.executionChainStep.get(playerID) ?? 0;
     const expiresAt = this.executionChainExpiresAtTick.get(playerID) ?? 0;
@@ -783,7 +830,11 @@ export class VaultFrontExecution implements Execution {
     );
   }
 
-  private openSquadObjectiveWindow(owner: Player, site: VaultSite, ticks: number): void {
+  private openSquadObjectiveWindow(
+    owner: Player,
+    site: VaultSite,
+    ticks: number,
+  ): void {
     this.squadObjectiveWindows.push({
       siteID: site.id,
       ownerID: owner.smallID(),
@@ -804,8 +855,12 @@ export class VaultFrontExecution implements Execution {
       if (window.rewarded || ticks > window.expiresAtTick) continue;
       const owner = this.game.playerBySmallID(window.ownerID);
       if (!owner.isPlayer() || !owner.isAlive()) continue;
-      if (owner.smallID() !== actor.smallID() && !owner.isFriendly(actor)) continue;
-      if (this.game.manhattanDist(tile, window.anchorTile) > this.squadObjectiveRadius) {
+      if (owner.smallID() !== actor.smallID() && !owner.isFriendly(actor))
+        continue;
+      if (
+        this.game.manhattanDist(tile, window.anchorTile) >
+        this.squadObjectiveRadius
+      ) {
         continue;
       }
       window.participants.add(actor.smallID());
@@ -831,20 +886,28 @@ export class VaultFrontExecution implements Execution {
     const alive = this.game.players().filter((p) => p.isAlive());
     if (alive.length === 0) return 1;
     const avgStrength =
-      alive.reduce((acc, p) => acc + this.playerStrengthScore(p), 0) / alive.length;
+      alive.reduce((acc, p) => acc + this.playerStrengthScore(p), 0) /
+      alive.length;
     if (avgStrength <= 0.01) return 1;
     const ratio = this.playerStrengthScore(player) / avgStrength;
     return Math.max(0.72, Math.min(1.22, 1.04 - (ratio - 1) * 0.34));
   }
 
   private phaseAdjustmentMultiplier(ticks: number): number {
-    const elapsedAfterSpawn = Math.max(0, ticks - this.game.config().numSpawnPhaseTurns());
+    const elapsedAfterSpawn = Math.max(
+      0,
+      ticks - this.game.config().numSpawnPhaseTurns(),
+    );
     if (elapsedAfterSpawn < 2_400) return 1.06;
     if (elapsedAfterSpawn < 7_200) return 1;
     return 0.97;
   }
 
-  private routeRiskScore(owner: Player, source: TileRef, destination: TileRef): number {
+  private routeRiskScore(
+    owner: Player,
+    source: TileRef,
+    destination: TileRef,
+  ): number {
     const srcX = this.game.x(source);
     const srcY = this.game.y(source);
     const dstX = this.game.x(destination);
@@ -896,7 +959,8 @@ export class VaultFrontExecution implements Execution {
     const alive = this.game.players().filter((p) => p.isAlive());
     const avgStrength =
       alive.length > 0
-        ? alive.reduce((acc, p) => acc + this.playerStrengthScore(p), 0) / alive.length
+        ? alive.reduce((acc, p) => acc + this.playerStrengthScore(p), 0) /
+          alive.length
         : this.playerStrengthScore(owner);
     const ownerStrength = this.playerStrengthScore(owner);
     const baselineGold = Math.max(
@@ -904,14 +968,17 @@ export class VaultFrontExecution implements Execution {
       Math.floor(
         (ownerStrength * tuning.baselineGoldOwnerStrengthScale +
           avgStrength * tuning.baselineGoldAvgStrengthScale) *
-          (tuning.baselineGoldRiskBase + routeRisk * tuning.baselineGoldRiskScale),
+          (tuning.baselineGoldRiskBase +
+            routeRisk * tuning.baselineGoldRiskScale),
       ),
     );
     const distanceGold = Math.max(
       tuning.distanceGoldMin,
       Math.floor(
-        (ownerStrength * tuning.distanceGoldOwnerStrengthScale + tuning.distanceGoldFlat) *
-          (tuning.distanceGoldRiskBase + routeRisk * tuning.distanceGoldRiskScale),
+        (ownerStrength * tuning.distanceGoldOwnerStrengthScale +
+          tuning.distanceGoldFlat) *
+          (tuning.distanceGoldRiskBase +
+            routeRisk * tuning.distanceGoldRiskScale),
       ),
     );
 
@@ -956,7 +1023,11 @@ export class VaultFrontExecution implements Execution {
     const finalRewardScale = rewardScale * streakMultiplier;
     this.executionStreakNextConvoyMultiplier.set(owner.smallID(), 1);
     const preferred = this.preferredConvoyDestination.get(owner.smallID());
-    const destinationTile = this.bestConvoyDestination(owner, site.tile, preferred);
+    const destinationTile = this.bestConvoyDestination(
+      owner,
+      site.tile,
+      preferred,
+    );
     const distance = this.game.manhattanDist(site.tile, destinationTile);
     const travelTicks = Math.max(60, Math.min(320, Math.floor(distance / 2)));
     const routeRisk = this.routeRiskScore(owner, site.tile, destinationTile);
@@ -1059,7 +1130,9 @@ export class VaultFrontExecution implements Execution {
     const preferredStructures =
       preferredType === undefined
         ? allStructures
-        : allStructures.filter((structure) => structure.type() === preferredType);
+        : allStructures.filter(
+            (structure) => structure.type() === preferredType,
+          );
     const structures =
       preferredStructures.length > 0 ? preferredStructures : allStructures;
 
@@ -1107,7 +1180,8 @@ export class VaultFrontExecution implements Execution {
       const currentTile = this.convoyProgressTile(convoy);
       const interceptor = this.hostileOwnerAtTile(owner, currentTile);
       if (interceptor) {
-        const escortActive = (this.escortUntilTick.get(owner.smallID()) ?? 0) > ticks;
+        const escortActive =
+          (this.escortUntilTick.get(owner.smallID()) ?? 0) > ticks;
         if (escortActive && convoy.escortShield > 0) {
           convoy.escortShield -= 1;
           this.game.displayMessage(
@@ -1258,7 +1332,9 @@ export class VaultFrontExecution implements Execution {
         140,
       );
       this.contributeToSquadObjective(player, ticks, anchorTile);
-      this.game.stats().defenseFactoryPulse(player, this.beaconPulseDurationTicks);
+      this.game
+        .stats()
+        .defenseFactoryPulse(player, this.beaconPulseDurationTicks);
     }
   }
 
@@ -1305,7 +1381,10 @@ export class VaultFrontExecution implements Execution {
 
     const x = Math.max(
       0,
-      Math.min(this.game.width() - 1, Math.round(srcX + (dstX - srcX) * progress)),
+      Math.min(
+        this.game.width() - 1,
+        Math.round(srcX + (dstX - srcX) * progress),
+      ),
     );
     const y = Math.max(
       0,
@@ -1385,7 +1464,7 @@ export class VaultFrontExecution implements Execution {
     const owner =
       candidate && candidate.isPlayer() && candidate.isAlive()
         ? candidate
-        : this.game.players().find((p) => p.isAlive()) ?? null;
+        : (this.game.players().find((p) => p.isAlive()) ?? null);
     const tuning = this.game.config().vaultConvoyRewardTuning();
     if (!owner) {
       return {
@@ -1406,7 +1485,13 @@ export class VaultFrontExecution implements Execution {
     const distance = this.game.manhattanDist(site.tile, destination);
     const risk = this.routeRiskScore(owner, site.tile, destination);
     const rewardScale = site.reducedRewardNextCapture ? 0.72 : 1;
-    const plan = this.convoyRewardPlan(owner, distance, risk, this.game.ticks(), rewardScale);
+    const plan = this.convoyRewardPlan(
+      owner,
+      distance,
+      risk,
+      this.game.ticks(),
+      rewardScale,
+    );
     return {
       projectedGoldReward: this.bigintToSafeNumber(plan.goldReward),
       projectedTroopsReward: plan.troopsReward,
@@ -1471,7 +1556,11 @@ export class VaultFrontExecution implements Execution {
       );
       const distance = this.game.manhattanDist(currentTile, destinationTile);
       const travelTicks = Math.max(35, Math.min(320, Math.floor(distance / 2)));
-      const routeRisk = this.routeRiskScore(owner, currentTile, destinationTile);
+      const routeRisk = this.routeRiskScore(
+        owner,
+        currentTile,
+        destinationTile,
+      );
       const plan = this.convoyRewardPlan(
         owner,
         distance,
@@ -1574,7 +1663,8 @@ export class VaultFrontExecution implements Execution {
           charge: state.charge,
           cooldownUntilTick: state.cooldownUntil,
           maskedUntilTick: state.maskedUntil,
-          jamBreakerCooldownUntilTick: this.jamBreakerCooldownUntil.get(playerID) ?? 0,
+          jamBreakerCooldownUntilTick:
+            this.jamBreakerCooldownUntil.get(playerID) ?? 0,
           escortUntilTick: this.escortUntilTick.get(playerID) ?? 0,
           anchorTile: state.anchorTile,
           factoryCount,
@@ -1587,10 +1677,18 @@ export class VaultFrontExecution implements Execution {
 
   private vaultDebugEnabled(): boolean {
     return (
-      (globalThis as { __OPENFRONT_VAULT_DEBUG__?: boolean; __VAULTFRONT_DEBUG__?: boolean })
-        .__OPENFRONT_VAULT_DEBUG__ === true ||
-      (globalThis as { __OPENFRONT_VAULT_DEBUG__?: boolean; __VAULTFRONT_DEBUG__?: boolean })
-        .__VAULTFRONT_DEBUG__ === true
+      (
+        globalThis as {
+          __OPENFRONT_VAULT_DEBUG__?: boolean;
+          __VAULTFRONT_DEBUG__?: boolean;
+        }
+      ).__OPENFRONT_VAULT_DEBUG__ === true ||
+      (
+        globalThis as {
+          __OPENFRONT_VAULT_DEBUG__?: boolean;
+          __VAULTFRONT_DEBUG__?: boolean;
+        }
+      ).__VAULTFRONT_DEBUG__ === true
     );
   }
 
@@ -1616,7 +1714,10 @@ export class VaultFrontExecution implements Execution {
     }>;
   }): void {
     const key = statusUpdate.convoys
-      .map((convoy) => `${convoy.id}:${convoy.ownerID}:${convoy.sourceTile}:${convoy.destinationTile}`)
+      .map(
+        (convoy) =>
+          `${convoy.id}:${convoy.ownerID}:${convoy.sourceTile}:${convoy.destinationTile}`,
+      )
       .join("|");
     if (key === this.lastPublishedConvoyDebugKey) return;
     this.lastPublishedConvoyDebugKey = key;
@@ -1658,4 +1759,3 @@ export class VaultFrontExecution implements Execution {
     return true;
   }
 }
-

@@ -322,6 +322,7 @@ Note:
   - replayed the `VaultFront` card/docs changes cleanly on top of current upstream
   - committed the refreshed change set locally after refresh/reapply
 - Studio backend standard now exists and has been mirrored to the canonical studio repo clone:
+
   - default runtime host model: shared VPS + Docker Compose + Caddy + shared Postgres + shared Redis
   - default domain model:
     - `https://play-{slug}.vaultsparkstudios.com`

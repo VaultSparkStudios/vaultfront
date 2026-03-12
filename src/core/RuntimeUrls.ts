@@ -77,7 +77,9 @@ export function currentAppPathname(): string {
 }
 
 export function gameServiceOrigin(): string {
-  return normalizeOrigin(process?.env?.GAME_SERVICE_ORIGIN) || window.location.origin;
+  return (
+    normalizeOrigin(process?.env?.GAME_SERVICE_ORIGIN) || window.location.origin
+  );
 }
 
 export function gameServiceHttpUrl(path = ""): string {
@@ -110,15 +112,16 @@ export function workerGameUrl(
   gameId: string,
   search = "",
 ): string {
-  return new URL(workerGamePath(workerPath, gameId, search), window.location.origin).toString();
+  return new URL(
+    workerGamePath(workerPath, gameId, search),
+    window.location.origin,
+  ).toString();
 }
 
 export function workerApiUrl(workerPath: string, apiPath: string): string {
   const normalizedWorkerPath = trimWorkerPath(workerPath);
   const normalizedApiPath = trimLeadingSlashes(apiPath);
-  return gameServiceHttpUrl(
-    `${normalizedWorkerPath}/api/${normalizedApiPath}`,
-  );
+  return gameServiceHttpUrl(`${normalizedWorkerPath}/api/${normalizedApiPath}`);
 }
 
 export function workerSocketUrl(workerPath: string, suffix = ""): string {

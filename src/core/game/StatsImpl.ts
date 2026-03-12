@@ -352,7 +352,11 @@ export class StatsImpl implements Stats {
 
   defenseFactoryPulse(player: Player, durationTicks: number): void {
     this._addVaultFront(player, "defenseFactoryPulses", 1);
-    this._addVaultFront(player, "defenseFactoryPulseUptimeTicks", durationTicks);
+    this._addVaultFront(
+      player,
+      "defenseFactoryPulseUptimeTicks",
+      durationTicks,
+    );
   }
 
   resourceFocusSet(player: Player, focus: number): void {

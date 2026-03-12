@@ -140,11 +140,13 @@ Rules:
 Each game repo should have:
 
 1. `ci.yml`
+
    - typecheck
    - lint
    - tests
 
 2. `deploy-pages.yml`
+
    - build static client for `/{slug}/`
    - copy `index.html` to `404.html`
    - upload the built output as a GitHub Pages artifact

@@ -108,7 +108,12 @@ export class TerrainLayer implements Layer {
     for (const [dx, dy] of directions) {
       const nx = x + dx;
       const ny = y + dy;
-      if (nx < 0 || ny < 0 || nx >= this.game.width() || ny >= this.game.height()) {
+      if (
+        nx < 0 ||
+        ny < 0 ||
+        nx >= this.game.width() ||
+        ny >= this.game.height()
+      ) {
         continue;
       }
       const neighbor = this.game.ref(nx, ny);

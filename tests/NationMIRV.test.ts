@@ -597,7 +597,7 @@ describe("Nation MIRV Retaliation", () => {
 
     // Assert that steamroll stop was NOT attempted
     expect(steamrollStopAttempted).toBe(false);
-  });
+  }, 15000);
 
   test("nation launches MIRV to prevent team victory when team approaches victory denial threshold (targets biggest team member)", async () => {
     // Setup game

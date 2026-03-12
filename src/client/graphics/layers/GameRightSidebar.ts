@@ -733,7 +733,11 @@ export class GameRightSidebar extends LitElement implements Layer {
       }
     }
     const etaSeconds = Math.max(0, Math.ceil(convoy.ticksRemaining / 10));
-    if (hostile >= 4 || convoy.routeRisk >= 0.58 || (hostile >= 2 && etaSeconds <= 4)) {
+    if (
+      hostile >= 4 ||
+      convoy.routeRisk >= 0.58 ||
+      (hostile >= 2 && etaSeconds <= 4)
+    ) {
       return "High";
     }
     if (hostile >= 2 || convoy.routeRisk >= 0.3 || etaSeconds <= 7) {

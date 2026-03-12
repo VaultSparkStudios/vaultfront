@@ -178,7 +178,8 @@ export class GameServer {
       this.gameConfig.vaultSitesEnabled = gameConfig.vaultSitesEnabled;
     }
     if (gameConfig.intelOperationsEnabled !== undefined) {
-      this.gameConfig.intelOperationsEnabled = gameConfig.intelOperationsEnabled;
+      this.gameConfig.intelOperationsEnabled =
+        gameConfig.intelOperationsEnabled;
     }
     if (gameConfig.vaultConvoyRewardTuning !== undefined) {
       this.gameConfig.vaultConvoyRewardTuning =
@@ -744,7 +745,10 @@ export class GameServer {
     }
   }
 
-  private shouldAcceptIntent(clientID: ClientID, intent: StampedIntent): boolean {
+  private shouldAcceptIntent(
+    clientID: ClientID,
+    intent: StampedIntent,
+  ): boolean {
     const now = Date.now();
     let state = this.intentRateState.get(clientID);
     if (!state) {

@@ -9,10 +9,10 @@ import {
 import { ColorPalette, Pattern } from "../../../core/CosmeticSchemas";
 import { EventBus } from "../../../core/EventBus";
 import { RankedType } from "../../../core/game/Game";
+import type { WinUpdate } from "../../../core/game/GameUpdates";
 import { GameUpdateType } from "../../../core/game/GameUpdates";
 import { GameView } from "../../../core/game/GameView";
 import { appRelativePath, appRootPath } from "../../../core/RuntimeUrls";
-import type { WinUpdate } from "../../../core/game/GameUpdates";
 import type { AllPlayersStats, Winner } from "../../../core/Schemas";
 import {
   fetchVaultFrontRecapAssignment,
@@ -93,6 +93,9 @@ export class WinModal extends LitElement implements Layer {
   @state()
   private momentRewards: string[] = [];
 
+  @state()
+  private recapActionPlan: string[] = [];
+
   private actionableGoalKey:
     | "vault_first"
     | "convoy_impact"
@@ -142,8 +145,7 @@ export class WinModal extends LitElement implements Layer {
         <h2 class="m-0 mb-4 text-[26px] text-center text-white">
           ${this._title || ""}
         </h2>
-        ${this.renderRecapSection()}
-        ${this.innerHtml()}
+        ${this.renderRecapSection()} ${this.innerHtml()}
         <div
           class="${this.showButtons
             ? "flex justify-between gap-2.5"
@@ -216,28 +218,35 @@ export class WinModal extends LitElement implements Layer {
 
         <div class="mt-2 text-sm text-slate-100">${this.recapReason}</div>
         ${this.momentRewards.length > 0
-          ? html`<div class="mt-2 rounded-sm border border-cyan-400/35 bg-cyan-900/20 p-2">
+          ? html`<div
+              class="mt-2 rounded-sm border border-cyan-400/35 bg-cyan-900/20 p-2"
+            >
               <div class="text-xs uppercase tracking-wide text-cyan-200">
                 Moment Rewards
               </div>
               <div class="mt-1 flex flex-wrap gap-1.5">
                 ${this.momentRewards.map(
-                  (moment) => html`<span
-                    class="rounded border border-cyan-300/35 bg-cyan-500/20 px-2 py-0.5 text-xs text-cyan-50"
-                    >${moment}</span
-                  >`,
+                  (moment) =>
+                    html`<span
+                      class="rounded border border-cyan-300/35 bg-cyan-500/20 px-2 py-0.5 text-xs text-cyan-50"
+                      >${moment}</span
+                    >`,
                 )}
               </div>
             </div>`
           : ""}
 
-        <div class="mt-2 rounded-sm border border-amber-400/40 bg-amber-900/25 p-2">
+        <div
+          class="mt-2 rounded-sm border border-amber-400/40 bg-amber-900/25 p-2"
+        >
           <div class="text-xs uppercase tracking-wide text-amber-200">
             Next Match Hint
           </div>
           <div class="text-sm text-amber-100 mt-1">${this.actionableHint}</div>
           ${this.recapActionPlan.length > 0
-            ? html`<div class="mt-2 rounded-sm border border-amber-300/25 bg-black/15 p-2 text-[12px] text-amber-50">
+            ? html`<div
+                class="mt-2 rounded-sm border border-amber-300/25 bg-black/15 p-2 text-[12px] text-amber-50"
+              >
                 <div class="text-[11px] uppercase tracking-wide text-amber-200">
                   Next Match Script
                 </div>
@@ -276,8 +285,7 @@ export class WinModal extends LitElement implements Layer {
           </div>
         </div>
 
-        ${this.renderSeasonalContracts()}
-        ${this.renderReplayMoments()}
+        ${this.renderSeasonalContracts()} ${this.renderReplayMoments()}
       </div>
     `;
   }
@@ -286,7 +294,9 @@ export class WinModal extends LitElement implements Layer {
     if (this.seasonalContracts.length === 0) return null;
 
     return html`
-      <div class="mt-2 rounded-sm border border-indigo-400/45 bg-indigo-900/20 p-2">
+      <div
+        class="mt-2 rounded-sm border border-indigo-400/45 bg-indigo-900/20 p-2"
+      >
         <div class="text-xs uppercase tracking-wide text-indigo-200 mb-1">
           Seasonal Skill Contracts
         </div>
@@ -294,12 +304,17 @@ export class WinModal extends LitElement implements Layer {
           ${this.seasonalContracts.map((contract) => {
             const ratio = Math.max(
               0,
-              Math.min(1, contract.target > 0 ? contract.progress / contract.target : 0),
+              Math.min(
+                1,
+                contract.target > 0 ? contract.progress / contract.target : 0,
+              ),
             );
             return html`
               <div>
                 <div class="text-sm text-white">${contract.title}</div>
-                <div class="text-xs text-slate-200">${contract.description}</div>
+                <div class="text-xs text-slate-200">
+                  ${contract.description}
+                </div>
                 <div class="mt-1 h-1.5 rounded bg-white/20 overflow-hidden">
                   <div
                     class="h-full bg-indigo-300"
@@ -335,7 +350,9 @@ export class WinModal extends LitElement implements Layer {
                   ? "No map location available for this moment"
                   : "Jump camera to this replay moment"}
               >
-                <span class="inline-block mr-1 text-[10px] uppercase tracking-wide text-cyan-200">
+                <span
+                  class="inline-block mr-1 text-[10px] uppercase tracking-wide text-cyan-200"
+                >
                   ${moment.scope}
                 </span>
                 ${moment.label}
@@ -644,7 +661,8 @@ export class WinModal extends LitElement implements Layer {
     if (assignment !== false) {
       this.recapCtaVariant = assignment.variant;
     } else {
-      this.recapCtaVariant = Math.random() < 0.5 ? "goal_focus" : "requeue_focus";
+      this.recapCtaVariant =
+        Math.random() < 0.5 ? "goal_focus" : "requeue_focus";
     }
     if (!this.recapExposureTracked) {
       this.recapExposureTracked = true;
@@ -661,7 +679,8 @@ export class WinModal extends LitElement implements Layer {
     objectiveRailClicks: number;
     timelineJumps: number;
   } {
-    const startAt = Date.now() - Math.max(60_000, this.matchLengthSeconds * 1000);
+    const startAt =
+      Date.now() - Math.max(60_000, this.matchLengthSeconds * 1000);
     const streamRaw = sessionStorage.getItem("vaultfront.hud.telemetry.stream");
     if (!streamRaw) {
       return {
@@ -713,7 +732,8 @@ export class WinModal extends LitElement implements Layer {
     };
     const streamRaw = sessionStorage.getItem("vaultfront.hud.telemetry.stream");
     if (!streamRaw) return summary;
-    const startAt = Date.now() - Math.max(60_000, this.matchLengthSeconds * 1000);
+    const startAt =
+      Date.now() - Math.max(60_000, this.matchLengthSeconds * 1000);
     const eventToCommand = (action: string): string | null => {
       if (action.startsWith("hud_command_reroute")) return "reroute";
       if (action === "hud_command_shield") return "escort";
@@ -791,9 +811,9 @@ export class WinModal extends LitElement implements Layer {
     key: string,
   ): bigint {
     return clientIDs.reduce((acc, id) => {
-      const raw = (stats[id]?.vaultfront as Record<string, unknown> | undefined)?.[
-        key
-      ];
+      const raw = (
+        stats[id]?.vaultfront as Record<string, unknown> | undefined
+      )?.[key];
       return acc + this.toBigInt(raw);
     }, 0n);
   }
@@ -809,8 +829,12 @@ export class WinModal extends LitElement implements Layer {
   private computeMomentRewards(
     myStats: AllPlayersStats[string] | undefined,
   ): string[] {
-    const intercepts = Number(this.toBigInt(myStats?.vaultfront?.vaultConvoysIntercepted));
-    const delivered = Number(this.toBigInt(myStats?.vaultfront?.vaultConvoysDelivered));
+    const intercepts = Number(
+      this.toBigInt(myStats?.vaultfront?.vaultConvoysIntercepted),
+    );
+    const delivered = Number(
+      this.toBigInt(myStats?.vaultfront?.vaultConvoysDelivered),
+    );
     const lost = Number(this.toBigInt(myStats?.vaultfront?.vaultConvoysLost));
     const pulses = Number(
       this.toBigInt(myStats?.vaultfront?.defenseFactoryPulseUptimeTicks),
@@ -845,7 +869,12 @@ export class WinModal extends LitElement implements Layer {
   }
 
   private updateAdaptiveNudgeSignal(
-    goalKey: "vault_first" | "convoy_impact" | "pulse_chain" | "focus_stable" | "",
+    goalKey:
+      | "vault_first"
+      | "convoy_impact"
+      | "pulse_chain"
+      | "focus_stable"
+      | "",
     weak: boolean,
   ): void {
     if (!goalKey) return;
@@ -919,7 +948,9 @@ export class WinModal extends LitElement implements Layer {
     const allStats = wu.allPlayersStats;
     const winnerIDs = this.winnerClientIDs(wu.winner);
     const benchmarkIDs =
-      winnerIDs.length > 0 ? winnerIDs : Object.keys(allStats).filter((k) => k !== myClientID);
+      winnerIDs.length > 0
+        ? winnerIDs
+        : Object.keys(allStats).filter((k) => k !== myClientID);
     const myStats = allStats[myClientID];
     this.behindAtMinute8 =
       Number(this.toBigInt(myStats?.vaultfront?.minute8Behind)) > 0;
@@ -979,7 +1010,12 @@ export class WinModal extends LitElement implements Layer {
     );
 
     const cards: RecapCard[] = [
-      this.buildCard("vault", "Vault Control", myVaultCaptures, winnerVaultCaptures),
+      this.buildCard(
+        "vault",
+        "Vault Control",
+        myVaultCaptures,
+        winnerVaultCaptures,
+      ),
       this.buildCard(
         "convoy",
         "Vault Convoy Impact",
@@ -1022,7 +1058,10 @@ export class WinModal extends LitElement implements Layer {
             : "focus_stable";
     this.nextGoalSaved = false;
     this.momentRewards = this.computeMomentRewards(myStats);
-    this.updateAdaptiveNudgeSignal(this.actionableGoalKey, weakness.ratio < 0.95);
+    this.updateAdaptiveNudgeSignal(
+      this.actionableGoalKey,
+      weakness.ratio < 0.95,
+    );
 
     const strengths = cards
       .filter((card) => card.positive)
@@ -1116,7 +1155,8 @@ export class WinModal extends LitElement implements Layer {
       },
       {
         title: "Objective Denial",
-        description: "Deny enemy objectives through vault captures + interceptions.",
+        description:
+          "Deny enemy objectives through vault captures + interceptions.",
         progress: state.objectiveDenial,
         target: 20,
       },
@@ -1128,7 +1168,8 @@ export class WinModal extends LitElement implements Layer {
       },
       {
         title: "Rivalry Revenge",
-        description: "Counter-intercept rivals that intercepted your convoy earlier.",
+        description:
+          "Counter-intercept rivals that intercepted your convoy earlier.",
         progress: state.rivalryRevenge,
         target: 8,
       },
@@ -1254,7 +1295,10 @@ export class WinModal extends LitElement implements Layer {
           (e.sourcePlayerID === myID || e.targetPlayerID === myID)
         ) {
           scope = "personal";
-        } else if (isFriendly(e.sourcePlayerID) || isFriendly(e.targetPlayerID)) {
+        } else if (
+          isFriendly(e.sourcePlayerID) ||
+          isFriendly(e.targetPlayerID)
+        ) {
           scope = "team";
         }
         const seconds = Math.max(
@@ -1289,7 +1333,10 @@ export class WinModal extends LitElement implements Layer {
       .slice(0, 1);
 
     const combined = [...personal, ...team, ...global]
-      .filter((value, index, arr) => arr.findIndex((m) => m.id === value.id) === index)
+      .filter(
+        (value, index, arr) =>
+          arr.findIndex((m) => m.id === value.id) === index,
+      )
       .sort((a, b) => a.tick - b.tick)
       .slice(0, 5)
       .map((m) => ({
@@ -1341,13 +1388,16 @@ export class WinModal extends LitElement implements Layer {
             .filter(
               (e) =>
                 e.activity === "convoy_intercepted" &&
-                (e.sourcePlayerID === mySmallID || e.targetPlayerID === mySmallID),
+                (e.sourcePlayerID === mySmallID ||
+                  e.targetPlayerID === mySmallID),
             )
             .sort((a, b) => a.tick - b.tick)[0];
           if (first) {
             const seconds = Math.max(
               0,
-              Math.floor((first.tick - this.game.config().numSpawnPhaseTurns()) / 10),
+              Math.floor(
+                (first.tick - this.game.config().numSpawnPhaseTurns()) / 10,
+              ),
             );
             this.addKpiCounter("vaultfront.kpi.firstInterceptTimeSum", seconds);
             this.addKpiCounter("vaultfront.kpi.firstInterceptSamples", 1);

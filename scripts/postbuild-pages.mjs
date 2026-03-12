@@ -1,4 +1,4 @@
-import { copyFile, access } from "node:fs/promises";
+import { access, copyFile } from "node:fs/promises";
 import path from "node:path";
 
 const outDir = path.resolve("static");

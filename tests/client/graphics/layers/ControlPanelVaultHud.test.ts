@@ -441,88 +441,87 @@ describe("ControlPanel vault HUD automation", () => {
     expect(container.textContent).toContain("Waiting for VaultFront status");
   });
 
+  test("vault HUD surfaces immediate action callout for high-risk convoy", () => {
+    const panel = new ControlPanel() as any;
+    const me = {
+      smallID: () => 1,
+      isFriendly: () => false,
+    };
+    panel.game = {
+      ticks: () => 100,
+      myPlayer: () => me,
+      x: (tile: number) => tile,
+      y: (tile: number) => 0,
+      width: () => 200,
+      height: () => 20,
+      ref: (x: number, y: number) => x + y,
+      owner: (tile: number) => ({
+        isPlayer: () => tile >= 6 && tile <= 10,
+        smallID: () => 2,
+      }),
+      playerBySmallID: (id: number) => ({
+        isPlayer: () => true,
+        smallID: () => id,
+      }),
+    };
+    panel.latestVaultStatus = {
+      weeklyMutator: "none",
+      captureTicksRequired: 90,
+      cooldownTicksTotal: 650,
+      passiveGoldPerMinute: 75000,
+      jamBreakerGoldCost: 115000,
+      escortDurationTicks: 600,
+      sites: [],
+      convoys: [
+        {
+          id: 11,
+          ownerID: 1,
+          sourceTile: 4,
+          destinationTile: 10,
+          ticksRemaining: 20,
+          totalTicks: 100,
+          escortShield: 0,
+          goldReward: 190000,
+          troopsReward: 1400,
+          rewardMultiplier: 1,
+          rewardScale: 1,
+          strengthMultiplier: 1,
+          phaseMultiplier: 1,
+          riskMultiplier: 1,
+          routeRisk: 0.65,
+          routeDistance: 16,
+          rewardMath: "test math",
+          reroutePreviews: [],
+        },
+      ],
+      beacons: [
+        {
+          playerID: 1,
+          charge: 80,
+          cooldownUntilTick: 0,
+          maskedUntilTick: 0,
+          jamBreakerCooldownUntilTick: 0,
+          escortUntilTick: 0,
+          factoryCount: 1,
+        },
+      ],
+    };
+    vi.spyOn(panel, "buildVaultNotices").mockReturnValue([]);
+    vi.spyOn(panel, "renderRewardExplainPanel").mockReturnValue("");
+    vi.spyOn(panel, "currentCommandHint").mockReturnValue("");
+    vi.spyOn(panel, "adaptiveNudgeText").mockReturnValue(null);
+    vi.spyOn(panel, "nextVaultObjectiveText").mockReturnValue(
+      "Next vault opens in 20s",
+    );
 
-test("vault HUD surfaces immediate action callout for high-risk convoy", () => {
-  const panel = new ControlPanel() as any;
-  const me = {
-    smallID: () => 1,
-    isFriendly: () => false,
-  };
-  panel.game = {
-    ticks: () => 100,
-    myPlayer: () => me,
-    x: (tile: number) => tile,
-    y: (tile: number) => 0,
-    width: () => 200,
-    height: () => 20,
-    ref: (x: number, y: number) => x + y,
-    owner: (tile: number) => ({
-      isPlayer: () => tile >= 6 && tile <= 10,
-      smallID: () => 2,
-    }),
-    playerBySmallID: (id: number) => ({
-      isPlayer: () => true,
-      smallID: () => id,
-    }),
-  };
-  panel.latestVaultStatus = {
-    weeklyMutator: "none",
-    captureTicksRequired: 90,
-    cooldownTicksTotal: 650,
-    passiveGoldPerMinute: 75000,
-    jamBreakerGoldCost: 115000,
-    escortDurationTicks: 600,
-    sites: [],
-    convoys: [
-      {
-        id: 11,
-        ownerID: 1,
-        sourceTile: 4,
-        destinationTile: 10,
-        ticksRemaining: 20,
-        totalTicks: 100,
-        escortShield: 0,
-        goldReward: 190000,
-        troopsReward: 1400,
-        rewardMultiplier: 1,
-        rewardScale: 1,
-        strengthMultiplier: 1,
-        phaseMultiplier: 1,
-        riskMultiplier: 1,
-        routeRisk: 0.65,
-        routeDistance: 16,
-        rewardMath: "test math",
-        reroutePreviews: [],
-      },
-    ],
-    beacons: [
-      {
-        playerID: 1,
-        charge: 80,
-        cooldownUntilTick: 0,
-        maskedUntilTick: 0,
-        jamBreakerCooldownUntilTick: 0,
-        escortUntilTick: 0,
-        factoryCount: 1,
-      },
-    ],
-  };
-  vi.spyOn(panel, "buildVaultNotices").mockReturnValue([]);
-  vi.spyOn(panel, "renderRewardExplainPanel").mockReturnValue("");
-  vi.spyOn(panel, "currentCommandHint").mockReturnValue("");
-  vi.spyOn(panel, "adaptiveNudgeText").mockReturnValue(null);
-  vi.spyOn(panel, "nextVaultObjectiveText").mockReturnValue(
-    "Next vault opens in 20s",
-  );
+    const container = document.createElement("div");
+    render(panel.renderVaultHud(), container);
 
-  const container = document.createElement("div");
-  render(panel.renderVaultHud(), container);
-
-  expect(container.textContent).toContain("Act Now");
-  expect(container.textContent).toContain("Shield Nearest before contact");
-  expect(container.textContent).toContain("115,000 gold");
-});
-test("vault debug toggle event updates panel state", () => {
+    expect(container.textContent).toContain("Act Now");
+    expect(container.textContent).toContain("Shield Nearest before contact");
+    expect(container.textContent).toContain("115,000 gold");
+  });
+  test("vault debug toggle event updates panel state", () => {
     const panel = new ControlPanel() as any;
     panel.vaultDebugActive = false;
 

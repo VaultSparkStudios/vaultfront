@@ -377,7 +377,11 @@ export interface VaultFrontBeaconState {
 
 export interface VaultFrontStatusUpdate {
   type: GameUpdateType.VaultFrontStatus;
-  weeklyMutator: "none" | "lane_fog" | "accelerated_cooldowns" | "double_passive";
+  weeklyMutator:
+    | "none"
+    | "lane_fog"
+    | "accelerated_cooldowns"
+    | "double_passive";
   captureTicksRequired: number;
   cooldownTicksTotal: number;
   passiveGoldPerMinute?: number;

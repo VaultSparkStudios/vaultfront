@@ -9,6 +9,7 @@ import {
   translateText,
 } from "../client/Utils";
 import { EventBus } from "../core/EventBus";
+import { appRootPath, workerApiUrl } from "../core/RuntimeUrls";
 import {
   ClientInfo,
   GAME_ID_REGEX,
@@ -19,7 +20,6 @@ import {
   PublicGameInfo,
 } from "../core/Schemas";
 import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
-import { appRootPath, workerApiUrl } from "../core/RuntimeUrls";
 import { GameMode, GameType, HumansVsNations } from "../core/game/Game";
 import { getApiBase } from "./Api";
 import { crazyGamesSDK } from "./CrazyGamesSDK";
@@ -723,7 +723,10 @@ export class JoinLobbyModal extends BaseModal {
 
   private async checkActiveLobby(lobbyId: string): Promise<boolean> {
     const config = await getServerConfigFromClient();
-    const url = workerApiUrl(config.workerPath(lobbyId), `game/${lobbyId}/exists`);
+    const url = workerApiUrl(
+      config.workerPath(lobbyId),
+      `game/${lobbyId}/exists`,
+    );
 
     const response = await fetch(url, {
       method: "GET",

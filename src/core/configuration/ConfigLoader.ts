@@ -1,10 +1,10 @@
 import { UserSettings } from "../game/UserSettings";
+import { gameServiceHttpUrl } from "../RuntimeUrls";
 import { GameConfig } from "../Schemas";
 import { Config, GameEnv, ServerConfig } from "./Config";
 import { DefaultConfig } from "./DefaultConfig";
 import { DevConfig, DevServerConfig } from "./DevConfig";
 import { Env } from "./Env";
-import { gameServiceHttpUrl } from "../RuntimeUrls";
 import { preprodConfig } from "./PreprodConfig";
 import { prodConfig } from "./ProdConfig";
 

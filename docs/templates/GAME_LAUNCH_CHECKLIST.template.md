@@ -1,4 +1,4 @@
-# __GAME_NAME__ Launch Checklist
+# **GAME_NAME** Launch Checklist
 
 Use this checklist before publishing a new VaultSpark Studios game to the
 studio website.

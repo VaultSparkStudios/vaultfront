@@ -58,4 +58,3 @@ export function applyGlobalHudScale(scale: number): number {
   );
   return clamped;
 }
-

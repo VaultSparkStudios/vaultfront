@@ -78,9 +78,11 @@ export class FluentSlider extends LitElement {
       this.max === this.min
         ? 0
         : ((this.value - this.min) / (this.max - this.min)) * 100;
-    const label = this.label || (this.labelKey ? translateText(this.labelKey) : "");
+    const label =
+      this.label || (this.labelKey ? translateText(this.labelKey) : "");
     const disabledLabel =
-      this.disabledLabel || (this.disabledKey ? translateText(this.disabledKey) : "");
+      this.disabledLabel ||
+      (this.disabledKey ? translateText(this.disabledKey) : "");
 
     return html`
       <div

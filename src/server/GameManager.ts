@@ -108,8 +108,7 @@ export class GameManager {
     hudVariant: "default" | "mobile_priority";
   } {
     const bucket = simpleHash(`vault_runtime_v1:${id}`) % 100;
-    const rewardVariant =
-      bucket < 50 ? "control" : "high_risk_high_reward";
+    const rewardVariant = bucket < 50 ? "control" : "high_risk_high_reward";
     const hudVariant = bucket % 2 === 0 ? "default" : "mobile_priority";
     return {
       experimentId: "vault_runtime_v1",
@@ -118,9 +117,10 @@ export class GameManager {
     };
   }
 
-  private variantRewardTuning(
-    variant: "control" | "high_risk_high_reward",
-  ): { version: "v1"; values: Record<string, number> } {
+  private variantRewardTuning(variant: "control" | "high_risk_high_reward"): {
+    version: "v1";
+    values: Record<string, number>;
+  } {
     if (variant === "high_risk_high_reward") {
       return {
         version: "v1",
@@ -150,7 +150,11 @@ export class GameManager {
     const dayMs = 24 * 60 * 60 * 1000;
     const dayOfYear = Math.floor((now.getTime() - yearStart) / dayMs);
     const weekIndex = Math.floor(dayOfYear / 7);
-    const cycle = ["lane_fog", "accelerated_cooldowns", "double_passive"] as const;
+    const cycle = [
+      "lane_fog",
+      "accelerated_cooldowns",
+      "double_passive",
+    ] as const;
     return cycle[weekIndex % cycle.length];
   }
 

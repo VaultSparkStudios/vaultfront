@@ -217,7 +217,10 @@ export class AttacksDisplay extends LitElement implements Layer {
 
   private formatIncomingAttackTroops(attack: AttackUpdate): string {
     const attacker = this.game.playerBySmallID(attack.attackerID);
-    if (attacker instanceof PlayerView && attacker.isTroopIntelHiddenToViewer()) {
+    if (
+      attacker instanceof PlayerView &&
+      attacker.isTroopIntelHiddenToViewer()
+    ) {
       return "??";
     }
     return renderTroops(attack.troops);

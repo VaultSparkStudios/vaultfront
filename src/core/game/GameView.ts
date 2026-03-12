@@ -462,7 +462,10 @@ export class PlayerView {
   incomingAttacks(): AttackUpdate[] {
     return this.data.incomingAttacks.map((attack) => {
       const attacker = this.game.playerBySmallID(attack.attackerID);
-      if (attacker instanceof PlayerView && this.game.isPlayerMaskedFromViewer(attacker)) {
+      if (
+        attacker instanceof PlayerView &&
+        this.game.isPlayerMaskedFromViewer(attacker)
+      ) {
         return {
           ...attack,
           troops: 0,

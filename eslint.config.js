@@ -55,4 +55,15 @@ export default [
       ],
     },
   },
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      parserOptions: {
+        projectService: false,
+      },
+    },
+    rules: {
+      "@typescript-eslint/prefer-nullish-coalescing": "off",
+    },
+  },
 ];

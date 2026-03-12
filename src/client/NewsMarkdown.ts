@@ -1,7 +1,13 @@
-const GITHUB_PR_URL_REGEX =
-  /(?<!\()\bhttps:\/\/github\.com\/VaultSparkStudios\/VaultFront\/pull\/(\d+)\b/g;
-const GITHUB_COMPARE_URL_REGEX =
-  /(?<!\()\bhttps:\/\/github\.com\/VaultSparkStudios\/VaultFront\/compare\/([\w.-]+)\b/g;
+const GITHUB_REPO_PATH_REGEX =
+  "(VaultSparkStudios/VaultFront|openfrontio/OpenFrontIO)";
+const GITHUB_PR_URL_REGEX = new RegExp(
+  String.raw`(?<!\()\bhttps:\/\/github\.com\/${GITHUB_REPO_PATH_REGEX}\/pull\/(\d+)\b`,
+  "g",
+);
+const GITHUB_COMPARE_URL_REGEX = new RegExp(
+  String.raw`(?<!\()\bhttps:\/\/github\.com\/${GITHUB_REPO_PATH_REGEX}\/compare\/([\w.-]+)\b`,
+  "g",
+);
 const GITHUB_MENTION_REGEX =
   /(^|[^\w/[`])@([a-z\d](?:[a-z\d-]{0,37}[a-z\d])?)(?![\w-])/gim;
 
@@ -13,13 +19,11 @@ export function normalizeNewsMarkdown(markdown: string): string {
       .replace(/^([^\-*\s].*?) \*\*(.+?)\*\*$/gm, "## $1 $2")
       .replace(
         GITHUB_PR_URL_REGEX,
-        (_match, prNumber) =>
-          `[#${prNumber}](https://github.com/VaultSparkStudios/VaultFront/pull/${prNumber})`,
+        (match, _repoPath, prNumber) => `[#${prNumber}](${match})`,
       )
       .replace(
         GITHUB_COMPARE_URL_REGEX,
-        (_match, comparison) =>
-          `[${comparison}](https://github.com/VaultSparkStudios/VaultFront/compare/${comparison})`,
+        (match, _repoPath, comparison) => `[${comparison}](${match})`,
       )
       .replace(
         GITHUB_MENTION_REGEX,

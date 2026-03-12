@@ -116,7 +116,13 @@ describe("VaultFrontExecution", () => {
     const shortSafe = execution.convoyRewardPlan(owner, 30, 0.1, 4_000, 1);
     const longSafe = execution.convoyRewardPlan(owner, 80, 0.1, 4_000, 1);
     const longRisky = execution.convoyRewardPlan(owner, 80, 0.8, 4_000, 1);
-    const longRiskyReduced = execution.convoyRewardPlan(owner, 80, 0.8, 4_000, 0.72);
+    const longRiskyReduced = execution.convoyRewardPlan(
+      owner,
+      80,
+      0.8,
+      4_000,
+      0.72,
+    );
 
     expect(longSafe.goldReward > shortSafe.goldReward).toBe(true);
     expect(longSafe.troopsReward > shortSafe.troopsReward).toBe(true);
@@ -207,7 +213,9 @@ describe("VaultFrontExecution", () => {
         reducedRewardNextCapture: false,
       },
     ];
-    execution.beacons = new Map([[1, { charge: 80, cooldownUntil: 0, maskedUntil: 0 }]]);
+    execution.beacons = new Map([
+      [1, { charge: 80, cooldownUntil: 0, maskedUntil: 0 }],
+    ]);
     vi.spyOn(execution, "buildConvoyReroutePreviews").mockReturnValue([]);
     vi.spyOn(execution, "routeRiskScore").mockReturnValue(0.2);
 

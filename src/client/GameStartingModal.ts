@@ -54,4 +54,3 @@ export class GameStartingModal extends LitElement {
     this.requestUpdate();
   }
 }
-

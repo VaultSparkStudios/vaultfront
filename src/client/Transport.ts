@@ -10,6 +10,7 @@ import {
 } from "../core/game/Game";
 import { TileRef } from "../core/game/GameMap";
 import { PlayerView } from "../core/game/GameView";
+import { workerSocketUrl } from "../core/RuntimeUrls";
 import {
   AllPlayersStats,
   ClientHashMessage,
@@ -25,7 +26,6 @@ import {
   ServerMessageSchema,
   Winner,
 } from "../core/Schemas";
-import { workerSocketUrl } from "../core/RuntimeUrls";
 import { replacer } from "../core/Util";
 import { getPlayToken } from "./Auth";
 import { LobbyConfig } from "./ClientGameRunner";

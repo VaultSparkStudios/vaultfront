@@ -1,6 +1,6 @@
 import { render } from "lit";
-import { GameUpdateType } from "../../../../src/core/game/GameUpdates";
 import { GameRightSidebar } from "../../../../src/client/graphics/layers/GameRightSidebar";
+import { GameUpdateType } from "../../../../src/core/game/GameUpdates";
 
 describe("GameRightSidebar Vault feed", () => {
   test("passive income updates merge and render as a single readable feed item", () => {

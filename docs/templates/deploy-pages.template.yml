@@ -60,7 +60,6 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
 # Replace:
 # - __GAME_SLUG__ with the lowercase public slug, e.g. vaultfront
 #

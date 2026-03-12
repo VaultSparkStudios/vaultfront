@@ -266,7 +266,9 @@ export class GameModeSelector extends LitElement {
             </div>
           </div>
         </div>
-        <div class="flex items-center justify-between px-3 py-2 border-t border-cyan-300/20">
+        <div
+          class="flex items-center justify-between px-3 py-2 border-t border-cyan-300/20"
+        >
           <div class="flex flex-col gap-0.5 min-w-0">
             <h3
               class="text-sm lg:text-base font-bold uppercase tracking-wider text-left leading-tight"

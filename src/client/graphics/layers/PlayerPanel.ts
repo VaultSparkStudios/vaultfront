@@ -1007,4 +1007,3 @@ export class PlayerPanel extends LitElement implements Layer {
     `;
   }
 }
-

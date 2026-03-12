@@ -747,4 +747,3 @@ export class SinglePlayerModal extends BaseModal {
     }
   }
 }
-

@@ -448,7 +448,9 @@ export type VaultFrontDockSummary = z.infer<typeof VaultFrontDockSummarySchema>;
 export type VaultFrontRecapAssignment = z.infer<
   typeof VaultFrontRecapAssignmentSchema
 >;
-export type VaultFrontRecapSummary = z.infer<typeof VaultFrontRecapSummarySchema>;
+export type VaultFrontRecapSummary = z.infer<
+  typeof VaultFrontRecapSummarySchema
+>;
 export type VaultFrontRuntimeAssignment = z.infer<
   typeof VaultFrontRuntimeAssignmentSchema
 >;
@@ -474,14 +476,17 @@ export async function updateVaultFrontSeasonContracts(delta: {
   try {
     const authHeader = await getAuthHeader();
     const fallbackToken = authHeader ? null : await getPlayToken();
-    const response = await fetch(`${getApiBase()}/api/vaultfront/contracts/update`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader || `Bearer ${fallbackToken}`,
+    const response = await fetch(
+      `${getApiBase()}/api/vaultfront/contracts/update`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader || `Bearer ${fallbackToken}`,
+        },
+        body: JSON.stringify(delta),
       },
-      body: JSON.stringify(delta),
-    });
+    );
     if (!response.ok) {
       return false;
     }
@@ -540,14 +545,17 @@ export async function recordVaultFrontDockEvent(input: {
   value?: number;
 }): Promise<boolean> {
   try {
-    const response = await fetch(`${getApiBase()}/api/vaultfront/ab/dock/event`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(await vaultFrontIdentityHeaders()),
+    const response = await fetch(
+      `${getApiBase()}/api/vaultfront/ab/dock/event`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(await vaultFrontIdentityHeaders()),
+        },
+        body: JSON.stringify(input),
       },
-      body: JSON.stringify(input),
-    });
+    );
     return response.ok;
   } catch {
     return false;
@@ -558,11 +566,14 @@ export async function fetchVaultFrontDockSummary(
   adminToken: string,
 ): Promise<VaultFrontDockSummary | false> {
   try {
-    const response = await fetch(`${getApiBase()}/api/vaultfront/ab/dock/summary`, {
-      headers: {
-        "x-admin-key": adminToken,
+    const response = await fetch(
+      `${getApiBase()}/api/vaultfront/ab/dock/summary`,
+      {
+        headers: {
+          "x-admin-key": adminToken,
+        },
       },
-    });
+    );
     if (!response.ok) {
       return false;
     }
@@ -609,14 +620,17 @@ export async function recordVaultFrontRecapEvent(input: {
   value?: number;
 }): Promise<boolean> {
   try {
-    const response = await fetch(`${getApiBase()}/api/vaultfront/ab/recap/event`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(await vaultFrontIdentityHeaders()),
+    const response = await fetch(
+      `${getApiBase()}/api/vaultfront/ab/recap/event`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(await vaultFrontIdentityHeaders()),
+        },
+        body: JSON.stringify(input),
       },
-      body: JSON.stringify(input),
-    });
+    );
     return response.ok;
   } catch {
     return false;
@@ -725,11 +739,14 @@ export async function fetchVaultFrontOutcomeSummary(
   adminToken: string,
 ): Promise<VaultFrontOutcomeSummary | false> {
   try {
-    const response = await fetch(`${getApiBase()}/api/vaultfront/outcome/summary`, {
-      headers: {
-        "x-admin-key": adminToken,
+    const response = await fetch(
+      `${getApiBase()}/api/vaultfront/outcome/summary`,
+      {
+        headers: {
+          "x-admin-key": adminToken,
+        },
       },
-    });
+    );
     if (!response.ok) {
       return false;
     }
@@ -770,11 +787,14 @@ export async function fetchVaultFrontFunnelSummary(
   adminToken: string,
 ): Promise<VaultFrontFunnelSummary | false> {
   try {
-    const response = await fetch(`${getApiBase()}/api/vaultfront/funnel/summary`, {
-      headers: {
-        "x-admin-key": adminToken,
+    const response = await fetch(
+      `${getApiBase()}/api/vaultfront/funnel/summary`,
+      {
+        headers: {
+          "x-admin-key": adminToken,
+        },
       },
-    });
+    );
     if (!response.ok) {
       return false;
     }
