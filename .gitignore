@@ -21,3 +21,4 @@ eslint_out.txt
 Screenshot *.png
 generated/WorldMapData.json
 generated/WorldMapData.json.compressed
+.codex-temp-*/
