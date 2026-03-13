@@ -16,3 +16,10 @@
 - Updated memory and handoff files to reflect the new canonical repo wiring
 - Created closeout state, task-board, handoff, and session-log files for the
   new canonical branch
+- Diagnosed the failing GitHub `CI` run on `main`:
+  TypeScript, NewsMarkdown tests, ESLint typed linting, and repo-wide Prettier
+- Fixed the repo `CI` failures and pushed:
+  - `01461146 Fix GitHub CI failures`
+- Added local tooling cleanup for temporary Codex worktrees and pushed:
+  - `88a9e04b Ignore local Codex temp worktrees in tooling`
+- Verified GitHub Actions `CI` passed on both follow-up commits

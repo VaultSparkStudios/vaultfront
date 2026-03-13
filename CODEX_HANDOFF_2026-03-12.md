@@ -6,7 +6,8 @@ This file is the current resume point for a fresh Codex session.
 
 VaultFront is now on the own-repo GitHub Pages model and the local repo wiring
 has been flipped so `VaultSparkStudios/vaultfront` is the canonical Git remote
-for day-to-day work.
+for day-to-day work. `main` is also back to a green GitHub Actions baseline
+after a same-day CI repair pass.
 
 ## Canonical repo wiring
 
@@ -71,6 +72,28 @@ Remote state after push:
 - `vaultfront/main` advanced from `5097419a` to `bbcab451`
 - pushed via clean worktree branch `codex/project-memory-stack`
 
+### GitHub CI and local tooling were repaired on `main`
+
+The same-day follow-up on `vaultfront/main` fixed the broken GitHub `CI`
+baseline and then cleaned up local temp-worktree noise:
+
+- `01461146 Fix GitHub CI failures`
+  - fixed missing TypeScript state fields
+  - restored NewsMarkdown compatibility for old and current GitHub repo links
+  - resolved the typed-ESLint failure for `scripts/postbuild-pages.mjs`
+  - formatted the remote-reported Prettier file set
+  - increased timeout budget on two slow coverage tests
+- `88a9e04b Ignore local Codex temp worktrees in tooling`
+  - added `.codex-temp-*` to `.gitignore`
+  - excluded `.codex-temp-*` from Vitest via `vite.config.ts`
+
+Remote state after the CI/tooling repair:
+
+- `vaultfront/main` advanced from `bbcab451` to `88a9e04b`
+- GitHub Actions `CI` passed on both:
+  - `01461146`
+  - `88a9e04b`
+
 ## Current intended public behavior
 
 - `https://vaultsparkstudios.com/vaultfront/` should load the repo-local launch
@@ -99,6 +122,9 @@ Remote state after push:
   - `bbcab451 Align VaultFront HUD test expectations`
 - targeted clean-worktree validation passed using the root Vitest config:
   - `36/36` tests green across the touched HUD/feed/recap/execution files
+- GitHub Actions `CI` later passed after the repair commits:
+  - `01461146 Fix GitHub CI failures`
+  - `88a9e04b Ignore local Codex temp worktrees in tooling`
 
 ## Next steps
 
@@ -113,6 +139,7 @@ Remote state after push:
 - canonical repo state at closeout:
   - local `main` tracks `origin/main`
   - `origin` is `https://github.com/VaultSparkStudios/vaultfront.git`
+  - `origin/main` tip is `88a9e04b`
   - working tree is clean
 - supporting closeout files written:
   - `context/CURRENT_STATE.md`

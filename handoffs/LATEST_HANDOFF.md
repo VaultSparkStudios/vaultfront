@@ -11,6 +11,9 @@ Use [CODEX_HANDOFF_2026-03-12.md](/C:/Users/p4cka/Documents/Development/openfron
 - Local `main` tracks `origin/main`
 - The public project page is the repo-local Pages stub, live over HTTPS
 - The gameplay/HUD clarity and tuning pass is already pushed to `origin/main`
+- `main` is green again after the CI repair commit `01461146`
+- Local tooling now ignores `.codex-temp-*` worktrees via `.gitignore` and
+  Vitest config
 
 ## Immediate next action
 

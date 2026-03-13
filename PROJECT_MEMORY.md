@@ -32,6 +32,7 @@ Read this after `AGENTS.md` and before the dated handoff file.
   HTTPS at `https://vaultsparkstudios.com/vaultfront/`.
 - A gameplay/HUD clarity and tuning pass was pushed to `vaultfront/main` on
   March 12, 2026.
+- GitHub Actions `CI` on `main` was repaired and verified green on March 12, 2026.
 - The playable launch remains blocked on the dedicated runtime/backend rollout.
 
 ## Deployment posture
@@ -93,6 +94,8 @@ Read order for future sessions:
 - A temporary studio-site clone has been used for studio homepage and project
   page work:
   - `.codex-temp-studio-site`
+- Local tooling now ignores `.codex-temp-*` temp worktrees in normal Vitest and
+  git-ignore flows.
 
 ## Next launch-critical work
 

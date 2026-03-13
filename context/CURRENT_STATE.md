@@ -30,14 +30,18 @@ Date: 2026-03-12
 - `ce5521cf` ported the VaultFront gameplay clarity and tuning pass to the
   canonical VaultFront branch
 - `bbcab451` aligned HUD test expectations after the migration
-- `829fe5fe` documented VaultFront as the canonical repo of record
+- `01461146` fixed the GitHub CI failures on `main`
+- `88a9e04b` excluded local `.codex-temp-*` worktrees from repo tooling
 
 ## Validation status
 
 - Public VaultFront project page previously verified live over HTTPS
 - Clean-worktree targeted validation passed for the gameplay/HUD migration:
   - `36/36` tests passed
-- `main` matched `origin/main` before this closeout write-back
+- GitHub Actions `CI` passed on:
+  - `01461146 Fix GitHub CI failures`
+  - `88a9e04b Ignore local Codex temp worktrees in tooling`
+- `main` matches `origin/main` at closeout
 
 ## Open constraints
 

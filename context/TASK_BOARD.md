@@ -11,6 +11,9 @@ Date: 2026-03-12
 - Ported and pushed the gameplay/HUD clarity and tuning pass onto
   `vaultfront/main`
 - Updated project memory and dated handoff files for the canonical repo change
+- Diagnosed and fixed the failing GitHub `CI` checks on `main`
+- Pushed a follow-up tooling cleanup so local Vitest ignores `.codex-temp-*`
+  worktrees by default
 
 ## In Progress
 
