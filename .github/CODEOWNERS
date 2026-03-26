@@ -1,0 +1,36 @@
+# CODEOWNERS — VaultFront
+#
+# These owners are requested for review on PRs that touch these paths.
+# Format: <path-pattern> <github-username-or-team>
+#
+# Adjust usernames/teams once the VaultSparkStudios GitHub org has teams set up.
+
+# VaultFront-owned game logic
+src/core/execution/VaultFrontExecution.ts @VaultSparkStudios
+src/core/execution/VaultConvoyCommandExecution.ts @VaultSparkStudios
+src/core/execution/VaultRolePingExecution.ts @VaultSparkStudios
+src/client/graphics/layers/VaultFrontLayer.ts @VaultSparkStudios
+
+# VaultFront tests
+tests/core/execution/VaultFront*.test.ts @VaultSparkStudios
+tests/core/execution/NationExecutionVaultFront* @VaultSparkStudios
+tests/client/graphics/layers/ControlPanelVaultHud* @VaultSparkStudios
+tests/client/graphics/layers/GameRightSidebarVault* @VaultSparkStudios
+
+# Deployment and CI
+.github/workflows/ @VaultSparkStudios
+deploy.sh @VaultSparkStudios
+build.sh @VaultSparkStudios
+update.sh @VaultSparkStudios
+Dockerfile @VaultSparkStudios
+
+# Studio docs
+docs/STUDIO_DEPLOYMENT_STANDARD.md @VaultSparkStudios
+docs/STUDIO_BACKEND_PLAN.md @VaultSparkStudios
+docs/GAMEPLAY_DESIGN.md @VaultSparkStudios
+docs/ARCHITECTURE.md @VaultSparkStudios
+docs/VAULTFRONT_SOURCE_MAP.md @VaultSparkStudios
+
+# Project memory
+AGENTS.md @VaultSparkStudios
+PROJECT_MEMORY.md @VaultSparkStudios

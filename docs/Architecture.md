@@ -28,3 +28,70 @@ When a user performs an action, it creates an "Intent" which is sent to the serv
 6. All executions run
 7. At the end of the tick core sends updates to client
 8. Client renders the updates
+
+---
+
+## VaultFront-specific architecture
+
+See `docs/VAULTFRONT_SOURCE_MAP.md` for the full list of VaultFront-owned and
+VaultFront-modified files.
+
+### VaultFront module map
+
+```
+src/core/execution/
+  VaultFrontExecution.ts          ← main vault loop (sites, convoys, beacons)
+  VaultConvoyCommandExecution.ts  ← processes convoy command intents
+  VaultRolePingExecution.ts       ← processes role ping intents
+
+src/client/graphics/layers/
+  VaultFrontLayer.ts              ← dedicated canvas layer for vault HUD
+```
+
+Key modified upstream files:
+
+```
+src/core/game/Game.ts             ← vault methods on the Game contract
+src/core/game/GameUpdates.ts      ← VaultFrontStatus / VaultFrontActivity types
+src/core/execution/NationExecution.ts  ← bot vault-command scheduling
+src/client/graphics/layers/ControlPanel.ts     ← main HUD panel
+src/client/graphics/layers/GameRightSidebar.ts ← vault activity feed
+src/client/graphics/layers/WinModal.ts         ← post-match vault recap
+```
+
+### Game update flow
+
+```
+VaultFrontExecution.publishStatusUpdate()
+  └─ game.addUpdate(VaultFrontStatus, { sites, convoys, beacons })
+  └─ game.addUpdate(VaultFrontActivity, { activity, tile, ... })
+       │  WebSocket frame
+       ▼
+ControlPanel.consumeVaultFrontUpdates()     ← renders HUD panel
+GameRightSidebar.appendVaultFeed()          ← renders activity feed
+VaultFrontLayer.tick()                      ← renders canvas overlay
+```
+
+### Deployment topology
+
+```
+Hetzner VPS (shared studio)
+  └─ Traefik (TLS termination + routing by Host label)
+       ├─ play-vaultfront.vaultsparkstudios.com  → vaultfront-prod-main
+       └─ api-vaultfront.vaultsparkstudios.com   → api container
+
+GitHub Pages (frontend stub / eventual client)
+  └─ vaultsparkstudios.com/vaultfront/  → pages-stub/ (manual deploy-pages.yml)
+```
+
+Docker images are built by `build.sh`, pushed to GHCR, and deployed via
+`deploy.sh` → `update.sh` over SSH.
+
+### Reward formula (brief)
+
+```
+goldReward = (baselineGold + distance × distanceGold) × rewardMultiplier
+rewardMultiplier = clamp(strengthMult × phaseMult × riskMult × rewardScale, 0.58, 1.50)
+```
+
+Full formula with all constants: `docs/GAMEPLAY_DESIGN.md`.

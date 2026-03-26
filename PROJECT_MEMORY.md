@@ -60,6 +60,7 @@ Read order for future sessions:
 
 ## Canonical repo docs
 
+- `docs/VAULTFRONT_SOURCE_MAP.md`
 - `docs/STUDIO_DEPLOYMENT_STANDARD.md`
 - `docs/STUDIO_BACKEND_PLAN.md`
 - `docs/DEPLOY_PAGES.md`
@@ -67,6 +68,15 @@ Read order for future sessions:
 - `docs/templates/deploy-backend.docker-compose.template.yml`
 - `docs/templates/Caddyfile.studio-backend.template`
 - `docs/templates/GAME_LAUNCH_CHECKLIST.template.md`
+
+## Session context folder
+
+All session-state files live under `context/`:
+
+- `context/CURRENT_STATE.md` — repo and deployment state at last closeout
+- `context/TASK_BOARD.md` — task status
+- `context/LATEST_HANDOFF.md` — pointer to current handoff file
+- `context/SESSION_LOG.md` — running session log
 
 ## Remotes and branches
 

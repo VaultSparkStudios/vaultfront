@@ -10,7 +10,19 @@ Read `vaultspark-studio-ops/docs/templates/` for canonical templates and convent
 Read `vaultspark-studio-ops/portfolio/PROJECT_REGISTRY.md` for all active studio projects.
 Read `vaultspark-studio-ops/docs/STUDIO_HUB_ONBOARDING.md` for hub acceptance requirements.
 
-## Read order
+## VaultFront source map
+
+Before touching game logic, HUD, or client code, read:
+
+- `docs/VAULTFRONT_SOURCE_MAP.md`
+
+This file lists every file that VaultFront owns or has modified from the
+upstream OpenFrontIO base. Use it to quickly find the relevant code and to
+avoid touching upstream files that have no VaultFront stake.
+
+## Project memory
+
+Read order at session start:
 
 1. `context/PROJECT_BRIEF.md`
 2. `context/SOUL.md`
@@ -58,6 +70,46 @@ Every closeout MUST include a Self-Improvement Loop entry in `context/SELF_IMPRO
 5. Commit 1–2 brainstorm items to TASK_BOARD labeled `[SIL]`
 
 At session start, read `context/SELF_IMPROVEMENT_LOOP.md` and check if prior `[SIL]` commitments were actioned. If a `[SIL]` item has been skipped 2+ sessions, escalate it to **Now** on TASK_BOARD.
+
+## Session context folder
+
+All session-state files live under `context/`:
+
+| File                        | Purpose                                                      |
+| --------------------------- | ------------------------------------------------------------ |
+| `context/CURRENT_STATE.md`  | Canonical repo and deployment state at last session closeout |
+| `context/TASK_BOARD.md`     | Completed, in-progress, and next tasks                       |
+| `context/LATEST_HANDOFF.md` | One-line resume pointer to the current handoff file          |
+| `context/SESSION_LOG.md`    | Running log of session-level work                            |
+
+When closing out a session, update all four files and the latest
+`CODEX_HANDOFF_YYYY-MM-DD.md`. Do not scatter session state into other
+top-level folders.
+
+## Required behavior
+
+- Treat `docs/STUDIO_DEPLOYMENT_STANDARD.md` as the default studio-wide policy
+  for future game launches unless the user explicitly overrides it.
+- Never rely on prior chat alone for repo context when a memory file or handoff
+  can hold the source of truth.
+- Keep this repo self-sufficient: deployment/domain/workflow context must remain
+  understandable from repo files, not just prior chat context.
+- Keep public game URLs lowercase and slug-based.
+- Keep the studio landing page repo separate from individual game repos.
+- Keep frontend Pages deployment separate from backend/runtime deployment.
+- Keep backend/runtime naming on the studio default:
+  - `https://play-{slug}.vaultsparkstudios.com`
+  - `https://api-{slug}.vaultsparkstudios.com`
+- Update `PROJECT_MEMORY.md` when canonical repo state changes in a way that a
+  future session needs to resume quickly.
+- Update `CODEX_HANDOFF_YYYY-MM-DD.md` after deployment-related changes.
+- Update `docs/VAULTFRONT_SOURCE_MAP.md` when VaultFront adds, removes, or
+  meaningfully modifies a file not already listed there.
+- If you create a temporary clone of another repo inside this repo, add it to
+  `.git/info/exclude` so it cannot be accidentally staged here.
+- Before committing studio-site homepage changes, fetch the latest remote state
+  and verify the live site or upstream landing-page file so you are not editing
+  against a stale clone.
 
 ## Creative Direction Record (mandatory enforcement)
 

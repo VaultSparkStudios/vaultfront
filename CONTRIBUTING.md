@@ -1,3 +1,34 @@
+# Contributing to VaultFront
+
+> **VaultFront fork note:** This is `VaultSparkStudios/vaultfront`, a fork of
+> OpenFrontIO. The upstream contributing guide below applies for shared base
+> code. For VaultFront-specific guidance, read this section first.
+
+## VaultFront-specific rules
+
+**Before touching code:**
+
+1. Read `AGENTS.md` → `PROJECT_MEMORY.md` → latest `CODEX_HANDOFF_*.md`
+2. Check `docs/VAULTFRONT_SOURCE_MAP.md` to understand which files are
+   VaultFront-owned vs inherited from upstream
+3. Check `docs/GAMEPLAY_DESIGN.md` if you are changing mechanics or tuning
+
+**When you change code:**
+
+- Do not modify upstream files without a clear VaultFront reason
+- If you add or modify a file listed in the source map, keep the map accurate
+- If you change a tuning constant, update `docs/GAMEPLAY_DESIGN.md`
+- All VaultFront execution files need corresponding tests
+- Commit to `main` — do not push to `openfront-upstream` remote
+
+**PRs:**
+
+- CI must be green (`tsc`, `eslint`, `prettier`, `vitest`)
+- Add a brief description of what VaultFront mechanic or system you touched
+- Reference `docs/VAULTFRONT_SOURCE_MAP.md` for file ownership context
+
+---
+
 # Contributing to OpenFront.io
 
 First off, thank you for considering contributing to OpenFront.io! It's people like you that make OpenFront such a great game.

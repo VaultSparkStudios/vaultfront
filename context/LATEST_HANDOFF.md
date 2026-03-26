@@ -1,32 +1,24 @@
 # Latest Handoff
 
-Last updated: 2026-03-26
+Date: 2026-03-26
 
-This is the authoritative active handoff file for the project.
+Use `context/CODEX_HANDOFF_2026-03-26.md` as the primary resume document.
 
-## What was completed
+## Resume point
 
-- Studio OS onboarding: all 11 required files bootstrapped
+- Full project audit completed: 20 improvement items implemented (CI, features, architecture scaffolding)
+- VaultFront now treats `VaultSparkStudios/vaultfront` as the canonical repo of record
+- Local `main` tracks `origin/main`
+- The public project page is the repo-local Pages stub, live over HTTPS
+- GitHub Actions CI on `main` is green
+- Studio OS onboarding complete: all required context files bootstrapped
 
-## What is mid-flight
+## Immediate next action
 
-- Context files need to be filled out with project-specific details
-
-## What to do next
-
-1. Read all context files and fill in project-specific details
-2. Update CURRENT_STATE.md with actual current work
-3. Continue active development
-
-## Constraints
-
-- Follow VaultSpark Studio OS protocols for all sessions
-
-## Read these first next session
-
-1. `AGENTS.md`
-2. `context/PROJECT_BRIEF.md`
-3. `context/LATEST_HANDOFF.md`
+- Run `npm install` for new dev dependencies (see TASK_BOARD.md manual item 0)
+- Wire replay system, spectator mode, and map editor backend endpoints
+- Start backend/runtime rollout for `play-vaultfront` and `api-vaultfront`
+- Keep the public Pages site on the stub until runtime validation is complete
 
 ## Files to update next session if work continues
 
