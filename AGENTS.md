@@ -1,74 +1,122 @@
-# Agent Instructions
+# Project Agent Guide
 
-## Deployment standards
+## Studio OS
 
-Before making deployment, domain, GitHub Pages, or studio-site integration
-changes, read these files first:
+This project runs under the VaultSpark Studio OS.
+Local path: `C:\Users\p4cka\documents\development\vaultspark-studio-ops`
+GitHub: https://github.com/VaultSparkStudios/vaultspark-studio-ops
 
-- `PROJECT_MEMORY.md`
-- latest `CODEX_HANDOFF_YYYY-MM-DD.md`
-- `docs/STUDIO_DEPLOYMENT_STANDARD.md`
-- `docs/STUDIO_BACKEND_PLAN.md`
-- `docs/DEPLOY_PAGES.md`
-- `docs/templates/deploy-pages.template.yml`
-- `docs/templates/deploy-backend.docker-compose.template.yml`
-- `docs/templates/Caddyfile.studio-backend.template`
-- `docs/templates/GAME_LAUNCH_CHECKLIST.template.md`
+Read `vaultspark-studio-ops/docs/templates/` for canonical templates and conventions.
+Read `vaultspark-studio-ops/portfolio/PROJECT_REGISTRY.md` for all active studio projects.
+Read `vaultspark-studio-ops/docs/STUDIO_HUB_ONBOARDING.md` for hub acceptance requirements.
 
-## Project memory
+## Read order
 
-Use a project memory stack.
+1. `context/PROJECT_BRIEF.md`
+2. `context/SOUL.md`
+3. `context/BRAIN.md`
+4. `context/CURRENT_STATE.md`
+5. `context/DECISIONS.md`
+6. `context/TASK_BOARD.md`
+7. `context/LATEST_HANDOFF.md`
+8. `context/SELF_IMPROVEMENT_LOOP.md`
 
-Do not treat chat history as the source of truth.
+## Required Studio OS files
 
-Every fresh session should behave like a stateless contractor that:
+Every session should confirm these files exist and are current:
 
-1. reads the compact repo memory package
-2. does the work
-3. writes back the operational changes
+| File | When to update |
+|---|---|
+| `context/LATEST_HANDOFF.md` | Every closeout — primary handoff |
+| `context/CURRENT_STATE.md` | When shipped behavior changes |
+| `context/TASK_BOARD.md` | When tasks complete or new ones are added |
+| `context/DECISIONS.md` | When a meaningful decision is made |
+| `context/PROJECT_BRIEF.md` | When scope or purpose changes |
+| `context/SELF_IMPROVEMENT_LOOP.md` | Every closeout — append audit + brainstorm entry |
+| `docs/CREATIVE_DIRECTION_RECORD.md` | Every time the human gives creative direction (ADDITIVE ONLY) |
+| `logs/WORK_LOG.md` | Every closeout — append session entry |
 
-Read order:
+## Closeout write-back (mandatory)
 
-1. `AGENTS.md`
-2. `PROJECT_MEMORY.md`
-3. latest `CODEX_HANDOFF_YYYY-MM-DD.md`
-4. task-specific docs referenced from those files
+After any meaningful session, write back in this order:
+1. `context/CURRENT_STATE.md`
+2. `context/TASK_BOARD.md`
+3. `context/LATEST_HANDOFF.md`
+4. `logs/WORK_LOG.md`
+5. `context/DECISIONS.md` (if decisions made)
+6. `context/SELF_IMPROVEMENT_LOOP.md` — score, brainstorm, commit 1–2 items to TASK_BOARD
+7. `docs/CREATIVE_DIRECTION_RECORD.md` — append if human gave any creative direction this session
 
-If `PROJECT_MEMORY.md` does not exist, create it.
+## Self-Improvement Loop (mandatory)
 
-## Required behavior
+Every closeout MUST include a Self-Improvement Loop entry in `context/SELF_IMPROVEMENT_LOOP.md`:
 
-- Treat `docs/STUDIO_DEPLOYMENT_STANDARD.md` as the default studio-wide policy
-  for future game launches unless the user explicitly overrides it.
-- Never rely on prior chat alone for repo context when a memory file or handoff
-  can hold the source of truth.
-- Keep this repo self-sufficient: deployment/domain/workflow context must remain
-  understandable from repo files, not just prior chat context.
-- Keep public game URLs lowercase and slug-based.
-- Keep the studio landing page repo separate from individual game repos.
-- Keep frontend Pages deployment separate from backend/runtime deployment.
-- Keep backend/runtime naming on the studio default:
-  - `https://play-{slug}.vaultsparkstudios.com`
-  - `https://api-{slug}.vaultsparkstudios.com`
-- Update `PROJECT_MEMORY.md` when canonical repo state changes in a way that a
-  future session needs to resume quickly.
-- Update `CODEX_HANDOFF_YYYY-MM-DD.md` after deployment-related changes.
-- If you create a temporary clone of another repo inside this repo, add it to
-  `.git/info/exclude` so it cannot be accidentally staged here.
-- Before committing studio-site homepage changes, fetch the latest remote state
-  and verify the live site or upstream landing-page file so you are not editing
-  against a stale clone.
+1. Score project across 5 categories (Dev Health / Creative Alignment / Momentum / Engagement / Process Quality)
+2. Compare to prior scores — note ↑ ↓ → per category
+3. Name 1 top win and 1 top gap
+4. Brainstorm 3–5 innovative solutions or features
+5. Commit 1–2 brainstorm items to TASK_BOARD labeled `[SIL]`
 
-## VaultSpark Studios website integration
+At session start, read `context/SELF_IMPROVEMENT_LOOP.md` and check if prior `[SIL]` commitments were actioned. If a `[SIL]` item has been skipped 2+ sessions, escalate it to **Now** on TASK_BOARD.
 
-- Studio root site repo: `VaultSparkStudios/VaultSparkStudios.github.io`
-- Standard game path pattern: `https://vaultsparkstudios.com/{slug}/`
-- Standard backend patterns:
-  - `https://play-{slug}.vaultsparkstudios.com`
-  - `https://api-{slug}.vaultsparkstudios.com`
-- Default backend host model:
-  - shared studio VPS
-  - Docker Compose
-  - Caddy
-  - shared Postgres
-  - shared Redis
+## Creative Direction Record (mandatory enforcement)
+
+`docs/CREATIVE_DIRECTION_RECORD.md` is ADDITIVE ONLY.
+
+**Agents MUST append an entry whenever the human provides:**
+- Any creative direction (features, feel, scope)
+- Feature assignments or explicit goals
+- Brand, tone, visual, or quality guidance
+- Canon-affecting decisions
+- Explicit "do this / don't do this" instruction
+
+**Agents MUST NOT:**
+- Add CDR entries autonomously without human input
+- Modify or delete existing CDR entries
+- Skip CDR even for "small" directions — every human direction counts
+
+## Studio Hub integration
+
+This project is tracked in the VaultSpark Studio Hub at `vaultsparkstudios.com/studio-hub/`.
+The hub reads `context/PROJECT_STATUS.json` from this repo via GitHub API.
+
+For hub visibility, keep `context/PROJECT_STATUS.json` current with:
+- `status` — incubating / active / live / maintained / archived
+- `health` — green / yellow / red
+- `currentFocus` — one-line description of active work
+- `nextMilestone` — next concrete deliverable
+- `blockers` — array of blocking items (empty if none)
+- `lastUpdated` — ISO date of last update
+
+## Active Session Beacon
+
+To show an active session indicator in the Studio Hub, add these hooks to your `CLAUDE.md`:
+
+```bash
+# On session start — replace PROJECT_ID and GIST_ID:
+gh gist edit GIST_ID -f active.json <<EOF
+{"active":[{"project":"PROJECT_ID","agent":"claude-code","since":"$(date -u +%Y-%m-%dT%H:%M:%SZ)"}]}
+EOF
+
+# On session end:
+gh gist edit GIST_ID -f active.json <<EOF
+{"active":[]}
+EOF
+```
+
+Get the Gist ID from Hub Settings → "Active Session Beacon — GitHub Gist ID".
+Get PROJECT_ID from the project's `id` field in `src/data/studioRegistry.js`.
+
+## Session aliases
+
+If the user says only `start`, follow `prompts/start.md`.
+
+If the user says only `closeout`, follow `prompts/closeout.md`.
+
+## Escalate before changing
+
+- canon
+- public promises
+- rights or provenance
+- launch dates
+- security or data handling
