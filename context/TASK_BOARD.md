@@ -101,15 +101,15 @@ Date: 2026-03-27
 
 ### CRITICAL — do before any new feature work
 
-- [ ] [B-1] Wire Postgres: install `pg` dep, implement connection pool, migrate PlayerStatsStore +
+- [x] [B-1] Wire Postgres: install `pg` dep, implement connection pool, migrate PlayerStatsStore +
       AchievementStore + VaultSeasonScheduler from in-memory to real SQL queries.
       Swap leaderboard cache to Postgres materialized view.
       ⚠️ MANUAL PREREQUISITE: step 5 (Postgres on VPS) must be done first for prod;
       local dev can use docker-compose (B-3) or a local pg instance.
-- [ ] [B-2] Wire VaultMetrics recording calls: add VaultMetrics.record\*() callsites to the
+- [x] [B-2] Wire VaultMetrics recording calls: add VaultMetrics.record\*() callsites to the
       6–7 event sites in GameServer.ts (vault capture, convoy delivery, chain completed,
       surge activated, match start/end, achievement unlock). ~20 lines total.
-- [ ] [B-3] Docker Compose for local infra: single docker-compose.yml spinning Postgres +
+- [x] [B-3] Docker Compose for local infra: single docker-compose.yml spinning Postgres +
       Redis + app. Reduces onboarding to one command. Prerequisite for testing B-1 locally.
 
 ### Low effort, real impact

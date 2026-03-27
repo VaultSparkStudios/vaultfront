@@ -24,6 +24,20 @@
   - `88a9e04b Ignore local Codex temp worktrees in tooling`
 - Verified GitHub Actions `CI` passed on both follow-up commits
 
+## 2026-03-27 (session 5 — B-3/B-1/B-2 implementation)
+
+- Docker Compose (docker-compose.yml): Postgres 16 + Redis 7, healthchecks, schema auto-applied
+- Installed pg@8.20 as runtime dependency (@types/pg as dev dep)
+- src/server/db/pool.ts: Pool singleton; null-safe when DATABASE_URL absent
+- src/server/db/schema.sql: added player_achievements + season_votes tables
+- PlayerStatsStore.ts: full Postgres dual-path implementation (UPSERT, transactional
+  match recording with Elo updates, leaderboard cache refresh in transaction)
+- AchievementStore.ts: fire-and-forget unlock persist + hydrateFromDb() load method
+- VaultSeasonScheduler.ts: vote persist to DB + loadVotesFromDb() startup restore
+- VaultMetrics.ts: recordMatchAggregates() for bulk end-of-game OTel recording
+- GameServer.ts archiveGame(): sums vault/convoy/chain/surge across allPlayersStats → OTel
+- 623/623 tests green. Zero TypeScript errors. Pushed: 888b0cc4
+
 ## 2026-03-27 (session 4 — audit + closeout)
 
 - Full audit pass: overall 7.6/10; category scores updated (see project_audit.md)

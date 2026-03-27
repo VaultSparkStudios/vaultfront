@@ -32,20 +32,21 @@ Date: 2026-03-27 (session 4 closeout)
 
 ## Most recent shipped changes
 
+- 2026-03-27 B-3/B-1/B-2 implementation pass (session 5) — `888b0cc4`
+
+  B-3 — Docker Compose: Postgres 16 + Redis 7, healthchecks, schema auto-applied on first start
+  B-1 — Postgres integration: pg@8.20 installed; pool.ts singleton; PlayerStatsStore full
+  dual-path (UPSERT + transactional match recording + leaderboard refresh); AchievementStore
+  persists unlocks + hydrateFromDb(); VaultSeasonScheduler persists votes + loadVotesFromDb()
+  B-2 — VaultMetrics wired: recordMatchAggregates() in VaultMetrics; archiveGame() sums
+  vault/convoy/chain/surge from allPlayersStats and records to OTel
+  player_achievements + season_votes tables added to schema.sql
+  623/623 tests green. Zero TypeScript errors.
+
 - 2026-03-27 Full audit (7.6/10) — session 4 audit-only pass; no new code shipped
 
-  New findings (critical gaps discovered):
-
-  - PlayerStatsStore Postgres path is a stub — `pg` package not in deps; all data in-memory
-  - AchievementStore also in-memory only (state lost on restart)
-  - VaultMetrics counters initialized but zero recording calls exist in GameServer
-  - VaultSeasonScheduler vote results also in-memory
-  - Only 4 E2E specs covering an entire game
-  - No Docker Compose for local infra
-  - No database migration CI job
-
+  Critical gaps discovered: pg missing, 4 stores in-memory only, VaultMetrics unwired.
   25-item brainstorm (B-1 through B-25) added to TASK_BOARD.md.
-  Next session priority: B-1 (wire Postgres) → B-2 (wire VaultMetrics) → B-3 (Docker Compose).
 
 - 2026-03-27 Full audit (7.5/10) + 10-item implementation pass (session 3)
 
@@ -122,7 +123,7 @@ Date: 2026-03-27 (session 4 closeout)
 - 82/82 test files, 623/623 tests green (session 2 — last verified 2026-03-26)
 - E2E: @playwright/test now in package.json — run `npm install` then E2E will function
 - GitHub Actions `CI` last passed on `88a9e04b`
-- `main` is in sync with `origin/main` — all sessions pushed (last: `c720c3c8`)
+- `main` is in sync with `origin/main` — all sessions pushed (last: `888b0cc4`)
 
 ---
 

@@ -1,74 +1,84 @@
 # Latest Handoff
 
-Date: 2026-03-27 (session 4 — audit + closeout)
+Date: 2026-03-27 (session 5 — B-3/B-1/B-2)
 
 ---
 
-## Session summary — 2026-03-27 (session 4)
+## Session summary — 2026-03-27 (session 5)
 
-Audit-only pass. No new features shipped. Full codebase re-audit discovered critical
-production gaps in session-3 work. 25-item brainstorm (B-items) added to task board.
+Shipped B-3 (Docker Compose), B-1 (Postgres integration), B-2 (VaultMetrics wiring).
+All previously in-memory stores now have persistent Postgres paths.
+OTel metrics now record end-of-game vault stats.
 
-### Audit results
+### Shipped this session
 
-- Overall: **7.6 / 10** (up from 7.5 session 3 baseline)
-- Biggest drags: Deployment 3.0, Momentum 5.0 (nothing live), Tests 7.0 (4 E2E specs only)
-- Biggest improvements this session: Identity/Brand 7.0 (↑0.5 — real landing page)
+- **docker-compose.yml**: Postgres 16-alpine + Redis 7-alpine, healthchecks, schema auto-applied
+- **pg@8.20**: installed as runtime dependency
+- **src/server/db/pool.ts**: Pool singleton; `null` when `DATABASE_URL` absent
+- **src/server/db/schema.sql**: added `player_achievements` + `season_votes` tables
+- **PlayerStatsStore.ts**: full Postgres dual-path — UPSERT player, transactional match
+  recording with per-player Elo updates, leaderboard cache refresh in same transaction
+- **AchievementStore.ts**: fire-and-forget persist to `player_achievements`; `hydrateFromDb()`
+  loads prior unlocks at game start so achievements are not re-awarded
+- **VaultSeasonScheduler.ts**: `recordVote()` persists to `season_votes`; `loadVotesFromDb()`
+  restores current week's vote counts on startup
+- **VaultMetrics.ts**: `recordMatchAggregates()` — bulk OTel recording for end-of-game stats
+- **GameServer.ts**: `archiveGame()` sums `vaultCaptures`, `convoyDeliveries`,
+  `cleanExecutionStreaks`, `surgeActivations` from `allPlayersStats` → `recordMatchAggregates()`
 
-### Critical gaps discovered (NEW — not previously known)
+### Test status
 
-1. **`pg` package missing from dependencies** — Postgres cannot connect; root cause of gaps 2–4
-2. **PlayerStatsStore Postgres path is a stub** — `DATABASE_URL` detected but no queries run;
-   all player stats / match history / leaderboard data is in-memory and lost on restart
-3. **AchievementStore in-memory only** — same pattern; achievements lost on restart
-4. **VaultMetrics recording calls absent** — 7 OTel counters defined but zero `.record*()` calls
-   exist anywhere in GameServer.ts; the Grafana dashboard would show nothing if deployed
-5. **VaultSeasonScheduler vote results in-memory** — lost on restart
-6. **No Docker Compose** — local multi-service dev requires manual Postgres + Redis setup
-
-### Items flagged as MANUAL (human action required — see TASK_BOARD.md)
-
-| #   | Task                                                                        | Status     |
-| --- | --------------------------------------------------------------------------- | ---------- |
-| 0   | Install `npm install --save-dev @playwright/test` + playwright browsers     | ⏳ Pending |
-| 1   | Rename local folder `OpenFrontIO` → `VaultFront`                            | ⏳ Pending |
-| 2   | Provision Hetzner VPS (CX32 — Docker + Caddy + Postgres + Redis)            | ⏳ Pending |
-| 3   | Configure GitHub Actions secrets (DEPLOY_SERVER_HOST, DEPLOY_SSH_KEY, etc.) | ⏳ Pending |
-| 4   | Configure GitHub Actions vars (DOMAIN, GHCR_USERNAME, etc.)                 | ⏳ Pending |
-| 5   | Set up Postgres + Redis on VPS, run db/schema.sql                           | ⏳ Pending |
-| 6   | Configure DNS (play-vaultfront._, api-vaultfront._ → VPS IP)                | ⏳ Pending |
-| 7   | Run first deploy + verify /commit.txt, WebSocket, CORS, /health             | ⏳ Pending |
-| 8   | Swap deploy-pages.yml to real client bundle (after step 7)                  | ⏳ Pending |
+- 623/623 unit tests green
+- Zero TypeScript errors
+- Last pushed: `888b0cc4` (main in sync with origin/main)
 
 ---
 
-## Immediate next actions (AI-executable, session 5)
+## What's still pending — next session
 
-**Do in this order — each unlocks the next:**
+**Highest leverage (low effort):**
 
-1. **[B-3]** Docker Compose — Postgres + Redis + app in one command (enables local Postgres testing)
-2. **[B-1]** Wire Postgres — install `pg`, connection pool, migrate 4 in-memory stores to SQL
-3. **[B-2]** Wire VaultMetrics — add ~20 lines of `.record*()` calls to GameServer event sites
-4. **[B-21]** CodeQL + Semgrep SAST — one workflow file addition
-5. **[B-7]** Match invite deep links with OG preview meta
+- [B-7] Match invite deep links with OG preview meta
+- [B-14] Revenge queue / rematch button
+- [B-21] CodeQL + Semgrep SAST (one CI workflow file)
+- [B-24] Contributing guide + GitHub issue templates
+
+**Medium effort:**
+
+- [B-4] DB migration CI job (apply schema.sql in a test Postgres container)
+- [B-6] Full Discord bot with slash commands
+- [B-9] Live spectator game browser UI
+
+**Transformative:**
+
+- [B-25] AI post-match recap (Claude API)
+- [B-12] Clan / Squad system
+- [B-13] Tournament brackets
+
+---
+
+## Manual blockers (still all pending — see TASK_BOARD.md)
+
+| #   | Task                                         | Status     |
+| --- | -------------------------------------------- | ---------- |
+| 0   | npm install + playwright install chromium    | ⏳ Pending |
+| 1   | Rename local folder OpenFrontIO → VaultFront | ⏳ Pending |
+| 2   | Provision Hetzner VPS                        | ⏳ Pending |
+| 3   | GitHub Actions secrets                       | ⏳ Pending |
+| 4   | GitHub Actions vars                          | ⏳ Pending |
+| 5   | Postgres + Redis on VPS → run schema.sql     | ⏳ Pending |
+| 6   | DNS records                                  | ⏳ Pending |
+| 7   | First deploy + verify                        | ⏳ Pending |
+| 8   | Swap Pages to real client bundle             | ⏳ Pending |
+
+**Local dev shortcut**: `docker compose up -d` then `DATABASE_URL=postgres://vaultfront:vaultfront@localhost:5432/vaultfront npm run dev`
 
 ---
 
 ## Key context files
 
-- `context/CURRENT_STATE.md` — canonical repo + deployment state
-- `context/TASK_BOARD.md` — all tasks (B-items brainstorm + carry-forward queued)
-- `docs/VAULTFRONT_SOURCE_MAP.md` — every VaultFront-owned or modified file
-- `docs/DEPLOY_RUNTIME_RUNBOOK.md` — step-by-step deploy instructions
-- `src/server/db/schema.sql` — Postgres schema (tables defined, not yet connected)
-
----
-
-## Git state
-
-- Branch: `main`
-- Remote: `origin` (VaultSparkStudios/vaultfront)
-- Status: session 3 + session 4 closeout work committed locally; push pending
-- All new files from session 3 committed: AchievementStore, EloRating, PlayerStatsStore,
-  VaultMetrics, VaultSeasonScheduler, AchievementToast, HistoryModal, db/schema.sql,
-  grafana-dashboard.json, .renovaterc.json
+- `context/TASK_BOARD.md` — B-items (B-1/B-2/B-3 done; B-4 through B-25 queued)
+- `docs/VAULTFRONT_SOURCE_MAP.md` — every VaultFront-owned file
+- `docs/DEPLOY_RUNTIME_RUNBOOK.md` — deploy step-by-step
+- `src/server/db/schema.sql` — Postgres schema (all 5 tables)
+- `docker-compose.yml` — local Postgres + Redis
