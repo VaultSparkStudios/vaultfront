@@ -1174,6 +1174,28 @@ export class GameServer {
         ),
       ),
     );
+
+    // Aggregate vault-specific stats across all players and record to OTel.
+    if (this.winner?.allPlayersStats) {
+      let vaultCaptures = 0;
+      let convoyDeliveries = 0;
+      let executionChains = 0;
+      let surgeActivations = 0;
+      for (const stats of Object.values(this.winner.allPlayersStats)) {
+        const vf = stats?.vaultfront;
+        if (!vf) continue;
+        vaultCaptures += Number(vf.vaultCaptures ?? 0n);
+        convoyDeliveries += Number(vf.vaultConvoysDelivered ?? 0n);
+        executionChains += Number(vf.cleanExecutionStreaks ?? 0n);
+        surgeActivations += Number(vf.surgeActivations ?? 0n);
+      }
+      VaultMetrics.recordMatchAggregates(this.id, {
+        vaultCaptures,
+        convoyDeliveries,
+        executionChains,
+        surgeActivations,
+      });
+    }
   }
 
   private handleSynchronization() {

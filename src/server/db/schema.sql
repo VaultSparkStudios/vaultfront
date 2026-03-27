@@ -65,3 +65,23 @@ CREATE TABLE IF NOT EXISTS leaderboard_cache (
 --   FROM player_stats
 --   ORDER BY elo_rating DESC
 --   LIMIT 1000;
+
+-- ── Player Achievements ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS player_achievements (
+  persistent_id   VARCHAR(64)  NOT NULL,
+  achievement_id  VARCHAR(64)  NOT NULL,
+  unlocked_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (persistent_id, achievement_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_player_achievements_pid
+  ON player_achievements (persistent_id);
+
+-- ── Season Votes ───────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS season_votes (
+  week_number   INT          NOT NULL,
+  voter_id      VARCHAR(128) NOT NULL,
+  candidate_key VARCHAR(64)  NOT NULL,
+  created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (week_number, voter_id)
+);

@@ -1,0 +1,42 @@
+# VaultFront local development infrastructure.
+# Runs Postgres and Redis only — the app runs on the host via `npm run dev`.
+#
+# Usage:
+#   docker compose up -d        # start Postgres + Redis
+#   docker compose down         # stop
+#   docker compose down -v      # stop + delete data volumes
+#
+# App connects via:
+#   DATABASE_URL=postgres://vaultfront:vaultfront@localhost:5432/vaultfront
+#   REDIS_URL=redis://localhost:6379
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: vaultfront
+      POSTGRES_USER: vaultfront
+      POSTGRES_PASSWORD: vaultfront
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./src/server/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vaultfront"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

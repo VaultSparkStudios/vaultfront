@@ -1,7 +1,8 @@
 // VaultFront — Player stats and match history store.
-// Primary store is in-memory (safe for pre-deployment).
-// When DATABASE_URL is present, swap in the Postgres path (see TODO below).
+// Dual-path: in-memory when DATABASE_URL is absent; Postgres when present.
+// Switch: `pool` from db/pool.ts is null → in-memory, non-null → Postgres.
 
+import { pool } from "./db/pool";
 import { EloRating } from "./EloRating";
 import { logger } from "./Logger";
 
@@ -99,35 +100,31 @@ interface InMemoryMatchEntry {
 // ── Store implementation ───────────────────────────────────────────────────────
 
 class PlayerStatsStore {
-  private readonly players = new Map<string, InMemoryPlayerRecord>();
-  private readonly history: InMemoryMatchEntry[] = [];
+  // In-memory state (used when pool is null)
+  private readonly memPlayers = new Map<string, InMemoryPlayerRecord>();
+  private readonly memHistory: InMemoryMatchEntry[] = [];
   private nextId = 1;
 
-  // TODO: When DATABASE_URL is set, replace in-memory maps with Postgres queries.
-  // Example connection setup:
-  //   import { Pool } from 'pg';
-  //   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  // Then replace each method body with the appropriate SQL from schema.sql.
-  private readonly usePostgres = Boolean(process.env.DATABASE_URL);
-
   constructor() {
-    if (this.usePostgres) {
+    if (pool) {
+      log.info("PlayerStatsStore using Postgres");
+    } else {
       log.warn(
-        "DATABASE_URL detected but Postgres path is not yet implemented. " +
-          "Falling back to in-memory store. See TODO in PlayerStatsStore.ts.",
+        "DATABASE_URL not set — PlayerStatsStore using in-memory store. " +
+          "Data will not persist across restarts. " +
+          "Run `docker compose up -d` and set DATABASE_URL to enable Postgres.",
       );
     }
   }
 
-  // ── Private helpers ──────────────────────────────────────────────────────────
+  // ── Private in-memory helpers ─────────────────────────────────────────────
 
-  private ensurePlayer(
+  private memEnsurePlayer(
     persistentId: string,
     displayName: string,
   ): InMemoryPlayerRecord {
-    const existing = this.players.get(persistentId);
+    const existing = this.memPlayers.get(persistentId);
     if (existing) {
-      // Update display name if it changed
       if (displayName && displayName !== existing.displayName) {
         existing.displayName = displayName;
       }
@@ -148,18 +145,57 @@ class PlayerStatsStore {
       createdAt: now,
       updatedAt: now,
     };
-    this.players.set(persistentId, record);
+    this.memPlayers.set(persistentId, record);
     return record;
+  }
+
+  // ── Postgres helpers ──────────────────────────────────────────────────────
+
+  /**
+   * UPSERT a player row. Returns the current elo_rating for that player.
+   * Must be called within an existing transaction client.
+   */
+  private async pgEnsurePlayer(
+    client: import("pg").PoolClient,
+    persistentId: string,
+    displayName: string,
+  ): Promise<number> {
+    const res = await client.query<{ elo_rating: number }>(
+      `INSERT INTO player_stats (persistent_id, display_name)
+       VALUES ($1, $2)
+       ON CONFLICT (persistent_id) DO UPDATE
+         SET display_name = EXCLUDED.display_name,
+             updated_at   = NOW()
+       RETURNING elo_rating`,
+      [persistentId, displayName || ""],
+    );
+    return res.rows[0].elo_rating;
+  }
+
+  /** Refresh leaderboard_cache inside an open transaction. */
+  private async pgRefreshLeaderboard(
+    client: import("pg").PoolClient,
+  ): Promise<void> {
+    await client.query("TRUNCATE leaderboard_cache");
+    await client.query(
+      `INSERT INTO leaderboard_cache
+         (persistent_id, display_name, elo_rating, rank, matches_played, wins, updated_at)
+       SELECT persistent_id, display_name, elo_rating,
+              ROW_NUMBER() OVER (ORDER BY elo_rating DESC) AS rank,
+              matches_played, wins, NOW()
+       FROM player_stats
+       ORDER BY elo_rating DESC
+       LIMIT 1000`,
+    );
   }
 
   // ── Public API ───────────────────────────────────────────────────────────────
 
   /**
-   * Record a completed match for a player and update Elo for all participants.
+   * Record a completed match for all participants and update Elo.
    *
    * Elo approximation for multi-player games:
-   *   - Winner(s) are matched against the average Elo of all losers (and vice-versa).
-   *   - Each winner gains Elo vs. the loser average; each loser loses vs. the winner average.
+   *   - Winners are matched against the average Elo of all losers (and vice-versa).
    */
   async recordMatch(
     persistentId: string,
@@ -167,20 +203,142 @@ class PlayerStatsStore {
     gameId: string,
     result: MatchResult,
   ): Promise<void> {
-    // Ensure all participants exist in the store
+    if (pool) {
+      return this.pgRecordMatch(persistentId, displayName, gameId, result);
+    }
+    return this.memRecordMatch(persistentId, displayName, gameId, result);
+  }
+
+  private async pgRecordMatch(
+    persistentId: string,
+    displayName: string,
+    gameId: string,
+    result: MatchResult,
+  ): Promise<void> {
+    const client = await pool!.connect();
+    try {
+      await client.query("BEGIN");
+
+      // Ensure all participants exist and collect their current Elo
+      const eloMap = new Map<string, number>();
+      for (const p of result.allPlayers) {
+        const name = p.persistentId === persistentId ? displayName : "";
+        const elo = await this.pgEnsurePlayer(client, p.persistentId, name);
+        eloMap.set(p.persistentId, elo);
+      }
+
+      const winners = result.allPlayers.filter((p) => p.won);
+      const losers = result.allPlayers.filter((p) => !p.won);
+
+      const avgElo = (ids: Array<{ persistentId: string }>): number => {
+        if (ids.length === 0) return EloRating.DEFAULT_RATING;
+        const total = ids.reduce(
+          (sum, p) =>
+            sum + (eloMap.get(p.persistentId) ?? EloRating.DEFAULT_RATING),
+          0,
+        );
+        return Math.round(total / ids.length);
+      };
+
+      const winnerAvg = avgElo(winners);
+      const loserAvg = avgElo(losers);
+
+      for (const p of result.allPlayers) {
+        const isWinner = p.won;
+        const currentElo =
+          eloMap.get(p.persistentId) ?? EloRating.DEFAULT_RATING;
+        const opponentAvg = isWinner ? loserAvg : winnerAvg;
+        const eloResult = EloRating.calculate(
+          currentElo,
+          opponentAvg,
+          isWinner,
+        );
+        const newElo = Math.max(100, eloResult.newRatingA);
+        const eloDelta = newElo - currentElo;
+        const isSubject = p.persistentId === persistentId;
+
+        await client.query(
+          `UPDATE player_stats SET
+             elo_rating        = $2,
+             matches_played    = matches_played + 1,
+             wins              = wins + $3,
+             losses            = losses + $4,
+             vault_captures    = vault_captures + $5,
+             convoy_deliveries = convoy_deliveries + $6,
+             execution_chains  = execution_chains + $7,
+             updated_at        = NOW()
+           WHERE persistent_id = $1`,
+          [
+            p.persistentId,
+            newElo,
+            isWinner ? 1 : 0,
+            isWinner ? 0 : 1,
+            isSubject ? result.vaultCaptures : 0,
+            isSubject ? result.convoyDeliveries : 0,
+            isSubject ? result.executionChains : 0,
+          ],
+        );
+
+        await client.query(
+          `INSERT INTO match_history
+             (persistent_id, game_id, won, duration_seconds,
+              vault_captures, convoy_deliveries, execution_chains,
+              elo_before, elo_after, elo_delta, map_name, player_count)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+          [
+            p.persistentId,
+            gameId,
+            isWinner,
+            isSubject ? result.durationSeconds : 0,
+            isSubject ? result.vaultCaptures : 0,
+            isSubject ? result.convoyDeliveries : 0,
+            isSubject ? result.executionChains : 0,
+            currentElo,
+            newElo,
+            eloDelta,
+            result.mapName,
+            result.playerCount,
+          ],
+        );
+
+        log.info("match recorded (pg)", {
+          persistentId: p.persistentId,
+          gameId,
+          won: isWinner,
+          eloBefore: currentElo,
+          eloAfter: newElo,
+        });
+      }
+
+      await this.pgRefreshLeaderboard(client);
+      await client.query("COMMIT");
+    } catch (err) {
+      await client.query("ROLLBACK");
+      log.error("pgRecordMatch failed, rolled back", { err: String(err) });
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
+  private async memRecordMatch(
+    persistentId: string,
+    displayName: string,
+    gameId: string,
+    result: MatchResult,
+  ): Promise<void> {
     for (const p of result.allPlayers) {
       const name = p.persistentId === persistentId ? displayName : "";
-      this.ensurePlayer(p.persistentId, name);
+      this.memEnsurePlayer(p.persistentId, name);
     }
 
     const winners = result.allPlayers.filter((p) => p.won);
     const losers = result.allPlayers.filter((p) => !p.won);
 
-    // Compute average Elo for each side (guard against empty arrays)
     const avgElo = (ids: Array<{ persistentId: string }>): number => {
       if (ids.length === 0) return EloRating.DEFAULT_RATING;
       const total = ids.reduce((sum, p) => {
-        const rec = this.players.get(p.persistentId);
+        const rec = this.memPlayers.get(p.persistentId);
         return sum + (rec?.eloRating ?? EloRating.DEFAULT_RATING);
       }, 0);
       return Math.round(total / ids.length);
@@ -188,156 +346,196 @@ class PlayerStatsStore {
 
     const winnerAvg = avgElo(winners);
     const loserAvg = avgElo(losers);
-
     const now = Date.now();
 
-    // Update Elo for each winner
-    for (const winner of winners) {
-      const rec = this.players.get(winner.persistentId);
+    for (const p of result.allPlayers) {
+      const rec = this.memPlayers.get(p.persistentId);
       if (!rec) continue;
-      const eloResult = EloRating.calculate(rec.eloRating, loserAvg, true);
+      const opponentAvg = p.won ? loserAvg : winnerAvg;
+      const eloResult = EloRating.calculate(rec.eloRating, opponentAvg, p.won);
       const eloBefore = rec.eloRating;
       rec.eloRating = Math.max(100, eloResult.newRatingA);
       rec.matchesPlayed += 1;
-      rec.wins += 1;
+      if (p.won) rec.wins += 1;
+      else rec.losses += 1;
       rec.updatedAt = now;
-
-      if (winner.persistentId === persistentId) {
+      const isSubject = p.persistentId === persistentId;
+      if (isSubject) {
         rec.vaultCaptures += result.vaultCaptures;
         rec.convoyDeliveries += result.convoyDeliveries;
         rec.executionChains += result.executionChains;
       }
-
-      const entry: InMemoryMatchEntry = {
+      this.memHistory.push({
         id: this.nextId++,
-        persistentId: winner.persistentId,
+        persistentId: p.persistentId,
         gameId,
-        won: true,
-        durationSeconds:
-          winner.persistentId === persistentId ? result.durationSeconds : 0,
-        vaultCaptures:
-          winner.persistentId === persistentId ? result.vaultCaptures : 0,
-        convoyDeliveries:
-          winner.persistentId === persistentId ? result.convoyDeliveries : 0,
-        executionChains:
-          winner.persistentId === persistentId ? result.executionChains : 0,
+        won: p.won,
+        durationSeconds: isSubject ? result.durationSeconds : 0,
+        vaultCaptures: isSubject ? result.vaultCaptures : 0,
+        convoyDeliveries: isSubject ? result.convoyDeliveries : 0,
+        executionChains: isSubject ? result.executionChains : 0,
         eloBefore,
         eloAfter: rec.eloRating,
         eloDelta: rec.eloRating - eloBefore,
         mapName: result.mapName,
         playerCount: result.playerCount,
         createdAt: now,
-      };
-      this.history.push(entry);
-      log.info("match recorded (win)", {
-        persistentId: winner.persistentId,
-        gameId,
-        eloBefore,
-        eloAfter: rec.eloRating,
       });
-    }
-
-    // Update Elo for each loser
-    for (const loser of losers) {
-      const rec = this.players.get(loser.persistentId);
-      if (!rec) continue;
-      const eloResult = EloRating.calculate(rec.eloRating, winnerAvg, false);
-      const eloBefore = rec.eloRating;
-      rec.eloRating = Math.max(100, eloResult.newRatingA);
-      rec.matchesPlayed += 1;
-      rec.losses += 1;
-      rec.updatedAt = now;
-
-      if (loser.persistentId === persistentId) {
-        rec.vaultCaptures += result.vaultCaptures;
-        rec.convoyDeliveries += result.convoyDeliveries;
-        rec.executionChains += result.executionChains;
-      }
-
-      const entry: InMemoryMatchEntry = {
-        id: this.nextId++,
-        persistentId: loser.persistentId,
+      log.info("match recorded (mem)", {
+        persistentId: p.persistentId,
         gameId,
-        won: false,
-        durationSeconds:
-          loser.persistentId === persistentId ? result.durationSeconds : 0,
-        vaultCaptures:
-          loser.persistentId === persistentId ? result.vaultCaptures : 0,
-        convoyDeliveries:
-          loser.persistentId === persistentId ? result.convoyDeliveries : 0,
-        executionChains:
-          loser.persistentId === persistentId ? result.executionChains : 0,
-        eloBefore,
-        eloAfter: rec.eloRating,
-        eloDelta: rec.eloRating - eloBefore,
-        mapName: result.mapName,
-        playerCount: result.playerCount,
-        createdAt: now,
-      };
-      this.history.push(entry);
-      log.info("match recorded (loss)", {
-        persistentId: loser.persistentId,
-        gameId,
+        won: p.won,
         eloBefore,
         eloAfter: rec.eloRating,
       });
     }
   }
 
-  /**
-   * Retrieve match history for a player, most recent first.
-   */
+  /** Retrieve match history for a player, most recent first. */
   async getHistory(
     persistentId: string,
     limit = 20,
   ): Promise<MatchHistoryEntry[]> {
-    const entries = this.history
+    if (pool) {
+      const res = await pool.query<{
+        id: number;
+        persistent_id: string;
+        game_id: string;
+        won: boolean;
+        duration_seconds: number;
+        vault_captures: number;
+        convoy_deliveries: number;
+        execution_chains: number;
+        elo_before: number;
+        elo_after: number;
+        elo_delta: number;
+        map_name: string;
+        player_count: number;
+        created_at: Date;
+      }>(
+        `SELECT * FROM match_history
+         WHERE persistent_id = $1
+         ORDER BY created_at DESC
+         LIMIT $2`,
+        [persistentId, limit],
+      );
+      return res.rows.map((r) => ({
+        id: r.id,
+        persistentId: r.persistent_id,
+        gameId: r.game_id,
+        won: r.won,
+        durationSeconds: r.duration_seconds,
+        vaultCaptures: r.vault_captures,
+        convoyDeliveries: r.convoy_deliveries,
+        executionChains: r.execution_chains,
+        eloBefore: r.elo_before,
+        eloAfter: r.elo_after,
+        eloDelta: r.elo_delta,
+        mapName: r.map_name,
+        playerCount: r.player_count,
+        createdAt: r.created_at.toISOString(),
+      }));
+    }
+
+    return this.memHistory
       .filter((e) => e.persistentId === persistentId)
       .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, limit);
-
-    return entries.map((e) => ({
-      id: e.id,
-      persistentId: e.persistentId,
-      gameId: e.gameId,
-      won: e.won,
-      durationSeconds: e.durationSeconds,
-      vaultCaptures: e.vaultCaptures,
-      convoyDeliveries: e.convoyDeliveries,
-      executionChains: e.executionChains,
-      eloBefore: e.eloBefore,
-      eloAfter: e.eloAfter,
-      eloDelta: e.eloDelta,
-      mapName: e.mapName,
-      playerCount: e.playerCount,
-      createdAt: new Date(e.createdAt).toISOString(),
-    }));
+      .slice(0, limit)
+      .map((e) => ({
+        id: e.id,
+        persistentId: e.persistentId,
+        gameId: e.gameId,
+        won: e.won,
+        durationSeconds: e.durationSeconds,
+        vaultCaptures: e.vaultCaptures,
+        convoyDeliveries: e.convoyDeliveries,
+        executionChains: e.executionChains,
+        eloBefore: e.eloBefore,
+        eloAfter: e.eloAfter,
+        eloDelta: e.eloDelta,
+        mapName: e.mapName,
+        playerCount: e.playerCount,
+        createdAt: new Date(e.createdAt).toISOString(),
+      }));
   }
 
-  /**
-   * Get the global leaderboard, sorted by Elo descending.
-   */
+  /** Get the global leaderboard sorted by Elo descending. */
   async getLeaderboard(limit = 50): Promise<LeaderboardEntry[]> {
-    const sorted = Array.from(this.players.values())
+    if (pool) {
+      const res = await pool.query<{
+        persistent_id: string;
+        display_name: string;
+        elo_rating: number;
+        rank: number;
+        matches_played: number;
+        wins: number;
+      }>(
+        `SELECT persistent_id, display_name, elo_rating, rank, matches_played, wins
+         FROM leaderboard_cache
+         ORDER BY rank ASC
+         LIMIT $1`,
+        [limit],
+      );
+      return res.rows.map((r) => ({
+        persistentId: r.persistent_id,
+        displayName: r.display_name,
+        eloRating: r.elo_rating,
+        rank: r.rank,
+        matchesPlayed: r.matches_played,
+        wins: r.wins,
+      }));
+    }
+
+    return Array.from(this.memPlayers.values())
       .filter((p) => p.matchesPlayed > 0)
       .sort((a, b) => b.eloRating - a.eloRating)
-      .slice(0, limit);
-
-    return sorted.map((p, idx) => ({
-      persistentId: p.persistentId,
-      displayName: p.displayName,
-      eloRating: p.eloRating,
-      rank: idx + 1,
-      matchesPlayed: p.matchesPlayed,
-      wins: p.wins,
-    }));
+      .slice(0, limit)
+      .map((p, idx) => ({
+        persistentId: p.persistentId,
+        displayName: p.displayName,
+        eloRating: p.eloRating,
+        rank: idx + 1,
+        matchesPlayed: p.matchesPlayed,
+        wins: p.wins,
+      }));
   }
 
-  /**
-   * Get aggregate stats for a single player.
-   */
+  /** Get aggregate stats for a single player. */
   async getPlayerStats(persistentId: string): Promise<PlayerStats | null> {
-    const rec = this.players.get(persistentId);
+    if (pool) {
+      const res = await pool.query<{
+        persistent_id: string;
+        display_name: string;
+        elo_rating: number;
+        matches_played: number;
+        wins: number;
+        losses: number;
+        vault_captures: number;
+        convoy_deliveries: number;
+        execution_chains: number;
+        surge_activations: number;
+        created_at: Date;
+        updated_at: Date;
+      }>(`SELECT * FROM player_stats WHERE persistent_id = $1`, [persistentId]);
+      if (res.rows.length === 0) return null;
+      const r = res.rows[0];
+      return {
+        persistentId: r.persistent_id,
+        displayName: r.display_name,
+        eloRating: r.elo_rating,
+        matchesPlayed: r.matches_played,
+        wins: r.wins,
+        losses: r.losses,
+        vaultCaptures: r.vault_captures,
+        convoyDeliveries: r.convoy_deliveries,
+        executionChains: r.execution_chains,
+        surgeActivations: r.surge_activations,
+        createdAt: r.created_at.toISOString(),
+        updatedAt: r.updated_at.toISOString(),
+      };
+    }
+
+    const rec = this.memPlayers.get(persistentId);
     if (!rec) return null;
     return {
       persistentId: rec.persistentId,

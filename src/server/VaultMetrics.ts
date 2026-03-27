@@ -134,4 +134,35 @@ export const VaultMetrics = {
     if (!c) return;
     c.achievementUnlocked.add(1, { achievement_id: achievementId });
   },
+
+  /**
+   * Record aggregate per-game stats after a match ends.
+   * Call once from archiveGame() with totals summed across all players.
+   */
+  recordMatchAggregates(
+    gameId: string,
+    totals: {
+      vaultCaptures: number;
+      convoyDeliveries: number;
+      executionChains: number;
+      surgeActivations: number;
+    },
+  ): void {
+    const c = assertInitialized("recordMatchAggregates");
+    if (!c) return;
+    if (totals.vaultCaptures > 0) {
+      c.vaultCaptured.add(totals.vaultCaptures, { "game.id": gameId });
+    }
+    if (totals.convoyDeliveries > 0) {
+      c.convoyDelivered.add(totals.convoyDeliveries, { "game.id": gameId });
+    }
+    if (totals.executionChains > 0) {
+      c.executionChainCompleted.add(totals.executionChains, {
+        "game.id": gameId,
+      });
+    }
+    if (totals.surgeActivations > 0) {
+      c.surgeActivated.add(totals.surgeActivations, { "game.id": gameId });
+    }
+  },
 };

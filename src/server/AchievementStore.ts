@@ -3,13 +3,14 @@
  * and unlock detection for VaultFront.
  *
  * Architecture:
- * - All state is in-memory (Map per persistentId). Persistence across restarts
- *   is out of scope for this module — hook into a DB layer if needed later.
- * - checkAndUnlock() is the single entry point; call it from game-event
- *   handlers and it returns any newly unlocked achievements.
- * - reset() is provided for testing isolation.
+ * - In-memory Map per persistentId is the authoritative session store.
+ * - When pool (Postgres) is available, unlocks are persisted to player_achievements.
+ * - Call hydrateFromDb(persistentId) at game start to restore prior unlocks.
+ * - checkAndUnlock() is the single entry point for event-driven unlock detection.
+ * - reset() is provided for test isolation only.
  */
 
+import { pool } from "./db/pool";
 import { logger } from "./Logger";
 
 // ---------------------------------------------------------------------------
@@ -191,6 +192,23 @@ function tryUnlock(
     achievementId,
     achievementName: def.name,
   });
+
+  // Persist to Postgres (fire-and-forget; in-memory state remains authoritative)
+  if (pool) {
+    pool
+      .query(
+        `INSERT INTO player_achievements (persistent_id, achievement_id)
+         VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+        [persistentId, achievementId],
+      )
+      .catch((err) =>
+        logger.error("Failed to persist achievement unlock", {
+          persistentId,
+          achievementId,
+          err: String(err),
+        }),
+      );
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -378,5 +396,34 @@ export const achievementStore = {
   /** Clears all state. Intended for test isolation only. */
   reset(): void {
     playerStates.clear();
+  },
+
+  /**
+   * Load persisted unlocks from Postgres into the in-memory state.
+   * Call at game start for each player so prior unlocks are not re-awarded.
+   * No-ops when pool is null.
+   */
+  async hydrateFromDb(persistentId: string): Promise<void> {
+    if (!pool) return;
+    try {
+      const res = await pool.query<{
+        achievement_id: string;
+        unlocked_at: Date;
+      }>(
+        `SELECT achievement_id, unlocked_at FROM player_achievements
+         WHERE persistent_id = $1`,
+        [persistentId],
+      );
+      if (res.rows.length === 0) return;
+      const state = getOrCreate(persistentId);
+      for (const row of res.rows) {
+        state.unlocked.set(row.achievement_id, row.unlocked_at.getTime());
+      }
+    } catch (err) {
+      logger.error("Failed to hydrate achievements from DB", {
+        persistentId,
+        err: String(err),
+      });
+    }
   },
 };

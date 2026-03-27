@@ -10,6 +10,7 @@
  *  - Exposes getStatus() for the /api/season/current endpoint.
  */
 
+import { pool } from "./db/pool";
 import { DiscordNotifier } from "./DiscordNotifier";
 import { logger } from "./Logger";
 
@@ -263,14 +264,65 @@ class VaultSeasonScheduler {
 
   // ── Public methods ─────────────────────────────────────────────────────
 
-  /** Increments the vote count for a candidate key. No-ops if vote is not open. */
-  recordVote(candidateKey: string): void {
+  /**
+   * Increments the vote count for a candidate key.
+   * No-ops if the vote is not open or the candidate is invalid.
+   * @param voterId - anonymized player ID used for deduplication in Postgres.
+   */
+  recordVote(candidateKey: string, voterId?: string): void {
     if (this.currentVote === null) return;
     if (Date.now() >= this.currentVote.openUntil) return;
     if (!this.currentVote.candidates.includes(candidateKey)) return;
 
     const current = this.currentVote.votes.get(candidateKey) ?? 0;
     this.currentVote.votes.set(candidateKey, current + 1);
+
+    // Persist to Postgres (fire-and-forget; one vote per voter per week)
+    if (pool && voterId) {
+      const now = new Date();
+      const weekNum = utcWeekNumber(now);
+      pool
+        .query(
+          `INSERT INTO season_votes (week_number, voter_id, candidate_key)
+           VALUES ($1, $2, $3) ON CONFLICT (week_number, voter_id) DO NOTHING`,
+          [weekNum, voterId, candidateKey],
+        )
+        .catch((err) =>
+          log.error("Failed to persist season vote", {
+            voterId,
+            candidateKey,
+            err: String(err),
+          }),
+        );
+    }
+  }
+
+  /**
+   * Load this week's votes from Postgres into in-memory state.
+   * Call once at startup so vote counts survive server restarts.
+   */
+  async loadVotesFromDb(): Promise<void> {
+    if (!pool || !this.currentVote) return;
+    const weekNum = utcWeekNumber(new Date());
+    try {
+      const res = await pool.query<{ candidate_key: string; count: string }>(
+        `SELECT candidate_key, COUNT(*) AS count
+         FROM season_votes
+         WHERE week_number = $1
+         GROUP BY candidate_key`,
+        [weekNum],
+      );
+      for (const row of res.rows) {
+        const existing = this.currentVote.votes.get(row.candidate_key) ?? 0;
+        this.currentVote.votes.set(
+          row.candidate_key,
+          existing + parseInt(row.count, 10),
+        );
+      }
+      log.info("Loaded season votes from DB", { weekNum, rows: res.rowCount });
+    } catch (err) {
+      log.error("Failed to load season votes from DB", { err: String(err) });
+    }
   }
 
   /** Returns the winning candidate or null if vote is still open or no votes cast. */
