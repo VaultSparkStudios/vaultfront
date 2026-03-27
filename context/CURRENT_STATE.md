@@ -32,12 +32,30 @@ Date: 2026-03-26
 
 ## Most recent shipped changes
 
+- 2026-03-26 Full audit + top-20 improvement pass (see context/CODEX_HANDOFF_2026-03-26.md)
+  - Coverage thresholds enforced in vite.config.ts (70% lines/functions, 60% branches)
+  - `no-explicit-any` scoped to VaultFront-owned files in eslint.config.js
+  - Semantic release workflow + .releaserc.json added
+  - Canary promotion workflow (promote.yml) added
+  - Bundle size budget (.bundlewatch.json + CI job) added
+  - OpenAPI spec written (docs/api/openapi.yaml)
+  - Deploy Runtime runbook written (docs/DEPLOY_RUNTIME_RUNBOOK.md)
+  - PWA: manifest.json enriched, service worker (sw.ts) + Main.ts registration
+  - Weekly mutator dashboard added to pages-stub/index.html
+  - Discord notifier added (src/server/DiscordNotifier.ts)
+  - TODO warning rule added to ESLint for VaultFront-owned files
+  - Light theme wired: CSS custom properties in index.html, BrandTheme.ts, SettingsModal.ts, UserSettings.ts
+  - Bot difficulty hint added to SinglePlayerModal
+  - `brand_theme_light` added to en.json
+  - Replay system scaffolded (ReplayStore.ts + ReplayPlayer.ts)
+  - Spectator mode scaffolded (SpectatorBus.ts + SpectatorRunner.ts)
+  - Map editor scaffolded (MapEditor.ts)
+  - Playwright E2E tests: homepage, settings, single-player (3 spec files + config)
+  - E2E CI workflow added (.github/workflows/e2e.yml)
+  - VAULTFRONT_SOURCE_MAP.md updated with all new files
 - `8f53f309` repo organization, docs, CODEOWNERS, lifecycle integration tests
 - `01461146` fixed GitHub CI failures on `main`
 - `88a9e04b` excluded local `.codex-temp-*` worktrees from tooling
-- `bbcab451` aligned HUD test expectations after gameplay/HUD migration
-- `ce5521cf` ported VaultFront gameplay clarity and tuning pass to canonical branch
-- `5097419a` converted Pages publishing to repo-local launch-stub model
 
 ---
 

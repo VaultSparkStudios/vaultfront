@@ -21,7 +21,10 @@ import { UserSettings } from "../core/game/UserSettings";
 import "./AccountModal";
 import { getUserMe } from "./Api";
 import { userAuth } from "./Auth";
-import { applyVaultFrontBrandTheme } from "./BrandTheme";
+import {
+  applyVaultFrontBrandTheme,
+  loadSavedVaultFrontTheme,
+} from "./BrandTheme";
 import { joinLobby } from "./ClientGameRunner";
 import { getPlayerCosmeticsRefs } from "./Cosmetics";
 import { crazyGamesSDK } from "./CrazyGamesSDK";
@@ -954,8 +957,16 @@ const hideCrazyGamesElements = () => {
   }
 };
 
+// Register service worker for PWA installability and asset caching
+if ("serviceWorker" in navigator && process.env.GAME_ENV === "prod") {
+  navigator.serviceWorker
+    .register(new URL("./sw.ts", import.meta.url), { type: "module" })
+    .catch((err) => console.warn("SW registration failed:", err));
+}
+
 // Initialize the client when the DOM is loaded
 const bootstrap = () => {
+  loadSavedVaultFrontTheme();
   initLayout();
   new Client().initialize();
   initNavigation();

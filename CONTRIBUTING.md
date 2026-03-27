@@ -8,7 +8,7 @@
 
 **Before touching code:**
 
-1. Read `AGENTS.md` → `PROJECT_MEMORY.md` → latest `CODEX_HANDOFF_*.md`
+1. Read `AGENTS.md` → `PROJECT_MEMORY.md` → latest `context/CODEX_HANDOFF_*.md`
 2. Check `docs/VAULTFRONT_SOURCE_MAP.md` to understand which files are
    VaultFront-owned vs inherited from upstream
 3. Check `docs/GAMEPLAY_DESIGN.md` if you are changing mechanics or tuning

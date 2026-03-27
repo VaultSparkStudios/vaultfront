@@ -6,19 +6,22 @@ Use `context/CODEX_HANDOFF_2026-03-26.md` as the primary resume document.
 
 ## Resume point
 
-- Full project audit completed: 20 improvement items implemented (CI, features, architecture scaffolding)
-- VaultFront now treats `VaultSparkStudios/vaultfront` as the canonical repo of record
-- Local `main` tracks `origin/main`
-- The public project page is the repo-local Pages stub, live over HTTPS
-- GitHub Actions CI on `main` is green
+- Full project audit completed — scored 7.8/10
+- All 20 top-improvement items actioned (17 fully shipped, 3 scaffolded, 1 manual)
+- Coverage thresholds, ESLint scoping, semantic release, canary workflow, bundle budget all live
+- Light theme wired end-to-end (CSS tokens → BrandTheme → UserSettings → SettingsModal toggle)
+- Discord notifier, PWA service worker, weekly mutator dashboard, bot hint UI added
+- Replay, Spectator, Map Editor scaffolded — wire into Worker.ts/ClientGameRunner next
+- Playwright E2E tests (3 specs) + CI workflow added — install @playwright/test before running
+- Deploy runtime runbook written at docs/DEPLOY_RUNTIME_RUNBOOK.md
 - Studio OS onboarding complete: all required context files bootstrapped
 
 ## Immediate next action
 
-- Run `npm install` for new dev dependencies (see TASK_BOARD.md manual item 0)
-- Wire replay system, spectator mode, and map editor backend endpoints
-- Start backend/runtime rollout for `play-vaultfront` and `api-vaultfront`
-- Keep the public Pages site on the stub until runtime validation is complete
+1. `npm install --save-dev @playwright/test @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/changelog @semantic-release/github bundlewatch`
+2. Execute `docs/DEPLOY_RUNTIME_RUNBOOK.md` steps 1–8 to bring runtime online
+3. Wire `replayStore` into Worker.ts and expose `/api/replay/:id`
+4. Wire `spectatorBus.broadcast()` into Worker.ts turn loop
 
 ## Files to update next session if work continues
 

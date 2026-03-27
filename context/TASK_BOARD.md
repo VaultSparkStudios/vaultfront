@@ -32,17 +32,43 @@ Date: 2026-03-26
 
 ---
 
+## Completed (2026-03-26 audit pass)
+
+- [x] Full project audit (7.8/10 scored, 20 improvement items identified)
+- [x] Repo cleanup: screenshots deleted, handoffs moved to context/, AGENTS.md updated
+- [x] Coverage thresholds enforced (vite.config.ts)
+- [x] `no-explicit-any` scoped to VaultFront-owned files (eslint.config.js)
+- [x] Semantic release config + workflow
+- [x] Canary promotion workflow (promote.yml)
+- [x] Bundle size budget (.bundlewatch.json + CI job)
+- [x] OpenAPI spec written (docs/api/openapi.yaml)
+- [x] Deploy Runtime runbook (docs/DEPLOY_RUNTIME_RUNBOOK.md)
+- [x] PWA: manifest.json enriched + sw.ts service worker + Main.ts registration
+- [x] Weekly mutator dashboard (pages-stub/index.html)
+- [x] Discord notifier (src/server/DiscordNotifier.ts)
+- [x] Light theme: CSS tokens + BrandTheme + SettingsModal + UserSettings
+- [x] Bot difficulty hint (SinglePlayerModal)
+- [x] en.json: brand_theme_light key added
+- [x] Replay system scaffolded (ReplayStore.ts + ReplayPlayer.ts)
+- [x] Spectator mode scaffolded (SpectatorBus.ts + SpectatorRunner.ts)
+- [x] Map editor scaffolded (MapEditor.ts full Lit component)
+- [x] Playwright E2E tests: 3 specs + config + e2e.yml CI workflow
+
+---
+
 ## Queued (AI can execute next session)
 
-- [ ] Add OpenAPI spec for backend endpoints (`docs/API.md`)
+- [ ] Wire `replayStore.startRecording()` / `recordIntent()` / `finishRecording()` into Worker.ts turn loop
+- [ ] Expose `GET /api/replay/:id` and `GET /api/replays` routes on Worker.ts
+- [ ] Wire `spectatorBus.broadcast()` into Worker.ts turn fan-out; add `GET /spectate/:gameId` WebSocket route
+- [ ] Mount SpectatorRunner in ClientGameRunner (add `?spectate` URL flag)
+- [ ] Add `GET /api/map-editor/preview` to Worker.ts (POST JSON → Go binary → PNG)
+- [ ] Register `<map-editor>` custom element in Main.ts and add nav link (dev/admin only)
 - [ ] Add integration test: mock runtime API + test client initialization flow
 - [ ] Add Vitest viewport tests at 320px / 768px / 1920px breakpoints
 - [ ] Extract `VaultRewardCalculator` class from `VaultFrontExecution.ts`
 - [ ] Extract `VaultRouteRiskScorer` class from `VaultFrontExecution.ts`
-- [ ] Centralize brand constants into `src/client/BrandTokens.ts`
 - [ ] Add keyboard shortcut system to VaultFront HUD
-- [ ] Add `manifest.json` + service worker for PWA installability
-- [ ] Configure Vitest coverage thresholds (75% overall, 85% core execution)
 
 ---
 
@@ -50,6 +76,24 @@ Date: 2026-03-26
 
 These tasks are flagged as manual. They cannot be executed by an AI session.
 Do not attempt to automate or stub these without explicit confirmation.
+
+### 0. Install deferred dev dependencies
+
+**Action:** Run this once from the project root:
+```bash
+npm install --save-dev @playwright/test bundlewatch \
+  @semantic-release/commit-analyzer @semantic-release/release-notes-generator \
+  @semantic-release/changelog @semantic-release/github
+npx playwright install chromium
+```
+**Why:** Three new CI/tooling features (E2E tests, bundle budget, semantic release)
+were configured in code during the 2026-03-26 session but their packages were not
+installed to avoid modifying `package-lock.json` without running `npm ci` first.
+**Impact:** Until installed, `npm run e2e`, `npx bundlewatch`, and
+`npx semantic-release` will fail locally. CI workflows will also fail on first run.
+**Status:** ⏳ Pending
+
+---
 
 ### 1. Rename local development folder
 

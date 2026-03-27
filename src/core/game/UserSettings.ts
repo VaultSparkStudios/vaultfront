@@ -153,12 +153,14 @@ export class UserSettings {
     }
   }
 
-  brandTheme(): "vaultfront" | "competitive" {
+  brandTheme(): "vaultfront" | "light" | "competitive" {
     const value = localStorage.getItem("settings.brandTheme");
-    return value === "competitive" ? "competitive" : "vaultfront";
+    if (value === "competitive") return "competitive";
+    if (value === "light") return "light";
+    return "vaultfront";
   }
 
-  setBrandTheme(theme: "vaultfront" | "competitive"): void {
+  setBrandTheme(theme: "vaultfront" | "light" | "competitive"): void {
     localStorage.setItem("settings.brandTheme", theme);
     this.emitChange("settings.brandTheme", theme);
   }

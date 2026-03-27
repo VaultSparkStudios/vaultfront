@@ -1,0 +1,534 @@
+openapi: 3.1.0
+info:
+  title: VaultFront Game API
+  version: 1.0.0
+  description: |
+    Internal REST API served by VaultFront's Master and Worker processes.
+    All `/api/vaultfront/*` endpoints are VaultFront-specific additions on top
+    of the OpenFrontIO base. Authentication uses JWT bearer tokens issued
+    by the external API service (api-vaultfront.vaultsparkstudios.com).
+  contact:
+    name: VaultSpark Studios
+    url: https://vaultsparkstudios.com
+
+servers:
+  - url: https://play-vaultfront.vaultsparkstudios.com
+    description: Production gameplay server
+  - url: http://localhost:3000
+    description: Local development (Master/Worker 0)
+
+tags:
+  - name: env
+    description: Environment and health endpoints
+  - name: game
+    description: Game lifecycle (create, start, query)
+  - name: vault-contracts
+    description: VaultFront season contracts
+  - name: vault-ab
+    description: VaultFront A/B experiment tracking
+  - name: vault-outcome
+    description: VaultFront game outcome telemetry
+  - name: vault-funnel
+    description: VaultFront player funnel telemetry
+  - name: misc
+    description: Miscellaneous endpoints
+
+paths:
+  /api/env:
+    get:
+      tags: [env]
+      summary: Get client environment config
+      description: Returns public config values needed by the client (Turnstile key, env name, etc.)
+      responses:
+        "200":
+          description: Environment config object
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvConfig"
+
+  /api/health:
+    get:
+      tags: [env]
+      summary: Health check
+      description: Returns 200 when the server is alive. Used by load balancers and Dockerfile HEALTHCHECK.
+      responses:
+        "200":
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /commit.txt:
+    get:
+      tags: [env]
+      summary: Deployed git commit SHA
+      description: Returns the git commit SHA of the running build. Used by deploy workflows to verify rollout.
+      responses:
+        "200":
+          description: Git SHA string
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "abc1234def5678"
+
+  /api/create_game/{id}:
+    post:
+      tags: [game]
+      summary: Create a new game instance
+      parameters:
+        - $ref: "#/components/parameters/GameId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGameRequest"
+      responses:
+        "200":
+          description: Game created successfully
+        "400":
+          description: Invalid game config
+        "409":
+          description: Game ID already exists
+
+  /api/start_game/{id}:
+    post:
+      tags: [game]
+      summary: Start a created game
+      parameters:
+        - $ref: "#/components/parameters/GameId"
+      responses:
+        "200":
+          description: Game started
+        "404":
+          description: Game not found
+
+  /api/game/{id}/exists:
+    get:
+      tags: [game]
+      summary: Check if a game exists
+      parameters:
+        - $ref: "#/components/parameters/GameId"
+      responses:
+        "200":
+          description: Existence check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exists:
+                    type: boolean
+
+  /api/game/{id}:
+    get:
+      tags: [game]
+      summary: Get game metadata
+      parameters:
+        - $ref: "#/components/parameters/GameId"
+      responses:
+        "200":
+          description: Game metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameMeta"
+        "404":
+          description: Game not found
+
+  /game/{id}:
+    get:
+      tags: [game]
+      summary: Game preview page (server-rendered)
+      parameters:
+        - $ref: "#/components/parameters/GameId"
+      responses:
+        "200":
+          description: HTML preview page for the game
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /api/archive_singleplayer_game:
+    post:
+      tags: [game]
+      summary: Archive a completed single-player game
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArchiveGameRequest"
+      responses:
+        "200":
+          description: Game archived
+
+  # VaultFront — Season Contracts
+  /api/vaultfront/contracts:
+    get:
+      tags: [vault-contracts]
+      summary: Get active season contracts for the authenticated player
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Season contracts list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractsResponse"
+        "401":
+          description: Unauthorized
+
+  /api/vaultfront/contracts/update:
+    post:
+      tags: [vault-contracts]
+      summary: Update progress on season contracts after a game
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContractUpdateRequest"
+      responses:
+        "200":
+          description: Contracts updated
+
+  # VaultFront — A/B: Dock experiment
+  /api/vaultfront/ab/dock/assignment:
+    get:
+      tags: [vault-ab]
+      summary: Get dock A/B experiment assignment for the current player
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Experiment variant assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AbAssignment"
+
+  /api/vaultfront/ab/dock/event:
+    post:
+      tags: [vault-ab]
+      summary: Record a dock experiment event
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AbEvent"
+      responses:
+        "200":
+          description: Event recorded
+
+  /api/vaultfront/ab/dock/summary:
+    get:
+      tags: [vault-ab]
+      summary: Get dock experiment summary (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Experiment summary data
+
+  # VaultFront — A/B: Recap experiment
+  /api/vaultfront/ab/recap/assignment:
+    get:
+      tags: [vault-ab]
+      summary: Get recap A/B experiment assignment
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Recap variant assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AbAssignment"
+
+  /api/vaultfront/ab/recap/event:
+    post:
+      tags: [vault-ab]
+      summary: Record a recap experiment event
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AbEvent"
+      responses:
+        "200":
+          description: Event recorded
+
+  /api/vaultfront/ab/recap/summary:
+    get:
+      tags: [vault-ab]
+      summary: Get recap experiment summary (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Summary data
+
+  # VaultFront — A/B: Runtime experiment
+  /api/vaultfront/ab/runtime/assignment:
+    get:
+      tags: [vault-ab]
+      summary: Get runtime A/B experiment assignment
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Runtime variant assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AbAssignment"
+
+  /api/vaultfront/ab/runtime/event:
+    post:
+      tags: [vault-ab]
+      summary: Record a runtime experiment event
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AbEvent"
+      responses:
+        "200":
+          description: Event recorded
+
+  /api/vaultfront/ab/runtime/summary:
+    get:
+      tags: [vault-ab]
+      summary: Get runtime experiment summary (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Summary data
+
+  # VaultFront — Outcome telemetry
+  /api/vaultfront/outcome:
+    post:
+      tags: [vault-outcome]
+      summary: Record a game outcome event (win/loss, stats)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OutcomeEvent"
+      responses:
+        "200":
+          description: Outcome recorded
+
+  /api/vaultfront/outcome/summary:
+    get:
+      tags: [vault-outcome]
+      summary: Get outcome summary for current player
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Player outcome summary
+
+  # VaultFront — Funnel telemetry
+  /api/vaultfront/funnel:
+    post:
+      tags: [vault-funnel]
+      summary: Record a player funnel event
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FunnelEvent"
+      responses:
+        "200":
+          description: Funnel event recorded
+
+  /api/vaultfront/funnel/summary:
+    get:
+      tags: [vault-funnel]
+      summary: Get funnel summary (admin)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Funnel summary data
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT issued by api-vaultfront.vaultsparkstudios.com
+
+  parameters:
+    GameId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique game identifier (nanoid)
+
+  schemas:
+    EnvConfig:
+      type: object
+      properties:
+        turnstileSiteKey:
+          type: string
+        env:
+          type: string
+          enum: [dev, preprod, prod]
+        domain:
+          type: string
+
+    CreateGameRequest:
+      type: object
+      required: [config]
+      properties:
+        config:
+          type: object
+          description: GameConfig schema (see src/core/Schemas.ts)
+
+    GameMeta:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [waiting, active, finished]
+        playerCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    ArchiveGameRequest:
+      type: object
+      required: [gameId]
+      properties:
+        gameId:
+          type: string
+
+    ContractsResponse:
+      type: object
+      properties:
+        contracts:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeasonContract"
+
+    SeasonContract:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        progress:
+          type: integer
+        target:
+          type: integer
+        rewardGold:
+          type: integer
+
+    ContractUpdateRequest:
+      type: object
+      required: [gameId, stats]
+      properties:
+        gameId:
+          type: string
+        stats:
+          type: object
+          description: VaultFront game stats snapshot
+
+    AbAssignment:
+      type: object
+      properties:
+        variant:
+          type: string
+        experimentId:
+          type: string
+
+    AbEvent:
+      type: object
+      required: [experimentId, variant, event]
+      properties:
+        experimentId:
+          type: string
+        variant:
+          type: string
+        event:
+          type: string
+        metadata:
+          type: object
+
+    OutcomeEvent:
+      type: object
+      required: [gameId, outcome]
+      properties:
+        gameId:
+          type: string
+        outcome:
+          type: string
+          enum: [win, loss, draw]
+        vaultsCaptures:
+          type: integer
+        convoysDelivered:
+          type: integer
+        executionChainsTriggered:
+          type: integer
+        surgeActivations:
+          type: integer
+        squadObjectivesEarned:
+          type: integer
+        matchDurationSeconds:
+          type: integer
+
+    FunnelEvent:
+      type: object
+      required: [event]
+      properties:
+        event:
+          type: string
+          enum:
+            - game_start
+            - first_vault_capture
+            - first_convoy_launch
+            - first_beacon_pulse
+            - game_end_reached
+        gameId:
+          type: string
+        metadata:
+          type: object

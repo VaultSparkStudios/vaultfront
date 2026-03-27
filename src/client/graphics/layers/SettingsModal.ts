@@ -570,7 +570,11 @@ export class SettingsModal extends LitElement implements Layer {
                     </div>
                     <div class="mt-2 flex gap-2">
                       ${(
-                        ["vaultfront", "competitive"] as VaultFrontBrandTheme[]
+                        [
+                          "vaultfront",
+                          "light",
+                          "competitive",
+                        ] as VaultFrontBrandTheme[]
                       ).map(
                         (theme) => html`
                           <button
@@ -583,12 +587,17 @@ export class SettingsModal extends LitElement implements Layer {
                             ${theme === "vaultfront"
                               ? this.tr(
                                   "user_setting.brand_theme_vaultfront",
-                                  "VaultFront",
+                                  "Dark",
                                 )
-                              : this.tr(
-                                  "user_setting.brand_theme_competitive",
-                                  "Competitive",
-                                )}
+                              : theme === "light"
+                                ? this.tr(
+                                    "user_setting.brand_theme_light",
+                                    "Light",
+                                  )
+                                : this.tr(
+                                    "user_setting.brand_theme_competitive",
+                                    "Competitive",
+                                  )}
                           </button>
                         `,
                       )}

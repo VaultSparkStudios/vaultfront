@@ -348,6 +348,9 @@ export class SinglePlayerModal extends BaseModal {
           ></game-config-settings>
         </div>
 
+        <!-- VaultFront Bot Behavior Hint -->
+        ${this.renderVaultBotHint()}
+
         <!-- Footer Action -->
         <div class="p-6 border-t border-white/10 bg-black/20">
           ${hasLinkedAccount(this.userMeResponse) && this.hasOptionsChanged()
@@ -631,6 +634,39 @@ export class SinglePlayerModal extends BaseModal {
 
   private handleTeamCountSelection(value: TeamCountConfig) {
     this.teamCount = value;
+  }
+
+  private renderVaultBotHint(): TemplateResult {
+    const hints: Record<Difficulty, { label: string; desc: string; color: string }> = {
+      [Difficulty.Easy]: {
+        label: "Casual",
+        desc: "Bots rarely contest vaults and issue convoys infrequently.",
+        color: "text-green-400 border-green-500/30 bg-green-500/10",
+      },
+      [Difficulty.Medium]: {
+        label: "Standard",
+        desc: "Bots contest vaults under pressure and reroute convoys when threatened.",
+        color: "text-blue-400 border-blue-500/30 bg-blue-500/10",
+      },
+      [Difficulty.Hard]: {
+        label: "Aggressive",
+        desc: "Bots actively use jam breakers, escorts, and high-frequency vault commands.",
+        color: "text-orange-400 border-orange-500/30 bg-orange-500/10",
+      },
+      [Difficulty.Impossible]: {
+        label: "Vault Expert",
+        desc: "Bots chain vault captures, prioritise escort commands, and jam on cooldown.",
+        color: "text-red-400 border-red-500/30 bg-red-500/10",
+      },
+    };
+    const hint = hints[this.selectedDifficulty];
+    if (!hint) return html``;
+    return html`
+      <div class="mx-6 mb-4 px-4 py-3 rounded-xl border ${hint.color} text-xs">
+        <span class="font-bold uppercase tracking-wider">Vault Bot: ${hint.label}</span>
+        <span class="ml-2 opacity-80">${hint.desc}</span>
+      </div>
+    `;
   }
 
   private async startGame() {

@@ -47,6 +47,15 @@ export default defineConfig(({ mode }) => {
       environment: "jsdom",
       setupFiles: "./tests/setup.ts",
       exclude: [...configDefaults.exclude, "**/.codex-temp-*/**"],
+      coverage: {
+        provider: "v8",
+        thresholds: {
+          lines: 70,
+          functions: 70,
+          branches: 60,
+          statements: 70,
+        },
+      },
     },
     root: "./",
     base: basePath,

@@ -83,7 +83,7 @@ All session-state files live under `context/`:
 | `context/SESSION_LOG.md`    | Running log of session-level work                            |
 
 When closing out a session, update all four files and the latest
-`CODEX_HANDOFF_YYYY-MM-DD.md`. Do not scatter session state into other
+`context/CODEX_HANDOFF_YYYY-MM-DD.md`. Do not scatter session state into other
 top-level folders.
 
 ## Required behavior
@@ -102,7 +102,7 @@ top-level folders.
   - `https://api-{slug}.vaultsparkstudios.com`
 - Update `PROJECT_MEMORY.md` when canonical repo state changes in a way that a
   future session needs to resume quickly.
-- Update `CODEX_HANDOFF_YYYY-MM-DD.md` after deployment-related changes.
+- Update `context/CODEX_HANDOFF_YYYY-MM-DD.md` after deployment-related changes.
 - Update `docs/VAULTFRONT_SOURCE_MAP.md` when VaultFront adds, removes, or
   meaningfully modifies a file not already listed there.
 - If you create a temporary clone of another repo inside this repo, add it to

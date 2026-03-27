@@ -95,7 +95,7 @@ All session-state files live under `context/`:
 ## Resume pointers
 
 - Latest operational handoff file:
-  - `CODEX_HANDOFF_2026-03-12.md`
+  - `context/CODEX_HANDOFF_2026-03-12.md`
 - The canonical repo of record is now `VaultSparkStudios/VaultFront`.
 - Do not treat `openfront-upstream/main` as the branch to push VaultFront work.
 - The archived branch `openfront-main-archive-2026-03-12` preserves the old

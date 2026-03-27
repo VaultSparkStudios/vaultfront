@@ -1,0 +1,97 @@
+name: Promote
+
+# Promote an already-built staging image tag to production without a rebuild.
+# Use this after validating a staging deployment — avoids rebuilding the image.
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to promote (e.g. sha-abc1234 or v1.2.3)"
+        required: true
+        type: string
+      target_subdomain:
+        description: "Subdomain to promote to (e.g. play-vaultfront)"
+        required: true
+        default: "play-vaultfront"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    name: Promote ${{ inputs.image_tag }} to production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      DOMAIN: ${{ vars.DOMAIN }}
+      SUBDOMAIN: ${{ inputs.target_subdomain }}
+      FQDN: ${{ inputs.target_subdomain == 'main' && vars.DOMAIN || format('{0}.{1}', inputs.target_subdomain, vars.DOMAIN) }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare summary
+        run: |
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ### VaultFront promotion
+
+          Image tag: ${{ inputs.image_tag }}
+          Target: ${{ env.FQDN }}
+          EOF
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ vars.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Create SSH private key
+        env:
+          DEPLOY_SERVER_HOST: ${{ secrets.DEPLOY_SERVER_HOST }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          set -euxo pipefail
+          mkdir -p ~/.ssh
+          echo "${DEPLOY_SSH_KEY}" > ~/.ssh/id_rsa
+          test -n "$DEPLOY_SERVER_HOST" && ssh-keyscan -H "$DEPLOY_SERVER_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Deploy promoted image
+        env:
+          APP_NAME: vaultfront
+          API_KEY: ${{ secrets.API_KEY }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          DEPLOY_ALWAYS_RESTART: ${{ vars.DEPLOY_ALWAYS_RESTART || '' }}
+          DEPLOY_REMOTE_SCRIPT_PATH: ${{ vars.DEPLOY_REMOTE_SCRIPT_PATH || '' }}
+          DEPLOY_REMOTE_USER: ${{ vars.DEPLOY_REMOTE_USER || 'vaultfront' }}
+          DEPLOY_SERVER_HOST: ${{ secrets.DEPLOY_SERVER_HOST }}
+          GHCR_REPO: ${{ vars.GHCR_REPO }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          GHCR_USERNAME: ${{ vars.GHCR_USERNAME }}
+          OTEL_AUTH_HEADER: ${{ secrets.OTEL_AUTH_HEADER }}
+          OTEL_EXPORTER_OTLP_ENDPOINT: ${{ secrets.OTEL_EXPORTER_OTLP_ENDPOINT }}
+          SSH_KEY: ~/.ssh/id_rsa
+          TURNSTILE_SECRET_KEY: ${{ secrets.TURNSTILE_SECRET_KEY }}
+          VERSION_TAG: ${{ inputs.image_tag }}
+        run: |
+          set -euxo pipefail
+          ./deploy.sh prod primary "${{ inputs.image_tag }}" "$SUBDOMAIN"
+
+      - name: Wait for deployment to start
+        run: |
+          echo "::group::Wait for deployment to start"
+          set -euxo pipefail
+          while [ "$(curl -s https://${FQDN}/commit.txt)" != "${{ inputs.image_tag }}" ]; do
+            if [ "$SECONDS" -ge 300 ]; then
+              echo "Timeout: promoted build did not come up within 5 minutes"
+              exit 1
+            fi
+            sleep 10
+          done
+          echo "Promotion live in ${SECONDS} seconds" >> $GITHUB_STEP_SUMMARY
+          echo "::endgroup::"

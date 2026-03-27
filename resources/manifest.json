@@ -1,4 +1,17 @@
 {
+  "name": "VaultFront",
+  "short_name": "VaultFront",
+  "description": "A convoy-driven strategy warfront from VaultSpark Studios.",
+  "start_url": ".",
+  "id": ".",
+  "display": "standalone",
+  "display_override": ["fullscreen", "minimal-ui"],
+  "dir": "auto",
+  "lang": "en",
+  "background_color": "#05070d",
+  "theme_color": "#08111f",
+  "orientation": "any",
+  "categories": ["games", "strategy"],
   "icons": [
     {
       "purpose": "maskable",
@@ -13,13 +26,5 @@
       "type": "image/png"
     }
   ],
-  "orientation": "portrait",
-  "display_override": ["fullscreen", "minimal-ui"],
-  "display": "standalone",
-  "dir": "auto",
-  "lang": "en",
-  "name": "VaultFront",
-  "short_name": "VaultFront",
-  "start_url": ".",
-  "id": "."
+  "screenshots": []
 }

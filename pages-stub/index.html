@@ -369,6 +369,70 @@
           </p>
         </article>
 
+        <article class="card" id="weekly-mutator">
+          <h2>Weekly Mutator</h2>
+          <p class="lead" style="font-size: 1rem; margin-bottom: 0.8rem">
+            Each week the active ruleset modifier shifts gameplay for all public
+            matches. Check back each week to see what's live.
+          </p>
+          <div id="mutator-display" style="margin-top: 0.6rem">
+            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap">
+              <span
+                id="mutator-badge"
+                style="
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 0.4rem;
+                  padding: 0.3rem 0.75rem;
+                  border-radius: 999px;
+                  border: 1px solid rgba(255, 196, 0, 0.35);
+                  background: rgba(255, 196, 0, 0.08);
+                  color: #ffc400;
+                  font-size: 0.85rem;
+                  font-weight: 600;
+                  letter-spacing: 0.04em;
+                "
+              >
+                ⚡ <span id="mutator-name">Loading…</span>
+              </span>
+              <span id="mutator-desc" style="color: var(--muted); font-size: 0.9rem"></span>
+            </div>
+          </div>
+          <script>
+            (function () {
+              const MUTATORS = {
+                none: {
+                  name: "Standard Rules",
+                  desc: "No modifier active — baseline VaultFront gameplay.",
+                },
+                lane_fog: {
+                  name: "Lane Fog",
+                  desc: "Convoy routes are obscured until scouts clear the path.",
+                },
+                accelerated_cooldowns: {
+                  name: "Accelerated Cooldowns",
+                  desc: "Vault capture and beacon cooldowns run 30% faster this week.",
+                },
+                double_passive: {
+                  name: "Double Passive",
+                  desc: "Vault passive gold income is doubled — economy accelerates.",
+                },
+              };
+              // Rotate weekly based on ISO week number (deterministic, no server call needed)
+              const now = new Date();
+              const startOfYear = new Date(now.getFullYear(), 0, 1);
+              const weekNum = Math.floor(
+                (now - startOfYear) / (7 * 24 * 60 * 60 * 1000),
+              );
+              const keys = Object.keys(MUTATORS).filter((k) => k !== "none");
+              const key = keys[weekNum % keys.length];
+              const mutator = MUTATORS[key];
+              document.getElementById("mutator-name").textContent = mutator.name;
+              document.getElementById("mutator-desc").textContent = mutator.desc;
+            })();
+          </script>
+        </article>
+
         <article class="card">
           <h2>Launch Checklist</h2>
           <ul class="checklist">

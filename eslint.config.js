@@ -55,6 +55,39 @@ export default [
       ],
     },
   },
+  // Require that new TODO/FIXME comments reference a GitHub issue number.
+  // Pattern: "TODO(#123):" or "FIXME(#123):"
+  // Legacy upstream TODOs without issue refs are grandfathered — only VaultFront-owned files enforce this.
+  {
+    files: [
+      "src/core/execution/Vault*.ts",
+      "src/client/graphics/layers/VaultFront*.ts",
+      "src/client/BrandTheme.ts",
+    ],
+    rules: {
+      "no-warning-comments": [
+        "warn",
+        {
+          terms: ["TODO", "FIXME", "HACK", "XXX"],
+          location: "anywhere",
+          decoration: ["/", "*"],
+        },
+      ],
+    },
+  },
+  // VaultFront-owned files: enforce strict typing rules upstream files are exempt from
+  {
+    files: [
+      "src/core/execution/VaultFrontExecution.ts",
+      "src/core/execution/VaultConvoyCommandExecution.ts",
+      "src/core/execution/VaultRolePingExecution.ts",
+      "src/client/graphics/layers/VaultFrontLayer.ts",
+      "src/client/BrandTheme.ts",
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+    },
+  },
   {
     files: ["scripts/**/*.mjs"],
     languageOptions: {

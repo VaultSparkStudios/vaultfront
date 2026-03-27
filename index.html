@@ -12,6 +12,55 @@
 
     <!-- Preload styles -->
     <style>
+      /* VaultFront theme tokens — dark (default) */
+      :root,
+      [data-vaultfront-theme="vaultfront"] {
+        --vf-bg: #05070d;
+        --vf-surface: #0b101c;
+        --vf-surface-alt: #111827;
+        --vf-border: rgba(255, 255, 255, 0.08);
+        --vf-text: #eef2ff;
+        --vf-text-muted: #bac4da;
+        --vf-accent-blue: #1fa2ff;
+        --vf-accent-orange: #ff7a00;
+        --vf-accent-gold: #ffc400;
+        --vf-accent-green: #22c55e;
+        --vf-accent-red: #ef4444;
+        --vf-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+      }
+
+      /* VaultFront light theme */
+      [data-vaultfront-theme="light"] {
+        --vf-bg: #f0f4ff;
+        --vf-surface: #ffffff;
+        --vf-surface-alt: #e8edf8;
+        --vf-border: rgba(0, 0, 0, 0.1);
+        --vf-text: #111827;
+        --vf-text-muted: #4b5563;
+        --vf-accent-blue: #0070cc;
+        --vf-accent-orange: #c45200;
+        --vf-accent-gold: #a67c00;
+        --vf-accent-green: #16a34a;
+        --vf-accent-red: #dc2626;
+        --vf-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+      }
+
+      /* VaultFront competitive theme */
+      [data-vaultfront-theme="competitive"] {
+        --vf-bg: #0a0010;
+        --vf-surface: #12001e;
+        --vf-surface-alt: #1c0030;
+        --vf-border: rgba(180, 0, 255, 0.15);
+        --vf-text: #f5eeff;
+        --vf-text-muted: #c4aedd;
+        --vf-accent-blue: #7c3aed;
+        --vf-accent-orange: #f59e0b;
+        --vf-accent-gold: #fbbf24;
+        --vf-accent-green: #10b981;
+        --vf-accent-red: #f43f5e;
+        --vf-shadow: 0 24px 70px rgba(100, 0, 200, 0.3);
+      }
+
       .preload {
         visibility: hidden;
         opacity: 0;
