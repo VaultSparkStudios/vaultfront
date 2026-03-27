@@ -22,3 +22,10 @@ Screenshot *.png
 generated/WorldMapData.json
 generated/WorldMapData.json.compressed
 .codex-temp-*/
+
+# Claude Code session data
+.claude/
+
+# Playwright test artifacts
+test-results/
+playwright-report/
