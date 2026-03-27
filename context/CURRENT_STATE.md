@@ -32,6 +32,12 @@ Date: 2026-03-27 (session 6 closeout)
 
 ## Most recent shipped changes
 
+- 2026-03-27 Session 6 closeout — `3a7a5c53` (pushed to origin/main)
+
+  C-1/C-2/C-3/C-6/C-7 + C-19/C-20/C-21/C-22: CORS+Helmet, graceful shutdown,
+  db-migrate CI, invite links, RematchStore, ReplayHighlightStore, ClanStore,
+  TutorialOrchestrator, TournamentStore; 9 new files, 3170 insertions.
+
 - 2026-03-27 B-3/B-1/B-2 implementation pass (session 5) — `888b0cc4`
 
   B-3 — Docker Compose: Postgres 16 + Redis 7, healthchecks, schema auto-applied on first start
@@ -123,7 +129,7 @@ Date: 2026-03-27 (session 6 closeout)
 - 82/82 test files, 623/623 tests green (session 2 — last verified 2026-03-26)
 - E2E: @playwright/test now in package.json — run `npm install` then E2E will function
 - GitHub Actions `CI` last passed on `88a9e04b`
-- `main` is in sync with `origin/main` — all sessions pushed (last: `888b0cc4`)
+- `main` is in sync with `origin/main` — all sessions pushed (last: `3a7a5c53`)
 
 ---
 
