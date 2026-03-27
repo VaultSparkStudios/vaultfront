@@ -85,3 +85,64 @@ CREATE TABLE IF NOT EXISTS season_votes (
   created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
   PRIMARY KEY (week_number, voter_id)
 );
+
+-- ── Clans ──────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS clans (
+  id            VARCHAR(32)  PRIMARY KEY,
+  name          VARCHAR(32)  NOT NULL UNIQUE,
+  tag           VARCHAR(6)   NOT NULL UNIQUE,
+  founder_id    VARCHAR(64)  NOT NULL,
+  description   VARCHAR(256) NOT NULL DEFAULT '',
+  created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS clan_members (
+  clan_id       VARCHAR(32)  NOT NULL REFERENCES clans(id) ON DELETE CASCADE,
+  persistent_id VARCHAR(64)  NOT NULL,
+  role          VARCHAR(16)  NOT NULL DEFAULT 'member', -- 'founder' | 'officer' | 'member'
+  joined_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (clan_id, persistent_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_clan_members_pid
+  ON clan_members (persistent_id);
+
+-- ── Tournaments ────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS tournaments (
+  id            VARCHAR(32)  PRIMARY KEY,
+  name          VARCHAR(64)  NOT NULL,
+  map_name      VARCHAR(128) NOT NULL DEFAULT '',
+  max_players   INT          NOT NULL DEFAULT 8,
+  status        VARCHAR(16)  NOT NULL DEFAULT 'registration', -- 'registration' | 'active' | 'complete'
+  created_by    VARCHAR(64)  NOT NULL,
+  created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  started_at    TIMESTAMPTZ,
+  completed_at  TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS tournament_slots (
+  tournament_id VARCHAR(32)  NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
+  persistent_id VARCHAR(64)  NOT NULL,
+  seed          INT          NOT NULL DEFAULT 0,
+  elo_at_entry  INT          NOT NULL DEFAULT 1200,
+  registered_at TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (tournament_id, persistent_id)
+);
+
+CREATE TABLE IF NOT EXISTS tournament_matches (
+  id            SERIAL       PRIMARY KEY,
+  tournament_id VARCHAR(32)  NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
+  round         INT          NOT NULL,
+  match_index   INT          NOT NULL, -- position in the round (0-indexed)
+  player_a      VARCHAR(64),
+  player_b      VARCHAR(64),
+  winner_id     VARCHAR(64),
+  game_id       VARCHAR(64),
+  status        VARCHAR(16)  NOT NULL DEFAULT 'pending', -- 'pending' | 'active' | 'complete'
+  created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  completed_at  TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_tournament_matches_tid
+  ON tournament_matches (tournament_id, round);

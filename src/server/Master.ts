@@ -1,7 +1,9 @@
 import cluster from "cluster";
+import cors from "cors";
 import crypto from "crypto";
 import express from "express";
 import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -25,6 +27,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(express.json());
+
+// ── Security middleware ─────────────────────────────────────────────────────
+const masterAllowedOrigins = process.env.ALLOWED_ORIGINS?.split(",").map((s) =>
+  s.trim(),
+) ?? [
+  "https://play-vaultfront.vaultsparkstudios.com",
+  "https://vaultsparkstudios.com",
+  "http://localhost:5173",
+  "http://localhost:3000",
+];
+app.use(cors({ origin: masterAllowedOrigins, credentials: true }));
+app.use(helmet({ contentSecurityPolicy: false }));
+// ─────────────────────────────────────────────────────────────────────────
 
 // Middleware to handle HTML files with EJS templating
 app.use(async (req, res, next) => {
@@ -135,6 +150,31 @@ export async function startMaster() {
   server.listen(PORT, () => {
     log.info(`Master HTTP server listening on port ${PORT}`);
   });
+
+  // ── Graceful shutdown ───────────────────────────────────────────────────
+  let masterShuttingDown = false;
+
+  function shutdownMaster(signal: string): void {
+    if (masterShuttingDown) return;
+    masterShuttingDown = true;
+    log.info(`[master] received ${signal} — stopping new game creation`);
+
+    // Stop accepting HTTP connections; let workers drain via their own SIGTERM
+    server.close(() => {
+      log.info(`[master] HTTP server closed, forwarding signal to workers`);
+      for (const worker of Object.values(cluster.workers ?? {})) {
+        worker?.process.kill(signal);
+      }
+      setTimeout(() => {
+        log.info(`[master] exiting`);
+        process.exit(0);
+      }, 35_000); // give workers 35 s to drain
+    });
+  }
+
+  process.on("SIGTERM", () => shutdownMaster("SIGTERM"));
+  process.on("SIGINT", () => shutdownMaster("SIGINT"));
+  // ─────────────────────────────────────────────────────────────────────────
 }
 
 app.get("/api/env", async (req, res) => {

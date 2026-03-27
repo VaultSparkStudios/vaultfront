@@ -15,11 +15,14 @@ import { GameView } from "../../../core/game/GameView";
 import { appRelativePath, appRootPath } from "../../../core/RuntimeUrls";
 import type { AllPlayersStats, Winner } from "../../../core/Schemas";
 import {
+  createRematch,
   fetchVaultFrontRecapAssignment,
   getUserMe,
   recordVaultFrontFunnelTelemetry,
   recordVaultFrontOutcomeTelemetry,
   recordVaultFrontRecapEvent,
+  shareMatchInvite,
+  shareReplayHighlight,
   updateVaultFrontSeasonContracts,
   VaultFrontSeasonContractState,
 } from "../../Api";
@@ -126,6 +129,15 @@ export class WinModal extends LitElement implements Layer {
   private behindAtMinute8 = false;
   private matchLengthSeconds = 0;
 
+  @state()
+  private shareCopied = false;
+
+  @state()
+  private rematchPending = false;
+
+  @state()
+  private highlightCopied = false;
+
   // Override to prevent shadow DOM creation
   createRenderRoot() {
     return this;
@@ -146,35 +158,54 @@ export class WinModal extends LitElement implements Layer {
           ${this._title || ""}
         </h2>
         ${this.renderRecapSection()} ${this.innerHtml()}
-        <div
-          class="${this.showButtons
-            ? "flex justify-between gap-2.5"
-            : "hidden"}"
-        >
-          <button
-            @click=${this._handleExit}
-            class="flex-1 px-3 py-3 text-base cursor-pointer bg-blue-500/60 text-white border-0 rounded-sm transition-all duration-200 hover:bg-blue-500/80 hover:-translate-y-px active:translate-y-px"
-          >
-            ${translateText("win_modal.exit")}
-          </button>
-          ${this.isRankedGame
-            ? html`
-                <button
-                  @click=${this._handleRequeue}
-                  class="flex-1 px-3 py-3 text-base cursor-pointer bg-purple-600 text-white border-0 rounded-sm transition-all duration-200 hover:bg-purple-500 hover:-translate-y-px active:translate-y-px"
-                >
-                  ${translateText("win_modal.requeue")}
-                </button>
-              `
-            : null}
-          <button
-            @click=${this.hide}
-            class="flex-1 px-3 py-3 text-base cursor-pointer bg-blue-500/60 text-white border-0 rounded-sm transition-all duration-200 hover:bg-blue-500/80 hover:-translate-y-px active:translate-y-px"
-          >
-            ${this.game?.myPlayer()?.isAlive()
-              ? translateText("win_modal.keep")
-              : translateText("win_modal.spectate")}
-          </button>
+        <div class="${this.showButtons ? "flex flex-col gap-2" : "hidden"}">
+          <div class="flex justify-between gap-2.5">
+            <button
+              @click=${this._handleExit}
+              class="flex-1 px-3 py-3 text-base cursor-pointer bg-blue-500/60 text-white border-0 rounded-sm transition-all duration-200 hover:bg-blue-500/80 hover:-translate-y-px active:translate-y-px"
+            >
+              ${translateText("win_modal.exit")}
+            </button>
+            ${this.isRankedGame
+              ? html`
+                  <button
+                    @click=${this._handleRequeue}
+                    class="flex-1 px-3 py-3 text-base cursor-pointer bg-purple-600 text-white border-0 rounded-sm transition-all duration-200 hover:bg-purple-500 hover:-translate-y-px active:translate-y-px"
+                  >
+                    ${translateText("win_modal.requeue")}
+                  </button>
+                `
+              : null}
+            <button
+              @click=${this.hide}
+              class="flex-1 px-3 py-3 text-base cursor-pointer bg-blue-500/60 text-white border-0 rounded-sm transition-all duration-200 hover:bg-blue-500/80 hover:-translate-y-px active:translate-y-px"
+            >
+              ${this.game?.myPlayer()?.isAlive()
+                ? translateText("win_modal.keep")
+                : translateText("win_modal.spectate")}
+            </button>
+          </div>
+          <div class="flex justify-between gap-2.5">
+            <button
+              @click=${this._handleShare}
+              class="flex-1 px-3 py-2 text-sm cursor-pointer bg-green-600/70 text-white border-0 rounded-sm transition-all duration-200 hover:bg-green-600/90 hover:-translate-y-px active:translate-y-px"
+            >
+              ${this.shareCopied ? "Link copied!" : "Share Match"}
+            </button>
+            <button
+              @click=${this._handleRematch}
+              class="flex-1 px-3 py-2 text-sm cursor-pointer bg-orange-500/70 text-white border-0 rounded-sm transition-all duration-200 hover:bg-orange-500/90 hover:-translate-y-px active:translate-y-px"
+              ?disabled=${this.rematchPending}
+            >
+              ${this.rematchPending ? "Rematch sent!" : "Rematch"}
+            </button>
+            <button
+              @click=${this._handleShareHighlight}
+              class="flex-1 px-3 py-2 text-sm cursor-pointer bg-indigo-600/70 text-white border-0 rounded-sm transition-all duration-200 hover:bg-indigo-600/90 hover:-translate-y-px active:translate-y-px"
+            >
+              ${this.highlightCopied ? "Clip copied!" : "Share Clip"}
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -564,6 +595,35 @@ export class WinModal extends LitElement implements Layer {
     // Navigate to homepage and open matchmaking modal
     window.location.href = appRelativePath("?requeue");
   }
+
+  private _handleShare = async () => {
+    const gameId = this.game?.gameID();
+    if (!gameId) return;
+    await shareMatchInvite(gameId);
+    this.shareCopied = true;
+    setTimeout(() => {
+      this.shareCopied = false;
+    }, 3000);
+  };
+
+  private _handleRematch = async () => {
+    const gameId = this.game?.gameID();
+    if (!gameId || this.rematchPending) return;
+    const me = await getUserMe();
+    const playerId = me ? (me.player?.publicId ?? "anon") : "anon";
+    await createRematch(gameId, playerId);
+    this.rematchPending = true;
+  };
+
+  private _handleShareHighlight = async () => {
+    const gameId = this.game?.gameID();
+    if (!gameId) return;
+    await shareReplayHighlight(gameId);
+    this.highlightCopied = true;
+    setTimeout(() => {
+      this.highlightCopied = false;
+    }, 3000);
+  };
 
   private onRecapPrimaryRequeueClick = () => {
     this.recapRequeueClicked = true;

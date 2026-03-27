@@ -1,84 +1,82 @@
 # Latest Handoff
 
-Date: 2026-03-27 (session 5 — B-3/B-1/B-2)
+Date: 2026-03-27 (session 6 — C-1/C-2/C-3/C-6/C-7 + C-19/C-20/C-21/C-22)
 
 ---
 
-## Session summary — 2026-03-27 (session 5)
+## What was shipped this session
 
-Shipped B-3 (Docker Compose), B-1 (Postgres integration), B-2 (VaultMetrics wiring).
-All previously in-memory stores now have persistent Postgres paths.
-OTel metrics now record end-of-game vault stats.
+### Highest Leverage (C-1/C-2/C-3/C-6/C-7)
 
-### Shipped this session
+| Item                   | Files changed                                                                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| C-1 CORS + Helmet      | `package.json` (+cors +helmet +@types/cors), `Worker.ts` (middleware), `Master.ts` (middleware)                                                  |
+| C-2 DB migration CI    | `.github/workflows/db-migrate.yml` — Postgres 16 container, applies + idempotency-checks schema.sql                                              |
+| C-3 Match invite links | `Worker.ts` (GET /api/invite/:gameId), `Api.ts` (+shareMatchInvite +requestInviteLink), `WinModal.ts` (Share Match button)                       |
+| C-6 Rematch queue      | `RematchStore.ts` (new — 5-min TTL intents), `Worker.ts` (3 routes), `Api.ts` (+createRematch +getRematchStatus), `WinModal.ts` (Rematch button) |
+| C-7 Graceful shutdown  | `Worker.ts` (SIGTERM drain loop, 30s), `Master.ts` (SIGTERM cascade), `GameManager.ts` (+activeGameCount)                                        |
 
-- **docker-compose.yml**: Postgres 16-alpine + Redis 7-alpine, healthchecks, schema auto-applied
-- **pg@8.20**: installed as runtime dependency
-- **src/server/db/pool.ts**: Pool singleton; `null` when `DATABASE_URL` absent
-- **src/server/db/schema.sql**: added `player_achievements` + `season_votes` tables
-- **PlayerStatsStore.ts**: full Postgres dual-path — UPSERT player, transactional match
-  recording with per-player Elo updates, leaderboard cache refresh in same transaction
-- **AchievementStore.ts**: fire-and-forget persist to `player_achievements`; `hydrateFromDb()`
-  loads prior unlocks at game start so achievements are not re-awarded
-- **VaultSeasonScheduler.ts**: `recordVote()` persists to `season_votes`; `loadVotesFromDb()`
-  restores current week's vote counts on startup
-- **VaultMetrics.ts**: `recordMatchAggregates()` — bulk OTel recording for end-of-game stats
-- **GameServer.ts**: `archiveGame()` sums `vaultCaptures`, `convoyDeliveries`,
-  `cleanExecutionStreaks`, `surgeActivations` from `allPlayersStats` → `recordMatchAggregates()`
+### Highest Ceiling foundations (C-19/C-20/C-21/C-22)
 
-### Test status
-
-- 623/623 unit tests green
-- Zero TypeScript errors
-- Last pushed: `888b0cc4` (main in sync with origin/main)
+| Item                   | Files created / changed                                                                                                                                                                                          |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C-19 Replay highlights | `ReplayHighlightStore.ts` (sliding-window peak scoring + moment labelling), `Worker.ts` (GET /api/replay/:id/highlight), `Api.ts` (+shareReplayHighlight), `WinModal.ts` (Share Clip button)                     |
+| C-20 Clan system       | `schema.sql` (+clans +clan_members), `ClanStore.ts` (dual-path CRUD + hydrateFromDb), `Worker.ts` (6 routes), `ClanModal.ts` (Lit — create/join/leave/leaderboard tabs)                                          |
+| C-21 Tutorial          | `TutorialOrchestrator.ts` (5-step state machine, event auto-advance), `Worker.ts` (3 routes), `TutorialOverlay.ts` (Lit — step card, progress bar, hint toggle)                                                  |
+| C-22 Tournament        | `schema.sql` (+tournaments +tournament_slots +tournament_matches), `TournamentStore.ts` (single-elim seeding + bracket advance), `Worker.ts` (7 routes), `TournamentModal.ts` (Lit — browse/bracket/create tabs) |
 
 ---
 
-## What's still pending — next session
+## MANUAL REQUIRED before first build
 
-**Highest leverage (low effort):**
+```bash
+npm install
+```
 
-- [B-7] Match invite deep links with OG preview meta
-- [B-14] Revenge queue / rematch button
-- [B-21] CodeQL + Semgrep SAST (one CI workflow file)
-- [B-24] Contributing guide + GitHub issue templates
+`cors`, `helmet`, `@types/cors` added to `package.json` but not yet installed.
 
-**Medium effort:**
+Then verify compile:
 
-- [B-4] DB migration CI job (apply schema.sql in a test Postgres container)
-- [B-6] Full Discord bot with slash commands
-- [B-9] Live spectator game browser UI
-
-**Transformative:**
-
-- [B-25] AI post-match recap (Claude API)
-- [B-12] Clan / Squad system
-- [B-13] Tournament brackets
+```bash
+npm run build-dev
+```
 
 ---
 
-## Manual blockers (still all pending — see TASK_BOARD.md)
+## Known compile items to verify
 
-| #   | Task                                         | Status     |
-| --- | -------------------------------------------- | ---------- |
-| 0   | npm install + playwright install chromium    | ⏳ Pending |
-| 1   | Rename local folder OpenFrontIO → VaultFront | ⏳ Pending |
-| 2   | Provision Hetzner VPS                        | ⏳ Pending |
-| 3   | GitHub Actions secrets                       | ⏳ Pending |
-| 4   | GitHub Actions vars                          | ⏳ Pending |
-| 5   | Postgres + Redis on VPS → run schema.sql     | ⏳ Pending |
-| 6   | DNS records                                  | ⏳ Pending |
-| 7   | First deploy + verify                        | ⏳ Pending |
-| 8   | Swap Pages to real client bundle             | ⏳ Pending |
-
-**Local dev shortcut**: `docker compose up -d` then `DATABASE_URL=postgres://vaultfront:vaultfront@localhost:5432/vaultfront npm run dev`
+- `Worker.ts` imports 5 new singletons: `clanStore`, `tournamentStore`, `tutorialOrchestrator`, `replayHighlightStore`, `rematchStore`
+- `GameServer.numClients()` — confirmed at line 574
+- `GameServer.gameConfig.gameMap` — confirmed public field
+- `WinModal.ts` imports `createRematch`, `shareMatchInvite`, `shareReplayHighlight` from Api.ts — all added
 
 ---
 
-## Key context files
+## Test status
 
-- `context/TASK_BOARD.md` — B-items (B-1/B-2/B-3 done; B-4 through B-25 queued)
-- `docs/VAULTFRONT_SOURCE_MAP.md` — every VaultFront-owned file
-- `docs/DEPLOY_RUNTIME_RUNBOOK.md` — deploy step-by-step
-- `src/server/db/schema.sql` — Postgres schema (all 5 tables)
-- `docker-compose.yml` — local Postgres + Redis
+623/623 passing before this session. New server files have no unit tests yet.
+C-14 (expanded E2E suite) is queued and should cover the new features next session.
+
+---
+
+## Next session priorities
+
+1. **I-1 DEPLOY** — Hetzner VPS + DNS + GitHub secrets (everything is built, just needs infra)
+2. **C-4** — CodeQL + Semgrep SAST workflow (~30 min)
+3. **C-5** — .github/ISSUE_TEMPLATE/ (bug/feature/balance)
+4. **C-14** — Expand E2E suite (8+ Playwright specs for clan, tournament, rematch, invite)
+5. **C-8** — Perf regression gate in CI
+6. **C-11** — Live spectator game browser UI
+
+---
+
+## Score update
+
+| Category      | Session 5 | Session 6 |
+| ------------- | --------- | --------- |
+| Security      | 7.5       | 8.5       |
+| Game Features | 8.5       | 9.0       |
+| CI/CD         | 8.0       | 8.5       |
+| Architecture  | 8.5       | 8.5       |
+| Deployment    | 3.5       | 3.5       |
+| **Overall**   | **7.9**   | **~8.3**  |

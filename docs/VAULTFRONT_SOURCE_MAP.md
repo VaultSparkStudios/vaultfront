@@ -128,16 +128,42 @@ upstream changes, check these files for conflicts.
 
 ### Client — graphics and HUD
 
-| File                                             | VaultFront additions                                     |
-| ------------------------------------------------ | -------------------------------------------------------- |
-| `src/client/graphics/GameRenderer.ts`            | VaultFrontLayer registration                             |
-| `src/client/graphics/HudLayout.ts`               | Vault HUD layout constants                               |
-| `src/client/graphics/HudTelemetry.ts`            | Vault HUD telemetry helpers                              |
-| `src/client/graphics/layers/ControlPanel.ts`     | Vault HUD panel, onboarding, debug overlay, KPI tracking |
-| `src/client/graphics/layers/GameLeftSidebar.ts`  | Vault left-sidebar additions                             |
-| `src/client/graphics/layers/GameRightSidebar.ts` | Vault activity feed, timeline, debug overlay             |
-| `src/client/graphics/layers/SettingsModal.ts`    | Vault settings options                                   |
-| `src/client/graphics/layers/WinModal.ts`         | Vault post-match recap and coaching                      |
+| File                                             | VaultFront additions                                                             |
+| ------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `src/client/graphics/GameRenderer.ts`            | VaultFrontLayer registration                                                     |
+| `src/client/graphics/HudLayout.ts`               | Vault HUD layout constants                                                       |
+| `src/client/graphics/HudTelemetry.ts`            | Vault HUD telemetry helpers                                                      |
+| `src/client/graphics/layers/ControlPanel.ts`     | Vault HUD panel, onboarding, debug overlay, KPI tracking                         |
+| `src/client/graphics/layers/GameLeftSidebar.ts`  | Vault left-sidebar additions                                                     |
+| `src/client/graphics/layers/GameRightSidebar.ts` | Vault activity feed, timeline, debug overlay                                     |
+| `src/client/graphics/layers/SettingsModal.ts`    | Vault settings options                                                           |
+| `src/client/graphics/layers/WinModal.ts`         | Vault post-match recap, coaching, share/rematch/highlight buttons (C-3/C-6/C-19) |
+
+---
+
+### Client — session 6 new files
+
+| File                            | Purpose                                                               |
+| ------------------------------- | --------------------------------------------------------------------- |
+| `src/client/ClanModal.ts`       | Clan create/join/leave/leaderboard Lit modal (C-20)                   |
+| `src/client/TournamentModal.ts` | Tournament browse/register/bracket viewer Lit modal (C-22)            |
+| `src/client/TutorialOverlay.ts` | 5-step in-game tutorial overlay with event-driven step advance (C-21) |
+
+### Server — session 6 new files
+
+| File                                 | Purpose                                                                         |
+| ------------------------------------ | ------------------------------------------------------------------------------- |
+| `src/server/ClanStore.ts`            | Clan persistence — create/join/leave/leaderboard, Postgres dual-path (C-20)     |
+| `src/server/TournamentStore.ts`      | Single-elimination bracket — Elo seeding, result reporting, auto-advance (C-22) |
+| `src/server/TutorialOrchestrator.ts` | Per-player 5-step tutorial state machine, game-event auto-advance (C-21)        |
+| `src/server/RematchStore.ts`         | Post-game rematch intents with 5-min TTL and nanoid share codes (C-6)           |
+| `src/server/ReplayHighlightStore.ts` | Sliding-window peak-turn scoring → shareable highlight clip metadata (C-19)     |
+
+### CI — session 6 new files
+
+| File                               | Purpose                                                                  |
+| ---------------------------------- | ------------------------------------------------------------------------ |
+| `.github/workflows/db-migrate.yml` | Postgres 16 container, schema.sql apply + idempotency verification (C-2) |
 
 ---
 

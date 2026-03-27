@@ -808,3 +808,143 @@ export async function fetchVaultFrontFunnelSummary(
     return false;
   }
 }
+
+// ── Match invite deep links ───────────────────────────────────────────────
+
+export interface InviteLinkResponse {
+  gameId: string;
+  mapName: string;
+  playerCount: number;
+  phase: string;
+  shareUrl: string;
+  ogTitle: string;
+  ogDescription: string;
+  ogImageUrl: string;
+}
+
+export async function requestInviteLink(
+  gameId: string,
+): Promise<InviteLinkResponse | false> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/invite/${encodeURIComponent(gameId)}`,
+    );
+    if (!res.ok) return false;
+    return (await res.json()) as InviteLinkResponse;
+  } catch {
+    return false;
+  }
+}
+
+export async function shareMatchInvite(gameId: string): Promise<void> {
+  const info = await requestInviteLink(gameId);
+  if (!info) return;
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: info.ogTitle,
+        text: info.ogDescription,
+        url: info.shareUrl,
+      });
+      return;
+    } catch {
+      // fall through to clipboard
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(info.shareUrl);
+  } catch {
+    // clipboard blocked — nothing to do
+  }
+}
+
+// ── Rematch queue ─────────────────────────────────────────────────────────
+
+export interface RematchStatus {
+  gameId: string;
+  code: string;
+  playerIds: string[];
+  expiresAt: number;
+  joinUrl: string;
+}
+
+export async function createRematch(
+  gameId: string,
+  playerId: string,
+): Promise<RematchStatus | false> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/rematch/${encodeURIComponent(gameId)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerId }),
+      },
+    );
+    if (!res.ok) return false;
+    return (await res.json()) as RematchStatus;
+  } catch {
+    return false;
+  }
+}
+
+export async function getRematchStatus(
+  gameId: string,
+): Promise<RematchStatus | false> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/rematch/status/${encodeURIComponent(gameId)}`,
+    );
+    if (!res.ok) return false;
+    return (await res.json()) as RematchStatus;
+  } catch {
+    return false;
+  }
+}
+
+// ── Replay highlights ─────────────────────────────────────────────────────
+
+export interface ReplayHighlight {
+  gameId: string;
+  highlightId: string;
+  topMoment: string;
+  clipStartTurn: number;
+  clipEndTurn: number;
+  shareUrl: string;
+  ogTitle: string;
+}
+
+export async function requestReplayHighlight(
+  gameId: string,
+): Promise<ReplayHighlight | false> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/replay/${encodeURIComponent(gameId)}/highlight`,
+    );
+    if (!res.ok) return false;
+    return (await res.json()) as ReplayHighlight;
+  } catch {
+    return false;
+  }
+}
+
+export async function shareReplayHighlight(gameId: string): Promise<void> {
+  const highlight = await requestReplayHighlight(gameId);
+  if (!highlight) return;
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: highlight.ogTitle,
+        url: highlight.shareUrl,
+      });
+      return;
+    } catch {
+      // fall through to clipboard
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(highlight.shareUrl);
+  } catch {
+    // clipboard blocked
+  }
+}

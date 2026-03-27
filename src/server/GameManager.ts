@@ -33,6 +33,16 @@ export class GameManager {
     );
   }
 
+  public activeGameCount(): number {
+    return Array.from(this.games.values()).filter(
+      (g) => g.phase() === GamePhase.Active,
+    ).length;
+  }
+
+  public mapName(gameId: GameID): string {
+    return this.games.get(gameId)?.gameConfig.gameMap ?? "";
+  }
+
   joinClient(
     client: Client,
     gameID: GameID,

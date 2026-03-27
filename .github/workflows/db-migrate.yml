@@ -1,0 +1,55 @@
+name: 🗄️ DB Migration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/server/db/schema.sql"
+  pull_request:
+    paths:
+      - "src/server/db/schema.sql"
+
+permissions: {}
+
+jobs:
+  migrate:
+    name: 🗄️ Apply Schema
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: vaultfront_test
+          POSTGRES_USER: vaultfront
+          POSTGRES_PASSWORD: vaultfront
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vaultfront -d vaultfront_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Apply schema
+        env:
+          PGPASSWORD: vaultfront
+        run: |
+          psql -h localhost -U vaultfront -d vaultfront_test -f src/server/db/schema.sql
+
+      - name: Verify core tables exist
+        env:
+          PGPASSWORD: vaultfront
+        run: |
+          psql -h localhost -U vaultfront -d vaultfront_test -tc "\dt" | \
+            grep -E "player_stats|match_history|leaderboard_cache|player_achievements|season_votes|clans|clan_members|tournaments"
+
+      - name: Verify schema is idempotent (apply twice)
+        env:
+          PGPASSWORD: vaultfront
+        run: |
+          psql -h localhost -U vaultfront -d vaultfront_test -f src/server/db/schema.sql

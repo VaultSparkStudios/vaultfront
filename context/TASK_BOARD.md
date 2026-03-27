@@ -68,6 +68,25 @@ Date: 2026-03-27
 
 ---
 
+## Completed (2026-03-27 session 6 — C-series, highest leverage + highest ceiling)
+
+### Highest Leverage
+
+- [x] [C-1] CORS + Helmet: helmet() + cors({origin:allowlist}) in Worker.ts + Master.ts (package.json updated — run npm install)
+- [x] [C-2] DB migration CI job: .github/workflows/db-migrate.yml — Postgres 16 container, applies schema.sql, idempotency check
+- [x] [C-3] Match invite deep links: GET /api/invite/:gameId + shareMatchInvite() in Api.ts + WinModal "Share Match" button
+- [x] [C-6] Rematch queue: RematchStore.ts (5-min TTL) + POST/GET /api/rematch/:gameId routes + WinModal "Rematch" button
+- [x] [C-7] Graceful shutdown: SIGTERM drains active games (30s) in Worker.ts + cascades to workers in Master.ts
+
+### Highest Ceiling (foundations)
+
+- [x] [C-19] Replay highlights: ReplayHighlightStore.ts (sliding-window scoring, moment ID) + GET /api/replay/:id/highlight + WinModal "Share Clip"
+- [x] [C-20] Clan system: clans + clan_members schema + ClanStore.ts (dual-path) + CRUD routes + ClanModal.ts Lit component
+- [x] [C-21] Tutorial: TutorialOrchestrator.ts (5-step state machine) + /api/tutorial/\* routes + TutorialOverlay.ts Lit component
+- [x] [C-22] Tournament: tournaments + slots + matches schema + TournamentStore.ts (single-elim bracket) + routes + TournamentModal.ts
+
+---
+
 ## Completed (2026-03-27 audit pass — session 3, Highest Leverage + Highest Ceiling items)
 
 ### Highest Leverage (Low Effort)
@@ -227,7 +246,7 @@ Date: 2026-03-27
 
 ## MANUAL — Requires human action outside the repo
 
-### 0. Install deferred dev dependencies
+### 0. Install deferred dev dependencies + session 6 packages
 
 **Action:** Run once from the project root:
 
@@ -236,6 +255,12 @@ npm install --save-dev @playwright/test bundlewatch \
   @semantic-release/commit-analyzer @semantic-release/release-notes-generator \
   @semantic-release/changelog @semantic-release/github
 npx playwright install chromium
+```
+
+**Session 6 added** `cors`, `helmet`, `@types/cors` to package.json — also run:
+
+```bash
+npm install
 ```
 
 **Status:** ⏳ Pending
@@ -283,6 +308,75 @@ Trigger `Deploy` workflow → verify `/commit.txt`, WebSocket, CORS, `/health`.
 
 Update `deploy-pages.yml` to publish real client bundle instead of `pages-stub/`.
 **Status:** ⏳ Pending (depends on step 7)
+
+---
+
+## Queued — Session 6 brainstorm (C-items, full audit 2026-03-27 v2)
+
+### Highest Leverage — shipped this session
+
+- [x] [C-1] CORS + Helmet middleware: `helmet()` + `cors({ origin: allowlist })` in Worker.ts +
+      Master.ts. Closes Express security header gap. Two imports, 10 lines.
+- [x] [C-2] DB migration CI job: `.github/workflows/db-migrate.yml` — spins Postgres 16
+      container, applies schema.sql, verifies all tables exist. Catches schema drift before prod.
+- [x] [C-3] Match invite deep links + OG preview: `GET /api/invite/:gameId` server route +
+      share button in WinModal + `requestInviteLink()` in Api.ts. Shareable match URLs with OG tags.
+- [x] [C-6] Revenge queue / rematch button: `src/server/RematchStore.ts` (5-min TTL intents) +
+      `POST /api/rematch/:gameId` + `GET /api/rematch/status/:gameId` + WinModal rematch button.
+- [x] [C-7] Graceful shutdown + SIGTERM handler: SIGTERM in Master.ts (drain workers) +
+      Worker.ts (stop accepting games, finish in-progress). Enables safe rolling deploys.
+
+### Highest Ceiling — foundations shipped this session
+
+- [x] [C-19] Replay highlight clips: `src/server/ReplayHighlightStore.ts` — detects top-moment
+      turns (peak chain/vault/surge windows), generates highlight metadata + shareable URL.
+      `GET /api/replay/:gameId/highlight`. WinModal "Share Highlight" button.
+- [x] [C-20] Clan / Squad system: `clans` + `clan_members` tables in schema.sql.
+      `src/server/ClanStore.ts` — create/join/leave/leaderboard with Postgres dual-path.
+      Clan CRUD routes. `src/client/ClanModal.ts` Lit component.
+- [x] [C-21] Tutorial bot matches: `src/server/TutorialOrchestrator.ts` — 5-step server
+      state per player (vault_intro → convoy → chain → surge → squad). Tutorial routes.
+      `src/client/TutorialOverlay.ts` Lit overlay listening for step completion events.
+- [x] [C-22] Tournament bracket system: `tournaments` + `tournament_slots` +
+      `tournament_matches` tables. `src/server/TournamentStore.ts` — create/register/seed/
+      advance/report. REST routes. `src/client/TournamentModal.ts` bracket viewer.
+
+### Low effort, real impact (not yet scheduled)
+
+- [ ] [C-4] CodeQL + Semgrep SAST: new GH Actions workflow scanning TS + catching secrets.
+      Score impact: Security 7.5 → 8.0.
+- [ ] [C-5] Contributing guide + GitHub issue templates: CONTRIBUTING.md dev setup + PR
+      checklist + issue templates (bug/feature/balance). (CONTRIBUTING.md exists but needs
+      GitHub templates in .github/ISSUE_TEMPLATE/)
+- [ ] [C-8] Perf regression gate: `npm run perf` in CI, fail if tick-rate delta >10%.
+- [ ] [C-9] Automated upstream sync PR: weekly GH Actions cron fetching openfront-upstream,
+      opening draft PR with conflict list.
+- [ ] [C-10] Request logging middleware: Morgan HTTP logger piped into Winston. Structured
+      request logs for production debugging.
+
+### Medium effort, high impact (not yet scheduled)
+
+- [ ] [C-11] Live spectator game browser UI: `/spectate` page listing active games with
+      player count, map, vault status. SpectatorBus already wired.
+- [ ] [C-12] Full Discord bot (slash commands): /leaderboard, /stats, /join, /season.
+      Upgrade from fire-and-forget webhooks to interactive bot.
+- [ ] [C-13] Season pass + rank decay: XP track, cosmetic milestones, weekly Elo decay for
+      inactive players. Structured long-term engagement.
+- [ ] [C-14] Expanded E2E suite: 8–10 new Playwright specs (leaderboard, achievements,
+      season vote, rematch, spectator). Tests score 7.5 → 8.5.
+- [ ] [C-15] HUD cosmetics system: selectable HUD skins (minimal/tactical/classic).
+- [ ] [C-16] Keyboard shortcut system: configurable keybindings for vault commands.
+- [ ] [C-17] PWA push notifications: Web Push subscription + server-side push for match
+      events. sw.ts already registered.
+- [ ] [C-18] Live admin balance dashboard: /admin route with OTel + leaderboard metrics.
+
+### High effort, transformative (not yet scheduled — foundations above)
+
+- [ ] [C-23] Anti-cheat: server-side input validation — flag implausible move sequences,
+      auto-ban on 3 strikes. Essential before ranked play goes public.
+- [ ] [C-24] AI post-match recap (Claude API): call Claude API after each match with vault
+      stats → 3-sentence personalized coaching recap in WinModal.
+- [ ] [C-25] WebRTC in-game voice chat: peer-to-peer voice in squad lobbies (STUN/SFU).
 
 ---
 

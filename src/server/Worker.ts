@@ -1,6 +1,8 @@
 import compression from "compression";
+import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 import http from "http";
 import ipAnonymize from "ip-anonymize";
 import path from "path";
@@ -28,11 +30,16 @@ import { logger } from "./Logger";
 import { playerStatsStore } from "./PlayerStatsStore";
 
 import { GameEnv } from "../core/configuration/Config";
+import { clanStore } from "./ClanStore";
 import { MapPlaylist } from "./MapPlaylist";
 import { startPolling } from "./PollingLoop";
 import { PrivilegeRefresher } from "./PrivilegeRefresher";
+import { rematchStore } from "./RematchStore";
+import { replayHighlightStore } from "./ReplayHighlightStore";
 import { replayStore } from "./ReplayStore";
+import { tournamentStore } from "./TournamentStore";
 import { verifyTurnstileToken } from "./Turnstile";
+import { tutorialOrchestrator } from "./TutorialOrchestrator";
 import {
   vaultSeasonScheduler,
   type SeasonStatus,
@@ -661,6 +668,26 @@ export async function startWorker() {
   const __dirname = path.dirname(__filename);
 
   const app = express();
+
+  // ── Security middleware ───────────────────────────────────────────────────
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",").map((s) =>
+    s.trim(),
+  ) ?? [
+    "https://play-vaultfront.vaultsparkstudios.com",
+    "https://vaultsparkstudios.com",
+    ...(config.env() === GameEnv.Dev
+      ? ["http://localhost:5173", "http://localhost:3000"]
+      : []),
+  ];
+  app.use(cors({ origin: allowedOrigins, credentials: true }));
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // CSP enforced by nginx
+      crossOriginEmbedderPolicy: false, // Pixi.js canvas resources
+    }),
+  );
+  // ─────────────────────────────────────────────────────────────────────────
+
   app.use(express.json({ limit: "5mb" }));
   const server = http.createServer(app);
   const wss = new WebSocketServer({ noServer: true });
@@ -1291,6 +1318,34 @@ export async function startWorker() {
   });
   // ─────────────────────────────────────────────────────────────────────────
 
+  // ── Match invite deep links ───────────────────────────────────────────────
+  app.get("/api/invite/:gameId", (req, res) => {
+    const { gameId } = req.params;
+    if (!gameId) return res.status(400).json({ error: "Missing gameId" });
+
+    const game = gm.game(gameId as GameID);
+    const playerCount = game?.numClients() ?? 0;
+    const mapName = game?.gameConfig.gameMap ?? "Unknown Map";
+    const phase = game?.phase() ?? "unknown";
+
+    const playBase =
+      process.env.PLAY_BASE_URL ??
+      "https://play-vaultfront.vaultsparkstudios.com";
+    const shareUrl = `${playBase}/join?gameId=${encodeURIComponent(gameId)}`;
+
+    return res.json({
+      gameId,
+      mapName,
+      playerCount,
+      phase,
+      shareUrl,
+      ogTitle: `Join my VaultFront match — ${mapName}`,
+      ogDescription: `${playerCount} player${playerCount !== 1 ? "s" : ""} in a live vault siege. Click to join!`,
+      ogImageUrl: `${playBase}/resources/maps/${encodeURIComponent(mapName)}.webp`,
+    });
+  });
+  // ─────────────────────────────────────────────────────────────────────────
+
   registerGamePreviewRoute({
     app,
     gm,
@@ -1342,6 +1397,240 @@ export async function startWorker() {
       res.status(500).json({ error: "Internal server error" });
     }
   });
+
+  // ── Clan / Squad API ─────────────────────────────────────────────────────
+  const clanRateLimit = rateLimit({ windowMs: 60_000, max: 30 });
+
+  app.post("/api/clans", clanRateLimit, async (req, res) => {
+    const parsed = z
+      .object({
+        name: z.string().min(2).max(32),
+        tag: z.string().min(2).max(6),
+        founderId: z.string().min(1).max(64),
+        description: z.string().max(256).optional(),
+      })
+      .safeParse(req.body);
+    if (!parsed.success)
+      return res.status(400).json({ error: z.prettifyError(parsed.error) });
+    const result = await clanStore.createClan(
+      parsed.data.name,
+      parsed.data.tag,
+      parsed.data.founderId,
+      parsed.data.description,
+    );
+    if ("error" in result) return res.status(409).json(result);
+    return res.status(201).json(result);
+  });
+
+  app.get("/api/clans/leaderboard", clanRateLimit, (_req, res) =>
+    res.json(clanStore.getClanLeaderboard(50)),
+  );
+
+  app.get("/api/clans/:clanId", clanRateLimit, (req, res) => {
+    const clan = clanStore.getClan(req.params.clanId);
+    if (!clan) return res.status(404).json({ error: "Clan not found" });
+    return res.json(clan);
+  });
+
+  app.get("/api/clans/player/:persistentId", clanRateLimit, (req, res) => {
+    const clan = clanStore.getClanByPlayer(req.params.persistentId);
+    if (!clan) return res.status(404).json({ error: "Not in a clan" });
+    return res.json(clan);
+  });
+
+  app.post("/api/clans/:clanId/join", clanRateLimit, async (req, res) => {
+    const parsed = z
+      .object({ persistentId: z.string().min(1).max(64) })
+      .safeParse(req.body);
+    if (!parsed.success)
+      return res.status(400).json({ error: "Missing persistentId" });
+    const result = await clanStore.joinClan(
+      req.params.clanId,
+      parsed.data.persistentId,
+    );
+    if ("error" in result) return res.status(409).json(result);
+    return res.json(result);
+  });
+
+  app.post("/api/clans/leave", clanRateLimit, async (req, res) => {
+    const parsed = z
+      .object({ persistentId: z.string().min(1).max(64) })
+      .safeParse(req.body);
+    if (!parsed.success)
+      return res.status(400).json({ error: "Missing persistentId" });
+    const result = await clanStore.leaveClan(parsed.data.persistentId);
+    if (result && "error" in result) return res.status(409).json(result);
+    return res.json({ ok: true });
+  });
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // ── Tutorial API ──────────────────────────────────────────────────────────
+  app.get("/api/tutorial/state/:persistentId", (req, res) => {
+    const state = tutorialOrchestrator.getState(req.params.persistentId);
+    return res.json(state);
+  });
+
+  app.post("/api/tutorial/complete", (req, res) => {
+    const parsed = z
+      .object({
+        persistentId: z.string().min(1).max(64),
+        step: z.string().min(1).max(64),
+      })
+      .safeParse(req.body);
+    if (!parsed.success)
+      return res.status(400).json({ error: "Missing fields" });
+    const state = tutorialOrchestrator.completeStep(
+      parsed.data.persistentId,
+      parsed.data.step,
+    );
+    return res.json(state);
+  });
+
+  app.post("/api/tutorial/reset", (req, res) => {
+    const parsed = z
+      .object({ persistentId: z.string().min(1).max(64) })
+      .safeParse(req.body);
+    if (!parsed.success)
+      return res.status(400).json({ error: "Missing persistentId" });
+    tutorialOrchestrator.resetProgress(parsed.data.persistentId);
+    return res.json({ ok: true });
+  });
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // ── Tournament API ────────────────────────────────────────────────────────
+  const tourneyRateLimit = rateLimit({ windowMs: 60_000, max: 20 });
+
+  app.post("/api/tournaments", tourneyRateLimit, async (req, res) => {
+    const parsed = z
+      .object({
+        name: z.string().min(3).max(64),
+        mapName: z.string().max(128).optional(),
+        maxPlayers: z.number().int().min(4).max(64).optional(),
+        createdBy: z.string().min(1).max(64),
+      })
+      .safeParse(req.body);
+    if (!parsed.success)
+      return res.status(400).json({ error: z.prettifyError(parsed.error) });
+    const t = await tournamentStore.create(parsed.data);
+    return res.status(201).json(t);
+  });
+
+  app.get("/api/tournaments", tourneyRateLimit, async (_req, res) =>
+    res.json(await tournamentStore.list()),
+  );
+
+  app.get("/api/tournaments/:id", tourneyRateLimit, async (req, res) => {
+    const t = await tournamentStore.get(req.params.id);
+    if (!t) return res.status(404).json({ error: "Tournament not found" });
+    return res.json(t);
+  });
+
+  app.get(
+    "/api/tournaments/:id/bracket",
+    tourneyRateLimit,
+    async (req, res) => {
+      const bracket = await tournamentStore.getBracket(req.params.id);
+      if (!bracket)
+        return res.status(404).json({ error: "Tournament not found" });
+      return res.json(bracket);
+    },
+  );
+
+  app.post(
+    "/api/tournaments/:id/register",
+    tourneyRateLimit,
+    async (req, res) => {
+      const parsed = z
+        .object({
+          persistentId: z.string().min(1).max(64),
+          eloRating: z.number().int().min(0).optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success)
+        return res.status(400).json({ error: "Missing persistentId" });
+      const result = await tournamentStore.register(
+        req.params.id,
+        parsed.data.persistentId,
+        parsed.data.eloRating ?? 1200,
+      );
+      if ("error" in result) return res.status(409).json(result);
+      return res.json(result);
+    },
+  );
+
+  app.post("/api/tournaments/:id/seed", tourneyRateLimit, async (req, res) => {
+    const result = await tournamentStore.seedBracket(req.params.id);
+    if ("error" in result) return res.status(409).json(result);
+    return res.json(result);
+  });
+
+  app.post(
+    "/api/tournaments/matches/:matchId/report",
+    tourneyRateLimit,
+    async (req, res) => {
+      const parsed = z
+        .object({ winnerId: z.string().min(1).max(64) })
+        .safeParse(req.body);
+      if (!parsed.success)
+        return res.status(400).json({ error: "Missing winnerId" });
+      const result = await tournamentStore.reportResult(
+        parseInt(req.params.matchId),
+        parsed.data.winnerId,
+      );
+      if ("error" in result) return res.status(409).json(result);
+      return res.json(result);
+    },
+  );
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // ── Rematch queue ─────────────────────────────────────────────────────────
+  const rematchRateLimit = rateLimit({
+    windowMs: 60_000,
+    max: 10,
+  });
+
+  app.post("/api/rematch/:gameId", rematchRateLimit, async (req, res) => {
+    const { gameId } = req.params;
+    if (!gameId) return res.status(400).json({ error: "Missing gameId" });
+    const parsed = z
+      .object({ playerId: z.string().min(1).max(128) })
+      .safeParse(req.body);
+    if (!parsed.success)
+      return res.status(400).json({ error: "Missing playerId" });
+    const game = gm.game(gameId as GameID);
+    const mapName = game?.gameConfig.gameMap ?? "";
+    const entry = rematchStore.upsert(gameId, parsed.data.playerId, mapName);
+    return res.json(entry);
+  });
+
+  app.get("/api/rematch/status/:gameId", rematchRateLimit, (req, res) => {
+    const { gameId } = req.params;
+    if (!gameId) return res.status(400).json({ error: "Missing gameId" });
+    const entry = rematchStore.get(gameId);
+    if (!entry) return res.status(404).json({ error: "No rematch found" });
+    return res.json(entry);
+  });
+
+  app.get("/api/rematch/code/:code", rematchRateLimit, (req, res) => {
+    const { code } = req.params;
+    if (!code) return res.status(400).json({ error: "Missing code" });
+    const entry = rematchStore.getByCode(code);
+    if (!entry)
+      return res.status(404).json({ error: "Rematch not found or expired" });
+    return res.json(entry);
+  });
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // ── Replay highlight clips ────────────────────────────────────────────────
+  app.get("/api/replay/:gameId/highlight", async (req, res) => {
+    const { gameId } = req.params;
+    if (!gameId) return res.status(400).json({ error: "Missing gameId" });
+    const manifest = await replayStore.getReplay(gameId);
+    if (!manifest) return res.status(404).json({ error: "Replay not found" });
+    const highlight = replayHighlightStore.getOrCreate(gameId, manifest);
+    return res.json(highlight);
+  });
+  // ─────────────────────────────────────────────────────────────────────────
 
   // WebSocket handling
   wss.on("connection", (ws: WebSocket, req) => {
@@ -1596,6 +1885,41 @@ export async function startWorker() {
   process.on("unhandledRejection", (reason, promise) => {
     log.error(`unhandled rejection at:`, promise, "reason:", reason);
   });
+
+  // ── Graceful shutdown ─────────────────────────────────────────────────────
+  let isShuttingDown = false;
+
+  async function gracefulShutdown(signal: string): Promise<void> {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+    log.info(
+      `[worker ${workerId}] received ${signal} — starting graceful shutdown`,
+    );
+
+    // Stop the HTTP server from accepting new connections
+    server.close(() => {
+      log.info(`[worker ${workerId}] HTTP server closed`);
+    });
+
+    // Wait up to 30 s for active games to finish
+    const DRAIN_TIMEOUT_MS = 30_000;
+    const POLL_INTERVAL_MS = 1_000;
+    const deadline = Date.now() + DRAIN_TIMEOUT_MS;
+
+    while (Date.now() < deadline) {
+      const active = gm.activeGameCount();
+      if (active === 0) break;
+      log.info(`[worker ${workerId}] draining ${active} active game(s)…`);
+      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+    }
+
+    log.info(`[worker ${workerId}] shutdown complete`);
+    process.exit(0);
+  }
+
+  process.on("SIGTERM", () => void gracefulShutdown("SIGTERM"));
+  process.on("SIGINT", () => void gracefulShutdown("SIGINT"));
+  // ─────────────────────────────────────────────────────────────────────────
 }
 
 async function startMatchmakingPolling(gm: GameManager) {

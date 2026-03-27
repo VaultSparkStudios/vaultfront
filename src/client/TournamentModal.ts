@@ -1,0 +1,451 @@
+/**
+ * TournamentModal — tournament browser, registration, and bracket viewer.
+ *
+ * Tabs:
+ *   - Browse: list of open tournaments with register buttons
+ *   - My Bracket: live bracket view for any tournament the player is in
+ *   - Create: organizer form for creating a new tournament
+ *
+ * Usage:
+ *   <tournament-modal></tournament-modal>
+ *   document.querySelector('tournament-modal').open(persistentId, eloRating)
+ */
+
+import { html, LitElement, nothing } from "lit";
+import { customElement, state } from "lit/decorators.js";
+import { getApiBase } from "./Api";
+
+interface Tournament {
+  id: string;
+  name: string;
+  mapName: string;
+  maxPlayers: number;
+  status: string;
+  createdBy: string;
+  createdAt: number;
+}
+
+interface TournamentSlot {
+  tournamentId: string;
+  persistentId: string;
+  seed: number;
+  eloAtEntry: number;
+}
+
+interface TournamentMatch {
+  id: number;
+  tournamentId: string;
+  round: number;
+  matchIndex: number;
+  playerA: string | null;
+  playerB: string | null;
+  winnerId: string | null;
+  status: string;
+}
+
+interface BracketView {
+  tournament: Tournament;
+  rounds: TournamentMatch[][];
+  slots: TournamentSlot[];
+}
+
+type Tab = "browse" | "bracket" | "create";
+
+@customElement("tournament-modal")
+export class TournamentModal extends LitElement {
+  @state() private isOpen = false;
+  @state() private tab: Tab = "browse";
+  @state() private persistentId = "";
+  @state() private eloRating = 1200;
+  @state() private tournaments: Tournament[] = [];
+  @state() private activeBracket: BracketView | null = null;
+  @state() private loading = false;
+  @state() private error = "";
+  @state() private successMsg = "";
+
+  // Create form
+  @state() private createName = "";
+  @state() private createMap = "";
+  @state() private createMax = 8;
+
+  createRenderRoot() {
+    return this;
+  }
+
+  async open(persistentId: string, eloRating = 1200): Promise<void> {
+    this.persistentId = persistentId;
+    this.eloRating = eloRating;
+    this.isOpen = true;
+    this.error = "";
+    this.successMsg = "";
+    await this.loadTournaments();
+  }
+
+  close(): void {
+    this.isOpen = false;
+  }
+
+  private async loadTournaments(): Promise<void> {
+    this.loading = true;
+    try {
+      const res = await fetch(`${getApiBase()}/api/tournaments`);
+      if (res.ok) this.tournaments = (await res.json()) as Tournament[];
+    } catch {
+      this.tournaments = [];
+    }
+    this.loading = false;
+  }
+
+  private async loadBracket(tournamentId: string): Promise<void> {
+    this.loading = true;
+    try {
+      const res = await fetch(
+        `${getApiBase()}/api/tournaments/${encodeURIComponent(tournamentId)}/bracket`,
+      );
+      if (res.ok) this.activeBracket = (await res.json()) as BracketView;
+    } catch {
+      this.activeBracket = null;
+    }
+    this.loading = false;
+  }
+
+  private async register(tournamentId: string): Promise<void> {
+    this.error = "";
+    this.successMsg = "";
+    try {
+      const res = await fetch(
+        `${getApiBase()}/api/tournaments/${encodeURIComponent(tournamentId)}/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            persistentId: this.persistentId,
+            eloRating: this.eloRating,
+          }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        this.error =
+          (data as { error: string }).error ?? "Registration failed.";
+        return;
+      }
+      this.successMsg =
+        "Registered! Check back when the organizer starts the bracket.";
+      await this.loadTournaments();
+    } catch {
+      this.error = "Network error.";
+    }
+  }
+
+  private async createTournament(): Promise<void> {
+    this.error = "";
+    if (!this.createName.trim()) {
+      this.error = "Tournament name is required.";
+      return;
+    }
+    try {
+      const res = await fetch(`${getApiBase()}/api/tournaments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: this.createName.trim(),
+          mapName: this.createMap.trim(),
+          maxPlayers: this.createMax,
+          createdBy: this.persistentId,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        this.error =
+          (data as { error: string }).error ?? "Failed to create tournament.";
+        return;
+      }
+      this.successMsg = `Tournament "${(data as Tournament).name}" created!`;
+      this.createName = "";
+      this.createMap = "";
+      this.createMax = 8;
+      this.tab = "browse";
+      await this.loadTournaments();
+    } catch {
+      this.error = "Network error.";
+    }
+  }
+
+  render() {
+    if (!this.isOpen) return nothing;
+
+    return html`
+      <div
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+        @click=${(e: Event) => {
+          if (e.target === e.currentTarget) this.close();
+        }}
+      >
+        <div
+          class="bg-gray-900 text-white rounded-lg shadow-2xl w-full max-w-2xl mx-4 overflow-hidden"
+        >
+          <!-- Header -->
+          <div
+            class="flex items-center justify-between px-5 py-4 border-b border-gray-700"
+          >
+            <h2 class="text-lg font-bold">Tournaments</h2>
+            <button
+              @click=${() => this.close()}
+              class="text-gray-400 hover:text-white bg-transparent border-0 cursor-pointer text-xl leading-none"
+            >
+              ✕
+            </button>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex border-b border-gray-700">
+            ${(["browse", "bracket", "create"] as Tab[]).map(
+              (t) => html`
+                <button
+                  @click=${async () => {
+                    this.tab = t;
+                    if (t === "browse") await this.loadTournaments();
+                  }}
+                  class="flex-1 py-2 text-sm font-medium cursor-pointer border-0 ${this
+                    .tab === t
+                    ? "bg-blue-500/20 text-blue-400 border-b-2 border-blue-400"
+                    : "bg-transparent text-gray-400 hover:text-white"}"
+                >
+                  ${t === "browse"
+                    ? "Browse"
+                    : t === "bracket"
+                      ? "Bracket"
+                      : "Create"}
+                </button>
+              `,
+            )}
+          </div>
+
+          <!-- Content -->
+          <div class="p-5 max-h-[28rem] overflow-y-auto">
+            ${this.error
+              ? html`<p class="text-red-400 text-sm mb-3">${this.error}</p>`
+              : nothing}
+            ${this.successMsg
+              ? html`<p class="text-green-400 text-sm mb-3">
+                  ${this.successMsg}
+                </p>`
+              : nothing}
+            ${this.loading
+              ? html`<p class="text-gray-400 text-center py-8">Loading…</p>`
+              : this.tab === "browse"
+                ? this.renderBrowse()
+                : this.tab === "bracket"
+                  ? this.renderBracket()
+                  : this.renderCreate()}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  private renderBrowse() {
+    if (!this.tournaments.length) {
+      return html`<p class="text-gray-400 text-center py-8">
+        No tournaments yet. Create one!
+      </p>`;
+    }
+    return html`
+      <div class="space-y-3">
+        ${this.tournaments.map(
+          (t) => html`
+            <div
+              class="bg-gray-800 rounded-lg p-4 flex items-center justify-between gap-4"
+            >
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold truncate">${t.name}</p>
+                <p class="text-sm text-gray-400">
+                  ${t.mapName || "Any map"} · Max ${t.maxPlayers} players
+                </p>
+                <span
+                  class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${t.status ===
+                  "registration"
+                    ? "bg-green-600/30 text-green-400"
+                    : t.status === "active"
+                      ? "bg-blue-600/30 text-blue-400"
+                      : "bg-gray-600/30 text-gray-400"}"
+                >
+                  ${t.status}
+                </span>
+              </div>
+              <div class="flex flex-col gap-1 shrink-0">
+                ${t.status === "registration"
+                  ? html`
+                      <button
+                        @click=${() => this.register(t.id)}
+                        class="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded cursor-pointer border-0"
+                      >
+                        Register
+                      </button>
+                    `
+                  : nothing}
+                <button
+                  @click=${async () => {
+                    this.tab = "bracket";
+                    await this.loadBracket(t.id);
+                  }}
+                  class="px-3 py-1.5 text-sm bg-gray-700 hover:bg-gray-600 text-white rounded cursor-pointer border-0"
+                >
+                  Bracket
+                </button>
+              </div>
+            </div>
+          `,
+        )}
+      </div>
+    `;
+  }
+
+  private renderBracket() {
+    if (!this.activeBracket) {
+      return html`
+        <p class="text-gray-400 text-center py-8">
+          Select a tournament from Browse to view its bracket.
+        </p>
+      `;
+    }
+
+    const { tournament, rounds } = this.activeBracket;
+
+    return html`
+      <div>
+        <h3 class="font-bold text-base mb-1">${tournament.name}</h3>
+        <p class="text-sm text-gray-400 mb-4">
+          ${tournament.mapName || "Any map"} · Status:
+          <span
+            class="${tournament.status === "active"
+              ? "text-blue-400"
+              : tournament.status === "complete"
+                ? "text-green-400"
+                : "text-gray-400"}"
+            >${tournament.status}</span
+          >
+        </p>
+        <div class="flex gap-6 overflow-x-auto pb-2">
+          ${rounds.map(
+            (roundMatches, ri) => html`
+              <div class="flex-shrink-0 min-w-36">
+                <p
+                  class="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide"
+                >
+                  ${ri === rounds.length - 1 && rounds.length > 1
+                    ? "Final"
+                    : `Round ${ri + 1}`}
+                </p>
+                <div class="space-y-3">
+                  ${roundMatches.map(
+                    (m) => html`
+                      <div
+                        class="bg-gray-800 rounded p-2 text-xs space-y-1 border ${m.status ===
+                        "complete"
+                          ? "border-gray-600"
+                          : "border-blue-500/30"}"
+                      >
+                        <div
+                          class="flex items-center justify-between gap-2 ${m.winnerId ===
+                          m.playerA
+                            ? "text-white font-semibold"
+                            : "text-gray-400"}"
+                        >
+                          <span class="truncate max-w-20"
+                            >${m.playerA
+                              ? m.playerA.slice(0, 10) + "…"
+                              : "BYE"}</span
+                          >
+                          ${m.winnerId === m.playerA
+                            ? html`<span class="text-green-400">W</span>`
+                            : nothing}
+                        </div>
+                        <div class="border-t border-gray-700"></div>
+                        <div
+                          class="flex items-center justify-between gap-2 ${m.winnerId ===
+                          m.playerB
+                            ? "text-white font-semibold"
+                            : "text-gray-400"}"
+                        >
+                          <span class="truncate max-w-20"
+                            >${m.playerB
+                              ? m.playerB.slice(0, 10) + "…"
+                              : "BYE"}</span
+                          >
+                          ${m.winnerId === m.playerB
+                            ? html`<span class="text-green-400">W</span>`
+                            : nothing}
+                        </div>
+                      </div>
+                    `,
+                  )}
+                </div>
+              </div>
+            `,
+          )}
+        </div>
+      </div>
+    `;
+  }
+
+  private renderCreate() {
+    return html`
+      <div class="space-y-4 max-w-sm">
+        <h3 class="font-semibold text-sm text-gray-300">New Tournament</h3>
+        <div class="space-y-2">
+          <input
+            type="text"
+            placeholder="Tournament name"
+            maxlength="64"
+            .value=${this.createName}
+            @input=${(e: InputEvent) => {
+              this.createName = (e.target as HTMLInputElement).value;
+            }}
+            class="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+          />
+          <input
+            type="text"
+            placeholder="Map name (optional)"
+            maxlength="128"
+            .value=${this.createMap}
+            @input=${(e: InputEvent) => {
+              this.createMap = (e.target as HTMLInputElement).value;
+            }}
+            class="w-full bg-gray-800 border border-gray-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+          />
+          <div class="flex items-center gap-3">
+            <label class="text-sm text-gray-400">Max players:</label>
+            <select
+              .value=${String(this.createMax)}
+              @change=${(e: Event) => {
+                this.createMax = parseInt(
+                  (e.target as HTMLSelectElement).value,
+                );
+              }}
+              class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm text-white focus:outline-none"
+            >
+              ${[4, 8, 16, 32, 64].map(
+                (n) =>
+                  html`<option value="${n}" ?selected=${n === this.createMax}>
+                    ${n}
+                  </option>`,
+              )}
+            </select>
+          </div>
+          <button
+            @click=${() => this.createTournament()}
+            class="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded cursor-pointer border-0"
+          >
+            Create Tournament
+          </button>
+        </div>
+        <p class="text-xs text-gray-500">
+          After creating, share the tournament ID with players. Start the
+          bracket when ready from the Bracket tab.
+        </p>
+      </div>
+    `;
+  }
+}
