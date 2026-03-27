@@ -1,55 +1,107 @@
-# ── START ────────────────────────────────────────────────────────────────────
-# Use this when the user says only `start`.
-# ─────────────────────────────────────────────────────────────────────────────
+# Start Protocol
 
-## Phase 1 — Load Context
+Use this when the user says only `start`.
 
-Read in this exact order. Do not skip or reorder.
+## Phase 0 — Session Lock
 
-| # | File | Purpose |
-|---|---|---|
-| 1 | `AGENTS.md` | Role rules, enforcement, session aliases |
-| 2 | `context/PROJECT_BRIEF.md` | What the project is and why it exists |
-| 3 | `context/SOUL.md` | Creative identity and non-negotiables |
-| 4 | `context/BRAIN.md` | Strategic mental model and heuristics |
-| 5 | `context/CURRENT_STATE.md` | Live snapshot of what exists |
-| 6 | `context/DECISIONS.md` | Key decisions with rationale |
-| 7 | `context/TASK_BOARD.md` | Now / Next / Blocked / Later tasks |
-| 8 | `context/LATEST_HANDOFF.md` | Authoritative handoff from last session |
-| 9 | `context/SELF_IMPROVEMENT_LOOP.md` | Last audit scores + open brainstorm items |
-| 10 | Task-specific files | Only after all above are read |
+**First action — write session lock:**
+Create `context/.session-lock` with content:
+
+```
+locked_by: agent-session
+session_start: YYYY-MM-DDTHH:MM:SSZ
+project: vaultfront
+```
+
+This prevents studio-ops (or any cross-repo agent) from writing to this project while a session is active. The lock is cleared at closeout. If a lock file already exists from a prior session, overwrite it (stale lock).
 
 ---
 
-## Phase 2 — SIL Escalation Check
+## Phase 1 — Mode Declaration
 
-After reading `context/SELF_IMPROVEMENT_LOOP.md`:
+Before reading any files, determine session mode:
 
-- Note last audit scores and trajectory (↑ ↓ →) per category
+| Mode             | Trigger                         | Focus                                               |
+| ---------------- | ------------------------------- | --------------------------------------------------- |
+| **BUILDER MODE** | Default (no qualifier)          | Deep work on this project only                      |
+| **FOUNDER MODE** | User says "start: founder mode" | Cross-project strategy; reads STUDIO_BRAIN.md first |
+
+In **Builder Mode:** read only project files. Skip STUDIO_BRAIN.md.
+In **Founder Mode:** read `portfolio/STUDIO_BRAIN.md` first for studio-wide context.
+
+---
+
+## Phase 2 — Initiation Type Detection
+
+Check `context/SELF_IMPROVEMENT_LOOP.md`:
+
+| Condition                                                                                    | Type               | Action                                        |
+| -------------------------------------------------------------------------------------------- | ------------------ | --------------------------------------------- |
+| File missing or no dated entries                                                             | **A — Bootstrap**  | Follow `prompts/initiate.md` — do not proceed |
+| 1 entry labeled "Bootstrap Baseline" / "Foundation Baseline"; core files still template-only | **B — Foundation** | Follow `prompts/initiate.md` Section B        |
+| 2+ dated entries with real scores                                                            | **C — Returning**  | Continue with Phase 3                         |
+
+---
+
+## Phase 3 — Load Context
+
+Read in this exact order. Do not skip or reorder.
+
+| #   | File                                                 | Purpose                                                                                      |
+| --- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 1   | `AGENTS.md`                                          | Role rules, enforcement, session aliases                                                     |
+| 2   | `context/PROJECT_BRIEF.md`                           | What the project is and why it exists                                                        |
+| 3   | `context/SOUL.md`                                    | Creative identity and non-negotiables                                                        |
+| 4   | `context/BRAIN.md`                                   | Strategic mental model and heuristics                                                        |
+| 5   | `context/CURRENT_STATE.md`                           | Live snapshot of what exists                                                                 |
+| 6   | `context/DECISIONS.md`                               | Key decisions with rationale                                                                 |
+| 7   | `context/TASK_BOARD.md`                              | Now / Next / Blocked / Later tasks                                                           |
+| 8   | `context/LATEST_HANDOFF.md`                          | Authoritative handoff from last session                                                      |
+| 9   | `context/SELF_IMPROVEMENT_LOOP.md` — **header only** | Rolling Status block: sparkline, averages, last scores. Full history is NOT read at startup. |
+| 10  | Task-specific files                                  | Only after all above are read                                                                |
+
+**Founder Mode only:** Also read `portfolio/STUDIO_BRAIN.md` between steps 9 and 10.
+
+---
+
+## Phase 4 — SIL Escalation Check
+
+After reading the SIL Rolling Status header:
+
+- Note sparkline trajectory — is the 5-session trend ↑ ↓ flat?
+- Note lowest rolling average — flag if any avg is below 5.0
 - Identify any `[SIL]` items on TASK_BOARD not yet actioned
 - **If a `[SIL]` item was skipped 2+ sessions → escalate to Now on TASK_BOARD and flag in brief**
 - Surface the top unactioned brainstorm idea from the last SIL entry
 
+**Studio benchmarking (no extra reads — Founder Mode only):**
+
+> Studio avg SIL: [X]/50 · This project last session: [X]/50 [↑↓→ vs studio avg]
+
 ---
 
-## Phase 3 — Startup Rules
+## Phase 5 — Startup Rules
 
 - Treat repo files as source of truth — not prior chat memory
 - Do not edit code during startup unless user immediately asks for implementation
 - Use `context/LATEST_HANDOFF.md` as the active handoff source
 - Treat any other handoff docs as historical context only
 - Note any assumptions before acting on them
+- **If resuming from a compacted/interrupted session:** check whether the prior session's human
+  direction was recorded in `docs/CREATIVE_DIRECTION_RECORD.md`. If the last CDR entry predates
+  work described in LATEST_HANDOFF.md, flag the gap in the startup brief and recover it at
+  next closeout.
 
 ---
 
-## Phase 4 — Output: Startup Brief
+## Phase 6 — Output: Startup Brief
 
 Reply using this exact structure:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   STARTUP BRIEF — {Project Name}
-  {YYYY-MM-DD}
+  {YYYY-MM-DD} · Session {N} · {BUILDER / FOUNDER MODE}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   IDENTITY     {type} · {status} · {owner}
@@ -58,19 +110,52 @@ Reply using this exact structure:
   CONSTRAINTS  {key constraints or limits}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  LAST AUDIT   {total}/50 · {date}
-
-  Dev Health        {n}/10  {↑↓→}
-  Creative Align    {n}/10  {↑↓→}
-  Momentum          {n}/10  {↑↓→}
-  Engagement        {n}/10  {↑↓→}
-  Process Quality   {n}/10  {↑↓→}
+  WHERE WE LEFT OFF  (Session {N-1})
+  Shipped    {N improvements across N groups — group1, group2, ...}
+             {or: "N tasks completed" if no improvement groups defined}
+  Tests      {N passing (N core / N server / N client) · delta: +N/-N}
+             {or: "N/A" if project has no test suite}
+  Deploy     {deployed to {env} · auto-deploy active / manual / N/A}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  LAST AUDIT   {total}/50 · {date}
+  SPARKLINE    {▁▂▃▄▅▆▇█} (last 5 sessions, oldest→newest)
+
+  Dev Health        {n}/10  {↑↓→}  3-avg: {n.n}
+  Creative Align    {n}/10  {↑↓→}  3-avg: {n.n}
+  Momentum          {n}/10  {↑↓→}  3-avg: {n.n}
+  Engagement        {n}/10  {↑↓→}  3-avg: {n.n}
+  Process Quality   {n}/10  {↑↓→}  3-avg: {n.n}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  VELOCITY     Last session: {N} tasks · Trend: {↑↓→}
+  DEBT         {→ stable / ↑ growing / ↓ shrinking}
   NEXT MOVE    {specific recommended action}
   BLOCKERS     {open blockers or "None"}
   [SIL] FLAGS  {escalated items or "None"}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  IGNIS INSIGHT
+  {One synthesised observation from portfolio/IGNIS_CORE.md
+   specific to this project — e.g. velocity trend, engagement
+   gap, creative drift signal, or stall pattern warning.
+   Write "— insufficient data" if no project entry exists yet.}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-After the brief, ask: **"What are we working on today?"**
+**WHERE WE LEFT OFF** data comes from `context/LATEST_HANDOFF.md`.
+Omit the section entirely if no prior session exists.
+
+**IGNIS INSIGHT** data comes from `portfolio/IGNIS_CORE.md` — read only the project-specific
+section. Do not read the full file. Write "— insufficient data" if no project entry exists.
+
+---
+
+## Phase 7 — Session Intent Declaration
+
+After delivering the startup brief, ask:
+
+> **"What is the primary goal for this session?"** (one sentence)
+
+Log the declared intent in `context/LATEST_HANDOFF.md` under a `Session Intent:` field at the top.
+This is checked and logged at closeout.

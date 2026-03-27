@@ -37,20 +37,21 @@ Read order at session start:
 
 Every session should confirm these files exist and are current:
 
-| File | When to update |
-|---|---|
-| `context/LATEST_HANDOFF.md` | Every closeout — primary handoff |
-| `context/CURRENT_STATE.md` | When shipped behavior changes |
-| `context/TASK_BOARD.md` | When tasks complete or new ones are added |
-| `context/DECISIONS.md` | When a meaningful decision is made |
-| `context/PROJECT_BRIEF.md` | When scope or purpose changes |
-| `context/SELF_IMPROVEMENT_LOOP.md` | Every closeout — append audit + brainstorm entry |
+| File                                | When to update                                                |
+| ----------------------------------- | ------------------------------------------------------------- |
+| `context/LATEST_HANDOFF.md`         | Every closeout — primary handoff                              |
+| `context/CURRENT_STATE.md`          | When shipped behavior changes                                 |
+| `context/TASK_BOARD.md`             | When tasks complete or new ones are added                     |
+| `context/DECISIONS.md`              | When a meaningful decision is made                            |
+| `context/PROJECT_BRIEF.md`          | When scope or purpose changes                                 |
+| `context/SELF_IMPROVEMENT_LOOP.md`  | Every closeout — append audit + brainstorm entry              |
 | `docs/CREATIVE_DIRECTION_RECORD.md` | Every time the human gives creative direction (ADDITIVE ONLY) |
-| `logs/WORK_LOG.md` | Every closeout — append session entry |
+| `logs/WORK_LOG.md`                  | Every closeout — append session entry                         |
 
 ## Closeout write-back (mandatory)
 
 After any meaningful session, write back in this order:
+
 1. `context/CURRENT_STATE.md`
 2. `context/TASK_BOARD.md`
 3. `context/LATEST_HANDOFF.md`
@@ -86,6 +87,20 @@ When closing out a session, update all four files and the latest
 `context/CODEX_HANDOFF_YYYY-MM-DD.md`. Do not scatter session state into other
 top-level folders.
 
+## Session aliases
+
+If the user says only `start`, follow `prompts/start.md`.
+
+If the user says only `closeout`, follow `prompts/closeout.md`.
+
+## Cross-Repo Safety
+
+**Session lock:** At session start (`prompts/start.md` Phase 0), create `context/.session-lock`.
+At closeout (`prompts/closeout.md` Required write-back item 9), delete `context/.session-lock`.
+
+If a lock file already exists when starting, overwrite it (stale lock from prior interrupted session).
+Studio-ops and cross-repo agents must not write to this project while a lock file is present.
+
 ## Required behavior
 
 - Treat `docs/STUDIO_DEPLOYMENT_STANDARD.md` as the default studio-wide policy
@@ -116,6 +131,7 @@ top-level folders.
 `docs/CREATIVE_DIRECTION_RECORD.md` is ADDITIVE ONLY.
 
 **Agents MUST append an entry whenever the human provides:**
+
 - Any creative direction (features, feel, scope)
 - Feature assignments or explicit goals
 - Brand, tone, visual, or quality guidance
@@ -123,6 +139,7 @@ top-level folders.
 - Explicit "do this / don't do this" instruction
 
 **Agents MUST NOT:**
+
 - Add CDR entries autonomously without human input
 - Modify or delete existing CDR entries
 - Skip CDR even for "small" directions — every human direction counts
@@ -133,6 +150,7 @@ This project is tracked in the VaultSpark Studio Hub at `vaultsparkstudios.com/s
 The hub reads `context/PROJECT_STATUS.json` from this repo via GitHub API.
 
 For hub visibility, keep `context/PROJECT_STATUS.json` current with:
+
 - `status` — incubating / active / live / maintained / archived
 - `health` — green / yellow / red
 - `currentFocus` — one-line description of active work
@@ -146,12 +164,12 @@ To show an active session indicator in the Studio Hub, add these hooks to your `
 
 ```bash
 # On session start — replace PROJECT_ID and GIST_ID:
-gh gist edit GIST_ID -f active.json <<EOF
+gh gist edit GIST_ID -f active.json << EOF
 {"active":[{"project":"PROJECT_ID","agent":"claude-code","since":"$(date -u +%Y-%m-%dT%H:%M:%SZ)"}]}
 EOF
 
 # On session end:
-gh gist edit GIST_ID -f active.json <<EOF
+gh gist edit GIST_ID -f active.json << EOF
 {"active":[]}
 EOF
 ```

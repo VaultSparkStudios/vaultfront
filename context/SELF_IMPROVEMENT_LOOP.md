@@ -1,3 +1,15 @@
+<!-- rolling-status-start -->
+
+## Rolling Status (auto-updated each closeout)
+
+Sparkline (last 5 totals): ▄▁ (oldest→newest)
+3-session avg [N=2]: Dev 8.0 | Align 7.5 | Momentum 5.5 | Engage 2.0 | Process 6.5
+Avg total: 18.0 / 50 [N=2] | Velocity trend: → | Debt: →
+Last session: 2026-03-26 | Session 2 | Total: 5/50 | Velocity: 0
+─────────────────────────────────────────────────────────────────────
+
+<!-- rolling-status-end -->
+
 # Self-Improvement Loop
 
 This file is the living audit and improvement engine for the project.
