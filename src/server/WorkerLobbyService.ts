@@ -8,9 +8,11 @@ import {
   WorkerReady,
 } from "./IPCBridgeSchema";
 import { logger } from "./Logger";
+import { spectatorBus } from "./SpectatorBus";
 
 export class WorkerLobbyService {
   private readonly lobbiesWss: WebSocketServer;
+  private readonly spectatorWss: WebSocketServer;
   private readonly lobbyClients: Set<WebSocket> = new Set();
 
   constructor(
@@ -20,8 +22,10 @@ export class WorkerLobbyService {
     private readonly log: typeof logger,
   ) {
     this.lobbiesWss = new WebSocketServer({ noServer: true });
+    this.spectatorWss = new WebSocketServer({ noServer: true });
     this.setupUpgradeHandler();
     this.setupLobbiesWebSocket();
+    this.setupSpectatorWebSocket();
     this.setupIPCListener();
   }
 
@@ -98,11 +102,38 @@ export class WorkerLobbyService {
         this.lobbiesWss.handleUpgrade(request, socket, head, (ws) => {
           this.lobbiesWss.emit("connection", ws, request);
         });
+      } else if (
+        pathname.startsWith("/spectate/") ||
+        pathname.includes("/spectate/")
+      ) {
+        this.spectatorWss.handleUpgrade(request, socket, head, (ws) => {
+          this.spectatorWss.emit("connection", ws, request);
+        });
       } else {
         this.gameWss.handleUpgrade(request, socket, head, (ws) => {
           this.gameWss.emit("connection", ws, request);
         });
       }
+    });
+  }
+
+  private setupSpectatorWebSocket() {
+    this.spectatorWss.on("connection", (ws: WebSocket, req) => {
+      // Extract gameId from path: /spectate/:gameId or /wN/spectate/:gameId
+      const url = req.url ?? "";
+      const match = url.match(/\/spectate\/([^/?#]+)/);
+      if (!match) {
+        ws.close(1002, "Invalid spectate path");
+        return;
+      }
+      const gameId = decodeURIComponent(match[1]);
+      const game = this.gm.game(gameId);
+      if (!game) {
+        ws.close(1008, "Game not found");
+        return;
+      }
+      this.log.info(`Spectator joined game ${gameId}`);
+      spectatorBus.join(gameId, ws);
     });
   }
 

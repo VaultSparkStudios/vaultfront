@@ -29,6 +29,7 @@ import { GameEnv } from "../core/configuration/Config";
 import { MapPlaylist } from "./MapPlaylist";
 import { startPolling } from "./PollingLoop";
 import { PrivilegeRefresher } from "./PrivilegeRefresher";
+import { replayStore } from "./ReplayStore";
 import { verifyTurnstileToken } from "./Turnstile";
 import { WorkerLobbyService } from "./WorkerLobbyService";
 import { initWorkerMetrics } from "./WorkerMetrics";
@@ -1192,6 +1193,24 @@ export async function startWorker() {
       summaries: summary,
     });
   });
+
+  // ── Replay API ───────────────────────────────────────────────────────────
+  app.get("/api/replays", async (_req, res) => {
+    const list = await replayStore.listReplays(40);
+    res.json(list);
+  });
+
+  app.get("/api/replay/:id", async (req, res) => {
+    const gameId = req.params.id;
+    if (!gameId) return res.status(400).json({ error: "Missing game ID" });
+    const manifest = await replayStore.getReplay(gameId);
+    if (!manifest) return res.status(404).json({ error: "Replay not found" });
+    // Strip raw binary intents from the response (turns[] is sufficient for playback)
+    const { intents: _intents, ...safe } = manifest;
+    void _intents;
+    return res.json(safe);
+  });
+  // ─────────────────────────────────────────────────────────────────────────
 
   registerGamePreviewRoute({
     app,

@@ -7,7 +7,13 @@ import {
   VaultFrontCommand,
 } from "../game/Game";
 import { TileRef } from "../game/GameMap";
-import { GameUpdateType, VaultFrontStatusUpdate } from "../game/GameUpdates";
+import {
+  GameUpdateType,
+  VaultFrontExecutionChainState,
+  VaultFrontSquadObjectiveState,
+  VaultFrontStatusUpdate,
+  VaultFrontSurgeState,
+} from "../game/GameUpdates";
 import { PseudoRandom } from "../PseudoRandom";
 import { simpleHash } from "../Util";
 
@@ -1670,9 +1676,46 @@ export class VaultFrontExecution implements Execution {
           factoryCount,
         };
       }),
+      executionChains: this.buildExecutionChainStates(),
+      surges: this.buildSurgeStates(),
+      squadObjectives: this.buildSquadObjectiveStates(),
     };
     this.game.addUpdate(statusUpdate);
     this.debugPublishedStatus(statusUpdate);
+  }
+
+  private buildExecutionChainStates(): Record<
+    number,
+    VaultFrontExecutionChainState
+  > {
+    const result: Record<number, VaultFrontExecutionChainState> = {};
+    for (const [playerID, step] of this.executionChainStep.entries()) {
+      const expiresAtTick = this.executionChainExpiresAtTick.get(playerID) ?? 0;
+      result[playerID] = { step, expiresAtTick };
+    }
+    return result;
+  }
+
+  private buildSurgeStates(): Record<number, VaultFrontSurgeState> {
+    const result: Record<number, VaultFrontSurgeState> = {};
+    const now = this.game.ticks();
+    for (const [playerID, surgeUntil] of this.surgeUntilTick.entries()) {
+      result[playerID] = {
+        active: surgeUntil > now,
+        surgeUntilTick: surgeUntil,
+      };
+    }
+    return result;
+  }
+
+  private buildSquadObjectiveStates(): VaultFrontSquadObjectiveState[] {
+    return this.squadObjectiveWindows.map((w) => ({
+      siteID: w.siteID,
+      ownerID: w.ownerID,
+      anchorTile: w.anchorTile,
+      expiresAtTick: w.expiresAtTick,
+      rewarded: w.rewarded,
+    }));
   }
 
   private vaultDebugEnabled(): boolean {

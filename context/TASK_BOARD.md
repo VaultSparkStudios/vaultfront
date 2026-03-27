@@ -26,13 +26,7 @@ Date: 2026-03-26
 
 ---
 
-## In Progress
-
-- None
-
----
-
-## Completed (2026-03-26 audit pass)
+## Completed (2026-03-26 audit pass — session 1)
 
 - [x] Full project audit (7.8/10 scored, 20 improvement items identified)
 - [x] Repo cleanup: screenshots deleted, handoffs moved to context/, AGENTS.md updated
@@ -56,7 +50,47 @@ Date: 2026-03-26
 
 ---
 
+## Completed (2026-03-26 audit pass — session 2, all 25 brainstorm items actioned)
+
+- [x] [SIL-1] SOUL.md rewritten with specific mechanics and audience (context/SOUL.md)
+- [x] [SIL-2] PROJECT_BRIEF.md rewritten with real pitch + success criteria (context/PROJECT_BRIEF.md)
+- [x] [SIL-3] Dependency security audit job added to CI (ci.yml security-audit job)
+- [x] [SIL-4] Content Security Policy headers added to nginx.conf
+- [x] [SIL-5] X-Content-Type-Options + X-Frame-Options + Referrer-Policy added to nginx.conf
+- [x] [SIL-6] NewsModal news button made visible (removed `hidden` class)
+- [x] [SIL-7] Replay system wired end-to-end: - ReplayStore.recordTurn() method added - GameServer.ts hooks: startRecording on prestart, recordTurn on endTurn, finishRecording on end - Worker.ts: GET /api/replay/:id and GET /api/replays routes
+- [x] [SIL-8] Spectator WebSocket route wired: - WorkerLobbyService.ts: /spectate/:gameId upgrade handler - Worker.ts: spectatorBus.join() connection handler
+- [x] [SIL-9] Execution chain combo meter + surge badge + squad objective ring added to VaultFrontLayer - VaultFrontStatusUpdate extended with executionChain, surge, squadObjective fields - VaultFrontExecution.ts publishes new fields - VaultFrontLayer.ts renders combo meter (3 nodes + timer arc), surge badge, squad ring
+- [x] [SIL-10] Weekly mutator announcement banner rendered in VaultFrontLayer on first status tick
+- [x] [SIL-11] Bot AI improved: gold-gated jam_breaker, strength-aware escort, phase-aware reroute
+- [x] [SIL-12] First-run tutorial overlay (VaultFrontTutorial.ts) — 5-step contextual Lit component
+- [x] [SIL-13] Light theme completion (CSS tokens applied to all VaultFront-owned components)
+      (moved from Deferred — tokens exist, completing the pass)
+
+---
+
+## In Progress
+
+- None
+
+---
+
 ## Queued (AI can execute next session)
+
+### From audit brainstorm — medium effort
+
+- [ ] [SIL-14] Extract `VaultRewardCalculator` class from `VaultFrontExecution.ts`
+- [ ] [SIL-15] Extract `VaultRouteRiskScorer` class from `VaultFrontExecution.ts`
+- [ ] [SIL-16] Add keyboard shortcut system (E=escort, J=jam, R=reroute_safest, Tab=cycle vaults)
+- [ ] [SIL-17] Wire `<map-editor>` nav link + `GET /api/map-editor/preview` route (dev/admin only)
+- [ ] [SIL-18] Visual regression tests (Playwright snapshot: empty map, vault active, convoy, surge, chain)
+- [ ] [SIL-19] Competitive theme variant — apply to all VaultFront-owned components
+- [ ] [SIL-20] Map variety expansion — define 5–8 named VaultFront map configs in MapPlaylist.ts
+- [ ] [SIL-21] In-game Discord feed — extend DiscordNotifier for weekly mutator + milestone events
+- [ ] [SIL-22] Add Vitest viewport tests at 320px / 768px / 1920px breakpoints
+- [ ] [SIL-23] Add integration test: mock runtime API + test client initialization flow
+
+### From original queued list (carried forward)
 
 - [ ] Wire `replayStore.startRecording()` / `recordIntent()` / `finishRecording()` into Worker.ts turn loop
 - [ ] Expose `GET /api/replay/:id` and `GET /api/replays` routes on Worker.ts
@@ -64,11 +98,19 @@ Date: 2026-03-26
 - [ ] Mount SpectatorRunner in ClientGameRunner (add `?spectate` URL flag)
 - [ ] Add `GET /api/map-editor/preview` to Worker.ts (POST JSON → Go binary → PNG)
 - [ ] Register `<map-editor>` custom element in Main.ts and add nav link (dev/admin only)
-- [ ] Add integration test: mock runtime API + test client initialization flow
-- [ ] Add Vitest viewport tests at 320px / 768px / 1920px breakpoints
-- [ ] Extract `VaultRewardCalculator` class from `VaultFrontExecution.ts`
-- [ ] Extract `VaultRouteRiskScorer` class from `VaultFrontExecution.ts`
-- [ ] Add keyboard shortcut system to VaultFront HUD
+
+### Post-deployment (requires live runtime — Hetzner VPS + DNS)
+
+- [ ] [SIL-24] OpenTelemetry player events → Grafana dashboard
+      (vault_captured, convoy_delivered, execution_chain_completed, surge_activated)
+- [ ] [SIL-25] Player match history + vault stats persistence (Postgres)
+- [ ] [SIL-26] Persistent global leaderboard (ELO/points, weekly/alltime tabs)
+
+### Architecture — high effort, do before next major feature wave
+
+- [ ] [SIL-27] Split GameServer.ts (49KB) into GameHandler + LobbyHandler + BroadcastHandler
+- [ ] [SIL-28] Split Worker.ts into WorkerRoutes + WorkerExperiments + WorkerTelemetry modules
+      Note: do before spectator and replay wiring to avoid compounding monolith complexity.
 
 ---
 
@@ -80,12 +122,14 @@ Do not attempt to automate or stub these without explicit confirmation.
 ### 0. Install deferred dev dependencies
 
 **Action:** Run this once from the project root:
+
 ```bash
 npm install --save-dev @playwright/test bundlewatch \
   @semantic-release/commit-analyzer @semantic-release/release-notes-generator \
   @semantic-release/changelog @semantic-release/github
 npx playwright install chromium
 ```
+
 **Why:** Three new CI/tooling features (E2E tests, bundle budget, semantic release)
 were configured in code during the 2026-03-26 session but their packages were not
 installed to avoid modifying `package-lock.json` without running `npm ci` first.
@@ -176,6 +220,4 @@ the real client bundle instead of `pages-stub/`. Trigger the workflow manually.
 ## Deferred (indefinitely)
 
 - Any attempt to use `openfront-upstream/main` as the day-to-day publish branch
-- Light theme implementation (brand abstraction exists, styling not complete)
-- Competitive theme variant (defined in BrandTheme, not integrated)
 - Storybook / design system documentation

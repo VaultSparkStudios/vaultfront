@@ -17,6 +17,10 @@ interface ActiveVaultFrontPing extends VaultFrontActivityUpdate {
 export class VaultFrontLayer implements Layer {
   private status: VaultFrontStatusUpdate | null = null;
   private activePings: ActiveVaultFrontPing[] = [];
+  /** Tick at which the mutator banner was first shown (0 = not yet shown) */
+  private mutatorBannerShownAtTick = 0;
+  /** Duration in ticks for the mutator banner to display */
+  private readonly mutatorBannerDurationTicks = 60; // ~6 seconds
 
   constructor(
     private game: GameView,
@@ -68,6 +72,10 @@ export class VaultFrontLayer implements Layer {
     this.drawVaultSites(ctx);
     this.drawBeaconFields(ctx);
     this.drawActivityPings(ctx);
+    this.drawSquadObjectiveRings(ctx);
+    this.drawExecutionChainHUD(ctx);
+    this.drawSurgeHUD(ctx);
+    this.drawMutatorBanner(ctx);
   }
 
   private prefersReducedMotion(): boolean {
@@ -594,6 +602,284 @@ export class VaultFrontLayer implements Layer {
       default:
         return { r: 255, g: 255, b: 255 };
     }
+  }
+
+  /**
+   * Draw squad objective rings on the map for all active windows.
+   * A fading circle + timer arc centered on the vault tile.
+   */
+  private drawSquadObjectiveRings(ctx: CanvasRenderingContext2D): void {
+    if (!this.status || this.status.squadObjectives.length === 0) return;
+    const now = this.game.ticks();
+    for (const obj of this.status.squadObjectives) {
+      if (obj.rewarded || obj.expiresAtTick <= now) continue;
+      const screen = this.screenForTile(obj.anchorTile);
+      if (!screen) continue;
+
+      const totalTicks = 520; // squad window duration from GAMEPLAY_DESIGN.md
+      const remaining = obj.expiresAtTick - now;
+      const ratio = Math.max(0, Math.min(1, remaining / totalTicks));
+      const ringRadius = Math.max(24, this.transform.scale * 6);
+      const alpha = 0.4 + ratio * 0.5;
+
+      ctx.save();
+      // Outer dashed ring
+      ctx.strokeStyle = `rgba(167, 243, 208, ${alpha})`;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.arc(screen.x, screen.y, ringRadius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Timer arc (solid, fills clockwise as time runs out)
+      ctx.strokeStyle = "rgba(52, 211, 153, 0.9)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(
+        screen.x,
+        screen.y,
+        ringRadius + 4,
+        -Math.PI / 2,
+        -Math.PI / 2 + Math.PI * 2 * ratio,
+      );
+      ctx.stroke();
+
+      // Label
+      ctx.fillStyle = "rgba(167, 243, 208, 0.95)";
+      ctx.font = `bold ${Math.round(this.fontSize() - 1)}px Overpass, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("SQUAD", screen.x, screen.y - ringRadius - 8);
+      const secsLeft = Math.ceil(remaining / 10);
+      ctx.fillStyle = "rgba(209, 250, 229, 0.85)";
+      ctx.font = `${Math.round(this.fontSize() - 3)}px Overpass, sans-serif`;
+      ctx.fillText(`${secsLeft}s`, screen.x, screen.y + ringRadius + 14);
+      ctx.restore();
+    }
+  }
+
+  /**
+   * Draw the execution chain combo meter in the bottom-right HUD corner.
+   * Three nodes: [Capture] → [Deliver] → [Jam+Deny]
+   * Active step lights up; a timer arc shows remaining window.
+   */
+  private drawExecutionChainHUD(ctx: CanvasRenderingContext2D): void {
+    if (!this.status) return;
+    const myPlayer = this.game.myPlayer();
+    if (!myPlayer) return;
+    const chainState = this.status.executionChains[myPlayer.smallID()];
+    if (!chainState || chainState.step === 0) return;
+
+    const now = this.game.ticks();
+    const remaining = chainState.expiresAtTick - now;
+    if (remaining <= 0) return;
+
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+    const baseX = w - 180;
+    const baseY = h - 56;
+    const nodeR = 10;
+    const nodeSpacing = 44;
+    const labels = ["CAPTURE", "DELIVER", "JAM"];
+
+    ctx.save();
+    // Background pill
+    ctx.fillStyle = "rgba(15, 23, 42, 0.82)";
+    ctx.beginPath();
+    ctx.roundRect(baseX - 16, baseY - 28, 3 * nodeSpacing + 16, 52, 8);
+    ctx.fill();
+
+    // Connector lines
+    for (let i = 0; i < 2; i++) {
+      const x1 = baseX + i * nodeSpacing + nodeR;
+      const x2 = baseX + (i + 1) * nodeSpacing - nodeR;
+      ctx.strokeStyle =
+        i + 1 < chainState.step
+          ? "rgba(52, 211, 153, 0.9)"
+          : "rgba(71, 85, 105, 0.6)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x1, baseY);
+      ctx.lineTo(x2, baseY);
+      ctx.stroke();
+    }
+
+    // Nodes
+    for (let i = 0; i < 3; i++) {
+      const x = baseX + i * nodeSpacing;
+      const filled = i + 1 <= chainState.step;
+      const active = i + 1 === chainState.step;
+
+      // Glow for active node
+      if (active) {
+        ctx.shadowColor = "rgba(52, 211, 153, 0.8)";
+        ctx.shadowBlur = 12;
+      }
+      ctx.fillStyle = filled
+        ? active
+          ? "rgba(52, 211, 153, 0.95)"
+          : "rgba(52, 211, 153, 0.6)"
+        : "rgba(51, 65, 85, 0.8)";
+      ctx.beginPath();
+      ctx.arc(x, baseY, nodeR, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Node number
+      ctx.fillStyle = filled
+        ? "rgba(15, 23, 42, 0.9)"
+        : "rgba(148,163,184,0.8)";
+      ctx.font = `bold 9px Overpass, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(String(i + 1), x, baseY + 3.5);
+
+      // Label below
+      ctx.fillStyle = filled
+        ? "rgba(167, 243, 208, 0.9)"
+        : "rgba(100, 116, 139, 0.8)";
+      ctx.font = `7px Overpass, sans-serif`;
+      ctx.fillText(labels[i], x, baseY + 20);
+    }
+
+    // Timer arc around the pill
+    const windowTicks = 1500; // cleanExecutionChainWindowTicks from GAMEPLAY_DESIGN.md
+    const timerRatio = Math.max(0, Math.min(1, remaining / windowTicks));
+    const timerX = baseX + nodeSpacing;
+    ctx.strokeStyle = "rgba(52, 211, 153, 0.5)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(
+      timerX,
+      baseY - 22,
+      6,
+      -Math.PI / 2,
+      -Math.PI / 2 + Math.PI * 2 * timerRatio,
+    );
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  /**
+   * Draw a surge active badge in the bottom-left HUD corner.
+   * Pulses while active; shows countdown.
+   */
+  private drawSurgeHUD(ctx: CanvasRenderingContext2D): void {
+    if (!this.status) return;
+    const myPlayer = this.game.myPlayer();
+    if (!myPlayer) return;
+    const surgeState = this.status.surges[myPlayer.smallID()];
+    if (!surgeState?.active) return;
+
+    const now = this.game.ticks();
+    const remaining = surgeState.surgeUntilTick - now;
+    if (remaining <= 0) return;
+
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+    const x = 16;
+    const y = h - 64;
+    const pulse = 0.7 + 0.3 * Math.sin((now / 5) * Math.PI);
+    const secsLeft = Math.ceil(remaining / 10);
+
+    ctx.save();
+    ctx.shadowColor = `rgba(52, 211, 153, ${pulse * 0.8})`;
+    ctx.shadowBlur = 16;
+    ctx.strokeStyle = `rgba(52, 211, 153, ${pulse})`;
+    ctx.lineWidth = 2;
+    ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+    ctx.beginPath();
+    ctx.roundRect(x, y, 148, 40, 8);
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = `rgba(110, 231, 183, ${pulse})`;
+    ctx.font = `bold 12px Overpass, sans-serif`;
+    ctx.textAlign = "left";
+    ctx.fillText("⚡ SURGE ACTIVE", x + 10, y + 16);
+    ctx.fillStyle = "rgba(167, 243, 208, 0.85)";
+    ctx.font = `10px Overpass, sans-serif`;
+    ctx.fillText(`+gold  +troops  ${secsLeft}s left`, x + 10, y + 30);
+    ctx.restore();
+
+    // Ignore the no-explicit-any note: ctx.canvas.width/height are always numbers
+    void w; // used above
+  }
+
+  /**
+   * One-time mutator banner shown at game start for ~6 seconds then fades.
+   */
+  private drawMutatorBanner(ctx: CanvasRenderingContext2D): void {
+    if (!this.status || this.status.weeklyMutator === "none") return;
+
+    const now = this.game.ticks();
+    if (this.mutatorBannerShownAtTick === 0) {
+      this.mutatorBannerShownAtTick = now;
+    }
+
+    const elapsed = now - this.mutatorBannerShownAtTick;
+    if (elapsed >= this.mutatorBannerDurationTicks) return;
+
+    const fadeInTicks = 10;
+    const fadeOutStart = this.mutatorBannerDurationTicks - 15;
+    let alpha: number;
+    if (elapsed < fadeInTicks) {
+      alpha = elapsed / fadeInTicks;
+    } else if (elapsed > fadeOutStart) {
+      alpha = 1 - (elapsed - fadeOutStart) / 15;
+    } else {
+      alpha = 1;
+    }
+    alpha = Math.max(0, Math.min(1, alpha));
+
+    const mutatorLabels: Record<string, { name: string; desc: string }> = {
+      lane_fog: {
+        name: "LANE FOG",
+        desc: "Convoy activity hidden from feed  •  Routes +8% riskier",
+      },
+      accelerated_cooldowns: {
+        name: "ACCELERATED COOLDOWNS",
+        desc: "Vault cooldowns ×0.75  •  Beacon, jam, escort faster",
+      },
+      double_passive: {
+        name: "DOUBLE PASSIVE",
+        desc: "Passive vault income ×2  •  Interval halved",
+      },
+    };
+
+    const label = mutatorLabels[this.status.weeklyMutator];
+    if (!label) return;
+
+    const w = ctx.canvas.width;
+    const bannerW = Math.min(420, w - 32);
+    const bx = (w - bannerW) / 2;
+    const by = 16;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = "rgba(15, 23, 42, 0.88)";
+    ctx.strokeStyle = "rgba(96, 165, 250, 0.85)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bannerW, 52, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(147, 197, 253, 0.95)";
+    ctx.font = `bold 11px Overpass, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText("THIS WEEK'S MUTATOR", w / 2, by + 16);
+
+    ctx.fillStyle = "rgba(248, 250, 252, 0.95)";
+    ctx.font = `bold 14px Overpass, sans-serif`;
+    ctx.fillText(label.name, w / 2, by + 32);
+
+    ctx.fillStyle = "rgba(203, 213, 225, 0.85)";
+    ctx.font = `10px Overpass, sans-serif`;
+    ctx.fillText(label.desc, w / 2, by + 46);
+    ctx.globalAlpha = 1;
+    ctx.restore();
   }
 
   private markerSize(): number {

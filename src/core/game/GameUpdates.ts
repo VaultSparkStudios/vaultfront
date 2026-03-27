@@ -375,6 +375,33 @@ export interface VaultFrontBeaconState {
   factoryCount: number;
 }
 
+export interface VaultFrontExecutionChainState {
+  /** Which step the chain is on for this player: 0 = no chain, 1 = captured, 2 = delivered */
+  step: 0 | 1 | 2;
+  /** Tick at which the current step expires (0 when no chain active) */
+  expiresAtTick: Tick;
+}
+
+export interface VaultFrontSurgeState {
+  /** Whether comeback surge is currently active for this player */
+  active: boolean;
+  /** Tick at which surge expires (0 when inactive) */
+  surgeUntilTick: Tick;
+}
+
+export interface VaultFrontSquadObjectiveState {
+  /** Vault site ID this objective is centered on */
+  siteID: number;
+  /** The owning player's small ID */
+  ownerID: number;
+  /** Map tile at the center of the objective radius */
+  anchorTile: TileRef;
+  /** Tick at which the window closes */
+  expiresAtTick: Tick;
+  /** True once the squad bonus has been awarded */
+  rewarded: boolean;
+}
+
 export interface VaultFrontStatusUpdate {
   type: GameUpdateType.VaultFrontStatus;
   weeklyMutator:
@@ -390,6 +417,12 @@ export interface VaultFrontStatusUpdate {
   sites: VaultFrontSiteState[];
   convoys: VaultFrontConvoyState[];
   beacons: VaultFrontBeaconState[];
+  /** Execution chain state keyed by player small ID */
+  executionChains: Record<number, VaultFrontExecutionChainState>;
+  /** Comeback surge state keyed by player small ID */
+  surges: Record<number, VaultFrontSurgeState>;
+  /** Active squad objective windows (visible to all players) */
+  squadObjectives: VaultFrontSquadObjectiveState[];
 }
 
 export interface VaultFrontActivityUpdate {

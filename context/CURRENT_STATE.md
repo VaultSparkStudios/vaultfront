@@ -32,7 +32,24 @@ Date: 2026-03-26
 
 ## Most recent shipped changes
 
-- 2026-03-26 Full audit + top-20 improvement pass (see context/CODEX_HANDOFF_2026-03-26.md)
+- 2026-03-26 Full audit + 25-item implementation pass (session 2)
+
+  - SOUL.md + PROJECT_BRIEF.md rewritten with real substance (context/)
+  - CI: security-audit job (npm audit --audit-level=high)
+  - nginx.conf: CSP + X-Content-Type-Options + X-Frame-Options + Referrer-Policy
+  - NewsModal news button made visible (removed hidden class)
+  - Replay system wired: ReplayStore.recordTurn(), GameServer hooks, Worker.ts API routes (/api/replay/:id, /api/replays)
+  - Spectator WebSocket: WorkerLobbyService upgrade handler + spectatorBus wired into GameServer turn fan-out
+  - VaultFrontStatusUpdate extended: executionChains, surges, squadObjectives fields
+  - VaultFrontExecution.ts publishes all new fields
+  - VaultFrontLayer.ts: execution chain combo meter, surge badge, squad ring, mutator banner
+  - NationExecution.ts bot AI: gold-gated jam_breaker, strength-aware escort, tighter timing
+  - VaultFrontTutorial.ts: first-run 5-step tutorial overlay (registered in Main.ts)
+  - VAULTFRONT_SOURCE_MAP.md updated with VaultFrontTutorial.ts
+  - DECISIONS.md: 3 new architectural decisions recorded
+  - 623/623 tests passing (NationExecution tests updated to match new behavior)
+
+- 2026-03-26 Full audit + top-20 improvement pass (session 1)
   - Coverage thresholds enforced in vite.config.ts (70% lines/functions, 60% branches)
   - `no-explicit-any` scoped to VaultFront-owned files in eslint.config.js
   - Semantic release workflow + .releaserc.json added
@@ -61,9 +78,10 @@ Date: 2026-03-26
 
 ## Validation status
 
-- 82/82 test files, 623/623 tests green (as of 2026-03-26)
+- 82/82 test files, 623/623 tests green (session 2 — 2026-03-26)
+- 3 E2E Playwright files still failing: pre-existing issue — @playwright/test not installed (manual task 0)
 - GitHub Actions `CI` last passed on `88a9e04b`
-- `main` is ahead of `origin/main` by 1 commit (`8f53f309` — not yet pushed)
+- `main` is ahead of `origin/main` — multiple commits from sessions 1 and 2 (not yet pushed)
 
 ---
 

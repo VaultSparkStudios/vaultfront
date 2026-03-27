@@ -24,32 +24,33 @@ New files with no upstream equivalent. These are the core VaultFront additions.
 | ----------------------------------------------- | ------------------------------------------------------------------------- |
 | `src/client/graphics/layers/VaultFrontLayer.ts` | Dedicated canvas layer: vault site markers, convoy overlays, beacon rings |
 
-### Client — features (scaffolded)
+### Client — features (scaffolded / shipped)
 
-| File                              | Purpose                                                                  |
-| --------------------------------- | ------------------------------------------------------------------------ |
-| `src/client/ReplayPlayer.ts`      | Replay player: drives deterministic simulation from a recorded game log  |
-| `src/client/SpectatorRunner.ts`   | Spectator runner: read-only WebSocket connection to a live game          |
-| `src/client/MapEditor.ts`         | Browser-based visual map editor (vault site placement, config export)    |
-| `src/client/sw.ts`                | Service worker: PWA asset caching and offline shell                      |
-| `src/client/BrandTheme.ts`        | Theme tokens and persistence (dark / light / competitive)                |
+| File                               | Purpose                                                                 |
+| ---------------------------------- | ----------------------------------------------------------------------- |
+| `src/client/ReplayPlayer.ts`       | Replay player: drives deterministic simulation from a recorded game log |
+| `src/client/SpectatorRunner.ts`    | Spectator runner: read-only WebSocket connection to a live game         |
+| `src/client/MapEditor.ts`          | Browser-based visual map editor (vault site placement, config export)   |
+| `src/client/sw.ts`                 | Service worker: PWA asset caching and offline shell                     |
+| `src/client/BrandTheme.ts`         | Theme tokens and persistence (dark / light / competitive)               |
+| `src/client/VaultFrontTutorial.ts` | First-run tutorial overlay: 5-step carousel for new players             |
 
 ### Server — features (scaffolded)
 
-| File                            | Purpose                                                                    |
-| ------------------------------- | -------------------------------------------------------------------------- |
-| `src/server/ReplayStore.ts`     | Records per-game input logs for deterministic replay                       |
-| `src/server/SpectatorBus.ts`    | Broadcasts game turn updates to read-only spectator WebSocket connections  |
-| `src/server/DiscordNotifier.ts` | Fire-and-forget Discord webhook notifications for game events              |
+| File                            | Purpose                                                                   |
+| ------------------------------- | ------------------------------------------------------------------------- |
+| `src/server/ReplayStore.ts`     | Records per-game input logs for deterministic replay                      |
+| `src/server/SpectatorBus.ts`    | Broadcasts game turn updates to read-only spectator WebSocket connections |
+| `src/server/DiscordNotifier.ts` | Fire-and-forget Discord webhook notifications for game events             |
 
 ### E2E tests
 
-| File                             | Purpose                               |
-| -------------------------------- | ------------------------------------- |
-| `e2e/playwright.config.ts`       | Playwright E2E test configuration     |
-| `e2e/homepage.spec.ts`           | Homepage load, manifest, health tests |
-| `e2e/settings.spec.ts`           | Theme persistence E2E tests           |
-| `e2e/single-player.spec.ts`      | Solo modal and vault bot hint E2E     |
+| File                        | Purpose                               |
+| --------------------------- | ------------------------------------- |
+| `e2e/playwright.config.ts`  | Playwright E2E test configuration     |
+| `e2e/homepage.spec.ts`      | Homepage load, manifest, health tests |
+| `e2e/settings.spec.ts`      | Theme persistence E2E tests           |
+| `e2e/single-player.spec.ts` | Solo modal and vault bot hint E2E     |
 
 ### Tests — owned
 

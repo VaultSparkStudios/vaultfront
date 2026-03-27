@@ -26,6 +26,8 @@ import {
 import { createPartialGameRecord, getClanTag } from "../core/Util";
 import { archive, finalizeGameRecord } from "./Archive";
 import { Client } from "./Client";
+import { replayStore } from "./ReplayStore";
+import { spectatorBus } from "./SpectatorBus";
 export enum GamePhase {
   Lobby = "LOBBY",
   Active = "ACTIVE",
@@ -577,6 +579,14 @@ export class GameServer {
       return;
     }
     this._hasPrestarted = true;
+    replayStore.startRecording(this.id, String(this.gameConfig.gameMap), 0, {
+      gameMap: this.gameConfig.gameMap,
+      gameMapSize: this.gameConfig.gameMapSize,
+      gameType: this.gameConfig.gameType,
+      gameMode: this.gameConfig.gameMode,
+      bots: this.gameConfig.bots,
+      vaultWeeklyMutator: this.gameConfig.vaultWeeklyMutator,
+    });
 
     const prestartMsg = ServerPrestartMessageSchema.safeParse({
       type: "prestart",
@@ -865,6 +875,11 @@ export class GameServer {
     this.turns.push(pastTurn);
     this.intents = [];
 
+    replayStore.recordTurn(this.id, {
+      turnNumber: pastTurn.turnNumber,
+      intents: pastTurn.intents,
+    });
+
     this.handleSynchronization();
     this.checkDisconnectedStatus();
 
@@ -872,13 +887,23 @@ export class GameServer {
       type: "turn",
       turn: pastTurn,
     } satisfies ServerTurnMessage);
+    const msgBuf = Buffer.from(msg);
     this.activeClients.forEach((c) => {
       c.ws.send(msg);
     });
+    // Fan-out to spectators (same binary payload, read-only)
+    spectatorBus.broadcast(this.id, msgBuf);
   }
 
   async end() {
     this._hasEnded = true;
+    // Persist the replay before closing connections
+    replayStore.finishRecording(this.id).catch((err) => {
+      this.log.warn("Failed to finalize replay recording", {
+        gameID: this.id,
+        err,
+      });
+    });
     // Close all WebSocket connections
     if (this.endTurnIntervalID) {
       clearInterval(this.endTurnIntervalID);
@@ -889,6 +914,7 @@ export class GameServer {
         ws.close(1000, "game has ended");
       }
     });
+    spectatorBus.closeGame(this.id);
     if (!this._hasPrestarted && !this._hasStarted) {
       this.log.info(`game not started, not archiving game`);
       return;

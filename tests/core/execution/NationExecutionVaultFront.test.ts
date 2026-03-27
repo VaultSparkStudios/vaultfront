@@ -16,12 +16,17 @@ describe("NationExecution VaultFront command tuning", () => {
       smallID: () => 7,
       unitsOwned: (type: UnitType) =>
         type === UnitType.DefensePost || type === UnitType.SAMLauncher ? 1 : 0,
+      // gold() must be >= 115_000n for jam_breaker affordability check
+      gold: () => BigInt(500_000),
+      tiles: () => ({ size: 100 }),
     };
     execution.mg = {
       config: () => ({
         nationGoldTroopEmphasis: () => 70,
       }),
       queueVaultFrontCommand,
+      // players() returns empty array → avgTiles defaults → isBehind = false
+      players: () => [],
     };
     execution.random = {
       chance: vi.fn(() => true),
@@ -37,7 +42,8 @@ describe("NationExecution VaultFront command tuning", () => {
       type: "jam_breaker",
       issuedAtTick: 100,
     });
-    expect(execution.nextVaultFrontCommandTick).toBe(170);
+    // Timing: ticks(100) + nextInt(60, 100) where mock returns min(60) = 160
+    expect(execution.nextVaultFrontCommandTick).toBe(160);
   });
 
   test("low pressure economy bias rotates into economic reroutes", () => {
@@ -53,12 +59,15 @@ describe("NationExecution VaultFront command tuning", () => {
       isAlive: () => true,
       smallID: () => 3,
       unitsOwned: () => 0,
+      gold: () => BigInt(0),
+      tiles: () => ({ size: 100 }),
     };
     execution.mg = {
       config: () => ({
         nationGoldTroopEmphasis: () => 80,
       }),
       queueVaultFrontCommand,
+      players: () => [],
     };
     execution.random = {
       chance: vi.fn(() => true),
@@ -75,6 +84,7 @@ describe("NationExecution VaultFront command tuning", () => {
       type: "reroute_city",
       issuedAtTick: 200,
     });
-    expect(execution.nextVaultFrontCommandTick).toBe(285);
+    // Timing: ticks(200) + nextInt(75, 130) where mock returns min(75) = 275
+    expect(execution.nextVaultFrontCommandTick).toBe(275);
   });
 });

@@ -228,19 +228,53 @@ export class NationExecution implements Execution {
       player.unitsOwned(UnitType.DefensePost) +
       player.unitsOwned(UnitType.SAMLauncher);
     const econBias = this.mg.config().nationGoldTroopEmphasis() / 100;
-    const highPressure = pressure >= 0.58;
-    const mediumPressure = pressure >= 0.34;
-    const lowPressure = pressure < 0.18;
+
+    // Strength ratio vs all alive players (comeback surge awareness)
+    const allPlayers = this.mg
+      .players()
+      .filter((p) => p.isAlive() && p.isPlayer());
+    const avgTiles =
+      allPlayers.length > 0
+        ? allPlayers.reduce((sum, p) => sum + p.tiles().size, 0) /
+          allPlayers.length
+        : 1;
+    const strengthRatio = avgTiles > 0 ? player.tiles().size / avgTiles : 1;
+    const isBehind = strengthRatio < 0.85;
+
+    // Gold check for jam_breaker (115,000 gold cost from GAMEPLAY_DESIGN.md)
+    const JAM_BREAKER_COST = 115_000n;
+    const canAffordJam = player.gold() >= JAM_BREAKER_COST;
+
+    const highPressure = pressure >= 0.52; // slightly lower threshold than before
+    const mediumPressure = pressure >= 0.3;
+    const lowPressure = pressure < 0.16;
     let command: VaultFrontCommandType | null = null;
 
-    if (highPressure && defenseStructures > 0 && this.random.chance(2)) {
+    if (
+      highPressure &&
+      defenseStructures > 0 &&
+      canAffordJam &&
+      this.random.chance(2)
+    ) {
+      // Use jam_breaker aggressively when under siege AND can afford it
       command = "jam_breaker";
-    } else if (pressure >= 0.42 && this.random.chance(2)) {
+    } else if (
+      (pressure >= 0.38 || isBehind) &&
+      this.random.chance(isBehind ? 2 : 3)
+    ) {
+      // Escort more eagerly when losing — protects convoys that give comeback bonuses
       command = "escort";
     } else if (mediumPressure && this.random.chance(2)) {
       command = this.nextRerouteCommand(true);
-    } else if (lowPressure && this.random.chance(econBias >= 0.55 ? 4 : 5)) {
+    } else if (
+      lowPressure &&
+      !isBehind &&
+      this.random.chance(econBias >= 0.55 ? 4 : 5)
+    ) {
       command = this.nextRerouteCommand(false);
+    } else if (isBehind && lowPressure && this.random.chance(3)) {
+      // When behind but safe: reroute to most economic destination
+      command = "reroute_city";
     }
 
     if (command !== null) {
@@ -249,16 +283,17 @@ export class NationExecution implements Execution {
         type: command,
         issuedAtTick: ticks,
       });
+      // Tighter timing windows for more responsive bot behavior
       this.nextVaultFrontCommandTick =
         command === "jam_breaker"
-          ? ticks + this.random.nextInt(70, 120)
+          ? ticks + this.random.nextInt(60, 100)
           : command === "escort"
-            ? ticks + this.random.nextInt(80, 135)
-            : ticks + this.random.nextInt(85, 145);
+            ? ticks + this.random.nextInt(70, 115)
+            : ticks + this.random.nextInt(75, 130);
     } else {
       this.nextVaultFrontCommandTick = highPressure
-        ? ticks + this.random.nextInt(55, 90)
-        : ticks + this.random.nextInt(90, 160);
+        ? ticks + this.random.nextInt(45, 75)
+        : ticks + this.random.nextInt(80, 140);
     }
   }
 

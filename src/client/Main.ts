@@ -66,6 +66,7 @@ import {
   isInIframe,
   translateText,
 } from "./Utils";
+import "./VaultFrontTutorial";
 import "./components/DesktopNavBar";
 import "./components/Footer";
 import "./components/MainLayout";
@@ -970,6 +971,10 @@ const bootstrap = () => {
   initLayout();
   new Client().initialize();
   initNavigation();
+
+  // Mount first-run tutorial overlay (auto-opens once per browser via localStorage)
+  const tutorial = document.createElement("vault-front-tutorial");
+  document.body.appendChild(tutorial);
 
   // Hide elements immediately
   hideCrazyGamesElements();

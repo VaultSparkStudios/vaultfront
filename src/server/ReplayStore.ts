@@ -24,6 +24,13 @@ export interface ReplayIntent {
   playerSmallID: number;
 }
 
+/** Lightweight record of a single game turn — same shape as ServerTurnMessage.turn */
+export interface ReplayTurn {
+  turnNumber: number;
+  /** Intents are stored as plain objects for replay */
+  intents: unknown[];
+}
+
 export interface ReplayManifest {
   gameId: string;
   mapName: string;
@@ -33,6 +40,8 @@ export interface ReplayManifest {
   endedAt?: number;
   durationTurns: number;
   intents: ReplayIntent[];
+  /** Full turn log — preferred over intents[] for playback when present */
+  turns?: ReplayTurn[];
 }
 
 export interface ReplayBackend {
@@ -47,7 +56,7 @@ class InMemoryReplayBackend implements ReplayBackend {
 
   async save(gameId: string, manifest: ReplayManifest): Promise<void> {
     this.store.set(gameId, manifest);
-    // Evict oldest entries if over limit
+    // Evict oldest entries if over limit (keep newest 500)
     if (this.store.size > 500) {
       const oldest = [...this.store.entries()].sort(
         ([, a], [, b]) => a.startedAt - b.startedAt,
@@ -94,7 +103,23 @@ export class ReplayStore {
       startedAt: Date.now(),
       durationTurns: 0,
       intents: [],
+      turns: [],
     });
+  }
+
+  /**
+   * Record a completed turn (preferred over recordIntent — stores the full turn object).
+   * Call once per turn after the game loop finalises it.
+   */
+  recordTurn(gameId: string, turn: ReplayTurn): void {
+    const recording = this.activeRecordings.get(gameId);
+    if (!recording) return;
+    recording.turns ??= [];
+    recording.turns.push(turn);
+    recording.durationTurns = Math.max(
+      recording.durationTurns,
+      turn.turnNumber,
+    );
   }
 
   /**
