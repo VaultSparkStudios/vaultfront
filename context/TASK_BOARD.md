@@ -1,6 +1,6 @@
 # Task Board
 
-Date: 2026-03-26
+Date: 2026-03-27
 
 ---
 
@@ -58,14 +58,36 @@ Date: 2026-03-26
 - [x] [SIL-4] Content Security Policy headers added to nginx.conf
 - [x] [SIL-5] X-Content-Type-Options + X-Frame-Options + Referrer-Policy added to nginx.conf
 - [x] [SIL-6] NewsModal news button made visible (removed `hidden` class)
-- [x] [SIL-7] Replay system wired end-to-end: - ReplayStore.recordTurn() method added - GameServer.ts hooks: startRecording on prestart, recordTurn on endTurn, finishRecording on end - Worker.ts: GET /api/replay/:id and GET /api/replays routes
-- [x] [SIL-8] Spectator WebSocket route wired: - WorkerLobbyService.ts: /spectate/:gameId upgrade handler - Worker.ts: spectatorBus.join() connection handler
-- [x] [SIL-9] Execution chain combo meter + surge badge + squad objective ring added to VaultFrontLayer - VaultFrontStatusUpdate extended with executionChain, surge, squadObjective fields - VaultFrontExecution.ts publishes new fields - VaultFrontLayer.ts renders combo meter (3 nodes + timer arc), surge badge, squad ring
-- [x] [SIL-10] Weekly mutator announcement banner rendered in VaultFrontLayer on first status tick
+- [x] [SIL-7] Replay system wired end-to-end: ReplayStore.recordTurn(), GameServer hooks, Worker.ts routes
+- [x] [SIL-8] Spectator WebSocket route wired: WorkerLobbyService upgrade handler + spectatorBus
+- [x] [SIL-9] Execution chain combo meter + surge badge + squad objective ring added to VaultFrontLayer
+- [x] [SIL-10] Weekly mutator announcement banner rendered in VaultFrontLayer
 - [x] [SIL-11] Bot AI improved: gold-gated jam_breaker, strength-aware escort, phase-aware reroute
 - [x] [SIL-12] First-run tutorial overlay (VaultFrontTutorial.ts) — 5-step contextual Lit component
 - [x] [SIL-13] Light theme completion (CSS tokens applied to all VaultFront-owned components)
-      (moved from Deferred — tokens exist, completing the pass)
+
+---
+
+## Completed (2026-03-27 audit pass — session 3, Highest Leverage + Highest Ceiling items)
+
+### Highest Leverage (Low Effort)
+
+- [x] [I-2] Fix E2E in CI — @playwright/test added to package.json devDependencies
+      ⚠️ MANUAL: user must run `npm install` once to update package-lock.json
+- [x] [C-1] Real launch landing page — pages-stub/index.html rewritten with all 6
+      mechanics, feature cards, Play Now CTA, How to Play section, and mechanic callouts
+- [x] [C-2] Discord in-game feed — DiscordNotifier.ts extended with:
+      surgeActivated, weeklyMutatorAnnounced, squadObjectiveCompleted, convoyMilestoneReached
+- [x] [D-3] Renovate bot — .renovaterc.json created (auto-PRs grouped by dep type)
+
+### Highest Ceiling (High Effort)
+
+- [x] [G-3/G-4] Match history + global leaderboard: - src/server/db/schema.sql — Postgres tables (player_stats, match_history, leaderboard_cache) - src/server/PlayerStatsStore.ts — persistence + Elo calculation - Worker.ts routes: GET /api/player/history/:id, GET /api/leaderboard, POST /api/player/match - Client: leaderboard modal enhanced with History tab
+- [x] [C-5] Player rating system (Elo/Glicko2) — EloRating utility integrated into PlayerStatsStore
+- [x] [D-1] OTel player events → Grafana: - src/server/VaultMetrics.ts — counters: vault_captured, convoy_delivered,
+      execution_chain_completed, surge_activated, match_started, match_ended - docs/grafana-dashboard.json — importable Grafana dashboard template
+- [x] [G-8] Achievement system: - src/server/AchievementStore.ts — 15 achievement definitions + per-player tracker - src/client/AchievementToast.ts — Lit component for unlock notification - Discord notification wired for achievement unlocks
+- [x] [D-6] Seasonal map rotations + Discord community voting: - src/server/VaultSeasonScheduler.ts — weekly rotation schedule + Discord voting - DiscordNotifier extended: weeklyVoteAnnounced, voteResultPosted - GET /api/season/current endpoint
 
 ---
 
@@ -75,53 +97,139 @@ Date: 2026-03-26
 
 ---
 
-## Queued (AI can execute next session)
+## Queued — Session 4 brainstorm (B-items, highest priority first)
 
-### From audit brainstorm — medium effort
+### CRITICAL — do before any new feature work
 
-- [ ] [SIL-14] Extract `VaultRewardCalculator` class from `VaultFrontExecution.ts`
-- [ ] [SIL-15] Extract `VaultRouteRiskScorer` class from `VaultFrontExecution.ts`
-- [ ] [SIL-16] Add keyboard shortcut system (E=escort, J=jam, R=reroute_safest, Tab=cycle vaults)
-- [ ] [SIL-17] Wire `<map-editor>` nav link + `GET /api/map-editor/preview` route (dev/admin only)
-- [ ] [SIL-18] Visual regression tests (Playwright snapshot: empty map, vault active, convoy, surge, chain)
-- [ ] [SIL-19] Competitive theme variant — apply to all VaultFront-owned components
-- [ ] [SIL-20] Map variety expansion — define 5–8 named VaultFront map configs in MapPlaylist.ts
-- [ ] [SIL-21] In-game Discord feed — extend DiscordNotifier for weekly mutator + milestone events
+- [ ] [B-1] Wire Postgres: install `pg` dep, implement connection pool, migrate PlayerStatsStore +
+      AchievementStore + VaultSeasonScheduler from in-memory to real SQL queries.
+      Swap leaderboard cache to Postgres materialized view.
+      ⚠️ MANUAL PREREQUISITE: step 5 (Postgres on VPS) must be done first for prod;
+      local dev can use docker-compose (B-3) or a local pg instance.
+- [ ] [B-2] Wire VaultMetrics recording calls: add VaultMetrics.record\*() callsites to the
+      6–7 event sites in GameServer.ts (vault capture, convoy delivery, chain completed,
+      surge activated, match start/end, achievement unlock). ~20 lines total.
+- [ ] [B-3] Docker Compose for local infra: single docker-compose.yml spinning Postgres +
+      Redis + app. Reduces onboarding to one command. Prerequisite for testing B-1 locally.
+
+### Low effort, real impact
+
+- [ ] [B-7] Match invite deep links (OG-preview): /join?code=XYZ + dynamic Open Graph meta
+      per lobby (map, player count, mode). One-click share from Discord/Twitter.
+- [ ] [B-14] Revenge queue / rematch button: after game end, one-click creates direct lobby
+      invite to all players from the previous match.
+- [ ] [B-21] CodeQL + Semgrep SAST: add static analysis CI job to ci.yml. (= D-2, elevated)
+- [ ] [B-23] Automated upstream sync PR: weekly GH Actions job fetches openfront-upstream/main,
+      rebases VaultFront-owned files, opens draft PR with conflict list.
+- [ ] [B-24] Contributing guide + issue templates: CONTRIBUTING.md dev setup + PR checklist +
+      GitHub issue templates (bug / feature / balance). (= D-4, elevated)
+
+### Medium effort, high impact
+
+- [ ] [B-4] Database migration CI job: apply schema.sql against a test Postgres container in CI
+      and verify all tables create cleanly. Catches schema drift before it hits production.
+- [ ] [B-5] Perf regression gate in CI: Vitest bench tests, fail if turn-processing regresses >10%.
+- [ ] [B-6] Full Discord bot (slash commands): /leaderboard, /stats @player, /join, /season.
+      Rich embeds with Elo badges. Upgrade from fire-and-forget webhooks.
+- [ ] [B-9] Live spectator public URL + game browser: /spectate page listing live public games;
+      one-click read-only WebSocket view. SpectatorBus already wired, needs browser UI.
+- [ ] [B-10] PWA push notifications (after B-1): Web Push subscription flow — convoy arrived /
+      vault captured / match invite. Drives re-engagement. sw.ts already registered.
+- [ ] [B-11] Season pass + rank decay: season_number column in player_stats, soft-reset Elo 50%
+      each season (8–12 weeks), cosmetic badge for peak rank. Recurring re-engagement loop.
+- [ ] [B-15] HUD skin cosmetics: VaultFront-branded HUD color packs (gold, crimson, neon).
+      Unlocked via achievements or season pass. Zero pay-to-win.
+- [ ] [B-16] Keyboard shortcut system: E=escort, J=jam, R=reroute, Tab=cycle vaults. Keybind
+      config screen. (= G-1, elevated with keybind screen addition)
+- [ ] [B-17] Map playlist + balance scoring CI: 3–5 VaultFront maps (= G-5) + CI job that runs
+      static balance heuristic on maps and fails below threshold.
+- [ ] [B-22] Live admin balance dashboard: Grafana panel — avg vault capture time, convoy rate,
+      chain frequency, Elo distribution. Requires B-1 + B-2 + OTel endpoint live.
+
+### High effort, transformative
+
+- [ ] [B-25] AI post-match recap (Claude API): after game end, server calls Claude with match
+      stats → 3-sentence personalized coach recap shown in WinModal. Industry-first
+      differentiator; viral moment driver.
+- [ ] [B-8] Replay shareable highlight clips: server-side job identifies top 30s of replay
+      (peak chain combo / most vault captures) and renders as shareable GIF/clip.
+      Content marketing flywheel — every match generates social content.
+- [ ] [B-12] Clan / Squad system: persistent team of 2–8, clan leaderboard, clan tag in HUD,
+      Discord role auto-assignment via bot. Strongest retention mechanic in multiplayer.
+- [ ] [B-13] Tournament bracket system: 8/16-player single-elimination. Organizer creates bracket,
+      players self-register, auto-advances winners. Discord #tournament integration.
+- [ ] [B-18] Tutorial bot matches: scripted 3-min solo match against AI with contextual speech
+      bubbles explaining mechanics. Full onboarding game experience (vs 5-step overlay).
+- [ ] [B-19] Anti-cheat: server-side input validation — flag statistically implausible move
+      sequences, log flagged sessions, auto-ban on 3 strikes. Essential before ranked play.
+- [ ] [B-20] WebRTC in-game voice chat: auto-create squad voice room on game start (STUN/SFU).
+      In-game comms for squad objectives. Major coordination differentiator.
+
+---
+
+## Queued (AI can execute next session) — carry-forward
+
+### Infrastructure & Deployment
+
+- [ ] [I-1] MANUAL: Ship deployment (8-step runbook — Hetzner VPS provisioning)
+      Note: highest-impact item. Unblocks Momentum + Deployment categories.
+- [ ] [I-3] Add `npm run perf` to ci.yml with fail-on-regression gate
+- [ ] [I-4] Script Caddyfile template into deploy runbook (removes 2 of 8 manual steps)
+- [ ] [I-5] Docker Compose for local infra (Postgres + Redis + app in one command) — see B-3
+
+### Testing & Quality
+
+- [ ] [T-1] Visual regression tests (was SIL-18): Playwright snapshots for VaultFrontLayer HUD states
+- [ ] [T-2] Extract VaultRewardCalculator (was SIL-14): pull reward math out of VaultFrontExecution.ts
+- [ ] [T-3] Extract VaultRouteRiskScorer (was SIL-15): pull route risk scoring out of VaultFrontExecution.ts
+- [ ] [T-4] Spectator WebSocket integration test: spin up test game, assert state sync
+- [ ] [T-5] Replay determinism fuzz test: random seeds → assert identical output
+- [ ] [T-6] Mutation testing (Stryker) on VaultFrontExecution.ts
+
+### Game Features
+
+- [ ] [G-1] Keyboard shortcut system (was SIL-16): E=escort, J=jam, R=reroute, Tab=cycle vaults
+- [ ] [G-2] MapEditor API wire-up (was SIL-17): nav link + GET /api/map-editor/preview route
+- [ ] [G-5] MapPlaylist expansion (was SIL-20): 3–5 VaultFront-specific map configs
+- [ ] [G-6] Competitive theme variant (was SIL-19): dark/high-contrast theme for all VaultFront components
+- [ ] [G-7] Weekly mutator rotation scheduler: automate mutator rotation via cron/config push
+- [ ] [G-9] PWA push notifications: convoy arrived / vault site ready via sw.ts
+
+### Community & Identity
+
+- [ ] [C-3] Replay share permalinks: share button → /api/replay/:id URL
+- [ ] [C-4] Match invite links: "Play with me" URL pre-filling lobby join code
+
+### Developer Experience
+
+- [ ] [D-2] CodeQL / Semgrep SAST: add static analysis job to ci.yml
+- [ ] [D-4] Contributing guide + GitHub issue templates (bug / feature / balance)
+
+### Architecture (do before next major feature wave)
+
+- [ ] [SIL-27] Split GameServer.ts (49KB) → GameHandler + LobbyHandler + BroadcastHandler
+- [ ] [SIL-28] Split Worker.ts → WorkerRoutes + WorkerExperiments + WorkerTelemetry
+
+### Medium-effort carried from session 2
+
 - [ ] [SIL-22] Add Vitest viewport tests at 320px / 768px / 1920px breakpoints
 - [ ] [SIL-23] Add integration test: mock runtime API + test client initialization flow
-
-### From original queued list (carried forward)
-
-- [ ] Wire `replayStore.startRecording()` / `recordIntent()` / `finishRecording()` into Worker.ts turn loop
-- [ ] Expose `GET /api/replay/:id` and `GET /api/replays` routes on Worker.ts
-- [ ] Wire `spectatorBus.broadcast()` into Worker.ts turn fan-out; add `GET /spectate/:gameId` WebSocket route
+- [ ] Wire `replayStore` and `spectatorBus` into remaining Worker.ts turn loop hooks
 - [ ] Mount SpectatorRunner in ClientGameRunner (add `?spectate` URL flag)
-- [ ] Add `GET /api/map-editor/preview` to Worker.ts (POST JSON → Go binary → PNG)
-- [ ] Register `<map-editor>` custom element in Main.ts and add nav link (dev/admin only)
 
 ### Post-deployment (requires live runtime — Hetzner VPS + DNS)
 
-- [ ] [SIL-24] OpenTelemetry player events → Grafana dashboard
-      (vault_captured, convoy_delivered, execution_chain_completed, surge_activated)
-- [ ] [SIL-25] Player match history + vault stats persistence (Postgres)
-- [ ] [SIL-26] Persistent global leaderboard (ELO/points, weekly/alltime tabs)
-
-### Architecture — high effort, do before next major feature wave
-
-- [ ] [SIL-27] Split GameServer.ts (49KB) into GameHandler + LobbyHandler + BroadcastHandler
-- [ ] [SIL-28] Split Worker.ts into WorkerRoutes + WorkerExperiments + WorkerTelemetry modules
-      Note: do before spectator and replay wiring to avoid compounding monolith complexity.
+- [ ] [SIL-24] OTel player events → Grafana live (VaultMetrics.ts is ready; just needs endpoint)
+- [ ] [SIL-25] Player match history live (PlayerStatsStore.ts ready; needs Postgres connection)
+- [ ] [SIL-26] Global leaderboard live (same as above)
 
 ---
 
 ## MANUAL — Requires human action outside the repo
 
-These tasks are flagged as manual. They cannot be executed by an AI session.
-Do not attempt to automate or stub these without explicit confirmation.
-
 ### 0. Install deferred dev dependencies
 
-**Action:** Run this once from the project root:
+**Action:** Run once from the project root:
 
 ```bash
 npm install --save-dev @playwright/test bundlewatch \
@@ -130,11 +238,6 @@ npm install --save-dev @playwright/test bundlewatch \
 npx playwright install chromium
 ```
 
-**Why:** Three new CI/tooling features (E2E tests, bundle budget, semantic release)
-were configured in code during the 2026-03-26 session but their packages were not
-installed to avoid modifying `package-lock.json` without running `npm ci` first.
-**Impact:** Until installed, `npm run e2e`, `npx bundlewatch`, and
-`npx semantic-release` will fail locally. CI workflows will also fail on first run.
 **Status:** ⏳ Pending
 
 ---
@@ -142,82 +245,49 @@ installed to avoid modifying `package-lock.json` without running `npm ci` first.
 ### 1. Rename local development folder
 
 **Action:** Rename `documents/development/OpenFrontIO` → `documents/development/VaultFront`
-**Why:** Folder name refers to the upstream source, not this project. All other
-VaultSpark projects in `development/` use their game name as the folder name.
-**Impact:** Git repo is unaffected. Update any open terminals, IDE workspace
-files, or shortcuts pointing to the old path. Claude Code memory path will
-update automatically on next session start from the new folder.
 **Status:** ⏳ Pending
 
 ### 2. Provision Hetzner VPS
 
-**Action:** Provision a VPS (4 vCPU / 8 GB RAM / 100 GB SSD recommended).
-Install Docker, Docker Compose, and Caddy/Traefik. Open ports 80 and 443.
-**Why:** The entire backend runtime is blocked on a live host. `build.sh`,
-`deploy.sh`, and `update.sh` are ready to run — they just need a target server.
+**Action:** CX32 (4 vCPU / 8 GB RAM). Install Docker + Caddy + Postgres + Redis. Open 80/443.
 **Status:** ⏳ Pending
 
 ### 3. Configure GitHub Actions secrets
 
-**Action:** In the `VaultSparkStudios/vaultfront` repo settings, add:
-
-- `DEPLOY_SERVER_HOST` — VPS IP or hostname
-- `DEPLOY_SSH_KEY` — private SSH key for the deploy user
-- `GHCR_TOKEN` — GitHub Container Registry token (write scope)
-- `API_KEY` — game API key
-- `TURNSTILE_SECRET_KEY` — Cloudflare Turnstile secret
-- `OTEL_EXPORTER_OTLP_ENDPOINT` and `OTEL_AUTH_HEADER` — if using observability
-  **Why:** `deploy.yml` reads these secrets. Without them CI will fail when the
-  Deploy workflow is triggered.
-  **Status:** ⏳ Pending
+Add: `DEPLOY_SERVER_HOST`, `DEPLOY_SSH_KEY`, `GHCR_TOKEN`, `API_KEY`,
+`TURNSTILE_SECRET_KEY`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_AUTH_HEADER`
+**Status:** ⏳ Pending
 
 ### 4. Configure GitHub Actions vars
 
-**Action:** In repo settings → Variables, add:
-
-- `DOMAIN` — `vaultsparkstudios.com`
-- `GHCR_USERNAME` — VaultSparkStudios
-- `GHCR_REPO` — vaultfront
-- `DEPLOY_REMOTE_USER` — deploy user on VPS (e.g. `vaultfront`)
-  **Status:** ⏳ Pending
+Add: `DOMAIN`, `GHCR_USERNAME`, `GHCR_REPO`, `DEPLOY_REMOTE_USER`
+**Status:** ⏳ Pending
 
 ### 5. Set up Postgres and Redis on VPS
 
-**Action:** Create a `vaultfront` database in Postgres and a `vaultfront`
-Redis instance. Configure connection strings in the environment file used by
-`update.sh`.
+Create `vaultfront` database + `vaultfront` Redis instance. Run `db/schema.sql`.
 **Status:** ⏳ Pending
 
 ### 6. Configure DNS records
 
-**Action:** Add DNS A records:
-
 - `play-vaultfront.vaultsparkstudios.com` → VPS IP
 - `api-vaultfront.vaultsparkstudios.com` → VPS IP
-  Let Traefik handle TLS via Let's Encrypt (already labelled in `update.sh`).
   **Status:** ⏳ Pending
 
 ### 7. Run first deploy and verify
 
-**Action:** Trigger the `Deploy` workflow from GitHub Actions with
-`target_environment: production`, `target_host: primary`, `target_subdomain: play-vaultfront`.
-Then verify:
+Trigger `Deploy` workflow → verify `/commit.txt`, WebSocket, CORS, `/health`.
+**Status:** ⏳ Pending (depends on steps 2–6)
 
-- `https://play-vaultfront.vaultsparkstudios.com/commit.txt` returns the SHA
-- WebSocket connection from public client succeeds
-- CORS headers are correct
-- `/health` endpoint returns 200
-  **Status:** ⏳ Pending (depends on steps 2–6)
+### 8. Swap Pages workflow to real client
 
-### 8. Swap Pages workflow to publish real client
-
-**Action:** Once step 7 is verified, update `deploy-pages.yml` to publish
-the real client bundle instead of `pages-stub/`. Trigger the workflow manually.
+Update `deploy-pages.yml` to publish real client bundle instead of `pages-stub/`.
 **Status:** ⏳ Pending (depends on step 7)
 
 ---
 
 ## Deferred (indefinitely)
 
+- [D-5] Admin balance dashboard — very high effort; requires design + auth for production
 - Any attempt to use `openfront-upstream/main` as the day-to-day publish branch
 - Storybook / design system documentation

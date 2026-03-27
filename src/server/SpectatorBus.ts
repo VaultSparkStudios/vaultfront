@@ -14,7 +14,7 @@
  */
 
 import type { WebSocket } from "ws";
-import { Logger } from "./Logger";
+import { logger as Logger } from "./Logger";
 
 export class SpectatorBus {
   /** Map from gameId → set of spectator WebSocket connections */

@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => {
       globals: true,
       environment: "jsdom",
       setupFiles: "./tests/setup.ts",
-      exclude: [...configDefaults.exclude, "**/.codex-temp-*/**"],
+      exclude: [...configDefaults.exclude, "**/.codex-temp-*/**", "e2e/**"],
       coverage: {
         provider: "v8",
         thresholds: {

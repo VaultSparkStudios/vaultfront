@@ -1,3 +1,4 @@
+/// <reference lib="webworker" />
 // VaultFront Service Worker
 // Provides offline lobby browsing and PWA installability.
 // Does NOT cache gameplay WebSocket traffic — only static assets and the shell.
@@ -12,7 +13,7 @@ self.addEventListener("install", (event: ExtendableEvent) => {
     caches
       .open(CACHE_NAME)
       .then((cache) => cache.addAll(PRECACHE_URLS))
-      .then(() => (self as ServiceWorkerGlobalScope).skipWaiting()),
+      .then(() => (self as unknown as ServiceWorkerGlobalScope).skipWaiting()),
   );
 });
 
@@ -27,7 +28,9 @@ self.addEventListener("activate", (event: ExtendableEvent) => {
             .map((key) => caches.delete(key)),
         ),
       )
-      .then(() => (self as ServiceWorkerGlobalScope).clients.claim()),
+      .then(() =>
+        (self as unknown as ServiceWorkerGlobalScope).clients.claim(),
+      ),
   );
 });
 
@@ -63,7 +66,9 @@ self.addEventListener("fetch", (event: FetchEvent) => {
         fetch(event.request).then((response) => {
           if (response.ok && url.pathname.startsWith("/assets/")) {
             const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+            caches
+              .open(CACHE_NAME)
+              .then((cache) => cache.put(event.request, clone));
           }
           return response;
         }),

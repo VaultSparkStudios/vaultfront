@@ -34,14 +34,17 @@ New files with no upstream equivalent. These are the core VaultFront additions.
 | `src/client/sw.ts`                 | Service worker: PWA asset caching and offline shell                     |
 | `src/client/BrandTheme.ts`         | Theme tokens and persistence (dark / light / competitive)               |
 | `src/client/VaultFrontTutorial.ts` | First-run tutorial overlay: 5-step carousel for new players             |
+| `src/client/AchievementToast.ts`   | Fixed bottom-right toast component for achievement unlock notifications |
 
 ### Server — features (scaffolded)
 
-| File                            | Purpose                                                                   |
-| ------------------------------- | ------------------------------------------------------------------------- |
-| `src/server/ReplayStore.ts`     | Records per-game input logs for deterministic replay                      |
-| `src/server/SpectatorBus.ts`    | Broadcasts game turn updates to read-only spectator WebSocket connections |
-| `src/server/DiscordNotifier.ts` | Fire-and-forget Discord webhook notifications for game events             |
+| File                                 | Purpose                                                                                                          |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `src/server/ReplayStore.ts`          | Records per-game input logs for deterministic replay                                                             |
+| `src/server/SpectatorBus.ts`         | Broadcasts game turn updates to read-only spectator WebSocket connections                                        |
+| `src/server/DiscordNotifier.ts`      | Fire-and-forget Discord webhook notifications for game events                                                    |
+| `src/server/AchievementStore.ts`     | In-memory achievement definitions, per-player progress, and unlock logic                                         |
+| `src/server/VaultSeasonScheduler.ts` | Authoritative weekly mutator rotation, Discord announcements, community voting; serves `GET /api/season/current` |
 
 ### E2E tests
 

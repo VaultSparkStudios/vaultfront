@@ -1,0 +1,93 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "UTC",
+  "schedule": ["before 6am on Monday"],
+  "labels": ["dependencies"],
+  "reviewers": [],
+  "prConcurrentLimit": 6,
+  "prHourlyLimit": 2,
+  "semanticCommits": "enabled",
+  "commitMessagePrefix": "chore(deps):",
+  "packageRules": [
+    {
+      "description": "Group all non-major runtime dependency updates into a single PR",
+      "matchDepTypes": ["dependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "runtime dependencies (non-major)",
+      "automerge": false
+    },
+    {
+      "description": "Group all non-major devDependency updates into a single PR",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "dev dependencies (non-major)",
+      "automerge": false
+    },
+    {
+      "description": "Group all GitHub Actions updates into a single PR",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "GitHub Actions (non-major)",
+      "automerge": false
+    },
+    {
+      "description": "OpenTelemetry packages — keep together since they must stay in sync",
+      "matchPackagePatterns": ["^@opentelemetry/"],
+      "groupName": "OpenTelemetry packages",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": false
+    },
+    {
+      "description": "Lit packages — keep together to avoid Lit version skew",
+      "matchPackagePatterns": ["^lit", "^@lit/", "^@lit-labs/"],
+      "groupName": "Lit framework packages",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": false
+    },
+    {
+      "description": "Vite and Vitest — keep together since they share version constraints",
+      "matchPackageNames": [
+        "vite",
+        "vitest",
+        "@vitest/coverage-v8",
+        "@vitest/ui",
+        "vite-plugin-html",
+        "vite-plugin-static-copy",
+        "vite-tsconfig-paths",
+        "@tailwindcss/vite"
+      ],
+      "groupName": "Vite + Vitest packages",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": false
+    },
+    {
+      "description": "ESLint packages — keep together to avoid config breakage",
+      "matchPackagePatterns": ["^eslint", "^@eslint/", "^typescript-eslint"],
+      "groupName": "ESLint packages",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": false
+    },
+    {
+      "description": "Major updates always get individual PRs with no automerge",
+      "matchUpdateTypes": ["major"],
+      "groupName": null,
+      "automerge": false,
+      "labels": ["dependencies", "major-update"]
+    },
+    {
+      "description": "Security updates — open immediately outside normal schedule",
+      "matchUpdateTypes": ["patch"],
+      "isVulnerabilityAlert": true,
+      "schedule": ["at any time"],
+      "labels": ["dependencies", "security"],
+      "automerge": false,
+      "prPriority": 10
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["dependencies", "security"]
+  },
+  "ignorePaths": ["**/node_modules/**", "**/map-generator/**"]
+}

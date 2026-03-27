@@ -28,6 +28,7 @@ import { archive, finalizeGameRecord } from "./Archive";
 import { Client } from "./Client";
 import { replayStore } from "./ReplayStore";
 import { spectatorBus } from "./SpectatorBus";
+import { VaultMetrics } from "./VaultMetrics";
 export enum GamePhase {
   Lobby = "LOBBY",
   Active = "ACTIVE",
@@ -696,6 +697,12 @@ export class GameServer {
       });
       this.sendStartGameMsg(c.ws, 0);
     });
+
+    VaultMetrics.recordMatchStarted(
+      this.id,
+      String(this.gameConfig.gameMap),
+      this.activeClients.length,
+    );
   }
 
   private addIntent(intent: StampedIntent, clientID?: ClientID) {
@@ -897,6 +904,12 @@ export class GameServer {
 
   async end() {
     this._hasEnded = true;
+
+    if (this._hasStarted && this._startTime !== null) {
+      const durationSeconds = Math.floor((Date.now() - this._startTime) / 1000);
+      VaultMetrics.recordMatchEnded(this.id, durationSeconds);
+    }
+
     // Persist the replay before closing connections
     replayStore.finishRecording(this.id).catch((err) => {
       this.log.warn("Failed to finalize replay recording", {

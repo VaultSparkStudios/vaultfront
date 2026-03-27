@@ -20,10 +20,12 @@ import { generateID, replacer } from "../core/Util";
 import { CreateGameInputSchema } from "../core/WorkerSchemas";
 import { archive, finalizeGameRecord } from "./Archive";
 import { Client } from "./Client";
+import { EloRating } from "./EloRating";
 import { GameManager } from "./GameManager";
 import { registerGamePreviewRoute } from "./GamePreviewRoute";
 import { getUserMe, verifyClientToken } from "./jwt";
 import { logger } from "./Logger";
+import { playerStatsStore } from "./PlayerStatsStore";
 
 import { GameEnv } from "../core/configuration/Config";
 import { MapPlaylist } from "./MapPlaylist";
@@ -31,6 +33,10 @@ import { startPolling } from "./PollingLoop";
 import { PrivilegeRefresher } from "./PrivilegeRefresher";
 import { replayStore } from "./ReplayStore";
 import { verifyTurnstileToken } from "./Turnstile";
+import {
+  vaultSeasonScheduler,
+  type SeasonStatus,
+} from "./VaultSeasonScheduler";
 import { WorkerLobbyService } from "./WorkerLobbyService";
 import { initWorkerMetrics } from "./WorkerMetrics";
 
@@ -675,6 +681,8 @@ export async function startWorker() {
     initWorkerMetrics(gm);
   }
 
+  vaultSeasonScheduler.start();
+
   const privilegeRefresher = new PrivilegeRefresher(
     config.jwtIssuer() + "/cosmetics.json",
     config.jwtIssuer() + "/profane_words_game_server",
@@ -1193,6 +1201,77 @@ export async function startWorker() {
       summaries: summary,
     });
   });
+
+  // ── Season / Mutator API ──────────────────────────────────────────────────
+  const seasonRateLimit = rateLimit({
+    windowMs: 60_000, // 1 minute
+    max: 60, // 60 requests per IP per minute
+  });
+
+  app.get("/api/season/current", seasonRateLimit, (_req, res) => {
+    const status: SeasonStatus = vaultSeasonScheduler.getStatus();
+    return res.json(status);
+  });
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // ── Player Stats / Leaderboard API ───────────────────────────────────────
+  const statsRateLimit = rateLimit({
+    windowMs: 60_000, // 1 minute
+    max: 30, // 30 requests per IP per minute
+  });
+
+  app.get(
+    "/api/player/history/:persistentId",
+    statsRateLimit,
+    async (req, res) => {
+      const parsed = PersistentIdSchema.safeParse(req.params.persistentId);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid persistentId" });
+      }
+      try {
+        const history = await playerStatsStore.getHistory(parsed.data, 20);
+        return res.json(history);
+      } catch (err) {
+        log.error("Error fetching player history", err);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+    },
+  );
+
+  app.get("/api/leaderboard", statsRateLimit, async (_req, res) => {
+    try {
+      const entries = await playerStatsStore.getLeaderboard(50);
+      return res.json(entries);
+    } catch (err) {
+      log.error("Error fetching leaderboard", err);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  app.get(
+    "/api/player/stats/:persistentId",
+    statsRateLimit,
+    async (req, res) => {
+      const parsed = PersistentIdSchema.safeParse(req.params.persistentId);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid persistentId" });
+      }
+      try {
+        const stats = await playerStatsStore.getPlayerStats(parsed.data);
+        if (!stats) {
+          return res.status(404).json({ error: "Player not found" });
+        }
+        return res.json({
+          ...stats,
+          eloLabel: EloRating.ratingLabel(stats.eloRating),
+        });
+      } catch (err) {
+        log.error("Error fetching player stats", err);
+        return res.status(500).json({ error: "Internal server error" });
+      }
+    },
+  );
+  // ─────────────────────────────────────────────────────────────────────────
 
   // ── Replay API ───────────────────────────────────────────────────────────
   app.get("/api/replays", async (_req, res) => {

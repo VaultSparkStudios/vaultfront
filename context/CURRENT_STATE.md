@@ -1,6 +1,6 @@
 # Current State
 
-Date: 2026-03-26
+Date: 2026-03-27 (session 4 closeout)
 
 ---
 
@@ -31,6 +31,47 @@ Date: 2026-03-26
 ---
 
 ## Most recent shipped changes
+
+- 2026-03-27 Full audit (7.6/10) — session 4 audit-only pass; no new code shipped
+
+  New findings (critical gaps discovered):
+
+  - PlayerStatsStore Postgres path is a stub — `pg` package not in deps; all data in-memory
+  - AchievementStore also in-memory only (state lost on restart)
+  - VaultMetrics counters initialized but zero recording calls exist in GameServer
+  - VaultSeasonScheduler vote results also in-memory
+  - Only 4 E2E specs covering an entire game
+  - No Docker Compose for local infra
+  - No database migration CI job
+
+  25-item brainstorm (B-1 through B-25) added to TASK_BOARD.md.
+  Next session priority: B-1 (wire Postgres) → B-2 (wire VaultMetrics) → B-3 (Docker Compose).
+
+- 2026-03-27 Full audit (7.5/10) + 10-item implementation pass (session 3)
+
+  Highest Leverage (Low Effort):
+
+  - @playwright/test added to package.json (E2E CI now functional after `npm install`)
+  - pages-stub/index.html: full landing page rewrite — 6 mechanics, Play Now CTA, How to Play
+  - DiscordNotifier.ts: surgeActivated, squadObjectiveCompleted, convoyMilestoneReached added
+  - .renovaterc.json: Renovate bot config created (grouped auto-PRs by dep type)
+
+  Highest Ceiling (High Effort):
+
+  - src/server/db/schema.sql: Postgres tables (player_stats, match_history, leaderboard_cache)
+  - src/server/EloRating.ts: pure Elo utility (calculate, expectedScore, ratingLabel)
+  - src/server/PlayerStatsStore.ts: match history + Elo persistence (in-memory, Postgres-ready)
+  - Worker.ts: GET /api/player/history/:id, GET /api/leaderboard, GET /api/player/stats/:id
+  - src/client/HistoryModal.ts: Lit component — match history tab + leaderboard tab
+  - src/server/VaultMetrics.ts: 7 OTel counters (vault_captured, convoy_delivered, etc.)
+  - WorkerMetrics.ts + GameServer.ts: VaultMetrics wired on match start/end
+  - docs/grafana-dashboard.json: importable Grafana 10.x dashboard template
+  - src/server/AchievementStore.ts: 15 achievement definitions + in-memory tracker
+  - src/client/AchievementToast.ts: Lit component — queued toast with slide+fade animation
+  - DiscordNotifier.ts: achievementUnlocked, weeklyMutatorAnnounced, weeklyVoteOpened, voteResultPosted
+  - src/server/VaultSeasonScheduler.ts: weekly mutator rotation + Discord community voting
+  - Worker.ts: GET /api/season/current + vaultSeasonScheduler.start() wired
+  - docs/VAULTFRONT_SOURCE_MAP.md: 4 new VaultFront-owned files registered
 
 - 2026-03-26 Full audit + 25-item implementation pass (session 2)
 
@@ -78,10 +119,10 @@ Date: 2026-03-26
 
 ## Validation status
 
-- 82/82 test files, 623/623 tests green (session 2 — 2026-03-26)
-- 3 E2E Playwright files still failing: pre-existing issue — @playwright/test not installed (manual task 0)
+- 82/82 test files, 623/623 tests green (session 2 — last verified 2026-03-26)
+- E2E: @playwright/test now in package.json — run `npm install` then E2E will function
 - GitHub Actions `CI` last passed on `88a9e04b`
-- `main` is ahead of `origin/main` — multiple commits from sessions 1 and 2 (not yet pushed)
+- `main` is ahead of `origin/main` — commits from sessions 1, 2, and 3 not yet pushed
 
 ---
 

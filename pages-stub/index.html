@@ -6,12 +6,15 @@
     <title>VaultFront | VaultSpark Studios</title>
     <meta
       name="description"
-      content="VaultFront is in active development. Follow the project, inspect the repo, and track the launch path while the dedicated runtime stack is prepared."
+      content="VaultFront is a convoy-driven strategy warfront. Capture vault sites, route convoys through enemy lines, and trigger execution chain combos for outsized rewards. Free to play in browser."
     />
-    <meta property="og:title" content="VaultFront" />
+    <meta
+      property="og:title"
+      content="VaultFront — Convoy-Driven Strategy Warfront"
+    />
     <meta
       property="og:description"
-      content="A convoy-driven strategy warfront from VaultSpark Studios. This project page is live while the dedicated gameplay runtime and backend stack are brought online."
+      content="Capture vault sites. Route convoys through enemy lines. Trigger execution chain combos. A precision RTS where timing beats expansion every time."
     />
     <meta property="og:type" content="website" />
     <meta
@@ -23,10 +26,13 @@
       content="https://vaultsparkstudios.com/assets/og-image.png"
     />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="VaultFront" />
+    <meta
+      name="twitter:title"
+      content="VaultFront — Convoy-Driven Strategy Warfront"
+    />
     <meta
       name="twitter:description"
-      content="A convoy-driven strategy warfront from VaultSpark Studios. This project page is live while the dedicated gameplay runtime and backend stack are brought online."
+      content="Capture vault sites. Route convoys through enemy lines. Trigger execution chain combos. Free to play in browser."
     />
     <meta
       name="twitter:image"
@@ -43,6 +49,7 @@
         --blue: #1fa2ff;
         --orange: #ff7a00;
         --gold: #ffc400;
+        --green: #22c55e;
         --shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
       }
 
@@ -83,22 +90,24 @@
       }
 
       .shell {
-        width: min(calc(100% - 2rem), 1040px);
+        width: min(calc(100% - 2rem), 1080px);
         margin: 0 auto;
-        padding: 3rem 0 4rem;
+        padding: 2.5rem 0 5rem;
       }
 
+      /* ── Nav breadcrumb ── */
       .crumb {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
         color: var(--muted);
-        font-size: 0.95rem;
-        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        margin-bottom: 2rem;
       }
 
+      /* ── Hero ── */
       .hero {
-        padding: 2rem;
+        padding: 3rem 2.5rem;
         border-radius: 28px;
         background:
           linear-gradient(180deg, rgba(10, 15, 27, 0.82), rgba(6, 9, 16, 0.96)),
@@ -109,195 +118,393 @@
           );
         border: 1px solid var(--line);
         box-shadow: var(--shadow);
-        overflow: hidden;
         position: relative;
-      }
-
-      .hero::before,
-      .hero::after {
-        content: "";
-        position: absolute;
-        inset: auto;
-        pointer-events: none;
-        border-radius: 999px;
-        filter: blur(10px);
-        opacity: 0.75;
+        overflow: hidden;
       }
 
       .hero::before {
-        width: 240px;
-        height: 240px;
-        right: -60px;
-        top: -50px;
+        content: "";
+        position: absolute;
+        width: 320px;
+        height: 320px;
+        right: -80px;
+        top: -60px;
         background: radial-gradient(
           circle,
-          rgba(31, 162, 255, 0.34),
+          rgba(31, 162, 255, 0.28),
           transparent 68%
         );
+        filter: blur(12px);
+        pointer-events: none;
       }
 
       .hero::after {
-        width: 280px;
-        height: 280px;
-        left: -80px;
-        bottom: -90px;
+        content: "";
+        position: absolute;
+        width: 360px;
+        height: 360px;
+        left: -100px;
+        bottom: -120px;
         background: radial-gradient(
           circle,
-          rgba(255, 122, 0, 0.24),
+          rgba(255, 122, 0, 0.2),
           transparent 68%
         );
+        filter: blur(12px);
+        pointer-events: none;
       }
 
       .eyebrow {
         display: inline-flex;
         align-items: center;
         gap: 0.6rem;
-        padding: 0.45rem 0.8rem;
+        padding: 0.45rem 0.85rem;
         border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        background: rgba(255, 255, 255, 0.04);
-        color: var(--muted);
-        font-size: 0.8rem;
+        border: 1px solid rgba(34, 197, 94, 0.35);
+        background: rgba(34, 197, 94, 0.08);
+        color: var(--green);
+        font-size: 0.78rem;
         text-transform: uppercase;
-        letter-spacing: 0.18em;
+        letter-spacing: 0.16em;
+        font-weight: 600;
+        margin-bottom: 1.1rem;
+      }
+
+      .pulse {
+        width: 0.55rem;
+        height: 0.55rem;
+        border-radius: 999px;
+        background: var(--green);
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.8);
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.6;
+          transform: scale(0.85);
+        }
       }
 
       h1 {
-        margin: 1rem 0 0.8rem;
-        font-size: clamp(2.6rem, 7vw, 5rem);
-        line-height: 0.95;
-        letter-spacing: -0.04em;
+        margin: 0 0 0.9rem;
+        font-size: clamp(2.8rem, 8vw, 5.5rem);
+        line-height: 0.93;
+        letter-spacing: -0.045em;
+        background: linear-gradient(
+          135deg,
+          #fff 40%,
+          rgba(31, 162, 255, 0.85) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
 
-      .lead {
-        max-width: 52rem;
-        margin: 0;
+      .tagline {
+        max-width: 56rem;
+        margin: 0 0 0.5rem;
         color: var(--muted);
-        font-size: clamp(1rem, 2.1vw, 1.2rem);
+        font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+        line-height: 1.5;
+      }
+
+      .hero-sub {
+        color: rgba(186, 196, 218, 0.65);
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
       }
 
       .actions {
         display: flex;
         flex-wrap: wrap;
         gap: 0.85rem;
-        margin-top: 1.6rem;
       }
 
-      .button {
+      .btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
-        min-height: 48px;
-        padding: 0 1.2rem;
+        min-height: 50px;
+        padding: 0 1.4rem;
         border-radius: 999px;
         border: 1px solid rgba(255, 255, 255, 0.14);
         background: rgba(255, 255, 255, 0.04);
         color: var(--text);
         font-weight: 600;
+        font-size: 1rem;
         transition:
           transform 160ms ease,
           border-color 160ms ease,
           background 160ms ease;
+        cursor: pointer;
       }
 
-      .button:hover {
-        transform: translateY(-1px);
-        border-color: rgba(255, 255, 255, 0.24);
-        background: rgba(255, 255, 255, 0.08);
+      .btn:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.26);
+        background: rgba(255, 255, 255, 0.09);
       }
 
-      .button-primary {
-        border-color: rgba(31, 162, 255, 0.48);
+      .btn-play {
+        border-color: rgba(255, 196, 0, 0.55);
         background: linear-gradient(
           135deg,
-          rgba(31, 162, 255, 0.22),
-          rgba(255, 122, 0, 0.16)
+          rgba(255, 122, 0, 0.28),
+          rgba(255, 196, 0, 0.18)
+        );
+        color: #ffe39a;
+        font-size: 1.05rem;
+      }
+
+      .btn-play:hover {
+        border-color: rgba(255, 196, 0, 0.75);
+        background: linear-gradient(
+          135deg,
+          rgba(255, 122, 0, 0.36),
+          rgba(255, 196, 0, 0.26)
         );
       }
 
-      .notice {
-        margin-top: 1.4rem;
-        padding: 1rem 1.1rem;
-        border-radius: 18px;
-        border: 1px solid rgba(255, 196, 0, 0.22);
-        background: rgba(255, 196, 0, 0.08);
-        color: #ffe39a;
+      .coming-soon-note {
+        margin-top: 1rem;
+        color: rgba(186, 196, 218, 0.5);
+        font-size: 0.85rem;
       }
 
-      .grid {
+      /* ── Section labels ── */
+      .section-label {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 3rem 0 1.25rem;
+        color: var(--muted);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        font-weight: 600;
+      }
+
+      .section-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--line);
+      }
+
+      /* ── Mechanic grid ── */
+      .mechanic-grid {
         display: grid;
         gap: 1rem;
-        margin-top: 1.4rem;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       }
 
-      .card {
-        padding: 1.2rem;
+      .mechanic-card {
+        padding: 1.5rem;
+        border-radius: 22px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        transition:
+          border-color 200ms ease,
+          transform 200ms ease;
+      }
+
+      .mechanic-card:hover {
+        border-color: rgba(255, 255, 255, 0.14);
+        transform: translateY(-2px);
+      }
+
+      .mechanic-icon {
+        font-size: 1.8rem;
+        margin-bottom: 0.75rem;
+        display: block;
+      }
+
+      .mechanic-card h3 {
+        margin: 0 0 0.5rem;
+        font-size: 1.1rem;
+        letter-spacing: -0.02em;
+        color: var(--text);
+      }
+
+      .mechanic-card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.55;
+      }
+
+      .mechanic-tag {
+        display: inline-block;
+        margin-top: 0.85rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .tag-blue {
+        background: rgba(31, 162, 255, 0.14);
+        color: var(--blue);
+        border: 1px solid rgba(31, 162, 255, 0.25);
+      }
+      .tag-orange {
+        background: rgba(255, 122, 0, 0.14);
+        color: var(--orange);
+        border: 1px solid rgba(255, 122, 0, 0.25);
+      }
+      .tag-gold {
+        background: rgba(255, 196, 0, 0.14);
+        color: var(--gold);
+        border: 1px solid rgba(255, 196, 0, 0.25);
+      }
+      .tag-green {
+        background: rgba(34, 197, 94, 0.14);
+        color: var(--green);
+        border: 1px solid rgba(34, 197, 94, 0.25);
+      }
+
+      /* ── How to play ── */
+      .how-to-play {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        counter-reset: step;
+      }
+
+      .step {
+        padding: 1.3rem 1.4rem;
+        border-radius: 20px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        counter-increment: step;
+        position: relative;
+      }
+
+      .step::before {
+        content: counter(step);
+        position: absolute;
+        top: 1rem;
+        right: 1.2rem;
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.06);
+        line-height: 1;
+        letter-spacing: -0.04em;
+      }
+
+      .step h4 {
+        margin: 0 0 0.4rem;
+        font-size: 1rem;
+        color: var(--gold);
+      }
+      .step p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      /* ── Bottom row ── */
+      .bottom-grid {
+        display: grid;
+        gap: 1rem;
+        margin-top: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+
+      .info-card {
+        padding: 1.3rem 1.4rem;
         border-radius: 22px;
         border: 1px solid var(--line);
         background: var(--panel);
         box-shadow: var(--shadow);
       }
 
-      .card h2 {
-        margin: 0 0 0.65rem;
-        font-size: 1.1rem;
+      .info-card h2 {
+        margin: 0 0 0.6rem;
+        font-size: 1.05rem;
         letter-spacing: -0.02em;
       }
-
-      .meta-list,
-      .checklist {
+      .info-card p,
+      .info-card li {
+        color: var(--muted);
+        font-size: 0.93rem;
+        line-height: 1.55;
+      }
+      .info-card ul {
         margin: 0;
         padding-left: 1.15rem;
-        color: var(--muted);
       }
 
-      .status {
+      /* ── Mutator ── */
+      #mutator-badge {
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
-        margin-top: 0.75rem;
-        color: var(--muted);
-        font-size: 0.95rem;
-      }
-
-      .dot {
-        width: 0.6rem;
-        height: 0.6rem;
+        gap: 0.4rem;
+        padding: 0.3rem 0.75rem;
         border-radius: 999px;
-        background: var(--gold);
-        box-shadow: 0 0 18px rgba(255, 196, 0, 0.7);
+        border: 1px solid rgba(255, 196, 0, 0.35);
+        background: rgba(255, 196, 0, 0.08);
+        color: #ffc400;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
       }
 
+      /* ── Footer ── */
       .footer {
-        margin-top: 1.5rem;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--line);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
         color: var(--muted);
-        font-size: 0.95rem;
-        text-align: center;
+        font-size: 0.88rem;
       }
 
-      @media (max-width: 640px) {
-        .shell {
-          width: min(calc(100% - 1.2rem), 1040px);
-          padding-top: 1.4rem;
-        }
+      .footer-links {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+      }
+      .footer-links a {
+        color: var(--muted);
+        transition: color 150ms ease;
+      }
+      .footer-links a:hover {
+        color: var(--text);
+      }
 
-        .hero,
-        .card {
+      @media (max-width: 680px) {
+        .shell {
+          width: min(calc(100% - 1.2rem), 1080px);
+          padding-top: 1.5rem;
+        }
+        .hero {
+          padding: 1.5rem 1.3rem;
           border-radius: 22px;
         }
-
-        .hero {
-          padding: 1.3rem;
-        }
-
         .actions {
           flex-direction: column;
         }
-
-        .button {
+        .btn {
           width: 100%;
+        }
+        h1 {
+          letter-spacing: -0.035em;
         }
       }
     </style>
@@ -310,161 +517,277 @@
         <span>VaultFront</span>
       </a>
 
+      <!-- ── HERO ── -->
       <section class="hero">
-        <span class="eyebrow">Under Development</span>
+        <span class="eyebrow">
+          <span class="pulse" aria-hidden="true"></span>
+          Coming Soon
+        </span>
         <h1>VaultFront</h1>
-        <p class="lead">
-          A convoy-driven strategy warfront built on the OpenFront lineage. The
-          public path is live as a project page while the dedicated runtime,
-          websocket routing, and backend API stack are brought online.
+        <p class="tagline">
+          A convoy-driven strategy warfront where precision timing beats pure
+          expansion. Capture vault sites, route convoys through contested lanes,
+          and trigger execution chain combos that turn a losing position into a
+          winning one.
         </p>
-
+        <p class="hero-sub">
+          Free to play in browser &mdash; no install required &mdash; solo and
+          multiplayer
+        </p>
         <div class="actions">
           <a
-            class="button button-primary"
-            href="https://github.com/VaultSparkStudios/VaultFront"
-            >Open Repository</a
+            class="btn btn-play"
+            href="https://play-vaultfront.vaultsparkstudios.com"
+            aria-label="Play VaultFront — opens game runtime"
           >
-          <a class="button" href="https://vaultsparkstudios.com/"
+            ▶&nbsp; Play Now
+          </a>
+          <a class="btn" href="https://github.com/VaultSparkStudios/VaultFront">
+            Open Repository
+          </a>
+          <a class="btn" href="https://vaultsparkstudios.com/"
             >Back to Studio</a
           >
         </div>
-
-        <div class="notice">
-          This page is a temporary project page. The public playable release is
-          not live yet because VaultFront still needs its dedicated gameplay
-          runtime, websocket path, and backend API stack brought online.
-        </div>
+        <p class="coming-soon-note">
+          Gameplay runtime launching soon &mdash; check back or watch the repo
+          for updates.
+        </p>
       </section>
 
-      <section class="grid">
-        <article class="card">
-          <h2>Current Build Scope</h2>
-          <ul class="meta-list">
-            <li>Solo and multiplayer gameplay built on the VaultFront fork</li>
-            <li>
-              Vault/convoy systems, HUD work, and session-flow iteration already
-              in repo
-            </li>
-            <li>
-              GitHub Pages-ready frontend deployment work for the eventual
-              public path
-            </li>
-            <li>
-              Studio deployment standards, backend templates, and launch
-              documentation
-            </li>
-          </ul>
-        </article>
-
-        <article class="card">
-          <h2>Why It Is Still a Stub</h2>
-          <p class="lead" style="font-size: 1rem">
-            The frontend path is ready, but the actual launch still depends on a
-            live gameplay backend at
-            <strong>play-vaultfront.vaultsparkstudios.com</strong> plus its
-            companion API and websocket infrastructure. Until that runtime is
-            established, the public URL stays on this project page instead of
-            exposing a half-live client.
+      <!-- ── 6 CORE MECHANICS ── -->
+      <div class="section-label">Core Mechanics</div>
+      <div class="mechanic-grid">
+        <article class="mechanic-card">
+          <span class="mechanic-icon">🏦</span>
+          <h3>Vault Sites</h3>
+          <p>
+            Capture neutral vault sites on the map to generate passive gold
+            income. Each site has a 90-tick capture window and a 650-tick
+            cooldown before it can be recaptured. Control the economy by holding
+            the right sites at the right time.
           </p>
+          <span class="mechanic-tag tag-blue">Economy</span>
         </article>
 
-        <article class="card" id="weekly-mutator">
-          <h2>Weekly Mutator</h2>
-          <p class="lead" style="font-size: 1rem; margin-bottom: 0.8rem">
+        <article class="mechanic-card">
+          <span class="mechanic-icon">🚛</span>
+          <h3>Convoy Routing</h3>
+          <p>
+            Route convoys from vault sites to your base for bonus gold and
+            troops. Longer, riskier routes multiply your reward by up to 1.5×.
+            Escort your convoys through contested lanes or reroute to the safest
+            path when enemy interceptors appear.
+          </p>
+          <span class="mechanic-tag tag-orange">Risk/Reward</span>
+        </article>
+
+        <article class="mechanic-card">
+          <span class="mechanic-icon">⚡</span>
+          <h3>Escort &amp; Jam Breaker</h3>
+          <p>
+            Assign escort units to protect convoys from interception. Enemy
+            players can deploy jam breakers to intercept unescorted convoys
+            &mdash; costing them gold but denying your reward. Counter with a
+            beacon charge to neutralise the interceptor.
+          </p>
+          <span class="mechanic-tag tag-orange">Interception</span>
+        </article>
+
+        <article class="mechanic-card">
+          <span class="mechanic-icon">🔥</span>
+          <h3>Comeback Surge</h3>
+          <p>
+            Fall behind for 6 consecutive minutes and a 2-minute surge window
+            activates automatically: +20% convoy rewards and a troop multiplier.
+            Blowouts are preventable &mdash; every match has a turning point.
+          </p>
+          <span class="mechanic-tag tag-gold">Comeback</span>
+        </article>
+
+        <article class="mechanic-card">
+          <span class="mechanic-icon">🎯</span>
+          <h3>Execution Chain</h3>
+          <p>
+            Complete all three steps &mdash; capture a vault, deliver a convoy,
+            and break a jam &mdash; within a 2.5-minute window to trigger an
+            execution chain combo for a +20% bonus multiplier on your next
+            delivery. Mastering the chain separates good players from great
+            ones.
+          </p>
+          <span class="mechanic-tag tag-gold">Mastery</span>
+        </article>
+
+        <article class="mechanic-card">
+          <span class="mechanic-icon">👥</span>
+          <h3>Squad Objectives</h3>
+          <p>
+            Time-limited squad objective windows appear during mid-game, asking
+            two or more players to coordinate a joint vault capture for a shared
+            reward bonus. Cooperation compounds individual execution chains into
+            team-level advantages.
+          </p>
+          <span class="mechanic-tag tag-green">Teamplay</span>
+        </article>
+      </div>
+
+      <!-- ── HOW TO PLAY ── -->
+      <div class="section-label">How to Play</div>
+      <div class="how-to-play">
+        <div class="step">
+          <h4>Expand &amp; Capture</h4>
+          <p>
+            Grow your territory and take your first vault site to start the
+            passive income loop.
+          </p>
+        </div>
+        <div class="step">
+          <h4>Route Your Convoys</h4>
+          <p>
+            Pick a risk level — short and safe or long and lucrative. Escort
+            when you can afford to.
+          </p>
+        </div>
+        <div class="step">
+          <h4>Deny the Enemy</h4>
+          <p>
+            Deploy jam breakers on unescorted enemy convoys to starve their
+            economy.
+          </p>
+        </div>
+        <div class="step">
+          <h4>Land the Chain</h4>
+          <p>
+            Capture → Deliver → Jam within 2.5 minutes for the execution chain
+            multiplier.
+          </p>
+        </div>
+        <div class="step">
+          <h4>Surge if Behind</h4>
+          <p>
+            If the surge window opens, prioritise convoys — the multiplier can
+            flip the match.
+          </p>
+        </div>
+      </div>
+
+      <!-- ── BOTTOM INFO ROW ── -->
+      <div class="bottom-grid" style="margin-top: 2.5rem">
+        <article class="info-card" id="weekly-mutator">
+          <h2>⚡ Weekly Mutator</h2>
+          <p style="margin-bottom: 0.75rem">
             Each week the active ruleset modifier shifts gameplay for all public
-            matches. Check back each week to see what's live.
+            matches.
           </p>
-          <div id="mutator-display" style="margin-top: 0.6rem">
-            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap">
-              <span
-                id="mutator-badge"
-                style="
-                  display: inline-flex;
-                  align-items: center;
-                  gap: 0.4rem;
-                  padding: 0.3rem 0.75rem;
-                  border-radius: 999px;
-                  border: 1px solid rgba(255, 196, 0, 0.35);
-                  background: rgba(255, 196, 0, 0.08);
-                  color: #ffc400;
-                  font-size: 0.85rem;
-                  font-weight: 600;
-                  letter-spacing: 0.04em;
-                "
-              >
-                ⚡ <span id="mutator-name">Loading…</span>
-              </span>
-              <span id="mutator-desc" style="color: var(--muted); font-size: 0.9rem"></span>
-            </div>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 0.65rem;
+              flex-wrap: wrap;
+            "
+          >
+            <span id="mutator-badge"
+              >⚡ <span id="mutator-name">Loading…</span></span
+            >
+            <span
+              id="mutator-desc"
+              style="color: var(--muted); font-size: 0.88rem"
+            ></span>
           </div>
           <script>
             (function () {
               const MUTATORS = {
-                none: {
-                  name: "Standard Rules",
-                  desc: "No modifier active — baseline VaultFront gameplay.",
-                },
                 lane_fog: {
                   name: "Lane Fog",
-                  desc: "Convoy routes are obscured until scouts clear the path.",
+                  desc: "Convoy routes obscured until scouts clear the path.",
                 },
                 accelerated_cooldowns: {
                   name: "Accelerated Cooldowns",
-                  desc: "Vault capture and beacon cooldowns run 30% faster this week.",
+                  desc: "Vault and beacon cooldowns run 30% faster.",
                 },
                 double_passive: {
                   name: "Double Passive",
-                  desc: "Vault passive gold income is doubled — economy accelerates.",
+                  desc: "Vault passive gold income is doubled.",
                 },
               };
-              // Rotate weekly based on ISO week number (deterministic, no server call needed)
               const now = new Date();
               const startOfYear = new Date(now.getFullYear(), 0, 1);
               const weekNum = Math.floor(
                 (now - startOfYear) / (7 * 24 * 60 * 60 * 1000),
               );
-              const keys = Object.keys(MUTATORS).filter((k) => k !== "none");
-              const key = keys[weekNum % keys.length];
-              const mutator = MUTATORS[key];
-              document.getElementById("mutator-name").textContent = mutator.name;
-              document.getElementById("mutator-desc").textContent = mutator.desc;
+              const keys = Object.keys(MUTATORS);
+              const m = MUTATORS[keys[weekNum % keys.length]];
+              document.getElementById("mutator-name").textContent = m.name;
+              document.getElementById("mutator-desc").textContent = m.desc;
             })();
           </script>
         </article>
 
-        <article class="card">
-          <h2>Launch Checklist</h2>
-          <ul class="checklist">
-            <li>Provision the shared VPS runtime stack</li>
-            <li>Deploy `vaultfront-play` and `vaultfront-api` services</li>
+        <article class="info-card">
+          <h2>Why VaultFront?</h2>
+          <ul>
             <li>
-              Configure DNS and TLS for `play-vaultfront` and `api-vaultfront`
+              Precision timing beats pure expansion — a smaller force can win
             </li>
-            <li>
-              Verify health checks, websocket routing, and CORS from the public
-              path
-            </li>
-            <li>
-              Only then replace this stub with the real playable client rollout
-            </li>
+            <li>Comeback mechanics mean no match is over until it's over</li>
+            <li>Learnable in 2 matches, masterable in 20</li>
+            <li>Built on OpenFrontIO — proven RTS engine, AGPL-3.0</li>
+            <li>Solo bot practice or live multiplayer, same map pool</li>
           </ul>
-          <div class="status">
-            <span class="dot" aria-hidden="true"></span>
+        </article>
+
+        <article class="info-card">
+          <h2>Project Status</h2>
+          <ul>
+            <li>All 6 core mechanics coded and passing tests</li>
+            <li>Tutorial overlay, spectator mode, and replay system ready</li>
+            <li>
+              Gameplay runtime launching soon at
+              <strong>play-vaultfront.vaultsparkstudios.com</strong>
+            </li>
+            <li>Public repo open — contributions welcome</li>
+          </ul>
+          <div
+            style="
+              margin-top: 1rem;
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              color: var(--muted);
+              font-size: 0.9rem;
+            "
+          >
             <span
-              >VaultFront is live as a project page while the playable
-              deployment waits on dedicated server and backend rollout.</span
-            >
+              style="
+                width: 0.55rem;
+                height: 0.55rem;
+                border-radius: 999px;
+                background: var(--gold);
+                box-shadow: 0 0 10px rgba(255, 196, 0, 0.7);
+                flex-shrink: 0;
+              "
+            ></span>
+            <span>Code complete — awaiting runtime deployment</span>
           </div>
         </article>
-      </section>
+      </div>
 
-      <p class="footer">
-        Public URL:
-        <a href="https://vaultsparkstudios.com/vaultfront/"
-          >vaultsparkstudios.com/vaultfront/</a
-        >
-      </p>
+      <!-- ── FOOTER ── -->
+      <footer class="footer">
+        <span>
+          &copy; 2026 VaultSpark Studios &mdash;
+          <a href="https://vaultsparkstudios.com/">vaultsparkstudios.com</a>
+        </span>
+        <div class="footer-links">
+          <a href="https://github.com/VaultSparkStudios/VaultFront">GitHub</a>
+          <a href="https://github.com/VaultSparkStudios/VaultFront/issues"
+            >Issues</a
+          >
+          <a href="https://vaultsparkstudios.com/">Studio</a>
+          <a href="https://play-vaultfront.vaultsparkstudios.com">Play</a>
+        </div>
+      </footer>
     </main>
   </body>
 </html>

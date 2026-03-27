@@ -1,68 +1,74 @@
 # Latest Handoff
 
-Date: 2026-03-27
+Date: 2026-03-27 (session 4 — audit + closeout)
 
 ---
 
-## Session summary — 2026-03-27 (session 2)
+## Session summary — 2026-03-27 (session 4)
 
-Full audit + 25-item implementation pass. All planned items shipped.
+Audit-only pass. No new features shipped. Full codebase re-audit discovered critical
+production gaps in session-3 work. 25-item brainstorm (B-items) added to task board.
 
-### Shipped this session
+### Audit results
 
-- **SOUL.md + PROJECT_BRIEF.md** rewritten with real substance (context/)
-- **CI**: security-audit job (`npm audit --audit-level=high`) added to ci.yml
-- **nginx.conf**: CSP + X-Content-Type-Options + X-Frame-Options + Referrer-Policy headers
-- **NewsModal**: news button made visible (removed hidden class)
-- **Replay system wired**: `ReplayStore.recordTurn()` integrated into GameServer turn loop; Worker.ts exposes `/api/replay/:id` and `/api/replays` routes
-- **Spectator WebSocket**: `WorkerLobbyService` third WSS (`spectatorWss`) routes `/spectate/:gameId`; `spectatorBus.broadcast()` called in GameServer turn fan-out
-- **VaultFrontStatusUpdate** extended: `executionChains`, `surges`, `squadObjectives` fields
-- **VaultFrontExecution.ts** publishes all three new fields each tick
-- **VaultFrontLayer.ts**: execution chain combo meter, surge badge, squad ring, mutator banner rendered
-- **NationExecution.ts** bot AI: gold-gated `jam_breaker`, strength-aware escort, tighter timing windows
-- **VaultFrontTutorial.ts**: first-run 5-step tutorial overlay (registered in Main.ts)
-- **VAULTFRONT_SOURCE_MAP.md** updated with VaultFrontTutorial.ts
-- **DECISIONS.md**: 3 new architectural decisions recorded
-- **TASK_BOARD.md**: fully rebuilt with SIL-14 through SIL-28 brainstorm items organised into Now / Queued / Post-Deploy / Manual
+- Overall: **7.6 / 10** (up from 7.5 session 3 baseline)
+- Biggest drags: Deployment 3.0, Momentum 5.0 (nothing live), Tests 7.0 (4 E2E specs only)
+- Biggest improvements this session: Identity/Brand 7.0 (↑0.5 — real landing page)
 
-### Test status
+### Critical gaps discovered (NEW — not previously known)
 
-- 623/623 unit tests green
-- 0 TypeScript errors from new code
-- 3 Playwright E2E specs still failing — pre-existing: `@playwright/test` not installed (manual task 0)
+1. **`pg` package missing from dependencies** — Postgres cannot connect; root cause of gaps 2–4
+2. **PlayerStatsStore Postgres path is a stub** — `DATABASE_URL` detected but no queries run;
+   all player stats / match history / leaderboard data is in-memory and lost on restart
+3. **AchievementStore in-memory only** — same pattern; achievements lost on restart
+4. **VaultMetrics recording calls absent** — 7 OTel counters defined but zero `.record*()` calls
+   exist anywhere in GameServer.ts; the Grafana dashboard would show nothing if deployed
+5. **VaultSeasonScheduler vote results in-memory** — lost on restart
+6. **No Docker Compose** — local multi-service dev requires manual Postgres + Redis setup
+
+### Items flagged as MANUAL (human action required — see TASK_BOARD.md)
+
+| #   | Task                                                                        | Status     |
+| --- | --------------------------------------------------------------------------- | ---------- |
+| 0   | Install `npm install --save-dev @playwright/test` + playwright browsers     | ⏳ Pending |
+| 1   | Rename local folder `OpenFrontIO` → `VaultFront`                            | ⏳ Pending |
+| 2   | Provision Hetzner VPS (CX32 — Docker + Caddy + Postgres + Redis)            | ⏳ Pending |
+| 3   | Configure GitHub Actions secrets (DEPLOY_SERVER_HOST, DEPLOY_SSH_KEY, etc.) | ⏳ Pending |
+| 4   | Configure GitHub Actions vars (DOMAIN, GHCR_USERNAME, etc.)                 | ⏳ Pending |
+| 5   | Set up Postgres + Redis on VPS, run db/schema.sql                           | ⏳ Pending |
+| 6   | Configure DNS (play-vaultfront._, api-vaultfront._ → VPS IP)                | ⏳ Pending |
+| 7   | Run first deploy + verify /commit.txt, WebSocket, CORS, /health             | ⏳ Pending |
+| 8   | Swap deploy-pages.yml to real client bundle (after step 7)                  | ⏳ Pending |
 
 ---
 
-## Immediate next action
+## Immediate next actions (AI-executable, session 5)
 
-1. **Manual task 0**: `npm install --save-dev @playwright/test` then `npx playwright install`
-2. Execute `docs/DEPLOY_RUNTIME_RUNBOOK.md` steps 1–8 to bring runtime online (8 manual blockers remain)
-3. **SIL-14**: Extract `VaultRewardCalculator` from VaultFrontExecution.ts for safe tuning
-4. **SIL-15**: Extract `VaultRouteRiskScorer` from VaultFrontExecution.ts for safe tuning
-5. **SIL-16**: Keyboard shortcut system (E/J/R/Tab) for experienced players
+**Do in this order — each unlocks the next:**
 
----
-
-## Open manual blockers (unchanged)
-
-| #   | Task                                             | Status     |
-| --- | ------------------------------------------------ | ---------- |
-| 0   | Install @playwright/test + playwright browsers   | ⏳ Pending |
-| 1   | Rename local folder `OpenFrontIO` → `VaultFront` | ⏳ Pending |
-| 2   | Provision Hetzner VPS                            | ⏳ Pending |
-| 3   | Configure GitHub Actions secrets                 | ⏳ Pending |
-| 4   | Configure GitHub Actions vars                    | ⏳ Pending |
-| 5   | Set up Postgres + Redis on VPS                   | ⏳ Pending |
-| 6   | Configure DNS records                            | ⏳ Pending |
-| 7   | Run first deploy and verify                      | ⏳ Pending |
-| 8   | Swap Pages workflow to real client bundle        | ⏳ Pending |
+1. **[B-3]** Docker Compose — Postgres + Redis + app in one command (enables local Postgres testing)
+2. **[B-1]** Wire Postgres — install `pg`, connection pool, migrate 4 in-memory stores to SQL
+3. **[B-2]** Wire VaultMetrics — add ~20 lines of `.record*()` calls to GameServer event sites
+4. **[B-21]** CodeQL + Semgrep SAST — one workflow file addition
+5. **[B-7]** Match invite deep links with OG preview meta
 
 ---
 
 ## Key context files
 
 - `context/CURRENT_STATE.md` — canonical repo + deployment state
-- `context/TASK_BOARD.md` — all tasks (Now / Queued / Post-Deploy / Manual / SIL backlog)
-- `context/SELF_IMPROVEMENT_LOOP.md` — session scores and brainstorm items
+- `context/TASK_BOARD.md` — all tasks (B-items brainstorm + carry-forward queued)
 - `docs/VAULTFRONT_SOURCE_MAP.md` — every VaultFront-owned or modified file
 - `docs/DEPLOY_RUNTIME_RUNBOOK.md` — step-by-step deploy instructions
+- `src/server/db/schema.sql` — Postgres schema (tables defined, not yet connected)
+
+---
+
+## Git state
+
+- Branch: `main`
+- Remote: `origin` (VaultSparkStudios/vaultfront)
+- Status: session 3 + session 4 closeout work committed locally; push pending
+- All new files from session 3 committed: AchievementStore, EloRating, PlayerStatsStore,
+  VaultMetrics, VaultSeasonScheduler, AchievementToast, HistoryModal, db/schema.sql,
+  grafana-dashboard.json, .renovaterc.json

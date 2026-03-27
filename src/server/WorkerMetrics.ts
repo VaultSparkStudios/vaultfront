@@ -1,3 +1,4 @@
+import { metrics } from "@opentelemetry/api";
 import { OTLPMetricExporter } from "@opentelemetry/exporter-metrics-otlp-http";
 import {
   MeterProvider,
@@ -7,6 +8,7 @@ import * as dotenv from "dotenv";
 import { getServerConfigFromServer } from "../core/configuration/ConfigLoader";
 import { GameManager } from "./GameManager";
 import { getOtelResource, getPromLabels } from "./OtelResource";
+import { VaultMetrics } from "./VaultMetrics";
 
 dotenv.config();
 
@@ -40,6 +42,10 @@ export function initWorkerMetrics(gameManager: GameManager): void {
     resource,
     readers: [metricReader],
   });
+
+  // Register as the global meter provider so VaultMetrics (and any other
+  // module using metrics.getMeter()) picks up this provider automatically.
+  metrics.setGlobalMeterProvider(meterProvider);
 
   // Get meter for creating metrics
   const meter = meterProvider.getMeter("worker-metrics");
@@ -89,6 +95,9 @@ export function initWorkerMetrics(gameManager: GameManager): void {
     const memoryUsage = process.memoryUsage();
     result.observe(memoryUsage.heapUsed, getPromLabels());
   });
+
+  // Initialise VaultFront game-event counters using the global meter provider.
+  VaultMetrics.init();
 
   console.log("Metrics initialized with GameManager");
 }
