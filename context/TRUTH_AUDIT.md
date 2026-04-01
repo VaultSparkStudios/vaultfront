@@ -2,6 +2,8 @@
 
 # Truth Audit
 
+Last reviewed: 2026-04-01
+
 Last reviewed: YYYY-MM-DD
 Overall status: yellow
 Next action: Fix the highest-severity contradiction first.
