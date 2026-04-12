@@ -1,5 +1,5 @@
-<!-- template-version: 2.4 -->
-<!-- synced-from: studio-ops/prompts/closeout.md @ Session 34 (2026-04-02) -->
+<!-- template-version: 2.5 -->
+<!-- synced-from: studio-ops/prompts/closeout.md @ Session 58 (2026-04-12) -->
 
 # CLOSEOUT
 
@@ -12,6 +12,8 @@ Executed when the user says only `closeout`.
 Compare actual work to the declared intent in `context/LATEST_HANDOFF.md → Session Intent:`.
 
 Classify: **Achieved** · **Partial** _(note scope drift)_ · **Redirected** _(log reason)_
+
+**Bypass audit:** If any commit this session bypassed safety hooks (`--no-verify`, `--no-gpg-sign`), log in `context/DECISIONS.md`: date · what hook was bypassed · reason · follow-up task to fix root cause. Add that follow-up to `context/TASK_BOARD.md` under Now. Normalizing hook bypasses erodes the safety net.
 
 ---
 
@@ -43,6 +45,16 @@ Count concrete shipped items and group by type (auth, content, DX, observability
 ---
 
 ## Self-Improvement Loop
+
+> **Protocol closeout shortcut** — use when all three are true: velocity = 0 AND no human creative direction AND no schema/template changes
+>
+> - **Step 5** (Brainstorm): 1 idea minimum instead of 3–5
+> - **Step 8** (Audit JSON): optional — note "audit JSON skipped — protocol-only session" in output
+> - **Step 8.5** (IGNIS): may be skipped — note "IGNIS score not refreshed — protocol-only session"
+>
+> Full closeout is required for all other sessions. When in doubt, use the full path.
+
+---
 
 ### Step 1 · Rolling Data _(calculate before scoring)_
 
@@ -204,6 +216,19 @@ Also update `context/PROJECT_STATUS.json`: `truthAuditStatus` + `truthAuditLastR
 
 ---
 
+### Step 4.7 · Next-Session Pre-load _(mandatory)_
+
+Ensure the next session starts with a ready runway:
+
+1. Count open (unchecked) items in `## Now` after marking this session's completions.
+2. If fewer than 2 items remain in Now → move 2–3 actionable, unblocked items from `## Next` into `## Now`.
+3. If fewer than 2 items remain in Next → pull from `## Later`.
+4. Target: **Now bucket has ≥ 2 items at closeout.** Never leave it empty.
+
+_Rationale:_ An empty Now bucket causes cold starts — the next session wastes its first moves on pre-loading. This step takes < 2 minutes and eliminates that tax.
+
+---
+
 ### Step 5 · Brainstorm
 
 Generate 3–5 innovative solutions, features, or improvements. Push past the obvious. Consider: what makes this 10× more useful? What technical debt is costing velocity? What's drifting from SOUL?
@@ -222,6 +247,13 @@ Each item must include:
 ### Step 6 · Commit
 
 Pick 1–2 brainstorm items. Add to `context/TASK_BOARD.md` labeled `[SIL]`.
+
+**[SIL:N] skip counter protocol:**
+
+- New items are added as `[SIL]` (no suffix = 0 skips)
+- At each closeout: for every unactioned `[SIL]` item still in Now or Next, increment its counter — `[SIL]` → `[SIL:1]` → `[SIL:2⛔]`
+- Items in `## Blocked` or explicitly noted as externally blocked are exempt from incrementing
+- `[SIL:2⛔]` items **must** be moved to Now at next session start (Step 4 escalation check)
 
 ---
 
@@ -307,7 +339,25 @@ Create `audits/YYYY-MM-DD.json`. Multiple sessions same day: suffix `-2`, `-3`, 
 - `durationMinutes`: short sprint 30–45 · focused 60–90 · deep architecture 120–180 · marathon 180+
 - `ignisNote`: copy from Step 3.5 verbatim
 
-**Also update `context/PROJECT_STATUS.json`:** `silScore` · `silAvg3` · `silVelocity` · `silDebt` · `silLastSession`
+**Also update `context/PROJECT_STATUS.json`:** `silScore` · `silAvg3` · `silVelocity` · `silDebt` · `silLastSession` · `currentSession` (increment by 1)
+
+---
+
+### Step 8.5 · IGNIS Score Refresh _(mandatory when SIL total changed ≥10 pts or protocol files changed)_
+
+Refresh this project's IGNIS score so `ignisScore` never goes stale after a meaningful session.
+
+```bash
+# From IGNIS repo root (adjust path as needed):
+npx tsx "<ignis-local-path>/cli.ts" score "<project-local-path>"
+```
+
+After running:
+
+- Update `context/PROJECT_STATUS.json` → `ignisScore`, `ignisGrade`, `ignisLastComputed` if the score changed.
+- If score changed by ≥500 IQ points, note it in the closeout output and in the SIL entry brainstorm.
+
+**Skip this step if:** IGNIS repo unavailable (CI/remote), or velocity = 0 AND no protocol edits AND SIL total unchanged vs prior session. Do NOT skip when SIL total changed ≥10 pts — IGNIS reads the SIL score. Note "IGNIS score not refreshed — [reason]" in closeout output when skipped.
 
 ---
 
