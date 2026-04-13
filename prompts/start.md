@@ -1,5 +1,5 @@
-<!-- template-version: 2.5 -->
-<!-- synced-from: studio-ops/prompts/start.md @ Session 58 (2026-04-12) -->
+<!-- template-version: 2.8 -->
+<!-- synced-from: studio-ops/prompts/start.md @ Session 64 (2026-04-13) -->
 
 # START
 
@@ -61,19 +61,20 @@ Check `context/SELF_IMPROVEMENT_LOOP.md`:
 
 ## 3 · Load Context _(read in order — do not skip or reorder)_
 
-| #   | File                                                 | Purpose                                         |
-| --- | ---------------------------------------------------- | ----------------------------------------------- |
-| 1   | `AGENTS.md`                                          | Role rules, enforcement, session aliases        |
-| 2   | `context/PROJECT_BRIEF.md`                           | What the project is and why it exists           |
-| 3   | `context/SOUL.md`                                    | Creative identity and non-negotiables           |
-| 4   | `context/BRAIN.md`                                   | Strategic mental model and heuristics           |
-| 5   | `context/CURRENT_STATE.md`                           | Live snapshot of what exists                    |
-| 6   | `context/DECISIONS.md`                               | Key decisions with rationale                    |
-| 7   | `context/TASK_BOARD.md`                              | Now / Next / Blocked / Later tasks              |
-| 8   | `context/LATEST_HANDOFF.md`                          | Authoritative handoff from last session         |
-| 9   | `context/SELF_IMPROVEMENT_LOOP.md` — **header only** | Rolling Status: sparkline, avgs, last scores    |
-| 10  | `context/TRUTH_AUDIT.md` _(if present and relevant)_ | Source-of-truth hierarchy, contradiction status |
-| 11  | Task-specific files                                  | Only after all above are read                   |
+| #   | File                                                 | Purpose                                                           |
+| --- | ---------------------------------------------------- | ----------------------------------------------------------------- |
+| 1   | `AGENTS.md`                                          | Role rules, enforcement, session aliases                          |
+| 2   | `context/PROJECT_BRIEF.md`                           | What the project is and why it exists                             |
+| 3   | `context/SOUL.md`                                    | Creative identity and non-negotiables                             |
+| 4   | `context/BRAIN.md`                                   | Strategic mental model and heuristics                             |
+| 5   | `context/CURRENT_STATE.md`                           | Live snapshot of what exists                                      |
+| 6   | `context/DECISIONS.md`                               | Key decisions with rationale                                      |
+| 7   | `context/TASK_BOARD.md`                              | Now / Next / Blocked / Later tasks                                |
+| 8   | `context/LATEST_HANDOFF.md`                          | Authoritative handoff from last session                           |
+| 9   | `context/SELF_IMPROVEMENT_LOOP.md` — **header only** | Rolling Status: sparkline, avgs, last scores                      |
+| 10  | `context/TRUTH_AUDIT.md` _(if present and relevant)_ | Source-of-truth hierarchy, contradiction status                   |
+| 11  | `docs/SESSION_PLAN.md` _(if < 48h old)_              | Predicted SIL range, scope cap, risk flags — surface in DASHBOARD |
+| 12  | Task-specific files                                  | Only after all above are read                                     |
 
 _Founder Mode: read `portfolio/STUDIO_BRAIN.md` between steps 9 and 10._
 
@@ -115,6 +116,7 @@ _Founder Mode only:_ note `Studio avg SIL: [X]/500 · This project: [X]/500 [↑
   STATE        {current phase and overall health}
   PRIORITIES   Now: {task} · Next: {task}
   CONSTRAINTS  {key constraints or limits}
+  PREDICTION   {predicted SIL range} · {trend} · cap {N}  *(SESSION_PLAN.md — omit if > 48h old)*
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   WHERE WE LEFT OFF  (Session {N-1})
@@ -136,6 +138,9 @@ _Founder Mode only:_ note `Studio avg SIL: [X]/500 · This project: [X]/500 [↑
   {✓|⚠|⛔} CI            {status}
   {✓|⚠|⛔} Velocity      {status}
   {✓|⚠|⛔} Runway        {status}
+  {✓|⚠|⛔} IGNIS         {score · Nd old · run rescore if ≥7d}
+  {✓|⚠}   Genome dims   {all stable / drop: dim X→Y}
+  {✓|⚠|⛔} Entropy       {score (healthy/elevated/high)}
   {✓|⚠}   CDR Gap       {status}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -157,15 +162,16 @@ _Founder Mode only:_ note `Studio avg SIL: [X]/500 · This project: [X]/500 [↑
 
 ### DASHBOARD sources _(all from files already loaded — no extra reads)_
 
-| Field                             | Source                                                                                                   |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| SIL bar · Avgs · FLOW · sparkline | `SELF_IMPROVEMENT_LOOP.md` Rolling Status header                                                         |
-| Days since                        | `Last session:` date vs today                                                                            |
-| IGNIS score                       | `context/PROJECT_STATUS.json` → `ignisScore`                                                             |
-| TRUTH / Genome                    | `context/TRUTH_AUDIT.md` (or `unknown` if absent)                                                        |
-| Compliance count                  | `context/CURRENT_STATE.md`                                                                               |
-| Context age (Ctx)                 | `Last updated:` date in `context/CURRENT_STATE.md` vs today                                              |
-| CDR Gap                           | Last entry date in `docs/CREATIVE_DIRECTION_RECORD.md` vs `Last updated:` in `context/LATEST_HANDOFF.md` |
+| Field                             | Source                                                                                                                                                         |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| SIL bar · Avgs · FLOW · sparkline | `SELF_IMPROVEMENT_LOOP.md` Rolling Status header                                                                                                               |
+| Days since                        | `Last session:` date vs today                                                                                                                                  |
+| IGNIS score                       | `context/PROJECT_STATUS.json` → `ignisScore`                                                                                                                   |
+| TRUTH / Genome                    | `context/TRUTH_AUDIT.md` (or `unknown` if absent)                                                                                                              |
+| Compliance count                  | `context/CURRENT_STATE.md`                                                                                                                                     |
+| Context age (Ctx)                 | `Last updated:` date in `context/CURRENT_STATE.md` vs today                                                                                                    |
+| CDR Gap                           | Last entry date in `docs/CREATIVE_DIRECTION_RECORD.md` vs `Last updated:` in `context/LATEST_HANDOFF.md`                                                       |
+| Prediction row                    | `docs/SESSION_PLAN.md` → `generated-at` comment; if < 48h: show predicted SIL range + trend + scope cap. Rendered automatically by `render-startup-brief.mjs`. |
 
 **SIL bar:** 20 chars · █ per 25 pts · ░ remainder
 
