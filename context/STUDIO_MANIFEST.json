@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "1.0",
+  "generatedFrom": "ops runtime-pack synthesized manifest",
+  "synthesized": true,
+  "identity": {
+    "slug": "vaultfront",
+    "name": "VaultFront",
+    "repo": "VaultSparkStudios/vaultfront",
+    "owner": "VaultSpark Studios",
+    "type": "game",
+    "lifecycle": "concept",
+    "audience": "internal",
+    "vaultStatus": "FORGE"
+  },
+  "studioOs": {
+    "applied": true,
+    "templateVersion": "3.2",
+    "complianceVersion": "1.5",
+    "sessionModeDefault": "builder",
+    "requiredFilesPresent": false
+  },
+  "listingMetadata": {
+    "canonicalSummary": "Browser RTS — AGPL fork of OpenFrontIO. VaultSpark-specific gameplay divergence in progress.",
+    "tagline": "Establishing VaultSpark-specific fork divergence.",
+    "tags": ["game", "incubating", "concept"],
+    "categories": ["game", "internal"],
+    "hubDescription": "Establishing VaultSpark-specific fork divergence.",
+    "websiteDescription": "Browser RTS — AGPL fork of OpenFrontIO. VaultSpark-specific gameplay divergence in progress.",
+    "socialDescription": "Browser RTS — AGPL fork of OpenFrontIO. VaultSpark-specific gameplay divergence in progress.",
+    "brandingLabel": "Powered by VaultSpark Studios"
+  },
+  "surfaces": {
+    "local": [
+      {
+        "label": "workspace",
+        "path": "C:\\Users\\p4cka\\documents\\development\\VaultFront"
+      }
+    ],
+    "staging": [],
+    "production": [],
+    "preview": [],
+    "admin": [],
+    "api": [],
+    "docs": [],
+    "github": [
+      {
+        "label": "repo",
+        "url": "https://github.com/VaultSparkStudios/vaultfront"
+      }
+    ],
+    "testing": []
+  },
+  "capabilities": {
+    "auth": false,
+    "payments": false,
+    "analytics": false,
+    "email": false,
+    "ai": false,
+    "publishing": false,
+    "community": false,
+    "storage": false,
+    "cron": false
+  },
+  "integrations": {
+    "studioHub": {
+      "enabled": true,
+      "mode": "private"
+    },
+    "website": {
+      "enabled": false,
+      "mode": "public-safe"
+    },
+    "socialDashboard": {
+      "enabled": false,
+      "mode": "private"
+    },
+    "sparkFunnel": {
+      "enabled": true,
+      "mode": "growth"
+    },
+    "ignis": {
+      "enabled": true,
+      "mode": "portfolio-intelligence"
+    },
+    "founderQueue": {
+      "enabled": true,
+      "mode": "private"
+    }
+  },
+  "secretsCapabilities": [],
+  "hosting": {
+    "hostingProvider": "local",
+    "liveUrl": null,
+    "stagingUrl": null,
+    "privatePreviewUrl": null,
+    "localDevUrl": null,
+    "deployStatus": "pre-deploy",
+    "testInstructions": []
+  },
+  "capacity": {
+    "currentPlanTier": "unknown",
+    "freePlanCeilings": [],
+    "fitsCurrentCapacity": true,
+    "preferredRuntime": "local",
+    "fallbackRuntime": "hetzner",
+    "notes": ""
+  },
+  "publicMetadata": {
+    "privateByDefault": true,
+    "publicReady": false,
+    "publicRepoSanitized": false,
+    "brandingRequired": false,
+    "brandingCompliant": null,
+    "footerAttribution": "A VaultSpark Studios Game",
+    "websiteListingRequired": true
+  },
+  "automation": {
+    "safeActions": ["refresh-generated-surfaces"],
+    "guardedActions": ["propagate-templates"],
+    "blockedActions": ["change-canon", "flip-repo-public", "alter-licensing"]
+  },
+  "contracts": {
+    "hub": "context/contracts/hub.json",
+    "websitePublic": "context/contracts/website-public.json",
+    "socialDashboard": "context/contracts/social-dashboard.json",
+    "sparkFunnel": "context/contracts/sparkfunnel.json",
+    "ignis": "context/contracts/ignis.json"
+  }
+}
