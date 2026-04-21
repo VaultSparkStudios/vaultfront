@@ -1,6 +1,10 @@
 <!-- template-version: 3.3 -->
 <!-- synced-from: studio-ops/docs/SESSION_PROTOCOL.md § 1 @ Session 101 (2026-04-17) -->
 <!-- v3.3 changes: token-lean start — context-meter first, startup brief ONLY (no raw file reads), LATEST_HANDOFF auto-trim at closeout -->
+<<<<<<< HEAD
+=======
+
+>>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 # START
 
 Executed when the user says only `start`.
@@ -37,6 +41,7 @@ Get values from Hub Settings → "Active Session Beacon". The Stop hook clears t
 **Session mode (v3.1 — auto-detected):**
 
 Run the mode detector immediately after the session lock:
+<<<<<<< HEAD
 ```bash
 node scripts/detect-session-mode.mjs --explain
 ```
@@ -57,6 +62,34 @@ If the capability is READY, proceed autonomously using `scripts/lib/secrets.mjs`
 ```bash
 node scripts/ops.mjs blocker-preflight
 ```
+=======
+
+```bash
+node scripts/detect-session-mode.mjs --explain
+```
+
+It classifies the session as BUILDER (this-project) or FOUNDER (portfolio-wide) by heuristic on TASK_BOARD scope + LATEST_HANDOFF content + any passed-in user messages. If the classification would flip the current mode, it auto-updates `context/PROJECT_STATUS.json` → `sessionMode`. Re-run mid-session if the user issues a cross-project directive.
+
+| Mode        | Trigger                                                                                                         | Focus                                                                              |
+| ----------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| **BUILDER** | Default / single-project scope                                                                                  | This project only                                                                  |
+| **FOUNDER** | Detected: portfolio-wide scope, cross-project refs, `portfolio/STUDIO_BRAIN.md` or `STUDIO_PULSE.md` referenced | Cross-project strategy; read `portfolio/STUDIO_BRAIN.md` + `STUDIO_PULSE.md` first |
+
+**v3.1 secrets discovery rule (mandatory):** Before labeling any item "Human Action Required" or "human-blocked", run:
+
+```bash
+node scripts/check-secrets.mjs --for <capability>
+```
+
+If the capability is READY, proceed autonomously using `scripts/lib/secrets.mjs` `getSecret(key, capability)`. The phantom-blocker pattern is forbidden.
+
+**v3.2 blocker preflight rule (mandatory):** After secrets discovery, agents must try the blocker with elevated/admin access before leaving it as human-blocked:
+
+```bash
+node scripts/ops.mjs blocker-preflight
+```
+
+>>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 If the blocker is agent-attemptable, attempt it first. Human escalation is the last step, not the first.
 
 ---
@@ -73,18 +106,27 @@ Check `context/SELF_IMPROVEMENT_LOOP.md`:
 
 ---
 
+<<<<<<< HEAD
 ## 3 · Context-meter preflight  *(v1.3 — runs BEFORE loading any files)*
+=======
+## 3 · Context-meter preflight _(v1.3 — runs BEFORE loading any files)_
+>>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 
 ```bash
 node scripts/context-meter.mjs --json
 ```
 
 - `CONTINUE` → proceed to step 4.
+<<<<<<< HEAD
 - `CONSIDER_CLOSEOUT` → warn: *"Context N% used before /start. Recommend fresh terminal."* Proceed only on explicit founder confirmation.
+=======
+- `CONSIDER_CLOSEOUT` → warn: _"Context N% used before /start. Recommend fresh terminal."_ Proceed only on explicit founder confirmation.
+>>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 - `CLOSEOUT` → **stop immediately.** Show cached genius list from `.cache/genius-list.json` if available. Prompt for `/closeout`. This terminal is exhausted — no context files should be loaded.
 
 ---
 
+<<<<<<< HEAD
 ## 4 · Initiation type check  *(lightweight)*
 
 Check `context/SELF_IMPROVEMENT_LOOP.md` has ≥2 dated entries — grep only, do NOT read the full file:
@@ -97,11 +139,29 @@ Check `context/SELF_IMPROVEMENT_LOOP.md` has ≥2 dated entries — grep only, d
 ---
 
 ## 5 · Load startup brief — SOLE CONTEXT SOURCE  *(v1.3)*
+=======
+## 4 · Initiation type check _(lightweight)_
+
+Check `context/SELF_IMPROVEMENT_LOOP.md` has ≥2 dated entries — grep only, do NOT read the full file:
+
+| Condition                         | Action                                   |
+| --------------------------------- | ---------------------------------------- |
+| File missing or 0–1 dated entries | Follow `prompts/initiate.md` — stop here |
+| 2+ dated entries with real scores | Continue below                           |
+
+---
+
+## 5 · Load startup brief — SOLE CONTEXT SOURCE _(v1.3)_
+>>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 
 **Do NOT read raw context files at session start.** The startup brief synthesizes all of them.
 
 ```bash
+<<<<<<< HEAD
 node scripts/render-startup-brief.mjs   # skip if docs/STARTUP_BRIEF.md < 24h old
+=======
+node scripts/render-startup-brief.mjs # skip if docs/STARTUP_BRIEF.md < 24h old
+>>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 node scripts/validate-brief-format.mjs docs/STARTUP_BRIEF.md
 ```
 
@@ -113,7 +173,11 @@ Raw context files are available on-demand during work — they are not loaded at
 
 ---
 
+<<<<<<< HEAD
 ## 5.5 · SIL escalation check  *(from the brief — no extra reads)*
+=======
+## 5.5 · SIL escalation check _(from the brief — no extra reads)_
+>>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 
 - Note sparkline trajectory and lowest SCORE block category.
 - List unactioned `[SIL]` items from the brief's GENIUS HIT LIST block.
@@ -132,7 +196,11 @@ Raw context files are available on-demand during work — they are not loaded at
 
 ---
 
+<<<<<<< HEAD
 ## 6 · Output — Startup Brief  *(v3.3 visual format — canonical renderer MANDATORY)*
+=======
+## 6 · Output — Startup Brief _(v3.3 visual format — canonical renderer MANDATORY)_
+>>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 
 **MUST use the canonical renderer.** Do not improvise a prose brief. Steps:
 

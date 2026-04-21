@@ -1,6 +1,10 @@
 <!-- template-version: 3.3 -->
 <!-- synced-from: studio-ops/docs/SESSION_PROTOCOL.md § 3 @ Session 101 (2026-04-17) -->
 <!-- v3.3 changes: closeout autopilot now auto-trims LATEST_HANDOFF to last 2 sessions (compact-handoff --trim); NEXT SESSION loads STARTUP_BRIEF.md only -->
+<<<<<<< HEAD
+=======
+
+>>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 # CLOSEOUT
 
 Executed when the user says only `closeout`.
@@ -202,10 +206,20 @@ Write both into the Rolling Status header (Step 2).
 Scan the full session for items only the Studio Owner can resolve: external service setup, manual approvals, financial actions, legal, decisions only the human can make.
 
 **Mandatory blocker preflight before adding or retaining any item here:**
+<<<<<<< HEAD
 ```bash
 node scripts/ops.mjs blocker-preflight
 ```
 Rules:
+=======
+
+```bash
+node scripts/ops.mjs blocker-preflight
+```
+
+Rules:
+
+>>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 - Run secrets discovery first for any mapped capability.
 - If the blocker is agent-attemptable, try the elevated/admin/API path before leaving it here.
 - Only keep an item in `Human Action Required` when the agent-side attempt failed, access is genuinely absent, or the action is truly owner-only.
