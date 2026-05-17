@@ -27,6 +27,13 @@ export class VaultFrontLayer implements Layer {
   private surgeChronicleEntryTick = -1;
   private readonly surgeChronicleFlashTicks = 35; // 3.5s flash window
 
+  // Combo meter — track chain completion and break events
+  private prevChainStep: 0 | 1 | 2 = 0;
+  private prevChainExpiresAtTick = 0;
+  private chainCompletedAtTick = -1;
+  private chainBrokAtTick = -1;
+  private readonly comboBannerTicks = 30; // 3s banner
+
   constructor(
     private game: GameView,
     private transform: TransformHandler,
@@ -77,6 +84,26 @@ export class VaultFrontLayer implements Layer {
           this.surgeChronicleEntryTick = now;
         }
         this.surgeWasActive = nowActive ?? false;
+
+        // Combo meter: detect chain completion (step was 2, now 0, and hadn't expired)
+        const chainState = this.status.executionChains[myPlayer.smallID()];
+        const currentStep = chainState?.step ?? 0;
+        if (
+          this.prevChainStep === 2 &&
+          currentStep === 0 &&
+          this.prevChainExpiresAtTick > now
+        ) {
+          this.chainCompletedAtTick = now;
+          this.chainBrokAtTick = -1;
+        } else if (
+          this.prevChainStep > 0 &&
+          currentStep === 0 &&
+          this.prevChainExpiresAtTick <= now
+        ) {
+          this.chainBrokAtTick = now;
+        }
+        this.prevChainStep = currentStep;
+        this.prevChainExpiresAtTick = chainState?.expiresAtTick ?? 0;
       }
     }
   }
@@ -776,6 +803,36 @@ export class VaultFrontLayer implements Layer {
       -Math.PI / 2 + Math.PI * 2 * timerRatio,
     );
     ctx.stroke();
+
+    // Combo completion / break banner
+    const now2 = this.game.ticks();
+    const bw = ctx.canvas.width;
+    const bh = ctx.canvas.height;
+    const completedElapsed =
+      this.chainCompletedAtTick >= 0 ? now2 - this.chainCompletedAtTick : -1;
+    const brokElapsed =
+      this.chainBrokAtTick >= 0 ? now2 - this.chainBrokAtTick : -1;
+
+    if (completedElapsed >= 0 && completedElapsed < this.comboBannerTicks) {
+      const fade = Math.max(0, 1 - completedElapsed / this.comboBannerTicks);
+      ctx.save();
+      ctx.shadowColor = `rgba(52, 211, 153, ${fade * 0.9})`;
+      ctx.shadowBlur = 18;
+      ctx.fillStyle = `rgba(110, 231, 183, ${fade})`;
+      ctx.font = `bold ${Math.round(bh * 0.03)}px Overpass, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("CLEAN EXECUTION ×1.2", bw / 2, bh * 0.28);
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    } else if (brokElapsed >= 0 && brokElapsed < 20) {
+      const fade = Math.max(0, 1 - brokElapsed / 20);
+      ctx.save();
+      ctx.fillStyle = `rgba(148, 163, 184, ${fade * 0.7})`;
+      ctx.font = `${Math.round(bh * 0.022)}px Overpass, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("chain broken", bw / 2, bh * 0.28);
+      ctx.restore();
+    }
 
     ctx.restore();
   }
