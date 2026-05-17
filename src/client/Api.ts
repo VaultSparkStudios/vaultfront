@@ -1006,6 +1006,32 @@ export async function requestReplayHighlight(
   }
 }
 
+/**
+ * Creates a user-defined clip for a replay at a specific tick range.
+ * Returns the share URL, or null on failure.
+ */
+export async function createCustomClip(
+  gameId: string,
+  startTick: number,
+  endTick: number,
+): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/replay/${encodeURIComponent(gameId)}/clip`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ startTick, endTick }),
+      },
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as { shareUrl?: string };
+    return data.shareUrl ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function shareReplayHighlight(gameId: string): Promise<void> {
   const highlight = await requestReplayHighlight(gameId);
   if (!highlight) return;

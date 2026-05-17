@@ -1722,6 +1722,50 @@ export async function startWorker() {
     const highlight = replayHighlightStore.getOrCreate(gameId, manifest);
     return res.json(highlight);
   });
+
+  const CustomClipSchema = z.object({
+    startTick: z.number().int().min(0),
+    endTick: z.number().int().min(0),
+  });
+
+  const clipRateLimit = rateLimit({ windowMs: 60_000, max: 20 });
+
+  app.post(
+    "/api/replay/:gameId/clip",
+    clipRateLimit,
+    async (req: Request, res: Response) => {
+      const { gameId } = req.params;
+      if (!gameId) return res.status(400).json({ error: "Missing gameId" });
+
+      const parsed = CustomClipSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid clip range" });
+      }
+      const { startTick, endTick } = parsed.data;
+      if (endTick <= startTick) {
+        return res.status(400).json({ error: "endTick must be > startTick" });
+      }
+
+      const manifest = await replayStore.getReplay(gameId);
+      if (!manifest) return res.status(404).json({ error: "Replay not found" });
+
+      const { nanoid } = await import("nanoid");
+      const clipId = nanoid(10);
+      const playBase =
+        process.env.PLAY_BASE_URL ??
+        "https://play-vaultfront.vaultsparkstudios.com";
+      const shareUrl = `${playBase}/replay/${encodeURIComponent(gameId)}?clip=${clipId}&start=${startTick}&end=${endTick}`;
+
+      return res.json({
+        clipId,
+        shareUrl,
+        gameId,
+        startTick,
+        endTick,
+        mapName: manifest.mapName ?? "Unknown Map",
+      });
+    },
+  );
   // ─────────────────────────────────────────────────────────────────────────
 
   // WebSocket handling

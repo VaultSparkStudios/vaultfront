@@ -2,6 +2,7 @@ import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { EventBus } from "../../../core/EventBus";
 import { GameView } from "../../../core/game/GameView";
+import { createCustomClip } from "../../Api";
 import { ReplaySpeedChangeEvent } from "../../InputHandler";
 import {
   defaultReplaySpeedMultiplier,
@@ -30,6 +31,9 @@ export class ReplayPanel extends LitElement implements Layer {
 
   @property({ type: Boolean })
   isSingleplayer = false;
+
+  @state()
+  private _clipState: "idle" | "copying" | "copied" | "error" = "idle";
 
   createRenderRoot() {
     return this; // Enable Tailwind CSS
@@ -63,8 +67,62 @@ export class ReplayPanel extends LitElement implements Layer {
     return false;
   }
 
+  private async handleClipThis() {
+    if (this._clipState === "copying") return;
+    const gameId = this.game?.gameID?.();
+    if (!gameId) return;
+
+    const ticksPerSecond = 10;
+    const clipHalfSeconds = 15;
+    const currentTick = this.game?.ticks() ?? 0;
+    const startTick = Math.max(
+      0,
+      currentTick - clipHalfSeconds * ticksPerSecond,
+    );
+    const endTick = currentTick + clipHalfSeconds * ticksPerSecond;
+
+    this._clipState = "copying";
+    this.requestUpdate();
+
+    const url = await createCustomClip(gameId, startTick, endTick);
+    if (!url) {
+      this._clipState = "error";
+      setTimeout(() => {
+        this._clipState = "idle";
+        this.requestUpdate();
+      }, 2000);
+      this.requestUpdate();
+      return;
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "VaultFront Clip", url });
+      } else {
+        await navigator.clipboard.writeText(url);
+      }
+      this._clipState = "copied";
+    } catch {
+      this._clipState = "error";
+    }
+    this.requestUpdate();
+    setTimeout(() => {
+      this._clipState = "idle";
+      this.requestUpdate();
+    }, 2500);
+  }
+
   render() {
     if (!this.visible) return html``;
+
+    const clipLabel =
+      this._clipState === "copying"
+        ? "Clipping…"
+        : this._clipState === "copied"
+          ? "Clip copied!"
+          : this._clipState === "error"
+            ? "Clip failed"
+            : "📎 Clip This";
 
     return html`
       <div
@@ -85,6 +143,17 @@ export class ReplayPanel extends LitElement implements Layer {
             translateText("replay_panel.fastest_game_speed"),
           )}
         </div>
+        ${this.game?.config()?.isReplay()
+          ? html`
+              <button
+                class="mt-2 w-full py-1 px-2 text-xs text-indigo-200 bg-indigo-600/40 border border-indigo-500/50 rounded-sm cursor-pointer hover:bg-indigo-600/60 transition-colors"
+                @click=${this.handleClipThis}
+                ?disabled=${this._clipState === "copying"}
+              >
+                ${clipLabel}
+              </button>
+            `
+          : null}
       </div>
     `;
   }
