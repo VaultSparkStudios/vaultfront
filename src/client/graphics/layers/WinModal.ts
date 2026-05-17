@@ -148,6 +148,9 @@ export class WinModal extends LitElement implements Layer {
   @state()
   private highlightCopied = false;
 
+  @state()
+  private microFeedbackSent: "epic" | "balanced" | "off" | null = null;
+
   // Override to prevent shadow DOM creation
   createRenderRoot() {
     return this;
@@ -191,6 +194,7 @@ export class WinModal extends LitElement implements Layer {
               </h2>
               ${this.renderRecapSection()} ${this.innerHtml()}
             `}
+        ${this.showButtons ? this.renderMicroFeedback() : null}
         <div class="${this.showButtons ? "flex flex-col gap-2" : "hidden"}">
           <div class="flex justify-between gap-2.5">
             <button
@@ -240,6 +244,51 @@ export class WinModal extends LitElement implements Layer {
             </button>
           </div>
         </div>
+      </div>
+    `;
+  }
+
+  private renderMicroFeedback() {
+    if (this.microFeedbackSent) {
+      return html`
+        <div class="text-center text-slate-400 text-xs py-2">
+          Thanks for the feedback!
+        </div>
+      `;
+    }
+    const send = (signal: "epic" | "balanced" | "off") => {
+      this.microFeedbackSent = signal;
+      this.requestUpdate();
+      // Best-effort fire-and-forget; failure is acceptable for telemetry
+      void recordVaultFrontRecapEvent({
+        event: `match_feedback_${signal}`,
+        variant: this.recapCtaVariant,
+        value: 1,
+      });
+    };
+    return html`
+      <div class="flex justify-center gap-3 py-2 border-t border-white/10 mt-2">
+        <button
+          @click=${() => send("epic")}
+          class="px-3 py-1.5 text-sm bg-transparent border border-amber-500/40 text-amber-300 rounded-md cursor-pointer hover:bg-amber-500/20 transition-colors"
+          title="Epic match"
+        >
+          🔥 Epic
+        </button>
+        <button
+          @click=${() => send("balanced")}
+          class="px-3 py-1.5 text-sm bg-transparent border border-slate-500/40 text-slate-300 rounded-md cursor-pointer hover:bg-slate-500/20 transition-colors"
+          title="Felt balanced"
+        >
+          ⚖️ Balanced
+        </button>
+        <button
+          @click=${() => send("off")}
+          class="px-3 py-1.5 text-sm bg-transparent border border-slate-500/40 text-slate-400 rounded-md cursor-pointer hover:bg-slate-500/20 transition-colors"
+          title="Something was off"
+        >
+          😤 Off
+        </button>
       </div>
     `;
   }
