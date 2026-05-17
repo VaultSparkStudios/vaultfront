@@ -98,6 +98,14 @@ export class VaultFrontExecution implements Execution {
   private executionStreakNextConvoyMultiplier = new Map<number, number>();
   private squadObjectiveWindows: SquadObjectiveWindow[] = [];
   private lastPublishedConvoyDebugKey = "";
+
+  // Last Stand — track players who have already triggered it per session
+  private lastStandTriggeredBy = new Set<number>();
+  private lastStandBonusUntilTick = new Map<number, number>();
+  private readonly lastStandSiteThreshold = 5;
+  private readonly lastStandBonusDurationTicks = 900; // 90s
+  private readonly lastStandOpponentGoldMultiplier = 1.4;
+
   private weeklyMutator:
     | "none"
     | "lane_fog"
@@ -656,6 +664,55 @@ export class VaultFrontExecution implements Execution {
       site.uncontrolledSinceTick = 0;
       site.vacantAlertFiredAtTick = -1;
     }
+    this.checkLastStand(ticks);
+  }
+
+  private checkLastStand(ticks: number): void {
+    const sitesPerPlayer = new Map<number, number>();
+    for (const site of this.vaultSites) {
+      if (site.passiveOwnerID !== null) {
+        sitesPerPlayer.set(
+          site.passiveOwnerID,
+          (sitesPerPlayer.get(site.passiveOwnerID) ?? 0) + 1,
+        );
+      }
+    }
+    for (const [playerID, count] of sitesPerPlayer.entries()) {
+      if (
+        count >= this.lastStandSiteThreshold &&
+        !this.lastStandTriggeredBy.has(playerID)
+      ) {
+        this.lastStandTriggeredBy.add(playerID);
+        const bonusEnd = ticks + this.lastStandBonusDurationTicks;
+        for (const opponent of this.game.players()) {
+          if (opponent.smallID() !== playerID) {
+            this.lastStandBonusUntilTick.set(opponent.smallID(), bonusEnd);
+          }
+        }
+        const triggerPlayer = this.game.playerBySmallID(playerID);
+        const name = triggerPlayer.isPlayer()
+          ? triggerPlayer.name()
+          : "A player";
+        this.game.displayMessage(
+          `LAST STAND! ${name} controls ${count} vault sites. All opponents gain +40% convoy gold for 90s!`,
+          MessageType.ATTACK_REQUEST,
+          null,
+        );
+        this.game.addUpdate({
+          type: GameUpdateType.LastStandActivated,
+          triggerPlayerID: playerID,
+          siteCount: count,
+          bonusDurationTicks: this.lastStandBonusDurationTicks,
+          opponentGoldMultiplier: this.lastStandOpponentGoldMultiplier,
+        });
+      }
+    }
+    // Clean up expired last-stand entries so re-triggering is possible next game
+    for (const [pid, until] of this.lastStandBonusUntilTick.entries()) {
+      if (until <= ticks) {
+        this.lastStandBonusUntilTick.delete(pid);
+      }
+    }
   }
 
   private syncPassiveOwner(site: VaultSite): void {
@@ -1061,7 +1118,11 @@ export class VaultFrontExecution implements Execution {
   ): void {
     const streakMultiplier =
       this.executionStreakNextConvoyMultiplier.get(owner.smallID()) ?? 1;
-    const finalRewardScale = rewardScale * streakMultiplier;
+    const lastStandBonus =
+      (this.lastStandBonusUntilTick.get(owner.smallID()) ?? 0) > ticks
+        ? this.lastStandOpponentGoldMultiplier
+        : 1;
+    const finalRewardScale = rewardScale * streakMultiplier * lastStandBonus;
     this.executionStreakNextConvoyMultiplier.set(owner.smallID(), 1);
     const preferred = this.preferredConvoyDestination.get(owner.smallID());
     const destinationTile = this.bestConvoyDestination(

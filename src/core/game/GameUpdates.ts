@@ -67,6 +67,7 @@ export enum GameUpdateType {
   GamePaused,
   VaultFrontStatus,
   VaultFrontActivity,
+  LastStandActivated,
 }
 
 export type GameUpdate =
@@ -92,7 +93,20 @@ export type GameUpdate =
   | EmbargoUpdate
   | GamePausedUpdate
   | VaultFrontStatusUpdate
-  | VaultFrontActivityUpdate;
+  | VaultFrontActivityUpdate
+  | LastStandActivatedUpdate;
+
+export interface LastStandActivatedUpdate {
+  type: GameUpdateType.LastStandActivated;
+  /** Small ID of the player who triggered Last Stand by holding 5+ vault sites */
+  triggerPlayerID: number;
+  /** Number of vault sites that player holds */
+  siteCount: number;
+  /** Duration in ticks that the bonus window lasts */
+  bonusDurationTicks: number;
+  /** Gold multiplier applied to all opponents during the bonus window */
+  opponentGoldMultiplier: number;
+}
 
 export interface BonusEventUpdate {
   type: GameUpdateType.BonusEvent;

@@ -2,6 +2,7 @@ import { Cell } from "../../../core/game/Game";
 import { TileRef } from "../../../core/game/GameMap";
 import {
   GameUpdateType,
+  LastStandActivatedUpdate,
   VaultFrontActivityUpdate,
   VaultFrontStatusUpdate,
 } from "../../../core/game/GameUpdates";
@@ -33,6 +34,11 @@ export class VaultFrontLayer implements Layer {
   private chainCompletedAtTick = -1;
   private chainBrokAtTick = -1;
   private readonly comboBannerTicks = 30; // 3s banner
+
+  // Last Stand — full-screen alert when a player holds 5+ vault sites
+  private lastStandActivatedAtTick = -1;
+  private lastStandData: LastStandActivatedUpdate | null = null;
+  private readonly lastStandBannerTicks = 50; // 5s banner
 
   constructor(
     private game: GameView,
@@ -73,6 +79,15 @@ export class VaultFrontLayer implements Layer {
     this.activePings = this.activePings
       .filter((ping) => ping.expiresAtTick >= now)
       .slice(-24);
+
+    // Last Stand: display global alert banner
+    const lastStandUpdates = updates[
+      GameUpdateType.LastStandActivated
+    ] as LastStandActivatedUpdate[];
+    if (lastStandUpdates && lastStandUpdates.length > 0) {
+      this.lastStandData = lastStandUpdates[lastStandUpdates.length - 1];
+      this.lastStandActivatedAtTick = now;
+    }
 
     // Surge Chronicle: detect local player surge entry
     if (this.status) {
@@ -122,6 +137,7 @@ export class VaultFrontLayer implements Layer {
     this.drawExecutionChainHUD(ctx);
     this.drawSurgeHUD(ctx);
     this.drawSurgeChronicle(ctx);
+    this.drawLastStandBanner(ctx);
     this.drawMutatorBanner(ctx);
   }
 
@@ -1027,6 +1043,103 @@ export class VaultFrontLayer implements Layer {
       ctx.shadowBlur = 0;
     }
 
+    ctx.restore();
+  }
+
+  /**
+   * Full-width alert banner shown to all players when Last Stand activates —
+   * one player controls 5+ vault sites and opponents receive a gold multiplier.
+   * Crimson color scheme to signal threat; fades in/holds/fades out over 5s.
+   */
+  private drawLastStandBanner(ctx: CanvasRenderingContext2D): void {
+    if (this.lastStandActivatedAtTick < 0 || !this.lastStandData) return;
+    const now = this.game.ticks();
+    const elapsed = now - this.lastStandActivatedAtTick;
+    if (elapsed > this.lastStandBannerTicks) return;
+
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+
+    const fadeIn = 6;
+    const fadeOut = 12;
+    const holdEnd = this.lastStandBannerTicks - fadeOut;
+    let alpha: number;
+    if (elapsed < fadeIn) {
+      alpha = elapsed / fadeIn;
+    } else if (elapsed > holdEnd) {
+      alpha = 1 - (elapsed - holdEnd) / fadeOut;
+    } else {
+      alpha = 1;
+    }
+    alpha = Math.max(0, Math.min(1, alpha));
+
+    ctx.save();
+
+    // Red edge vignette
+    const vignette = ctx.createRadialGradient(
+      w / 2,
+      h / 2,
+      Math.min(w, h) * 0.2,
+      w / 2,
+      h / 2,
+      Math.max(w, h) * 0.85,
+    );
+    vignette.addColorStop(0, `rgba(185, 28, 28, 0)`);
+    vignette.addColorStop(0.65, `rgba(185, 28, 28, ${alpha * 0.15})`);
+    vignette.addColorStop(1, `rgba(220, 38, 38, ${alpha * 0.5})`);
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, w, h);
+
+    // Banner panel
+    const bannerH = Math.round(h * 0.14);
+    const bannerY = Math.round(h * 0.44);
+    ctx.fillStyle = `rgba(30, 0, 0, ${alpha * 0.82})`;
+    ctx.fillRect(0, bannerY, w, bannerH);
+
+    // Top/bottom accent lines
+    ctx.strokeStyle = `rgba(220, 38, 38, ${alpha * 0.9})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, bannerY);
+    ctx.lineTo(w, bannerY);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(0, bannerY + bannerH);
+    ctx.lineTo(w, bannerY + bannerH);
+    ctx.stroke();
+
+    // Headline
+    ctx.textAlign = "center";
+    ctx.shadowColor = `rgba(239, 68, 68, ${alpha * 0.9})`;
+    ctx.shadowBlur = 20;
+    ctx.fillStyle = `rgba(254, 202, 202, ${alpha})`;
+    ctx.font = `bold ${Math.round(h * 0.048)}px Overpass, sans-serif`;
+    const triggerPlayer = this.game.playerBySmallID(
+      this.lastStandData.triggerPlayerID,
+    );
+    const triggerName = triggerPlayer?.isPlayer()
+      ? triggerPlayer.name()
+      : "A player";
+    ctx.fillText(
+      `🚨 LAST STAND — ${triggerName} holds ${this.lastStandData.siteCount} vaults!`,
+      w / 2,
+      bannerY + Math.round(bannerH * 0.48),
+    );
+
+    // Subtitle
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = `rgba(252, 165, 165, ${alpha * 0.85})`;
+    ctx.font = `${Math.round(h * 0.024)}px Overpass, sans-serif`;
+    const pct = Math.round(
+      (this.lastStandData.opponentGoldMultiplier - 1) * 100,
+    );
+    ctx.fillText(
+      `All opponents receive +${pct}% convoy gold for ${Math.round(this.lastStandData.bonusDurationTicks / 10)}s`,
+      w / 2,
+      bannerY + Math.round(bannerH * 0.78),
+    );
+
+    ctx.shadowBlur = 0;
     ctx.restore();
   }
 
