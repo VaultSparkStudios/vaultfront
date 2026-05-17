@@ -26,6 +26,8 @@ interface VaultSite {
   passiveOwnerID: number | null;
   nextPassiveGoldTick: number;
   reducedRewardNextCapture: boolean;
+  uncontrolledSinceTick: number;
+  vacantAlertFiredAtTick: number;
 }
 
 interface VaultConvoy {
@@ -218,8 +220,10 @@ export class VaultFrontExecution implements Execution {
       }
     });
 
+    const playerCount = this.game.allPlayers().length;
+    const hardCap = playerCount >= 8 ? 8 : 5;
     const maxSites = Math.min(
-      5,
+      hardCap,
       Math.max(2, Math.floor(landTiles.length / 180_000)),
     );
     const minSpacing = Math.max(
@@ -251,6 +255,8 @@ export class VaultFrontExecution implements Execution {
       passiveOwnerID: null,
       nextPassiveGoldTick: 0,
       reducedRewardNextCapture: false,
+      uncontrolledSinceTick: 0,
+      vacantAlertFiredAtTick: -1,
     }));
   }
 
@@ -579,8 +585,30 @@ export class VaultFrontExecution implements Execution {
       if (!owner.isPlayer()) {
         site.controllerID = null;
         site.controlTicks = 0;
+        // Track vacancy for the "Vacant Vault" bonus mechanic
+        if (site.passiveOwnerID === null) {
+          if (site.uncontrolledSinceTick === 0) {
+            site.uncontrolledSinceTick = ticks;
+          }
+          const vacantTicks = ticks - site.uncontrolledSinceTick;
+          if (
+            vacantTicks >= 600 &&
+            site.vacantAlertFiredAtTick < site.uncontrolledSinceTick
+          ) {
+            site.vacantAlertFiredAtTick = ticks;
+            site.reducedRewardNextCapture = false;
+            this.game.displayMessage(
+              `Vault ${site.id} is unclaimed — next capture pays double rewards!`,
+              MessageType.ATTACK_REQUEST,
+              null,
+            );
+          }
+        } else {
+          site.uncontrolledSinceTick = 0;
+        }
         continue;
       }
+      site.uncontrolledSinceTick = 0;
 
       if (site.controllerID !== owner.smallID()) {
         site.controllerID = owner.smallID();
@@ -607,11 +635,16 @@ export class VaultFrontExecution implements Execution {
       this.updateExecutionChainCapture(owner, ticks);
       this.openSquadObjectiveWindow(owner, site, ticks);
 
+      const vacantBonus =
+        site.vacantAlertFiredAtTick > 0 &&
+        site.vacantAlertFiredAtTick >= site.uncontrolledSinceTick
+          ? 2.0
+          : 1;
       this.startConvoy(
         owner,
         site,
         ticks,
-        site.reducedRewardNextCapture ? 0.72 : 1,
+        site.reducedRewardNextCapture ? 0.72 : vacantBonus,
       );
       site.controllerID = null;
       site.controlTicks = 0;
@@ -620,6 +653,8 @@ export class VaultFrontExecution implements Execution {
       site.nextPassiveGoldTick =
         ticks + this.vaultPassiveIncomeIntervalTicksEffective();
       site.reducedRewardNextCapture = false;
+      site.uncontrolledSinceTick = 0;
+      site.vacantAlertFiredAtTick = -1;
     }
   }
 
