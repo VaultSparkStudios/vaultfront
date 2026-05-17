@@ -15,9 +15,13 @@ export type EloLabel =
   | "Diamond"
   | "Grandmaster";
 
+export const PLACEMENT_MATCH_COUNT = 5;
+
 export const EloRating = {
   K_FACTOR: 32,
+  K_FACTOR_PLACEMENT: 64,
   DEFAULT_RATING: 1200,
+  SEASONAL_SOFT_RESET_CAP: 200,
 
   /**
    * Expected score (probability of winning) for player A against player B.
@@ -30,15 +34,30 @@ export const EloRating = {
   /**
    * Calculate new Elo ratings after a match between A and B.
    * wonA: true if player A won, false if player B won.
+   * matchesPlayedA/B: used to select K factor (placement vs normal).
    */
-  calculate(ratingA: number, ratingB: number, wonA: boolean): EloResult {
+  calculate(
+    ratingA: number,
+    ratingB: number,
+    wonA: boolean,
+    matchesPlayedA = Infinity,
+    matchesPlayedB = Infinity,
+  ): EloResult {
     const expectedA = EloRating.expectedScore(ratingA, ratingB);
     const expectedB = 1 - expectedA;
     const scoreA = wonA ? 1 : 0;
     const scoreB = wonA ? 0 : 1;
+    const kA =
+      matchesPlayedA < PLACEMENT_MATCH_COUNT
+        ? EloRating.K_FACTOR_PLACEMENT
+        : EloRating.K_FACTOR;
+    const kB =
+      matchesPlayedB < PLACEMENT_MATCH_COUNT
+        ? EloRating.K_FACTOR_PLACEMENT
+        : EloRating.K_FACTOR;
 
-    const deltaA = Math.round(EloRating.K_FACTOR * (scoreA - expectedA));
-    const deltaB = Math.round(EloRating.K_FACTOR * (scoreB - expectedB));
+    const deltaA = Math.round(kA * (scoreA - expectedA));
+    const deltaB = Math.round(kB * (scoreB - expectedB));
 
     return {
       newRatingA: ratingA + deltaA,

@@ -13,6 +13,7 @@
 import { pool } from "./db/pool";
 import { DiscordNotifier } from "./DiscordNotifier";
 import { logger } from "./Logger";
+import { playerStatsStore } from "./PlayerStatsStore";
 
 const log = logger.child({ comp: "VaultSeasonScheduler" });
 
@@ -291,6 +292,13 @@ class VaultSeasonScheduler {
     }
 
     this.currentVote = null;
+
+    // Seasonal soft-reset: pull all Elo ratings toward default by up to 200 pts
+    void playerStatsStore
+      .seasonalSoftReset()
+      .catch((err) =>
+        log.error("seasonalSoftReset failed", { err: String(err) }),
+      );
   }
 
   openWeeklyVote(): void {

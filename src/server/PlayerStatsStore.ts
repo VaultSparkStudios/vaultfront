@@ -3,7 +3,7 @@
 // Switch: `pool` from db/pool.ts is null → in-memory, non-null → Postgres.
 
 import { pool } from "./db/pool";
-import { EloRating } from "./EloRating";
+import { EloRating, PLACEMENT_MATCH_COUNT } from "./EloRating";
 import { logger } from "./Logger";
 
 const log = logger.child({ comp: "PlayerStatsStore" });
@@ -50,6 +50,10 @@ export interface PlayerStats {
   convoyDeliveries: number;
   executionChains: number;
   surgeActivations: number;
+  /** True once the player has completed 5 placement matches */
+  placementComplete: boolean;
+  /** Placement match number (1–5) if in placement; 0 if complete */
+  placementMatchNumber: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -159,17 +163,23 @@ class PlayerStatsStore {
     client: import("pg").PoolClient,
     persistentId: string,
     displayName: string,
-  ): Promise<number> {
-    const res = await client.query<{ elo_rating: number }>(
+  ): Promise<{ eloRating: number; matchesPlayed: number }> {
+    const res = await client.query<{
+      elo_rating: number;
+      matches_played: number;
+    }>(
       `INSERT INTO player_stats (persistent_id, display_name)
        VALUES ($1, $2)
        ON CONFLICT (persistent_id) DO UPDATE
          SET display_name = EXCLUDED.display_name,
              updated_at   = NOW()
-       RETURNING elo_rating`,
+       RETURNING elo_rating, matches_played`,
       [persistentId, displayName || ""],
     );
-    return res.rows[0].elo_rating;
+    return {
+      eloRating: res.rows[0].elo_rating,
+      matchesPlayed: res.rows[0].matches_played,
+    };
   }
 
   /** Refresh leaderboard_cache inside an open transaction. */
@@ -219,12 +229,18 @@ class PlayerStatsStore {
     try {
       await client.query("BEGIN");
 
-      // Ensure all participants exist and collect their current Elo
+      // Ensure all participants exist and collect their current Elo + match count
       const eloMap = new Map<string, number>();
+      const matchCountMap = new Map<string, number>();
       for (const p of result.allPlayers) {
         const name = p.persistentId === persistentId ? displayName : "";
-        const elo = await this.pgEnsurePlayer(client, p.persistentId, name);
-        eloMap.set(p.persistentId, elo);
+        const { eloRating, matchesPlayed } = await this.pgEnsurePlayer(
+          client,
+          p.persistentId,
+          name,
+        );
+        eloMap.set(p.persistentId, eloRating);
+        matchCountMap.set(p.persistentId, matchesPlayed);
       }
 
       const winners = result.allPlayers.filter((p) => p.won);
@@ -247,11 +263,13 @@ class PlayerStatsStore {
         const isWinner = p.won;
         const currentElo =
           eloMap.get(p.persistentId) ?? EloRating.DEFAULT_RATING;
+        const currentMatches = matchCountMap.get(p.persistentId) ?? 0;
         const opponentAvg = isWinner ? loserAvg : winnerAvg;
         const eloResult = EloRating.calculate(
           currentElo,
           opponentAvg,
           isWinner,
+          currentMatches,
         );
         const newElo = Math.max(100, eloResult.newRatingA);
         const eloDelta = newElo - currentElo;
@@ -530,6 +548,9 @@ class PlayerStatsStore {
         convoyDeliveries: r.convoy_deliveries,
         executionChains: r.execution_chains,
         surgeActivations: r.surge_activations,
+        placementComplete: r.matches_played >= PLACEMENT_MATCH_COUNT,
+        placementMatchNumber:
+          r.matches_played >= PLACEMENT_MATCH_COUNT ? 0 : r.matches_played + 1,
         createdAt: r.created_at.toISOString(),
         updatedAt: r.updated_at.toISOString(),
       };
@@ -548,9 +569,46 @@ class PlayerStatsStore {
       convoyDeliveries: rec.convoyDeliveries,
       executionChains: rec.executionChains,
       surgeActivations: rec.surgeActivations,
+      placementComplete: rec.matchesPlayed >= PLACEMENT_MATCH_COUNT,
+      placementMatchNumber:
+        rec.matchesPlayed >= PLACEMENT_MATCH_COUNT ? 0 : rec.matchesPlayed + 1,
       createdAt: new Date(rec.createdAt).toISOString(),
       updatedAt: new Date(rec.updatedAt).toISOString(),
     };
+  }
+
+  /**
+   * Seasonal soft-reset: reduce every player's Elo by up to
+   * `EloRating.SEASONAL_SOFT_RESET_CAP` points, pulling toward DEFAULT_RATING.
+   * Called by VaultSeasonScheduler on season rollover.
+   */
+  async seasonalSoftReset(): Promise<void> {
+    const cap = EloRating.SEASONAL_SOFT_RESET_CAP;
+    const def = EloRating.DEFAULT_RATING;
+    if (pool) {
+      await pool
+        .query(
+          `UPDATE player_stats
+           SET elo_rating = CASE
+             WHEN elo_rating > $1 THEN GREATEST($1, elo_rating - $2)
+             WHEN elo_rating < $1 THEN LEAST($1, elo_rating + $2)
+             ELSE $1
+           END,
+           updated_at = NOW()`,
+          [def, cap],
+        )
+        .catch((err) =>
+          log.error("seasonalSoftReset failed", { err: String(err) }),
+        );
+      return;
+    }
+    for (const rec of this.memPlayers.values()) {
+      if (rec.eloRating > def) {
+        rec.eloRating = Math.max(def, rec.eloRating - cap);
+      } else if (rec.eloRating < def) {
+        rec.eloRating = Math.min(def, rec.eloRating + cap);
+      }
+    }
   }
 }
 
