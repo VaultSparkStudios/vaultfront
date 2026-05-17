@@ -13,3 +13,19 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Studio canon:** `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-008
 
 ---
+
+## 2026-05-17 — Ghost route: shared-state deception via display-layer hiding
+
+**Decision:** `ghost_route` hides opponent convoys from the opponent's HUD (skip rendering when `isGhost && !isOwnConvoy`) rather than per-player server filtering. Owner sees real ETA; opponents see nothing until delivery.
+
+**Rationale:** Per-player update filtering would require major architecture changes. The display-layer approach is deterministic, server-authoritative (ghost flag lives in execution), and achieves the strategic deception goal.
+
+---
+
+## 2026-05-17 — Bot vault commands: simple pressure heuristic, not site queries
+
+**Decision:** Bots use a local `hostile / total neighbors` pressure ratio to decide vault commands rather than querying vault site state directly. Site-targeting bias is added to `AiAttackBehavior` via the new `vaultSiteControllerIDs()` Game interface method.
+
+**Rationale:** Keeps `BotExecution` lightweight; the `neighborPressure` heuristic matches NationExecution's proven pattern; vault-site bias in attack selection adds strategic depth without overcomplicating bot decision trees.
+
+---
