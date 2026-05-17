@@ -15,9 +15,12 @@ import { GameView } from "../../../core/game/GameView";
 import { appRelativePath, appRootPath } from "../../../core/RuntimeUrls";
 import type { AllPlayersStats, Winner } from "../../../core/Schemas";
 import {
+  castMutatorVote,
   createRematch,
+  fetchMutatorVoteStatus,
   fetchVaultFrontRecapAssignment,
   getUserMe,
+  type MutatorVoteCandidate,
   recordVaultFrontFunnelTelemetry,
   recordVaultFrontOutcomeTelemetry,
   recordVaultFrontRecapEvent,
@@ -151,6 +154,12 @@ export class WinModal extends LitElement implements Layer {
   @state()
   private microFeedbackSent: "epic" | "balanced" | "off" | null = null;
 
+  @state()
+  private mutatorVoteCandidates: MutatorVoteCandidate[] = [];
+
+  @state()
+  private mutatorVoteSentKey: string | null = null;
+
   // Override to prevent shadow DOM creation
   createRenderRoot() {
     return this;
@@ -195,6 +204,9 @@ export class WinModal extends LitElement implements Layer {
               ${this.renderRecapSection()} ${this.innerHtml()}
             `}
         ${this.showButtons ? this.renderMicroFeedback() : null}
+        ${this.showButtons && this.mutatorVoteCandidates.length > 0
+          ? this.renderMutatorVote()
+          : null}
         <div class="${this.showButtons ? "flex flex-col gap-2" : "hidden"}">
           <div class="flex justify-between gap-2.5">
             <button
@@ -289,6 +301,52 @@ export class WinModal extends LitElement implements Layer {
         >
           😤 Off
         </button>
+      </div>
+    `;
+  }
+
+  private renderMutatorVote() {
+    if (this.mutatorVoteSentKey) {
+      const voted = this.mutatorVoteCandidates.find(
+        (c) => c.key === this.mutatorVoteSentKey,
+      );
+      return html`
+        <div class="text-center text-slate-400 text-xs py-2">
+          Voted for
+          <span class="text-amber-300"
+            >${voted?.name ?? this.mutatorVoteSentKey}</span
+          >
+          — thanks!
+        </div>
+      `;
+    }
+
+    const vote = async (key: string) => {
+      this.mutatorVoteSentKey = key;
+      this.requestUpdate();
+      const user = await getUserMe().catch(() => null);
+      const voterId =
+        user !== null && user !== false ? user.player.publicId : undefined;
+      await castMutatorVote(key, voterId);
+    };
+
+    return html`
+      <div class="border-t border-slate-600/40 mt-2 pt-2">
+        <div class="text-center text-xs text-slate-400 mb-2 tracking-wide">
+          Vote for next week's VaultFront mutator
+        </div>
+        <div class="flex justify-center gap-2 flex-wrap">
+          ${this.mutatorVoteCandidates.map(
+            (c) => html`
+              <button
+                @click=${() => vote(c.key)}
+                class="px-3 py-1.5 text-xs bg-transparent border border-purple-500/50 text-purple-300 rounded-md cursor-pointer hover:bg-purple-500/20 transition-colors"
+              >
+                ${c.name}
+              </button>
+            `,
+          )}
+        </div>
       </div>
     `;
   }
@@ -660,12 +718,22 @@ export class WinModal extends LitElement implements Layer {
     setTimeout(() => {
       void this.postOutcomeTelemetry();
     }, 15000);
+
+    // Fetch mutator vote candidates in background
+    void fetchMutatorVoteStatus().then((status) => {
+      if (status?.open && status.candidates.length > 0) {
+        this.mutatorVoteCandidates = status.candidates;
+        this.requestUpdate();
+      }
+    });
   }
 
   hide() {
     void this.postOutcomeTelemetry();
     this.isVisible = false;
     this.showButtons = false;
+    this.mutatorVoteCandidates = [];
+    this.mutatorVoteSentKey = null;
     this.requestUpdate();
   }
 

@@ -672,6 +672,49 @@ export async function fetchBattleNarrative(
   }
 }
 
+// ── Mutator Vote ─────────────────────────────────────────────────────────────
+
+export interface MutatorVoteCandidate {
+  key: string;
+  name: string;
+}
+
+export interface MutatorVoteStatus {
+  open: boolean;
+  candidates: MutatorVoteCandidate[];
+  closesAt: number | null;
+}
+
+/** Returns the current vote window (candidates + close time), or null if no vote is open. */
+export async function fetchMutatorVoteStatus(): Promise<MutatorVoteStatus | null> {
+  try {
+    const res = await fetch(`${getApiBase()}/api/season/current`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data?.vote?.open) return null;
+    return data.vote as MutatorVoteStatus;
+  } catch {
+    return null;
+  }
+}
+
+/** Submits a vote for the given candidate key. Returns true on success. */
+export async function castMutatorVote(
+  candidateKey: string,
+  voterId?: string,
+): Promise<boolean> {
+  try {
+    const res = await fetch(`${getApiBase()}/api/mutator-vote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ candidateKey, voterId }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function fetchVaultFrontRecapSummary(
   adminToken: string,
 ): Promise<VaultFrontRecapSummary | false> {

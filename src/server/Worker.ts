@@ -1240,6 +1240,30 @@ export async function startWorker() {
     const status: SeasonStatus = vaultSeasonScheduler.getStatus();
     return res.json(status);
   });
+
+  const MutatorVoteSchema = z.object({
+    candidateKey: z.string().max(64),
+    voterId: z.string().max(128).optional(),
+  });
+
+  const mutatorVoteRateLimit = rateLimit({
+    windowMs: 60_000,
+    max: 5, // 5 votes per IP per minute — prevents ballot-stuffing
+  });
+
+  app.post(
+    "/api/mutator-vote",
+    mutatorVoteRateLimit,
+    (req: Request, res: Response) => {
+      const parsed = MutatorVoteSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid vote payload" });
+      }
+      const { candidateKey, voterId } = parsed.data;
+      vaultSeasonScheduler.recordVote(candidateKey, voterId);
+      return res.json({ ok: true });
+    },
+  );
   // ─────────────────────────────────────────────────────────────────────────
 
   // ── Battle Narrative API ─────────────────────────────────────────────────
