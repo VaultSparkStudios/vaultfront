@@ -1,8 +1,11 @@
 <!-- session-protocol-version: 1.3 -->
 <!-- canonical-source: VaultSparkStudios/vaultspark-studio-ops/docs/SESSION_PROTOCOL.md -->
 <!-- agents: claude-code, codex, any-cli-agent -->
+<!-- transitional: moving to Studio Brain kernel (see docs/STUDIO_BRAIN_ARCHITECTURE.md) -->
 
 # Session Protocol — VaultSpark Studio OS
+
+> **TRANSITIONAL NOTICE (2026-04-23, S110):** This document is the canonical session protocol **today**. It will be thinned to a pointer once the Studio Brain kernel (`studio` CLI) ships and agent skills collapse to 15-line kernel wrappers — see `docs/STUDIO_BRAIN_ARCHITECTURE.md` §7 for the target state and §6 for the migration stages. Until Stage 6 lands, follow the procedures in this file as-is. Any agent reading this file now executes the current protocol; any changes to session behavior between now and kernel go-live should land in **this** file to preserve the canonical-source rule. Canon decision: `context/DECISIONS.md` → **S110 — IGNIS elevated into the broader Studio Brain**.
 
 This is the **single canonical source** for every Studio OS session protocol. Both Claude Code and Codex (and any future CLI agent) read this file and execute the same flows. Per-agent shims — `~/.claude/skills/*/SKILL.md` for Claude Code, `AGENTS.md` Session-Protocol section for Codex — are thin pointers into this document.
 
@@ -51,7 +54,6 @@ Natural-language invocation works too. Typing "start" without the slash, or sayi
 
 2. **Run preflight scripts.** These emit compact stdout — read their printed output only, do not open their output files:
    - `node scripts/detect-session-mode.mjs --explain` (BUILDER vs FOUNDER, ~100 tokens)
-   - `node scripts/ops.mjs fast-start --stdout` (headroom + queue + rolling status, ~500 tokens)
    - `node scripts/compact-handoff.mjs` (Haiku-compress LATEST_HANDOFF to cache — silent if fresh)
    - `node scripts/check-secrets.mjs --audit` (credentials gateway health)
    - `node scripts/ops.mjs blocker-preflight` (human-blocked classification — read first 20 lines only)
@@ -242,6 +244,17 @@ Behavior per meter verdict:
 - `CLOSEOUT` → stop immediately. Surface deferred items to handoff. Prompt for `/closeout`.
 
 Prioritize compounding items (sanitizer that unblocks 4 items beats one shallow win). Order within the list is IGNIS-ranked — follow it.
+
+### 2.7.5 Expansion passes — when the list is thin (v1.4)
+
+If ≤2 items remain unblocked, or the founder invokes `/go` consecutively with no primary-list work to do, DO NOT stop. Expand the surface:
+
+1. **Freshness reclass.** Re-run `node scripts/ops.mjs genius-list`. The freshness pass in `scripts/lib/genius-freshness.mjs` re-validates `cross-repo-locked` / `human-blocked` / `staged` cells against live lock state + capability readiness, automatically unblocking items whose blockers have resolved.
+2. **Elevated-probe pass.** For each remaining `human-blocked` item where the rule in `scripts/lib/blocker-rules.mjs` is NOT `signupUiOnly`, attempt the admin/API path before keeping it blocked (per AGENTS.md "elevated-access blocker rule").
+3. **Innovation pack.** `node scripts/ops.mjs innovation-pack` → `docs/INNOVATION_PACK.md`. Second-order ranked list drawn from: brainstorm orphans · inline TODO/FIXME markers · recently-shipped-but-unpolished code · SIL category regressions · incomplete CAPABILITY_MAP entries · cross-repo silence (≥14d no commits). Walk top candidates with the same quality bar as the primary list.
+4. **Compound refinement.** Open the 3 most recently shipped scripts/features. Propose one concrete refinement each (performance · error surface · docstring · tests · polish). Ship the smallest viable one.
+
+Each expansion step stops when it produces shippable work. Anything too large for the current session → add to TASK_BOARD with effort + rationale.
 
 ### 2.8 End-of-sprint summary
 
