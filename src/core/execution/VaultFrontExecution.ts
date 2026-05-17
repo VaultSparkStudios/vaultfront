@@ -100,6 +100,11 @@ export class VaultFrontExecution implements Execution {
   private squadObjectiveWindows: SquadObjectiveWindow[] = [];
   private lastPublishedConvoyDebugKey = "";
 
+  // Per-player command rate-limiting: ring buffer of last 5 command ticks
+  private commandTimestamps = new Map<number, number[]>();
+  private readonly commandRateWindowTicks = 10; // 1s at 10 tps
+  private readonly commandRateMaxPerWindow = 5;
+
   // Last Stand — track players who have already triggered it per session
   private lastStandTriggeredBy = new Set<number>();
   private lastStandBonusUntilTick = new Map<number, number>();
@@ -295,6 +300,16 @@ export class VaultFrontExecution implements Execution {
       if (!player.isPlayer() || !player.isAlive()) {
         continue;
       }
+      // Rate limit: max 5 commands per 10-tick window per player
+      const pid = command.playerSmallID;
+      const timestamps = this.commandTimestamps.get(pid) ?? [];
+      const windowStart = ticks - this.commandRateWindowTicks;
+      const recent = timestamps.filter((t) => t > windowStart);
+      if (recent.length >= this.commandRateMaxPerWindow) {
+        continue;
+      }
+      recent.push(ticks);
+      this.commandTimestamps.set(pid, recent);
       this.handleCommand(player, command, ticks);
     }
   }
