@@ -50,6 +50,7 @@ interface VaultConvoy {
   escortShield: number;
   reroutes: number;
   interceptProbability: number;
+  ghostConvoy: boolean;
 }
 
 interface BeaconState {
@@ -91,6 +92,8 @@ export class VaultFrontExecution implements Execution {
   private preferredConvoyDestination = new Map<number, UnitType>();
   private escortUntilTick = new Map<number, number>();
   private jamBreakerCooldownUntil = new Map<number, number>();
+  private ghostRouteCooldownUntil = new Map<number, number>();
+  private readonly ghostRouteCooldownTicks = 300; // 30s cooldown
   private behindSinceTick = new Map<number, number>();
   private surgeUntilTick = new Map<number, number>();
   private minute8BehindMarked = new Set<number>();
@@ -333,6 +336,9 @@ export class VaultFrontExecution implements Execution {
       case "jam_breaker":
         this.applyJamBreakerCommand(player, ticks);
         return;
+      case "ghost_route":
+        this.applyGhostRouteCommand(player, ticks);
+        return;
       default:
         return;
     }
@@ -525,6 +531,32 @@ export class VaultFrontExecution implements Execution {
       "Jam Breaker active: enemy intel masking pulse duration reduced.",
       MessageType.CHAT,
       player.id(),
+    );
+  }
+
+  private applyGhostRouteCommand(player: Player, ticks: number): void {
+    const cooldownUntil =
+      this.ghostRouteCooldownUntil.get(player.smallID()) ?? 0;
+    if (ticks < cooldownUntil) return;
+
+    const convoy = this.convoys.find(
+      (c) => c.ownerID === player.smallID() && !c.ghostConvoy,
+    );
+    if (!convoy) return;
+
+    convoy.ghostConvoy = true;
+    this.ghostRouteCooldownUntil.set(
+      player.smallID(),
+      ticks + this.ghostRouteCooldownTicks,
+    );
+
+    this.emitActivity(
+      "convoy_rerouted",
+      convoy.sourceTile,
+      player.smallID(),
+      null,
+      "Ghost route activated — convoy is cloaked",
+      60,
     );
   }
 
@@ -923,7 +955,8 @@ export class VaultFrontExecution implements Execution {
       | "convoy_delivered"
       | "beacon_pulse"
       | "jam_breaker"
-      | "comeback_surge",
+      | "comeback_surge"
+      | "ghost_reveal",
   ): boolean {
     return (
       this.weeklyMutator === "lane_fog" &&
@@ -1297,6 +1330,7 @@ export class VaultFrontExecution implements Execution {
         site.tile,
         destinationTile,
       ),
+      ghostConvoy: false,
     });
     this.game.stats().vaultConvoyLaunched(owner);
     this.game.stats().vaultInteraction(owner);
@@ -1508,6 +1542,17 @@ export class VaultFrontExecution implements Execution {
         `Convoy delivered +${convoy.goldReward.toLocaleString()}g +${convoy.troopsReward.toLocaleString()}t`,
         130,
       );
+
+      if (convoy.ghostConvoy) {
+        this.emitActivity(
+          "ghost_reveal",
+          convoy.destinationTile,
+          owner.smallID(),
+          null,
+          `Ghost convoy revealed! +${convoy.goldReward.toLocaleString()}g`,
+          160,
+        );
+      }
     }
 
     this.convoys = remaining;
@@ -1654,7 +1699,8 @@ export class VaultFrontExecution implements Execution {
       | "convoy_delivered"
       | "beacon_pulse"
       | "jam_breaker"
-      | "comeback_surge",
+      | "comeback_surge"
+      | "ghost_reveal",
     tile: TileRef,
     sourcePlayerID: number | null,
     targetPlayerID: number | null,
@@ -1900,6 +1946,7 @@ export class VaultFrontExecution implements Execution {
           rewardMath: convoy.rewardMath,
           interceptProbability: convoy.interceptProbability,
           reroutePreviews,
+          isGhost: convoy.ghostConvoy,
         };
       }),
       beacons: [...this.beacons.entries()].map(([playerID, state]) => {

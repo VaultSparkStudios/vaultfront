@@ -378,6 +378,8 @@ export interface VaultFrontConvoyState {
   /** 0–100 intercept probability based on enemy troop density near the convoy corridor */
   interceptProbability: number;
   reroutePreviews?: VaultFrontReroutePreview[];
+  /** True when owner activated ghost-route; ETA is hidden from opponents */
+  isGhost: boolean;
 }
 
 export interface VaultFrontBeaconState {
@@ -460,7 +462,8 @@ export interface VaultFrontActivityUpdate {
     | "convoy_delivered"
     | "beacon_pulse"
     | "jam_breaker"
-    | "comeback_surge";
+    | "comeback_surge"
+    | "ghost_reveal";
   tile: TileRef;
   sourcePlayerID: number | null;
   targetPlayerID: number | null;

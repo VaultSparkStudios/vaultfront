@@ -992,7 +992,8 @@ export type VaultFrontCommandType =
   | "reroute_silo"
   | "reroute_safest"
   | "escort"
-  | "jam_breaker";
+  | "jam_breaker"
+  | "ghost_route";
 
 export interface VaultFrontCommand {
   playerSmallID: number;

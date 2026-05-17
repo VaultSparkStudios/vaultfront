@@ -28,6 +28,7 @@ const HEAT_WEIGHTS: Record<VaultFrontActivityUpdate["activity"], number> = {
   convoy_escorted: 15,
   convoy_launched: 10,
   vault_passive_income: 5,
+  ghost_reveal: 90,
 };
 
 const HEAT_DECAY_PER_SECOND = 0.85;

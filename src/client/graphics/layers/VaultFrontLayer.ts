@@ -251,7 +251,13 @@ export class VaultFrontLayer implements Layer {
     if (!this.status || this.status.convoys.length === 0) return;
     const reducedMotion = this.prefersReducedMotion();
 
+    const myPlayerID = this.game.myPlayer()?.smallID() ?? -1;
+
     for (const convoy of this.status.convoys) {
+      const isOwnConvoy = convoy.ownerID === myPlayerID;
+      // Ghost convoys owned by opponents are hidden from us
+      if (convoy.isGhost && !isOwnConvoy) continue;
+
       const src = this.screenForTile(convoy.sourceTile);
       const dst = this.screenForTile(convoy.destinationTile);
       if (!src || !dst) continue;
@@ -332,23 +338,29 @@ export class VaultFrontLayer implements Layer {
       const etaSeconds = Math.ceil(convoy.ticksRemaining / 10);
       const midX = src.x + (dst.x - src.x) * 0.5;
       const midY = src.y + (dst.y - src.y) * 0.5;
-      ctx.fillStyle = "rgba(255, 248, 214, 0.95)";
+      const ghostAlpha = convoy.isGhost ? 0.55 : 1;
+      ctx.globalAlpha = ghostAlpha;
+      ctx.fillStyle = convoy.isGhost
+        ? "rgba(168, 162, 255, 0.95)"
+        : "rgba(255, 248, 214, 0.95)";
       ctx.font = `${Math.round(this.fontSize() - 1)}px Overpass, sans-serif`;
       ctx.textAlign = "center";
       const shieldLabel =
         convoy.escortShield > 0 ? ` | Shield x${convoy.escortShield}` : "";
-      ctx.fillText(
-        `Vault Convoy ETA ${etaSeconds}s${shieldLabel}`,
-        midX,
-        midY - 8,
-      );
-      ctx.fillStyle = "rgba(255, 236, 179, 0.9)";
+      const etaLabel = convoy.isGhost
+        ? `👻 Ghost Route ETA ${etaSeconds}s${shieldLabel}`
+        : `Vault Convoy ETA ${etaSeconds}s${shieldLabel}`;
+      ctx.fillText(etaLabel, midX, midY - 8);
+      ctx.fillStyle = convoy.isGhost
+        ? "rgba(196, 181, 253, 0.9)"
+        : "rgba(255, 236, 179, 0.9)";
       ctx.font = `${Math.round(this.fontSize() - 3)}px Overpass, sans-serif`;
       ctx.fillText(
         `+${convoy.goldReward.toLocaleString()}g +${convoy.troopsReward.toLocaleString()}t`,
         midX,
         midY + 6,
       );
+      ctx.globalAlpha = 1;
 
       // Intercept probability gauge bar
       const prob = convoy.interceptProbability ?? 0;
@@ -697,6 +709,8 @@ export class VaultFrontLayer implements Layer {
         return { r: 244, g: 114, b: 182 };
       case "comeback_surge":
         return { r: 110, g: 231, b: 183 };
+      case "ghost_reveal":
+        return { r: 168, g: 162, b: 255 };
       default:
         return { r: 255, g: 255, b: 255 };
     }
