@@ -68,6 +68,7 @@ export class VaultFrontLayer implements Layer {
       return;
     }
 
+    this.drawSurgeOverlays(ctx);
     this.drawConvoys(ctx);
     this.drawVaultSites(ctx);
     this.drawBeaconFields(ctx);
@@ -880,6 +881,52 @@ export class VaultFrontLayer implements Layer {
     ctx.fillText(label.desc, w / 2, by + 46);
     ctx.globalAlpha = 1;
     ctx.restore();
+  }
+
+  /**
+   * Pulsing amber territory glow for each player currently in comeback surge.
+   * Drawn beneath all other overlays so it doesn't obscure icons or text.
+   */
+  private drawSurgeOverlays(ctx: CanvasRenderingContext2D): void {
+    if (!this.status) return;
+    const now = this.game.ticks();
+    const pulse = 0.45 + 0.25 * Math.sin((now / 4) * Math.PI);
+    const radius = Math.max(60, this.transform.scale * 28);
+
+    for (const [smallIDStr, surgeState] of Object.entries(this.status.surges)) {
+      if (!surgeState.active || surgeState.surgeUntilTick <= now) continue;
+
+      const player = this.game.playerBySmallID(Number(smallIDStr));
+      if (!player || !("nameLocation" in player)) continue;
+
+      const loc = (
+        player as { nameLocation(): { x: number; y: number } }
+      ).nameLocation();
+      const screen = this.transform.worldToScreenCoordinates(
+        new Cell(loc.x, loc.y),
+      );
+      if (!screen) continue;
+
+      const gradient = ctx.createRadialGradient(
+        screen.x,
+        screen.y,
+        radius * 0.1,
+        screen.x,
+        screen.y,
+        radius,
+      );
+      gradient.addColorStop(0, `rgba(251, 146, 60, ${pulse * 0.55})`);
+      gradient.addColorStop(0.5, `rgba(245, 158, 11, ${pulse * 0.28})`);
+      gradient.addColorStop(1, `rgba(251, 146, 60, 0)`);
+
+      ctx.save();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(screen.x, screen.y, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
   }
 
   private markerSize(): number {
