@@ -974,6 +974,34 @@ export class VaultFrontLayer implements Layer {
         name: "DOUBLE PASSIVE",
         desc: "Passive vault income ×2  •  Interval halved",
       },
+      gold_rush: {
+        name: "GOLD RUSH",
+        desc: "Convoy gold rewards +50%  •  High-stakes extraction",
+      },
+      blitz: {
+        name: "BLITZ",
+        desc: "Vault capture time −40%  •  Control windows close fast",
+      },
+      no_mercy: {
+        name: "NO MERCY",
+        desc: "Escort shields disabled  •  All convoys are exposed",
+      },
+      contested: {
+        name: "CONTESTED",
+        desc: "Capture progress decays when unoccupied  •  Hold your ground",
+      },
+      shield_escort: {
+        name: "SHIELDED RUN",
+        desc: "All convoys launch with 2 escort shields",
+      },
+      rally_point: {
+        name: "RALLY POINT",
+        desc: "Passive income ×2  •  Vault captures grant +1,200 troops",
+      },
+      execution_rush: {
+        name: "EXECUTION RUSH",
+        desc: "Chain window ×2  •  Clean execution multiplier ×1.5",
+      },
     };
 
     const label = mutatorLabels[this.status.weeklyMutator];

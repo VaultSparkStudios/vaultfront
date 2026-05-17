@@ -45,6 +45,44 @@ const MUTATOR_DEFS: Record<string, MutatorDef> = {
     name: "Double Passive",
     description: "Vault passive gold income is doubled — economy accelerates.",
   },
+  gold_rush: {
+    key: "gold_rush",
+    name: "Gold Rush",
+    description:
+      "Convoy gold rewards are boosted +50% — high-stakes extraction.",
+  },
+  blitz: {
+    key: "blitz",
+    name: "Blitz",
+    description: "Vault capture time reduced 40% — control windows close fast.",
+  },
+  no_mercy: {
+    key: "no_mercy",
+    name: "No Mercy",
+    description: "Escort shields are disabled — every convoy is exposed.",
+  },
+  contested: {
+    key: "contested",
+    name: "Contested",
+    description: "Vault capture progress decays when holder leaves proximity.",
+  },
+  shield_escort: {
+    key: "shield_escort",
+    name: "Shielded Run",
+    description: "All launched convoys start with 2 escort shields.",
+  },
+  rally_point: {
+    key: "rally_point",
+    name: "Rally Point",
+    description:
+      "Passive vault income doubled; vault captures grant extra troops.",
+  },
+  execution_rush: {
+    key: "execution_rush",
+    name: "Execution Rush",
+    description:
+      "Chain window doubled; clean execution convoy multiplier ×1.5.",
+  },
 };
 
 // Rotation excludes "none" — same filter as the client-side JS
@@ -52,6 +90,13 @@ const ROTATION_KEYS: string[] = [
   "lane_fog",
   "accelerated_cooldowns",
   "double_passive",
+  "gold_rush",
+  "blitz",
+  "no_mercy",
+  "contested",
+  "shield_escort",
+  "rally_point",
+  "execution_rush",
 ];
 
 // ── Public API types ───────────────────────────────────────────────────────

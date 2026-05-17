@@ -111,7 +111,14 @@ export class VaultFrontExecution implements Execution {
     | "none"
     | "lane_fog"
     | "accelerated_cooldowns"
-    | "double_passive" = "none";
+    | "double_passive"
+    | "gold_rush"
+    | "blitz"
+    | "no_mercy"
+    | "contested"
+    | "shield_escort"
+    | "rally_point"
+    | "execution_rush" = "none";
 
   // Vault sites and convoy extraction.
   private readonly vaultCaptureTicks = 90;
@@ -174,12 +181,20 @@ export class VaultFrontExecution implements Execution {
           null,
         );
         if (this.weeklyMutator !== "none") {
+          const mutatorLabels: Record<string, string> = {
+            lane_fog: "Lane Fog",
+            accelerated_cooldowns: "Accelerated Cooldowns",
+            double_passive: "Double Passive",
+            gold_rush: "Gold Rush",
+            blitz: "Blitz",
+            no_mercy: "No Mercy",
+            contested: "Contested",
+            shield_escort: "Shielded Run",
+            rally_point: "Rally Point",
+            execution_rush: "Execution Rush",
+          };
           const mutatorLabel =
-            this.weeklyMutator === "lane_fog"
-              ? "Lane Fog"
-              : this.weeklyMutator === "accelerated_cooldowns"
-                ? "Accelerated Cooldowns"
-                : "Double Passive";
+            mutatorLabels[this.weeklyMutator] ?? this.weeklyMutator;
           this.game.displayMessage(
             `Weekly VaultFront mutator active: ${mutatorLabel}.`,
             MessageType.CHAT,
@@ -598,7 +613,12 @@ export class VaultFrontExecution implements Execution {
       const owner = this.game.owner(site.tile);
       if (!owner.isPlayer()) {
         site.controllerID = null;
-        site.controlTicks = 0;
+        // Contested mutator: capture progress decays when no one holds the tile
+        if (this.weeklyMutator === "contested" && site.controlTicks > 0) {
+          site.controlTicks = Math.max(0, site.controlTicks - 1);
+        } else {
+          site.controlTicks = 0;
+        }
         // Track vacancy for the "Vacant Vault" bonus mechanic
         if (site.passiveOwnerID === null) {
           if (site.uncontrolledSinceTick === 0) {
@@ -631,7 +651,7 @@ export class VaultFrontExecution implements Execution {
         site.controlTicks++;
       }
 
-      if (site.controlTicks < this.vaultCaptureTicks) {
+      if (site.controlTicks < this.vaultCaptureTicksEffective()) {
         continue;
       }
 
@@ -646,6 +666,14 @@ export class VaultFrontExecution implements Execution {
       this.game.stats().vaultCaptured(owner);
       this.game.stats().vaultInteraction(owner);
       this.applyCaptureSurgeBonus(owner, site);
+      if (this.weeklyMutator === "rally_point") {
+        owner.addTroops(1_200);
+        this.game.displayMessage(
+          "Rally Point: +1,200 troops from vault capture.",
+          MessageType.RECEIVED_GOLD_FROM_TRADE,
+          owner.id(),
+        );
+      }
       this.updateExecutionChainCapture(owner, ticks);
       this.openSquadObjectiveWindow(owner, site, ticks);
 
@@ -804,6 +832,20 @@ export class VaultFrontExecution implements Execution {
     );
   }
 
+  private executionChainWindowTicksEffective(): number {
+    if (this.weeklyMutator === "execution_rush") {
+      return this.cleanExecutionChainWindowTicks * 2;
+    }
+    return this.cleanExecutionChainWindowTicks;
+  }
+
+  private vaultCaptureTicksEffective(): number {
+    if (this.weeklyMutator === "blitz") {
+      return Math.max(40, Math.floor(this.vaultCaptureTicks * 0.6));
+    }
+    return this.vaultCaptureTicks;
+  }
+
   private vaultCooldownTicksEffective(): number {
     if (this.weeklyMutator === "accelerated_cooldowns") {
       return Math.max(260, Math.floor(this.vaultCooldownTicks * 0.75));
@@ -812,7 +854,10 @@ export class VaultFrontExecution implements Execution {
   }
 
   private vaultPassiveIncomeIntervalTicksEffective(): number {
-    if (this.weeklyMutator === "double_passive") {
+    if (
+      this.weeklyMutator === "double_passive" ||
+      this.weeklyMutator === "rally_point"
+    ) {
       return Math.max(
         300,
         Math.floor(this.vaultPassiveIncomeIntervalTicks * 0.5),
@@ -822,7 +867,10 @@ export class VaultFrontExecution implements Execution {
   }
 
   private vaultPassiveGoldPerMinuteEffective(): bigint {
-    if (this.weeklyMutator === "double_passive") {
+    if (
+      this.weeklyMutator === "double_passive" ||
+      this.weeklyMutator === "rally_point"
+    ) {
       return this.vaultPassiveGoldPerMinute * 2n;
     }
     return this.vaultPassiveGoldPerMinute;
@@ -880,7 +928,7 @@ export class VaultFrontExecution implements Execution {
     this.executionChainStep.set(playerID, 1);
     this.executionChainExpiresAtTick.set(
       playerID,
-      ticks + this.cleanExecutionChainWindowTicks,
+      ticks + this.executionChainWindowTicksEffective(),
     );
   }
 
@@ -898,7 +946,7 @@ export class VaultFrontExecution implements Execution {
     this.executionChainStep.set(playerID, 2);
     this.executionChainExpiresAtTick.set(
       playerID,
-      ticks + this.cleanExecutionChainWindowTicks,
+      ticks + this.executionChainWindowTicksEffective(),
     );
   }
 
@@ -915,14 +963,15 @@ export class VaultFrontExecution implements Execution {
       this.resetExecutionChain(playerID);
       return;
     }
-    this.executionStreakNextConvoyMultiplier.set(
-      playerID,
-      this.cleanExecutionStreakConvoyMultiplier,
-    );
+    const streakMultiplier =
+      this.weeklyMutator === "execution_rush"
+        ? 1.5
+        : this.cleanExecutionStreakConvoyMultiplier;
+    this.executionStreakNextConvoyMultiplier.set(playerID, streakMultiplier);
     this.game.stats().cleanExecutionStreak(player);
     this.resetExecutionChain(playerID);
     this.game.displayMessage(
-      `Clean execution chain complete. Next Vault Convoy rewards +${Math.round((this.cleanExecutionStreakConvoyMultiplier - 1) * 100)}%.`,
+      `Clean execution chain complete. Next Vault Convoy rewards +${Math.round((streakMultiplier - 1) * 100)}%.`,
       MessageType.CHAT,
       player.id(),
     );
@@ -1181,7 +1230,9 @@ export class VaultFrontExecution implements Execution {
       (this.lastStandBonusUntilTick.get(owner.smallID()) ?? 0) > ticks
         ? this.lastStandOpponentGoldMultiplier
         : 1;
-    const finalRewardScale = rewardScale * streakMultiplier * lastStandBonus;
+    const goldRushBonus = this.weeklyMutator === "gold_rush" ? 1.5 : 1;
+    const finalRewardScale =
+      rewardScale * streakMultiplier * lastStandBonus * goldRushBonus;
     this.executionStreakNextConvoyMultiplier.set(owner.smallID(), 1);
     const preferred = this.preferredConvoyDestination.get(owner.smallID());
     const destinationTile = this.bestConvoyDestination(
@@ -1199,8 +1250,13 @@ export class VaultFrontExecution implements Execution {
       ticks,
       finalRewardScale,
     );
-    const escorted =
+    let escorted =
       (this.escortUntilTick.get(owner.smallID()) ?? 0) > ticks ? 1 : 0;
+    if (this.weeklyMutator === "shield_escort") {
+      escorted = Math.max(escorted, 2);
+    } else if (this.weeklyMutator === "no_mercy") {
+      escorted = 0;
+    }
 
     this.convoys.push({
       id: this.nextConvoyID++,
@@ -1773,7 +1829,7 @@ export class VaultFrontExecution implements Execution {
     const statusUpdate: VaultFrontStatusUpdate = {
       type: GameUpdateType.VaultFrontStatus,
       weeklyMutator: this.weeklyMutator,
-      captureTicksRequired: this.vaultCaptureTicks,
+      captureTicksRequired: this.vaultCaptureTicksEffective(),
       cooldownTicksTotal: this.vaultCooldownTicksEffective(),
       passiveGoldPerMinute: this.bigintToSafeNumber(
         this.vaultPassiveGoldPerMinuteEffective(),

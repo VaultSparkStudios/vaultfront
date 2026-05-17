@@ -424,7 +424,14 @@ export interface VaultFrontStatusUpdate {
     | "none"
     | "lane_fog"
     | "accelerated_cooldowns"
-    | "double_passive";
+    | "double_passive"
+    | "gold_rush"
+    | "blitz"
+    | "no_mercy"
+    | "contested"
+    | "shield_escort"
+    | "rally_point"
+    | "execution_rush";
   captureTicksRequired: number;
   cooldownTicksTotal: number;
   passiveGoldPerMinute?: number;
