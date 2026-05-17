@@ -26,6 +26,10 @@ generated/WorldMapData.json.compressed
 # Claude Code session data
 .claude/
 
+# Runtime context-meter ledger (generated per-session, not source)
+docs/cache-ledger.ndjson
+
 # Playwright test artifacts
 test-results/
 playwright-report/
+context/.session-lock
