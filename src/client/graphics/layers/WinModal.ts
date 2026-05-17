@@ -129,6 +129,16 @@ export class WinModal extends LitElement implements Layer {
   private behindAtMinute8 = false;
   private matchLengthSeconds = 0;
 
+  // Achievement spotlight — populated by queueAchievementSpotlight() before show()
+  @state()
+  private spotlightAchievement: {
+    name: string;
+    description: string;
+    iconEmoji?: string;
+  } | null = null;
+  @state()
+  private showSpotlight = false;
+
   @state()
   private shareCopied = false;
 
@@ -154,10 +164,33 @@ export class WinModal extends LitElement implements Layer {
           ? "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800/70 p-6 shrink-0 rounded-lg z-9999 shadow-2xl backdrop-blur-xs text-white w-87.5 max-w-[90%] md:w-175"
           : "hidden"}"
       >
-        <h2 class="m-0 mb-4 text-[26px] text-center text-white">
-          ${this._title || ""}
-        </h2>
-        ${this.renderRecapSection()} ${this.innerHtml()}
+        ${this.showSpotlight && this.spotlightAchievement
+          ? html`
+              <div
+                class="flex flex-col items-center justify-center py-8 gap-4 animate-pulse"
+              >
+                <div class="text-6xl">
+                  ${this.spotlightAchievement.iconEmoji ?? "🏆"}
+                </div>
+                <div
+                  class="text-amber-300 text-xs font-semibold tracking-widest uppercase"
+                >
+                  Achievement Unlocked
+                </div>
+                <div class="text-white text-2xl font-bold text-center">
+                  ${this.spotlightAchievement.name}
+                </div>
+                <div class="text-slate-300 text-sm text-center max-w-xs">
+                  ${this.spotlightAchievement.description}
+                </div>
+              </div>
+            `
+          : html`
+              <h2 class="m-0 mb-4 text-[26px] text-center text-white">
+                ${this._title || ""}
+              </h2>
+              ${this.renderRecapSection()} ${this.innerHtml()}
+            `}
         <div class="${this.showButtons ? "flex flex-col gap-2" : "hidden"}">
           <div class="flex justify-between gap-2.5">
             <button
@@ -537,6 +570,18 @@ export class WinModal extends LitElement implements Layer {
     `;
   }
 
+  /**
+   * Call before show() to queue a first-unlock achievement spotlight.
+   * The spotlight will be shown for 3s before the score reveal.
+   */
+  queueAchievementSpotlight(data: {
+    name: string;
+    description: string;
+    iconEmoji?: string;
+  }): void {
+    this.spotlightAchievement = data;
+  }
+
   async show() {
     crazyGamesSDK.gameplayStop();
     await this.loadPatternContent();
@@ -545,6 +590,18 @@ export class WinModal extends LitElement implements Layer {
     // Check if this is a ranked game
     this.isRankedGame =
       this.game.config().gameConfig().rankedType === RankedType.OneVOne;
+
+    // Achievement spotlight: pause 3s before main reveal if a new achievement unlocked
+    if (this.spotlightAchievement) {
+      this.showSpotlight = true;
+      this.isVisible = true;
+      this.requestUpdate();
+      await new Promise<void>((res) => setTimeout(res, 3200));
+      this.showSpotlight = false;
+      this.spotlightAchievement = null;
+      this.requestUpdate();
+    }
+
     this.isVisible = true;
     this.requestUpdate();
     setTimeout(() => {
