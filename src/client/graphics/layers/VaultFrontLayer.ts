@@ -22,6 +22,11 @@ export class VaultFrontLayer implements Layer {
   /** Duration in ticks for the mutator banner to display */
   private readonly mutatorBannerDurationTicks = 60; // ~6 seconds
 
+  // Surge Chronicle — track entry events for cinematic flash
+  private surgeWasActive = false;
+  private surgeChronicleEntryTick = -1;
+  private readonly surgeChronicleFlashTicks = 35; // 3.5s flash window
+
   constructor(
     private game: GameView,
     private transform: TransformHandler,
@@ -61,6 +66,19 @@ export class VaultFrontLayer implements Layer {
     this.activePings = this.activePings
       .filter((ping) => ping.expiresAtTick >= now)
       .slice(-24);
+
+    // Surge Chronicle: detect local player surge entry
+    if (this.status) {
+      const myPlayer = this.game.myPlayer();
+      if (myPlayer) {
+        const surgeState = this.status.surges[myPlayer.smallID()];
+        const nowActive = surgeState?.active && surgeState.surgeUntilTick > now;
+        if (nowActive && !this.surgeWasActive) {
+          this.surgeChronicleEntryTick = now;
+        }
+        this.surgeWasActive = nowActive ?? false;
+      }
+    }
   }
 
   renderLayer(ctx: CanvasRenderingContext2D): void {
@@ -76,6 +94,7 @@ export class VaultFrontLayer implements Layer {
     this.drawSquadObjectiveRings(ctx);
     this.drawExecutionChainHUD(ctx);
     this.drawSurgeHUD(ctx);
+    this.drawSurgeChronicle(ctx);
     this.drawMutatorBanner(ctx);
   }
 
@@ -880,6 +899,77 @@ export class VaultFrontLayer implements Layer {
     ctx.font = `10px Overpass, sans-serif`;
     ctx.fillText(label.desc, w / 2, by + 46);
     ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  /**
+   * Surge Chronicle — cinematic full-screen flash on surge entry for local player.
+   * Fades in over 8 ticks, holds, then fades out. Paired with the amber territory
+   * glow (drawSurgeOverlays) and the persistent surge HUD badge (drawSurgeHUD).
+   */
+  private drawSurgeChronicle(ctx: CanvasRenderingContext2D): void {
+    if (this.surgeChronicleEntryTick < 0) return;
+    const now = this.game.ticks();
+    const elapsed = now - this.surgeChronicleEntryTick;
+    if (elapsed > this.surgeChronicleFlashTicks) return;
+
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+
+    const fadeIn = 8;
+    const fadeOut = 10;
+    const holdEnd = this.surgeChronicleFlashTicks - fadeOut;
+    let alpha: number;
+    if (elapsed < fadeIn) {
+      alpha = elapsed / fadeIn;
+    } else if (elapsed > holdEnd) {
+      alpha = 1 - (elapsed - holdEnd) / fadeOut;
+    } else {
+      alpha = 1;
+    }
+    alpha = Math.max(0, Math.min(1, alpha));
+
+    ctx.save();
+
+    // Edge vignette burst — amber radial gradient from all four corners
+    const cornerGrad = ctx.createRadialGradient(
+      w / 2,
+      h / 2,
+      Math.min(w, h) * 0.25,
+      w / 2,
+      h / 2,
+      Math.max(w, h) * 0.8,
+    );
+    cornerGrad.addColorStop(0, `rgba(251, 146, 60, 0)`);
+    cornerGrad.addColorStop(0.6, `rgba(245, 158, 11, ${alpha * 0.18})`);
+    cornerGrad.addColorStop(1, `rgba(234, 88, 12, ${alpha * 0.45})`);
+    ctx.fillStyle = cornerGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Central banner
+    if (elapsed < holdEnd + 5) {
+      const bannerY = h * 0.38;
+      const textAlpha = alpha * 0.95;
+
+      ctx.shadowColor = `rgba(251, 146, 60, ${textAlpha * 0.9})`;
+      ctx.shadowBlur = 24;
+      ctx.fillStyle = `rgba(254, 215, 170, ${textAlpha})`;
+      ctx.font = `bold ${Math.round(h * 0.055)}px Overpass, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("⚡ COMEBACK SURGE", w / 2, bannerY);
+
+      ctx.shadowBlur = 8;
+      ctx.fillStyle = `rgba(253, 186, 116, ${textAlpha * 0.85})`;
+      ctx.font = `${Math.round(h * 0.026)}px Overpass, sans-serif`;
+      ctx.fillText(
+        "+CONVOY GOLD  +CAPTURE BONUS  +INTERCEPT MULTIPLIER",
+        w / 2,
+        bannerY + Math.round(h * 0.042),
+      );
+
+      ctx.shadowBlur = 0;
+    }
+
     ctx.restore();
   }
 
