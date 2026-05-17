@@ -1,4 +1,11 @@
-import { Execution, Game, Player, Structures } from "../game/Game";
+import {
+  Execution,
+  Game,
+  Player,
+  Structures,
+  UnitType,
+  VaultFrontCommandType,
+} from "../game/Game";
 import { PseudoRandom } from "../PseudoRandom";
 import { simpleHash } from "../Util";
 import { AllianceExtensionExecution } from "./alliance/AllianceExtensionExecution";
@@ -17,6 +24,8 @@ export class BotExecution implements Execution {
   private triggerRatio: number;
   private reserveRatio: number;
   private expandRatio: number;
+  private nextVaultCommandTick = 0;
+  private vaultRouteIndex = 0;
 
   constructor(private bot: Player) {
     this.random = new PseudoRandom(simpleHash(bot.id()));
@@ -62,6 +71,9 @@ export class BotExecution implements Execution {
     this.acceptAllAllianceRequests();
     this.deleteAllStructures();
     this.maybeAttack();
+    if (this.mg.config().vaultSitesEnabled()) {
+      this.maybeIssueVaultFrontCommand(ticks);
+    }
   }
 
   private acceptAllAllianceRequests() {
@@ -120,6 +132,46 @@ export class BotExecution implements Execution {
     }
 
     this.attackBehavior.attackRandomTarget();
+  }
+
+  private maybeIssueVaultFrontCommand(ticks: number): void {
+    if (ticks < this.nextVaultCommandTick) return;
+    if (!this.bot.isAlive()) return;
+
+    const neighbors = this.bot.neighbors().filter((n) => n.isPlayer());
+    const hostile = neighbors.filter(
+      (n) => n.isPlayer() && !this.bot.isFriendly(n as Player),
+    ).length;
+    const pressure = neighbors.length > 0 ? hostile / neighbors.length : 0;
+    const canAffordJam =
+      this.bot.gold() >= 115_000n &&
+      this.bot.unitsOwned(UnitType.DefensePost) > 0;
+
+    let command: VaultFrontCommandType | null = null;
+
+    if (pressure >= 0.5 && canAffordJam && this.random.chance(3)) {
+      command = "jam_breaker";
+    } else if (pressure >= 0.35 && this.random.chance(3)) {
+      command = "escort";
+    } else if (this.random.chance(4)) {
+      const routes: VaultFrontCommandType[] = [
+        "reroute_safest",
+        "reroute_city",
+        "reroute_port",
+        "reroute_factory",
+      ];
+      command = routes[this.vaultRouteIndex % routes.length];
+      this.vaultRouteIndex++;
+    }
+
+    if (command !== null) {
+      this.mg.queueVaultFrontCommand({
+        playerSmallID: this.bot.smallID(),
+        type: command,
+        issuedAtTick: ticks,
+      });
+    }
+    this.nextVaultCommandTick = ticks + this.random.nextInt(80, 160);
   }
 
   isActive(): boolean {

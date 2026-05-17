@@ -97,6 +97,7 @@ export class GameImpl implements Game {
 
   private updates: GameUpdates = createGameUpdatesMap();
   private vaultFrontCommands: VaultFrontCommand[] = [];
+  private _vaultSiteControllerIDs: Set<number> = new Set();
   private tileUpdatePairs: number[] = [];
   private motionPlanRecords: MotionPlanRecord[] = [];
   private planDrivenUnitIds = new Set<number>();
@@ -256,6 +257,14 @@ export class GameImpl implements Game {
 
   queueVaultFrontCommand(command: VaultFrontCommand): void {
     this.vaultFrontCommands.push(command);
+  }
+
+  vaultSiteControllerIDs(): ReadonlySet<number> {
+    return this._vaultSiteControllerIDs;
+  }
+
+  setVaultSiteControllerIDs(ids: Set<number>): void {
+    this._vaultSiteControllerIDs = ids;
   }
 
   drainVaultFrontCommands(): VaultFrontCommand[] {

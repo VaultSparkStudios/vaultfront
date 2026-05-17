@@ -666,6 +666,25 @@ export class AiAttackBehavior {
       }
     }
 
+    // Vault-site targeting bias: prefer attacking neighbors who control vault sites
+    if (this.game.config().vaultSitesEnabled()) {
+      const controllers = this.game.vaultSiteControllerIDs();
+      if (controllers.size > 0) {
+        const vaultTarget = this.player
+          .neighbors()
+          .find(
+            (n): n is Player =>
+              n.isPlayer() &&
+              !this.player.isFriendly(n) &&
+              controllers.has((n as Player).smallID()),
+          );
+        if (vaultTarget && this.random.chance(3)) {
+          this.sendAttack(vaultTarget);
+          return;
+        }
+      }
+    }
+
     // Choose a new enemy randomly
     const neighbors = this.player.neighbors();
     for (const neighbor of this.random.shuffleArray(neighbors)) {

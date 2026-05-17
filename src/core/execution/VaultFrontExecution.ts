@@ -1970,6 +1970,13 @@ export class VaultFrontExecution implements Execution {
       squadObjectives: this.buildSquadObjectiveStates(),
     };
     this.game.addUpdate(statusUpdate);
+    this.game.setVaultSiteControllerIDs(
+      new Set(
+        this.vaultSites
+          .filter((s) => s.controllerID !== null)
+          .map((s) => s.controllerID as number),
+      ),
+    );
     this.debugPublishedStatus(statusUpdate);
   }
 

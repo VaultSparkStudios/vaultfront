@@ -886,6 +886,10 @@ export interface Game extends GameMap {
   addUpdate(update: GameUpdate): void;
   queueVaultFrontCommand(command: VaultFrontCommand): void;
   drainVaultFrontCommands(): VaultFrontCommand[];
+  /** Returns the set of small player IDs currently controlling at least one vault site. */
+  vaultSiteControllerIDs(): ReadonlySet<number>;
+  /** Called by VaultFrontExecution each tick to keep vault controller data current. */
+  setVaultSiteControllerIDs(ids: Set<number>): void;
   railNetwork(): RailNetwork;
   conquerPlayer(conqueror: Player, conquered: Player): void;
   miniWaterHPA(): PathFinder<number> | null;
