@@ -349,6 +349,41 @@ export class VaultFrontLayer implements Layer {
         midX,
         midY + 6,
       );
+
+      // Intercept probability gauge bar
+      const prob = convoy.interceptProbability ?? 0;
+      if (prob > 0) {
+        const barW = Math.min(120, routeLen * 0.45);
+        const barH = 4;
+        const barX = midX - barW / 2;
+        const barY = midY + 16;
+
+        ctx.fillStyle = "rgba(15, 23, 42, 0.6)";
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, barW, barH, 2);
+        ctx.fill();
+
+        const fillW = (prob / 100) * barW;
+        const barGrad = ctx.createLinearGradient(barX, barY, barX + barW, barY);
+        barGrad.addColorStop(0, "rgba(34, 197, 94, 0.9)");
+        barGrad.addColorStop(0.4, "rgba(234, 179, 8, 0.9)");
+        barGrad.addColorStop(1, "rgba(239, 68, 68, 0.95)");
+        ctx.fillStyle = barGrad;
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, fillW, barH, 2);
+        ctx.fill();
+
+        ctx.fillStyle =
+          prob >= 60
+            ? "rgba(252, 165, 165, 0.9)"
+            : prob >= 30
+              ? "rgba(253, 224, 71, 0.9)"
+              : "rgba(134, 239, 172, 0.9)";
+        ctx.font = `${Math.round(this.fontSize() - 4)}px Overpass, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText(`${prob}% intercept risk`, midX, barY + barH + 9);
+      }
+
       ctx.restore();
     }
   }

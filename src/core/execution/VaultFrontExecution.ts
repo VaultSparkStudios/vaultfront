@@ -49,6 +49,7 @@ interface VaultConvoy {
   rewardMath: string;
   escortShield: number;
   reroutes: number;
+  interceptProbability: number;
 }
 
 interface BeaconState {
@@ -386,6 +387,11 @@ export class VaultFrontExecution implements Execution {
     active.goldReward = updatedPlan.goldReward;
     active.troopsReward = updatedPlan.troopsReward;
     active.reroutes += 1;
+    active.interceptProbability = this.computeInterceptProbability(
+      player,
+      currentTile,
+      destination,
+    );
 
     this.emitActivity(
       "convoy_rerouted",
@@ -1034,6 +1040,59 @@ export class VaultFrontExecution implements Execution {
     return baseRisk;
   }
 
+  /**
+   * Estimates intercept probability (0–100) by sampling the corridor between
+   * source and destination at fine intervals and checking hostile territory
+   * presence within a ±2-tile corridor width around each sample point.
+   *
+   * More accurate than `routeRisk` which only checks on-route tiles; this
+   * catches adjacent enemy territory that could easily overflow the path.
+   */
+  private computeInterceptProbability(
+    owner: Player,
+    source: TileRef,
+    destination: TileRef,
+  ): number {
+    const srcX = this.game.x(source);
+    const srcY = this.game.y(source);
+    const dstX = this.game.x(destination);
+    const dstY = this.game.y(destination);
+
+    const samples = 15;
+    const corridorHalfWidth = 2;
+    let hostileWeight = 0;
+    let totalWeight = 0;
+
+    for (let i = 1; i <= samples; i++) {
+      const t = i / samples;
+      const cx = Math.round(srcX + (dstX - srcX) * t);
+      const cy = Math.round(srcY + (dstY - srcY) * t);
+
+      for (let dx = -corridorHalfWidth; dx <= corridorHalfWidth; dx++) {
+        for (let dy = -corridorHalfWidth; dy <= corridorHalfWidth; dy++) {
+          const x = cx + dx;
+          const y = cy + dy;
+          if (!this.game.isValidCoord(x, y)) continue;
+          // Weight center tiles more heavily
+          const w = 1 / (1 + Math.abs(dx) + Math.abs(dy));
+          totalWeight += w;
+          const tileOwner = this.game.owner(this.game.ref(x, y));
+          if (
+            tileOwner.isPlayer() &&
+            tileOwner.smallID() !== owner.smallID() &&
+            !owner.isFriendly(tileOwner)
+          ) {
+            hostileWeight += w;
+          }
+        }
+      }
+    }
+
+    if (totalWeight === 0) return 0;
+    const raw = hostileWeight / totalWeight;
+    return Math.round(Math.min(100, raw * 100));
+  }
+
   private convoyRewardPlan(
     owner: Player,
     distance: number,
@@ -1162,6 +1221,11 @@ export class VaultFrontExecution implements Execution {
       rewardMath: rewardPlan.rewardMath,
       escortShield: escorted,
       reroutes: 0,
+      interceptProbability: this.computeInterceptProbability(
+        owner,
+        site.tile,
+        destinationTile,
+      ),
     });
     this.game.stats().vaultConvoyLaunched(owner);
     this.game.stats().vaultInteraction(owner);
@@ -1280,6 +1344,16 @@ export class VaultFrontExecution implements Execution {
       }
 
       const currentTile = this.convoyProgressTile(convoy);
+
+      // Refresh intercept probability every 30 ticks so the gauge stays live
+      if (ticks % 30 === 0) {
+        convoy.interceptProbability = this.computeInterceptProbability(
+          owner,
+          currentTile,
+          convoy.destinationTile,
+        );
+      }
+
       const interceptor = this.hostileOwnerAtTile(owner, currentTile);
       if (interceptor) {
         const escortActive =
@@ -1753,6 +1827,7 @@ export class VaultFrontExecution implements Execution {
           routeRisk: convoy.routeRisk,
           routeDistance: convoy.routeDistance,
           rewardMath: convoy.rewardMath,
+          interceptProbability: convoy.interceptProbability,
           reroutePreviews,
         };
       }),

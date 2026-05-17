@@ -375,6 +375,8 @@ export interface VaultFrontConvoyState {
   routeRisk: number;
   routeDistance: number;
   rewardMath: string;
+  /** 0–100 intercept probability based on enemy troop density near the convoy corridor */
+  interceptProbability: number;
   reroutePreviews?: VaultFrontReroutePreview[];
 }
 
