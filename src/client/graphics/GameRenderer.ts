@@ -4,8 +4,6 @@ import { UserSettings } from "../../core/game/UserSettings";
 import { GameStartingModal } from "../GameStartingModal";
 import { RefreshGraphicsEvent as RedrawGraphicsEvent } from "../InputHandler";
 import { FrameProfiler } from "./FrameProfiler";
-import { TransformHandler } from "./TransformHandler";
-import { UIState } from "./UIState";
 import { AlertFrame } from "./layers/AlertFrame";
 import { AttacksDisplay } from "./layers/AttacksDisplay";
 import { BuildMenu } from "./layers/BuildMenu";
@@ -46,6 +44,9 @@ import { UnitDisplay } from "./layers/UnitDisplay";
 import { UnitLayer } from "./layers/UnitLayer";
 import { VaultFrontLayer } from "./layers/VaultFrontLayer";
 import { WinModal } from "./layers/WinModal";
+import { SpectatorAutoCamera } from "./SpectatorAutoCamera";
+import { TransformHandler } from "./TransformHandler";
+import { UIState } from "./UIState";
 
 export function createRenderer(
   canvas: HTMLCanvasElement,
@@ -328,6 +329,12 @@ export function createRenderer(
     performanceOverlay,
   ];
 
+  const spectatorCamera = new SpectatorAutoCamera(
+    game,
+    eventBus,
+    transformHandler,
+  );
+
   return new GameRenderer(
     game,
     eventBus,
@@ -336,6 +343,7 @@ export function createRenderer(
     uiState,
     layers,
     performanceOverlay,
+    spectatorCamera,
   );
 }
 
@@ -353,6 +361,7 @@ export class GameRenderer {
     public uiState: UIState,
     private layers: Layer[],
     private performanceOverlay: PerformanceOverlay,
+    private spectatorCamera: SpectatorAutoCamera,
   ) {
     const context = canvas.getContext("2d", { alpha: false });
     if (context === null) throw new Error("2d context not supported");
@@ -362,6 +371,7 @@ export class GameRenderer {
   initialize() {
     this.eventBus.on(RedrawGraphicsEvent, () => this.redraw());
     this.layers.forEach((l) => l.init?.());
+    this.spectatorCamera.start();
 
     // only append the canvas if it's not already in the document to avoid reparenting side-effects
     if (!document.body.contains(this.canvas)) {
@@ -472,6 +482,7 @@ export class GameRenderer {
   }
 
   tick() {
+    this.spectatorCamera.tick();
     const nowMs = performance.now();
     const shouldProfileTick = FrameProfiler.isEnabled();
 
