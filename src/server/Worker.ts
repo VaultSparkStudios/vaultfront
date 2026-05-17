@@ -1,3 +1,4 @@
+import Anthropic from "@anthropic-ai/sdk";
 import compression from "compression";
 import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
@@ -1240,6 +1241,73 @@ export async function startWorker() {
     return res.json(status);
   });
   // ─────────────────────────────────────────────────────────────────────────
+
+  // ── Battle Narrative API ─────────────────────────────────────────────────
+  const narrativeRateLimit = rateLimit({
+    windowMs: 60_000,
+    max: 10, // generous — one per match per player
+  });
+
+  const BattleNarrativeInputSchema = z.object({
+    matchId: z.string().max(64),
+    events: z
+      .array(
+        z.object({
+          type: z.string(),
+          player: z.string().optional(),
+          tick: z.number().optional(),
+          detail: z.string().optional(),
+        }),
+      )
+      .max(20),
+    winnerId: z.string().optional(),
+    durationSeconds: z.number().int().min(0).max(7200),
+  });
+
+  const anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY ?? "",
+  });
+
+  app.post(
+    "/api/vaultfront/battle-narrative",
+    narrativeRateLimit,
+    async (req, res) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return res.status(503).json({ error: "Narrative service unavailable" });
+      }
+      const identity = await resolveVaultFrontIdentity(req);
+      if (!identity) {
+        return res.status(401).json({ error: "Missing identity" });
+      }
+      const parsed = BattleNarrativeInputSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: z.prettifyError(parsed.error) });
+      }
+      const { events, winnerId, durationSeconds } = parsed.data;
+      const eventSummary = events
+        .map(
+          (e) =>
+            `[${e.type}]${e.player ? ` ${e.player}` : ""}${e.detail ? `: ${e.detail}` : ""}`,
+        )
+        .join("\n");
+      const minutes = Math.floor(durationSeconds / 60);
+      const prompt = `You are a battle chronicler for VaultFront, a browser real-time strategy game where players contest vault sites, route convoys, and trigger comeback surges.\n\nMatch duration: ${minutes} minutes\n${winnerId ? `Winner: ${winnerId}\n` : ""}Key events:\n${eventSummary}\n\nWrite a 3-paragraph battle chronicle in an epic, cinematic tone. First paragraph: the opening moves and territory struggles. Second paragraph: the pivotal vault and convoy moments. Third paragraph: the endgame and outcome. Keep each paragraph to 2-3 sentences. Use dramatic but accurate language.`;
+
+      try {
+        const message = await anthropic.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 400,
+          messages: [{ role: "user", content: prompt }],
+        });
+        const narrative =
+          message.content[0].type === "text" ? message.content[0].text : "";
+        return res.json({ ok: true, narrative });
+      } catch (err) {
+        logger.error("battle-narrative generation failed", err);
+        return res.status(500).json({ error: "Narrative generation failed" });
+      }
+    },
+  );
 
   // ── Player Stats / Leaderboard API ───────────────────────────────────────
   const statsRateLimit = rateLimit({

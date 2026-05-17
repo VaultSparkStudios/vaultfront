@@ -637,6 +637,41 @@ export async function recordVaultFrontRecapEvent(input: {
   }
 }
 
+export interface BattleNarrativeInput {
+  matchId: string;
+  events: Array<{
+    type: string;
+    player?: string;
+    tick?: number;
+    detail?: string;
+  }>;
+  winnerId?: string;
+  durationSeconds: number;
+}
+
+export async function fetchBattleNarrative(
+  input: BattleNarrativeInput,
+): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `${getApiBase()}/api/vaultfront/battle-narrative`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(await vaultFrontIdentityHeaders()),
+        },
+        body: JSON.stringify(input),
+      },
+    );
+    if (!response.ok) return null;
+    const data = (await response.json()) as { ok: boolean; narrative?: string };
+    return data.narrative ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchVaultFrontRecapSummary(
   adminToken: string,
 ): Promise<VaultFrontRecapSummary | false> {
