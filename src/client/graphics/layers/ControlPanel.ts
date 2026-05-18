@@ -2457,6 +2457,15 @@ export class ControlPanel extends LitElement implements Layer {
                   >
                     Ping Pulse
                   </button>
+                  <button
+                    class="col-span-2 ${compact
+                      ? "px-2 py-1.5"
+                      : "px-1.5 py-1"} rounded bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30"
+                    title="Broadcast your active intel to all opponents — earn gold per recipient. Requires active Intel purchase."
+                    @click=${() => this.sendSellIntelCommand()}
+                  >
+                    Sell Intel (earn gold)
+                  </button>
                 </div>
                 ${ownConvoy ? this.renderReroutePreviewPanel(ownConvoy) : ""}
                 ${this.renderRewardExplainPanel(convoy)}
@@ -2493,6 +2502,11 @@ export class ControlPanel extends LitElement implements Layer {
       hudVariant: this.runtimeHudVariant,
       value: 1,
     });
+  }
+
+  private sendSellIntelCommand() {
+    this.eventBus.emit(new SendVaultConvoyCommandIntentEvent("sell_intel"));
+    logHudTelemetry("hud_command_sell_intel");
   }
 
   private sendRerouteSafestCommand() {

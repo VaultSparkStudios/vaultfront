@@ -502,6 +502,7 @@ export const VaultConvoyCommandIntentSchema = z.object({
     z.literal("reroute_silo"),
     z.literal("reroute_safest"),
     z.literal("escort"),
+    z.literal("sell_intel"),
   ]),
 });
 

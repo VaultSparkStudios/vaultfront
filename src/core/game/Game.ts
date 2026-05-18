@@ -1003,7 +1003,8 @@ export type VaultFrontCommandType =
   | "purchase_deep_intel"
   | "sabotage"
   | "bribe"
-  | "trade_deal";
+  | "trade_deal"
+  | "sell_intel";
 
 export interface VaultFrontCommand {
   playerSmallID: number;

@@ -434,6 +434,9 @@ export class VaultFrontExecution implements Execution {
       case "trade_deal":
         this.applyTradeDealCommand(player, command, ticks);
         return;
+      case "sell_intel":
+        this.applySellIntelCommand(player, ticks);
+        return;
       default:
         return;
     }
@@ -976,6 +979,75 @@ export class VaultFrontExecution implements Execution {
       `${label} purchased — enemy convoy routes revealed for ${Math.ceil(this.intelDurationTicks / 10)}s.`,
       MessageType.RECEIVED_GOLD_FROM_TRADE,
       player.id(),
+    );
+  }
+
+  private applySellIntelCommand(player: Player, ticks: number): void {
+    const sellerID = player.smallID();
+    const hasIntel =
+      (this.intelActiveUntilTick.get(sellerID) ?? 0) > ticks ||
+      (this.deepIntelActiveUntilTick.get(sellerID) ?? 0) > ticks;
+
+    if (!hasIntel) {
+      this.game.displayMessage(
+        "No active intel to sell — purchase Intel first.",
+        MessageType.CHAT,
+        player.id(),
+      );
+      return;
+    }
+
+    const buyers = this.game
+      .players()
+      .filter(
+        (p) =>
+          p.smallID() !== sellerID &&
+          p.isAlive() &&
+          p.isPlayer() &&
+          (this.intelActiveUntilTick.get(p.smallID()) ?? 0) <= ticks,
+      );
+
+    if (buyers.length === 0) {
+      this.game.displayMessage(
+        "No buyers available — all players already have active intel.",
+        MessageType.CHAT,
+        player.id(),
+      );
+      return;
+    }
+
+    const hasDeep = (this.deepIntelActiveUntilTick.get(sellerID) ?? 0) > ticks;
+    const halfDuration = Math.floor(this.intelDurationTicks / 2);
+    const rewardPerBuyer = this.intelCost / 3n;
+    const untilTick = ticks + halfDuration;
+
+    for (const buyer of buyers) {
+      if (hasDeep) {
+        this.deepIntelActiveUntilTick.set(buyer.smallID(), untilTick);
+      }
+      this.intelActiveUntilTick.set(buyer.smallID(), untilTick);
+      this.game.displayMessage(
+        `${player.displayName()} sold you route intel — enemy convoys visible for ${Math.ceil(halfDuration / 10)}s.`,
+        MessageType.RECEIVED_GOLD_FROM_TRADE,
+        buyer.id(),
+      );
+    }
+
+    const earned = rewardPerBuyer * BigInt(buyers.length);
+    player.addGold(earned);
+    this.game.displayMessage(
+      `Intel sold to ${buyers.length} player${buyers.length > 1 ? "s" : ""} — earned ${earned.toLocaleString()} gold.`,
+      MessageType.RECEIVED_GOLD_FROM_TRADE,
+      player.id(),
+    );
+    const anchor = player.spawnTile() ?? this.game.ref(0, 0);
+    this.emitActivity(
+      "map_event",
+      anchor,
+      player.smallID(),
+      null,
+      "Intel Broadcast",
+      60,
     );
   }
 
