@@ -1,6 +1,7 @@
 import { EventBus } from "../../core/EventBus";
 import { GameView } from "../../core/game/GameView";
 import { UserSettings } from "../../core/game/UserSettings";
+import { ContractHudWidget } from "../components/ContractHudWidget";
 import { GameStartingModal } from "../GameStartingModal";
 import { RefreshGraphicsEvent as RedrawGraphicsEvent } from "../InputHandler";
 import { FrameProfiler } from "./FrameProfiler";
@@ -171,6 +172,13 @@ export function createRenderer(
     interceptCelebration.game = game;
   }
 
+  const contractHud = document.querySelector(
+    "contract-hud-widget",
+  ) as ContractHudWidget;
+  if (contractHud instanceof ContractHudWidget) {
+    contractHud.game = game;
+  }
+
   const replayPanel = document.querySelector("replay-panel") as ReplayPanel;
   if (!(replayPanel instanceof ReplayPanel)) {
     console.error("replay panel not found");
@@ -304,6 +312,7 @@ export function createRenderer(
     new VaultFrontLayer(game, transformHandler),
     new NameLayer(game, transformHandler, eventBus),
     interceptCelebration,
+    contractHud,
     eventsDisplay,
     attacksDisplay,
     chatDisplay,

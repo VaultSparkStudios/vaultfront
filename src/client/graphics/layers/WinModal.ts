@@ -318,12 +318,36 @@ export class WinModal extends LitElement implements Layer {
         (c) => c.key === this.mutatorVoteSentKey,
       );
       return html`
-        <div class="text-center text-slate-400 text-xs py-2">
-          Voted for
-          <span class="text-amber-300"
-            >${voted?.name ?? this.mutatorVoteSentKey}</span
-          >
-          — thanks!
+        <div
+          class="border-t border-slate-600/40 mt-2 pt-2 text-center vote-confirmed-anim"
+        >
+          <style>
+            @keyframes vote-confirmed-pulse {
+              0% {
+                background: rgba(34, 197, 94, 0.25);
+              }
+              60% {
+                background: rgba(34, 197, 94, 0.08);
+              }
+              100% {
+                background: transparent;
+              }
+            }
+            .vote-confirmed-anim {
+              animation: vote-confirmed-pulse 1.2s ease-out forwards;
+              border-radius: 8px;
+              padding: 8px;
+            }
+          </style>
+          <div class="text-xs text-green-400 font-semibold mb-0.5">
+            ✓ Vote cast!
+          </div>
+          <div class="text-xs text-slate-300">
+            <span class="text-amber-300 font-semibold"
+              >${voted?.name ?? this.mutatorVoteSentKey}</span
+            >
+            — you'll see it in action next week if it wins.
+          </div>
         </div>
       `;
     }
@@ -339,21 +363,42 @@ export class WinModal extends LitElement implements Layer {
 
     return html`
       <div class="border-t border-slate-600/40 mt-2 pt-2">
-        <div class="text-center text-xs text-slate-400 mb-2 tracking-wide">
-          Vote for next week's VaultFront mutator
+        <div class="flex items-center justify-center gap-1.5 mb-2">
+          <span
+            class="text-xs font-semibold text-purple-300 tracking-wide uppercase"
+            >⚡ Vote: Next Week's Mutator</span
+          >
         </div>
-        <div class="flex justify-center gap-2 flex-wrap">
-          ${this.mutatorVoteCandidates.map(
+        <div class="grid grid-cols-2 gap-2">
+          ${this.mutatorVoteCandidates.slice(0, 2).map(
             (c) => html`
               <button
                 @click=${() => vote(c.key)}
-                class="px-3 py-1.5 text-xs bg-transparent border border-purple-500/50 text-purple-300 rounded-md cursor-pointer hover:bg-purple-500/20 transition-colors"
+                class="flex flex-col items-center gap-1 px-3 py-2.5 bg-purple-900/20 border border-purple-500/40 text-purple-200 rounded-lg cursor-pointer hover:bg-purple-500/30 hover:border-purple-400/70 hover:scale-[1.02] transition-all text-xs font-medium"
               >
-                ${c.name}
+                <span class="text-sm">${c.name}</span>
               </button>
             `,
           )}
         </div>
+        ${this.mutatorVoteCandidates.length > 2
+          ? html`
+              <div class="flex justify-center mt-1.5 gap-2">
+                ${this.mutatorVoteCandidates
+                  .slice(2)
+                  .map(
+                    (c) => html`
+                      <button
+                        @click=${() => vote(c.key)}
+                        class="px-3 py-1.5 text-xs bg-transparent border border-purple-500/30 text-purple-400 rounded-md cursor-pointer hover:bg-purple-500/15 transition-colors"
+                      >
+                        ${c.name}
+                      </button>
+                    `,
+                  )}
+              </div>
+            `
+          : null}
       </div>
     `;
   }
