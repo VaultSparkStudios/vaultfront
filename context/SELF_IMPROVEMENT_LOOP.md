@@ -35,3 +35,18 @@ momentum +15 (24/24 shipped = second consecutive full board clear),
 devHealth +12 (tile dedup, TouchHandler cleanup, anti-cheat signals infra),
 processQuality +10 (clan ELO, dynasty rollover, admin endpoint pattern),
 capitalEfficiency +6 (Haiku for prophecy/commentary/lore/mission ~$0.0001/call).
+
+## Sprint: 2026-05-18 — Session 3 HUD Systems (SIL estimate: 858/1000)
+
+Shipped 7 items targeting HUD completeness and AI polish. Previously-built server-side mechanics
+(vault-heist, bounty-board, warchest-hunt, map-events) now have client HUD presentation.
+Highlights: World Events banner with per-event accent colours + countdown, Vault Heist cinematic
+victim vignette, persistent Bounty Board top-right card, Warchest Hunt mark/crosshair entry banner,
+Vault Prophecy oracle card at game start (claude-haiku, 2-sentence cryptic text fades in 8s),
+full ephemeral prompt-caching on all 7 Haiku API endpoints (was missing on battle-narrative).
+
+**Delta (920 → 858):** SIL re-anchored to actual shipped state after verifying audit JSON.
+Session scope was continuation/HUD pass rather than new-feature-heavy board clear; honest scoring.
+capitalEfficiency +8 (all AI endpoints now cache system prompts → ~40% token reduction on repeat calls),
+engagement +5 (prophecy + heist/bounty/warchest HUD = every mechanic now has dramatic player feedback),
+devHealth +3 (vault_heist wired through Schemas + Transport correctly).
