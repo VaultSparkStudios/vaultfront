@@ -39,6 +39,7 @@ import {
 } from "./InputHandler";
 import { endGame, startGame, startTime } from "./LocalPersistantStats";
 import { terrainMapFileLoader } from "./TerrainMapFileLoader";
+import { TouchHandler } from "./TouchHandler";
 import {
   SendAttackIntentEvent,
   SendBoatAttackIntentEvent,
@@ -239,6 +240,8 @@ async function createClientGame(
     `creating private game got difficulty: ${lobbyConfig.gameStartInfo.config.difficulty}`,
   );
 
+  const touchHandler = new TouchHandler(canvas, eventBus);
+
   return new ClientGameRunner(
     lobbyConfig,
     clientID,
@@ -248,6 +251,7 @@ async function createClientGame(
     transport,
     worker,
     gameView,
+    touchHandler,
   );
 }
 
@@ -274,6 +278,7 @@ export class ClientGameRunner {
     private transport: Transport,
     private worker: WorkerClient,
     private gameView: GameView,
+    private _touchHandler?: TouchHandler,
   ) {
     this.lastMessageTime = Date.now();
   }

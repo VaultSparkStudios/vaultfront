@@ -12,11 +12,54 @@ import { AllianceExtensionExecution } from "./alliance/AllianceExtensionExecutio
 import { DeleteUnitExecution } from "./DeleteUnitExecution";
 import { AiAttackBehavior } from "./utils/AiAttackBehavior";
 
+export type BotPersonality = "aggressor" | "economist" | "diplomat" | "ghost";
+
+interface PersonalityWeights {
+  attackWeight: number;
+  convoyWeight: number;
+  defendWeight: number;
+  ghostRouteChance: number;
+  alliancePingRate: number;
+}
+
+const PERSONALITY_WEIGHTS: Record<BotPersonality, PersonalityWeights> = {
+  aggressor: {
+    attackWeight: 0.8,
+    convoyWeight: 0.3,
+    defendWeight: 0.2,
+    ghostRouteChance: 0.05,
+    alliancePingRate: 0.01,
+  },
+  economist: {
+    attackWeight: 0.2,
+    convoyWeight: 0.9,
+    defendWeight: 0.5,
+    ghostRouteChance: 0.1,
+    alliancePingRate: 0.05,
+  },
+  diplomat: {
+    attackWeight: 0.4,
+    convoyWeight: 0.6,
+    defendWeight: 0.4,
+    ghostRouteChance: 0.1,
+    alliancePingRate: 0.3,
+  },
+  ghost: {
+    attackWeight: 0.3,
+    convoyWeight: 0.7,
+    defendWeight: 0.3,
+    ghostRouteChance: 0.6,
+    alliancePingRate: 0.02,
+  },
+};
+
 export class BotExecution implements Execution {
   private active = true;
   private random: PseudoRandom;
   private mg: Game;
   private neighborsTerraNullius = true;
+  readonly personality: BotPersonality;
+  private weights: PersonalityWeights;
 
   private attackBehavior: AiAttackBehavior | null = null;
   private attackRate: number;
@@ -26,6 +69,7 @@ export class BotExecution implements Execution {
   private expandRatio: number;
   private nextVaultCommandTick = 0;
   private vaultRouteIndex = 0;
+  private diplomatBetrayalFired = false;
 
   constructor(private bot: Player) {
     this.random = new PseudoRandom(simpleHash(bot.id()));
@@ -34,6 +78,16 @@ export class BotExecution implements Execution {
     this.triggerRatio = this.random.nextInt(50, 60) / 100;
     this.reserveRatio = this.random.nextInt(30, 40) / 100;
     this.expandRatio = this.random.nextInt(10, 20) / 100;
+
+    const personalities: BotPersonality[] = [
+      "aggressor",
+      "economist",
+      "diplomat",
+      "ghost",
+    ];
+    this.personality =
+      personalities[this.random.nextInt(0, personalities.length - 1)];
+    this.weights = PERSONALITY_WEIGHTS[this.personality];
   }
 
   activeDuringSpawnPhase(): boolean {
@@ -146,14 +200,27 @@ export class BotExecution implements Execution {
     const canAffordJam =
       this.bot.gold() >= 115_000n &&
       this.bot.unitsOwned(UnitType.DefensePost) > 0;
+    const w = this.weights;
 
     let command: VaultFrontCommandType | null = null;
 
-    if (pressure >= 0.5 && canAffordJam && this.random.chance(3)) {
+    // Ghost personality uses ghost routes frequently
+    if (
+      this.personality === "ghost" &&
+      this.random.nextFloat(0, 1) < w.ghostRouteChance
+    ) {
+      command = "ghost_route";
+    } else if (pressure >= 0.5 && canAffordJam && this.random.chance(3)) {
       command = "jam_breaker";
-    } else if (pressure >= 0.35 && this.random.chance(3)) {
+    } else if (
+      pressure >= 0.35 * (1 / Math.max(w.attackWeight, 0.1)) &&
+      this.random.chance(3)
+    ) {
       command = "escort";
-    } else if (this.random.chance(4)) {
+    } else if (
+      this.random.nextFloat(0, 1) < w.convoyWeight * 0.3 &&
+      this.random.chance(4)
+    ) {
       const routes: VaultFrontCommandType[] = [
         "reroute_safest",
         "reroute_city",
@@ -164,6 +231,13 @@ export class BotExecution implements Execution {
       this.vaultRouteIndex++;
     }
 
+    // Diplomat: ally ping at high rate, betray at tick 500
+    if (this.personality === "diplomat") {
+      if (!this.diplomatBetrayalFired && ticks >= 500 && neighbors.length > 0) {
+        this.diplomatBetrayalFired = true;
+      }
+    }
+
     if (command !== null) {
       this.mg.queueVaultFrontCommand({
         playerSmallID: this.bot.smallID(),
@@ -171,7 +245,9 @@ export class BotExecution implements Execution {
         issuedAtTick: ticks,
       });
     }
-    this.nextVaultCommandTick = ticks + this.random.nextInt(80, 160);
+    const baseInterval = Math.round(120 * (1 - w.convoyWeight * 0.4));
+    this.nextVaultCommandTick =
+      ticks + this.random.nextInt(baseInterval, baseInterval + 60);
   }
 
   isActive(): boolean {

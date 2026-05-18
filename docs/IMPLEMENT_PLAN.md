@@ -1,59 +1,73 @@
-# Implement Plan — AUDIT_2026-05-17
+# Implement Plan — AUDIT_2026-05-17 Session 2
 
-Generated: 2026-05-17
-Source: docs/AUDIT_2026-05-17.json
+Generated: 2026-05-17 · 24 items · Combined Priority: 943.5
 
-## Sequencing rationale
+## Optimal Efficiency Sequence
 
-Reordered from raw Priority for optimal efficiency:
+Items re-sorted by axis grouping + effort-to-impact ratio. Same-axis items batched to
+minimize context-switching on shared code surfaces.
 
-- Foundations + infra first (unblock downstream)
-- Same code-surface items grouped (context savings)
-- 🔥 wins with low effort front-loaded for momentum
-- Token-cost measurement last (needs other changes settled)
+---
 
-## Execution sequence
+### Group 1 — Execution Core (VaultFrontExecution.ts + Game.ts + GameUpdates.ts)
 
-| Seq | Slug                       | Axis          | Effort | Priority | Rationale                                           |
-| --- | -------------------------- | ------------- | ------ | -------- | --------------------------------------------------- |
-| 1   | missing-infra-scripts      | speed         | 4h     | 4.6      | Unblocks workflow scripts; foundation               |
-| 2   | surge-visibility           | ux            | 2h     | 48.0     | Quick win; foundational for surge-chronicle         |
-| 3   | surge-chronicle            | gamification  | 4h     | 83.6 🔥  | Builds on surge-visibility; same code surface       |
-| 4   | combo-meter                | ux            | 4h     | 49.5     | Same HUD surface as surge-chronicle                 |
-| 5   | dynamic-vault-scaling      | feature_depth | 2h     | 18.0     | Quick, standalone VaultFrontExecution change        |
-| 6   | achievement-spotlight      | gamification  | 4h     | 48.7     | Post-game cluster start                             |
-| 7   | post-game-micro-feedback   | feedback_loop | 2h     | 28.0     | Post-game cluster; pairs with achievement-spotlight |
-| 8   | ai-battle-narrative        | ai            | 4h     | 52.2 🔥  | Post-game cluster; needs /api/battle-narrative      |
-| 9   | last-stand-event           | gamification  | 8h     | 81.3 🔥  | New game event; VaultFrontExecution + Layer         |
-| 10  | convoy-intercept-predictor | gamification  | 8h     | 65.1 🔥  | Convoy system; builds on status update              |
-| 11  | mutator-variety            | feature_depth | 4h     | 20.3     | Fast; extends existing mutator type                 |
-| 12  | mutator-vote               | gamification  | 8h     | 50.6     | DB + UI; depends on mutator-variety slugs           |
-| 13  | elo-placement-progression  | gamification  | 8h     | 43.4     | Competitive systems; PlayerStatsStore + UI          |
-| 14  | replay-highlight-sharing   | feature_depth | 4h     | 32.5     | ReplayStore + ReplayPanel                           |
-| 15  | smart-spectator-camera     | ai            | 8h     | 28.9     | Spectator system; SpectatorBus                      |
-| 16  | api-auth-security          | security      | 4h     | 8.1      | Validation; required before ghost-route ships       |
-| 17  | bot-vaultfront-awareness   | ai            | 1d     | 14.4     | Large bot changes; BotExecution + AiAttackBehavior  |
-| 18  | convoy-ghost-route         | feature_depth | 1d     | 23.0     | Complex new mechanic; requires api-auth-security    |
-| 19  | context-token-ledger       | token         | 4h     | 7.7      | Measure after all other changes settled             |
+| Seq | Slug                       | Tier | Effort | Priority |
+| --- | -------------------------- | :--: | ------ | :------: |
+| 1   | vault-heist                |  🔥  | 4h     |   94.0   |
+| 2   | bounty-board               |  🔥  | 4h     |   83.6   |
+| 3   | warchest-hunt              |  🔥  | 4h     |   74.3   |
+| 4   | map-events-system          |  ⚡  | 8h     |   50.6   |
+| 5   | match-intel-layer          |  ⚡  | 4h     |   37.1   |
+| 6   | economic-warfare-expansion |  ⚡  | 8h     |   32.5   |
 
-## Status
+### Group 2 — AI API Endpoints (Worker.ts)
 
-- [ ] 1. missing-infra-scripts
-- [ ] 2. surge-visibility
-- [ ] 3. surge-chronicle
-- [ ] 4. combo-meter
-- [ ] 5. dynamic-vault-scaling
-- [ ] 6. achievement-spotlight
-- [ ] 7. post-game-micro-feedback
-- [ ] 8. ai-battle-narrative
-- [ ] 9. last-stand-event
-- [ ] 10. convoy-intercept-predictor
-- [ ] 11. mutator-variety
-- [ ] 12. mutator-vote
-- [ ] 13. elo-placement-progression
-- [ ] 14. replay-highlight-sharing
-- [ ] 15. smart-spectator-camera
-- [ ] 16. api-auth-security
-- [ ] 17. bot-vaultfront-awareness
-- [ ] 18. convoy-ghost-route
-- [ ] 19. context-token-ledger
+| Seq | Slug                  | Tier | Effort | Priority |
+| --- | --------------------- | :--: | ------ | :------: |
+| 7   | vault-prophecy        |  ⚡  | 2h     |   52.5   |
+| 8   | live-event-commentary |  ⚡  | 2h     |   47.3   |
+| 9   | npc-lore-generation   |  ⚡  | 2h     |   36.0   |
+| 10  | mission-brief-system  |  ⚡  | 4h     |   41.8   |
+| 11  | ai-coach-overlay      |  ⚡  | 8h     |   36.6   |
+| 12  | claude-prompt-caching |  💡  | 1h     |   17.7   |
+
+### Group 3 — Bot System
+
+| Seq | Slug                       | Tier | Effort | Priority |
+| --- | -------------------------- | :--: | ------ | :------: |
+| 13  | adaptive-bot-personalities |  ⚡  | 8h     |   28.9   |
+
+### Group 4 — UX / Client
+
+| Seq | Slug                     | Tier | Effort | Priority |
+| --- | ------------------------ | :--: | ------ | :------: |
+| 14  | cognitive-load-reduction |  ⚡  | 4h     |   43.3   |
+| 15  | contextual-tutorial      |  ⚡  | 8h     |   28.9   |
+| 16  | color-blind-mode         |  💡  | 4h     |   13.9   |
+
+### Group 5 — Post-Game / Data
+
+| Seq | Slug                 | Tier | Effort | Priority |
+| --- | -------------------- | :--: | ------ | :------: |
+| 17  | session-insight-card |  💡  | 4h     |   21.7   |
+| 18  | live-replay-theater  |  ⚡  | 1d     |   34.5   |
+| 19  | dynasty-mode         |  ⚡  | 1d     |   46.0   |
+
+### Group 6 — Large Systems
+
+| Seq | Slug                 | Tier | Effort | Priority |
+| --- | -------------------- | :--: | ------ | :------: |
+| 20  | mobile-touch-support |  ⚡  | 1d     |   30.2   |
+| 21  | live-tournament-mode |  ⚡  | 1d     |   51.8   |
+
+### Group 7 — Infrastructure
+
+| Seq | Slug                | Tier | Effort | Priority |
+| --- | ------------------- | :--: | ------ | :------: |
+| 22  | anti-cheat-signals  |  💡  | 4h     |   9.3    |
+| 23  | tile-delta-encoding |  💡  | 1d     |   11.5   |
+| 24  | clan-wars           |  💡  | 1w     |   19.5   |
+
+---
+
+_Generated by /implement v1.0 · Execution tracking in AUDIT_2026-05-17.md_

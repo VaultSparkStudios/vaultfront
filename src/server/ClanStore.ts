@@ -24,6 +24,9 @@ export interface Clan {
   founderId: string;
   description: string;
   createdAt: number;
+  clanElo: number;
+  clanWins: number;
+  clanLosses: number;
 }
 
 export interface ClanMember {
@@ -45,6 +48,9 @@ export interface ClanLeaderboardEntry {
   tag: string;
   memberCount: number;
   avgElo: number;
+  clanElo: number;
+  clanWins: number;
+  clanLosses: number;
 }
 
 const MAX_MEMBERS = 50;
@@ -92,6 +98,9 @@ class ClanStore {
       founderId,
       description,
       createdAt: now,
+      clanElo: 1200,
+      clanWins: 0,
+      clanLosses: 0,
     };
 
     this.clans.set(id, clan);
@@ -196,10 +205,13 @@ class ClanStore {
         tag: clan.tag,
         memberCount: members.length,
         avgElo: 1200,
+        clanElo: clan.clanElo,
+        clanWins: clan.clanWins,
+        clanLosses: clan.clanLosses,
       });
     }
     entries.sort(
-      (a, b) => b.avgElo - a.avgElo || b.memberCount - a.memberCount,
+      (a, b) => b.clanElo - a.clanElo || b.memberCount - a.memberCount,
     );
     entries.forEach((e, i) => (e.rank = i + 1));
     return entries.slice(0, limit);
@@ -275,6 +287,74 @@ class ClanStore {
     }
   }
 
+  /**
+   * After a match, find which clan had the most members on the winning side
+   * vs the losing side and update clan_elo accordingly.
+   */
+  async updateClanMatchResult(
+    winnerPersistentIds: string[],
+    loserPersistentIds: string[],
+  ): Promise<void> {
+    const clanCount = (ids: string[]): Map<string, number> => {
+      const counts = new Map<string, number>();
+      for (const pid of ids) {
+        const clanId = this.playerClan.get(pid);
+        if (clanId) counts.set(clanId, (counts.get(clanId) ?? 0) + 1);
+      }
+      return counts;
+    };
+    const winCounts = clanCount(winnerPersistentIds);
+    const loseCounts = clanCount(loserPersistentIds);
+
+    const topClan = (map: Map<string, number>) => {
+      let best: string | null = null;
+      let bestN = 0;
+      for (const [id, n] of map) {
+        if (n > bestN) {
+          bestN = n;
+          best = id;
+        }
+      }
+      return best;
+    };
+
+    const winClan = topClan(winCounts);
+    const loseClan = topClan(loseCounts);
+    if (!winClan || !loseClan || winClan === loseClan) return;
+
+    const winC = this.clans.get(winClan);
+    const loseC = this.clans.get(loseClan);
+    if (!winC || !loseC) return;
+
+    // Simple K=32 ELO exchange between clans
+    const K = 32;
+    const expectedWin =
+      1 / (1 + Math.pow(10, (loseC.clanElo - winC.clanElo) / 400));
+    const delta = Math.round(K * (1 - expectedWin));
+
+    winC.clanElo += delta;
+    winC.clanWins += 1;
+    loseC.clanElo = Math.max(800, loseC.clanElo - delta);
+    loseC.clanLosses += 1;
+
+    if (pool) {
+      await Promise.all([
+        pool
+          .query(
+            `UPDATE clans SET clan_elo = $2, clan_wins = clan_wins + 1 WHERE id = $1`,
+            [winClan, winC.clanElo],
+          )
+          .catch(() => null),
+        pool
+          .query(
+            `UPDATE clans SET clan_elo = $2, clan_losses = clan_losses + 1 WHERE id = $1`,
+            [loseClan, loseC.clanElo],
+          )
+          .catch(() => null),
+      ]);
+    }
+  }
+
   async hydrateFromDb(): Promise<void> {
     if (!pool) return;
     try {
@@ -287,7 +367,7 @@ class ClanStore {
           description: string;
           created_at: Date;
         }>(
-          `SELECT id, name, tag, founder_id, description, created_at FROM clans`,
+          `SELECT id, name, tag, founder_id, description, created_at, clan_elo, clan_wins, clan_losses FROM clans`,
         ),
         pool.query<{
           clan_id: string;
@@ -305,6 +385,9 @@ class ClanStore {
           founderId: row.founder_id,
           description: row.description,
           createdAt: row.created_at.getTime(),
+          clanElo: Number((row as any).clan_elo ?? 1200),
+          clanWins: Number((row as any).clan_wins ?? 0),
+          clanLosses: Number((row as any).clan_losses ?? 0),
         });
         this.members.set(row.id, []);
       }

@@ -380,6 +380,13 @@ export class UserSettingModal extends BaseModal {
     this.requestUpdate();
   }
 
+  private toggleColorBlindMode(e: CustomEvent<{ checked: boolean }>) {
+    const enabled = e.detail?.checked;
+    if (typeof enabled !== "boolean") return;
+    this.userSettings.set("settings.colorBlindMode", enabled);
+    this.requestUpdate();
+  }
+
   private toggleTerritoryPatterns(e: CustomEvent<{ checked: boolean }>) {
     const enabled = e.detail?.checked;
     if (typeof enabled !== "boolean") return;
@@ -885,6 +892,15 @@ export class UserSettingModal extends BaseModal {
         id="lobby-id-visibility-toggle"
         .checked=${!this.userSettings.get("settings.lobbyIdVisibility", true)}
         @change=${this.toggleLobbyIdVisibility}
+      ></setting-toggle>
+
+      <!-- ♿ Color-Blind Mode -->
+      <setting-toggle
+        label="Color-Blind Mode"
+        description="Adds luminance differentiation to territories so players can be distinguished without relying on color alone."
+        id="color-blind-mode-toggle"
+        .checked=${this.userSettings.colorBlindMode()}
+        @change=${this.toggleColorBlindMode}
       ></setting-toggle>
 
       <!-- 🏳️ Territory Patterns -->

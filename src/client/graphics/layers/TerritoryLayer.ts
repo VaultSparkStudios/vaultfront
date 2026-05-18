@@ -1,5 +1,5 @@
 import { PriorityQueue } from "@datastructures-js/priority-queue";
-import { Colord } from "colord";
+import { colord, Colord } from "colord";
 import { Theme } from "../../../core/configuration/Config";
 import { EventBus } from "../../../core/EventBus";
 import {
@@ -536,6 +536,15 @@ export class TerritoryLayer implements Layer {
     }
   }
 
+  private colorBlindAdjust(color: Colord, smallID: number): Colord {
+    // Four distinct luminance bands keyed by smallID mod 4 so players are
+    // distinguishable without relying on hue alone.
+    const shifts = [0, -25, 25, -12];
+    const shift = shifts[smallID % 4];
+    const { h, s, l } = color.toHsl();
+    return colord({ h, s, l: Math.max(0, Math.min(100, l + shift)) });
+  }
+
   paintTerritory(tile: TileRef, isBorder: boolean = false) {
     if (isBorder && !this.game.hasOwner(tile)) {
       return;
@@ -561,6 +570,7 @@ export class TerritoryLayer implements Layer {
       this.highlightedTerritory &&
       this.highlightedTerritory.id() === owner.id();
     const myPlayer = this.game.myPlayer();
+    const cbMode = this.userSettings.colorBlindMode();
 
     if (this.game.isBorder(tile)) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -576,17 +586,17 @@ export class TerritoryLayer implements Layer {
         owner.id(),
       );
 
-      this.paintTile(
-        this.imageData,
-        tile,
-        owner.borderColor(tile, isDefended),
-        255,
-      );
+      let borderCol = owner.borderColor(tile, isDefended);
+      if (cbMode) borderCol = this.colorBlindAdjust(borderCol, owner.smallID());
+      this.paintTile(this.imageData, tile, borderCol, 255);
     } else {
       // Alternative view only shows borders.
       this.clearAlternativeTile(tile);
 
-      this.paintTile(this.imageData, tile, owner.territoryColor(tile), 150);
+      let territoryCol = owner.territoryColor(tile);
+      if (cbMode)
+        territoryCol = this.colorBlindAdjust(territoryCol, owner.smallID());
+      this.paintTile(this.imageData, tile, territoryCol, 150);
     }
   }
 

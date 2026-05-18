@@ -68,6 +68,13 @@ export enum GameUpdateType {
   VaultFrontStatus,
   VaultFrontActivity,
   LastStandActivated,
+  HeistExecuted,
+  BountyBoardActivated,
+  BountyCollected,
+  WarchestHuntStarted,
+  MapEventFired,
+  MapEventExpired,
+  MissionComplete,
 }
 
 export type GameUpdate =
@@ -94,7 +101,14 @@ export type GameUpdate =
   | GamePausedUpdate
   | VaultFrontStatusUpdate
   | VaultFrontActivityUpdate
-  | LastStandActivatedUpdate;
+  | LastStandActivatedUpdate
+  | HeistExecutedUpdate
+  | BountyBoardActivatedUpdate
+  | BountyCollectedUpdate
+  | WarchestHuntStartedUpdate
+  | MapEventFiredUpdate
+  | MapEventExpiredUpdate
+  | MissionCompleteUpdate;
 
 export interface LastStandActivatedUpdate {
   type: GameUpdateType.LastStandActivated;
@@ -463,10 +477,85 @@ export interface VaultFrontActivityUpdate {
     | "beacon_pulse"
     | "jam_breaker"
     | "comeback_surge"
-    | "ghost_reveal";
+    | "ghost_reveal"
+    | "heist_executed"
+    | "bounty_collected"
+    | "map_event";
   tile: TileRef;
   sourcePlayerID: number | null;
   targetPlayerID: number | null;
   label: string;
   durationTicks: number;
+}
+
+export interface HeistExecutedUpdate {
+  type: GameUpdateType.HeistExecuted;
+  /** Small ID of the player who executed the heist */
+  heistPlayerID: number;
+  /** Small ID of the vault site controller whose gold was stolen */
+  victimPlayerID: number | null;
+  /** Gold extracted from the site (safe number) */
+  goldStolen: number;
+  tile: TileRef;
+}
+
+export interface BountyBoardActivatedUpdate {
+  type: GameUpdateType.BountyBoardActivated;
+  /** Small ID of the player who has a bounty on them */
+  targetPlayerID: number;
+  /** Gold reward for intercepting target's next convoy */
+  rewardGold: number;
+  /** Number of intercepts the bounty covers */
+  chargesLeft: number;
+  /** Tick at which the bounty expires */
+  expiresAtTick: number;
+}
+
+export interface BountyCollectedUpdate {
+  type: GameUpdateType.BountyCollected;
+  /** Small ID of the collector */
+  collectorPlayerID: number;
+  /** Small ID of the bounty target */
+  targetPlayerID: number;
+  /** Gold paid out */
+  rewardGold: number;
+  /** Remaining charges */
+  chargesLeft: number;
+}
+
+export interface WarchestHuntStartedUpdate {
+  type: GameUpdateType.WarchestHuntStarted;
+  /** Small ID of the marked player (gold leader at tick 500) */
+  markPlayerID: number;
+  /** Duration in ticks the hunt window lasts */
+  durationTicks: number;
+  /** Gold multiplier applied to intercepts targeting the mark's convoys */
+  interceptMultiplier: number;
+}
+
+export type MapEventType =
+  | "vault_bonanza"
+  | "supply_disruption"
+  | "intelligence_breach"
+  | "gold_rush"
+  | "siege_protocol"
+  | "diplomatic_window";
+
+export interface MapEventFiredUpdate {
+  type: GameUpdateType.MapEventFired;
+  eventType: MapEventType;
+  durationTicks: number;
+  startTick: number;
+}
+
+export interface MapEventExpiredUpdate {
+  type: GameUpdateType.MapEventExpired;
+  eventType: MapEventType;
+}
+
+export interface MissionCompleteUpdate {
+  type: GameUpdateType.MissionComplete;
+  playerID: number;
+  objectiveText: string;
+  bonusElo: number;
 }

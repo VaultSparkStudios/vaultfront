@@ -152,6 +152,13 @@ export class WinModal extends LitElement implements Layer {
   private highlightCopied = false;
 
   @state()
+  private playStyleLabel: string | null = null;
+
+  @state()
+  private playStyleBars: Array<{ label: string; pct: number; color: string }> =
+    [];
+
+  @state()
   private microFeedbackSent: "epic" | "balanced" | "off" | null = null;
 
   @state()
@@ -457,6 +464,42 @@ export class WinModal extends LitElement implements Layer {
         </div>
 
         ${this.renderSeasonalContracts()} ${this.renderReplayMoments()}
+        ${this.renderPlayStyleCard()}
+      </div>
+    `;
+  }
+
+  private renderPlayStyleCard() {
+    if (!this.playStyleLabel || this.playStyleBars.length === 0) return null;
+    return html`
+      <div
+        class="mt-2 rounded-sm border border-violet-400/40 bg-violet-900/20 p-2"
+      >
+        <div class="text-xs uppercase tracking-wide text-violet-200">
+          Play Style: ${this.playStyleLabel}
+        </div>
+        <div class="mt-2 space-y-1">
+          ${this.playStyleBars.map(
+            (bar) => html`
+              <div class="flex items-center gap-2">
+                <div class="w-20 text-xs text-slate-300 shrink-0">
+                  ${bar.label}
+                </div>
+                <div
+                  class="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden"
+                >
+                  <div
+                    class="${bar.color} h-full rounded-full transition-all"
+                    style="width:${bar.pct}%"
+                  ></div>
+                </div>
+                <div class="w-8 text-right text-xs text-slate-400">
+                  ${bar.pct}%
+                </div>
+              </div>
+            `,
+          )}
+        </div>
       </div>
     `;
   }
@@ -826,6 +869,8 @@ export class WinModal extends LitElement implements Layer {
       this.recapReason = "";
       this.actionableHint = "";
       this.seasonalContracts = [];
+      this.playStyleLabel = null;
+      this.playStyleBars = [];
       this.show();
     }
     const updates = this.game.updatesSinceLastTick();
@@ -1171,6 +1216,8 @@ export class WinModal extends LitElement implements Layer {
       this.momentRewards = [];
       this.seasonalContracts = [];
       this.matchLengthSeconds = 0;
+      this.playStyleLabel = null;
+      this.playStyleBars = [];
       return;
     }
 
@@ -1329,6 +1376,61 @@ export class WinModal extends LitElement implements Layer {
     };
     this.seasonalContracts = this.updateSeasonalContractsLocal(seasonalMatch);
     void this.syncSeasonalContracts(seasonalMatch);
+
+    this.computePlayStyle(myStats);
+  }
+
+  private computePlayStyle(
+    myStats:
+      | import("../../../core/Schemas").AllPlayersStats[string]
+      | undefined,
+  ) {
+    const vf = myStats?.vaultfront;
+    const n = (v: bigint | undefined) =>
+      v === null || v === undefined ? 0 : Number(v);
+
+    const conquestCount = myStats?.conquests ? myStats.conquests.length : 0;
+    const aggression = n(vf?.vaultCaptures) + conquestCount;
+    const economy = n(vf?.vaultConvoysDelivered) + n(vf?.vaultPassivePayouts);
+    const deception =
+      n(vf?.cleanExecutionStreaks) +
+      n(myStats?.betrayals) +
+      n(vf?.jamBreakerUses);
+    const resilience =
+      n(vf?.defenseFactoryPulseUptimeTicks) / 600 + n(vf?.convoyEscortCommands);
+
+    const total = Math.max(1, aggression + economy + deception + resilience);
+    const a = aggression / total;
+    const e = economy / total;
+    const d = deception / total;
+    const r = resilience / total;
+
+    const label =
+      a >= 0.4
+        ? "Iron Fist"
+        : e >= 0.4
+          ? "Convoy Lord"
+          : d >= 0.35
+            ? "Shadow Broker"
+            : r >= 0.35
+              ? "Fortress"
+              : "Balanced";
+
+    this.playStyleLabel = label;
+    this.playStyleBars = [
+      { label: "Aggression", pct: Math.round(a * 100), color: "bg-rose-500" },
+      { label: "Economy", pct: Math.round(e * 100), color: "bg-emerald-500" },
+      {
+        label: "Deception",
+        pct: Math.round(d * 100),
+        color: "bg-purple-500",
+      },
+      {
+        label: "Resilience",
+        pct: Math.round(r * 100),
+        color: "bg-sky-500",
+      },
+    ];
   }
 
   private buildCard(

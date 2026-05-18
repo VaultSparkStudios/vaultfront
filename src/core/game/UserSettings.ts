@@ -144,6 +144,14 @@ export class UserSettings {
     this.set("settings.territoryPatterns", !this.territoryPatterns());
   }
 
+  colorBlindMode() {
+    return this.get("settings.colorBlindMode", false);
+  }
+
+  toggleColorBlindMode() {
+    this.set("settings.colorBlindMode", !this.colorBlindMode());
+  }
+
   toggleDarkMode() {
     this.set("settings.darkMode", !this.darkMode());
     if (this.darkMode()) {

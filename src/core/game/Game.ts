@@ -997,12 +997,20 @@ export type VaultFrontCommandType =
   | "reroute_safest"
   | "escort"
   | "jam_breaker"
-  | "ghost_route";
+  | "ghost_route"
+  | "vault_heist"
+  | "purchase_intel"
+  | "purchase_deep_intel"
+  | "sabotage"
+  | "bribe"
+  | "trade_deal";
 
 export interface VaultFrontCommand {
   playerSmallID: number;
   type: VaultFrontCommandType;
   issuedAtTick: Tick;
+  /** Optional target player small ID (used by sabotage, bribe, trade_deal) */
+  targetPlayerSmallID?: number;
 }
 
 // Ensures that all message types are included in a category

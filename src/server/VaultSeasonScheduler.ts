@@ -299,6 +299,20 @@ class VaultSeasonScheduler {
       .catch((err) =>
         log.error("seasonalSoftReset failed", { err: String(err) }),
       );
+
+    // Dynasty award: top-rated player earns the season emblem
+    void playerStatsStore.getTopRatedPlayer().then(async (top) => {
+      if (!top) return;
+      const emblems = ["👑", "🔱", "⚡", "🌑", "🔥", "💠"];
+      const emblem = emblems[this.getStatus().weekNumber % emblems.length];
+      await playerStatsStore.awardDynasty(top.persistentId, emblem);
+      log.info("dynasty awarded", {
+        persistentId: top.persistentId,
+        displayName: top.displayName,
+        elo: top.eloRating,
+        emblem,
+      });
+    });
   }
 
   openWeeklyVote(): void {

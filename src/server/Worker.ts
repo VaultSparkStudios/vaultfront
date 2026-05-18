@@ -1230,6 +1230,16 @@ export async function startWorker() {
     });
   });
 
+  // ── Anti-Cheat Admin ─────────────────────────────────────────────────────
+  app.get("/api/admin/anti-cheat/flagged", async (req, res) => {
+    if (req.headers[config.adminHeader()] !== config.adminToken()) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const limit = Math.min(200, Number(req.query["limit"] ?? 50) || 50);
+    const rows = await playerStatsStore.getFlaggedMatches(limit);
+    return res.json({ generatedAt: Date.now(), count: rows.length, rows });
+  });
+
   // ── Season / Mutator API ──────────────────────────────────────────────────
   const seasonRateLimit = rateLimit({
     windowMs: 60_000, // 1 minute
@@ -1332,6 +1342,301 @@ export async function startWorker() {
       }
     },
   );
+
+  // ── Vault Prophecy ────────────────────────────────────────────────────────
+  const prophecyRateLimit = rateLimit({ windowMs: 10_000, max: 5 });
+  const PROPHECY_SYSTEM_PROMPT =
+    "You are an ancient oracle who speaks in cryptic, poetic verse about battles. Generate exactly 2 sentences — dramatic, vague, and atmospheric. Never mention specific game mechanics or rule names. Be ominous.";
+
+  app.post(
+    "/api/vaultfront/match-prophecy",
+    prophecyRateLimit,
+    async (req, res) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return res.status(503).json({ error: "Prophecy service unavailable" });
+      }
+      const {
+        mapName = "the battlefield",
+        playerCount = 4,
+        mutator = "none",
+      } = req.body ?? {};
+      try {
+        const message = await anthropic.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 80,
+          system: [
+            {
+              type: "text",
+              text: PROPHECY_SYSTEM_PROMPT,
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          messages: [
+            {
+              role: "user",
+              content: `Map: ${mapName}. Players: ${playerCount}. Active condition: ${mutator}.`,
+            },
+          ],
+        });
+        const prophecy =
+          message.content[0].type === "text" ? message.content[0].text : "";
+        return res.json({ ok: true, prophecy });
+      } catch (err) {
+        logger.error("match-prophecy generation failed", err);
+        return res.status(500).json({ error: "Prophecy generation failed" });
+      }
+    },
+  );
+
+  // ── Live Event Commentary ─────────────────────────────────────────────────
+  const commentaryRateLimit = rateLimit({ windowMs: 10_000, max: 5 });
+  const COMMENTARY_SYSTEM_PROMPT =
+    'You are a sports commentator for a real-time strategy game called VaultFront. Generate exactly 10 one-line commentary strings keyed by event type. Return ONLY valid JSON: {"vault_captured": "...", "convoy_intercepted": "...", "convoy_delivered": "...", "last_stand": "...", "heist_executed": "...", "bounty_collected": "...", "comeback_surge": "...", "warchest_hunt": "...", "map_event": "...", "general": "..."}. Be dramatic and concise — max 10 words per line.';
+
+  app.post(
+    "/api/vaultfront/match-commentary",
+    commentaryRateLimit,
+    async (req, res) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return res
+          .status(503)
+          .json({ error: "Commentary service unavailable" });
+      }
+      const {
+        playerCount = 4,
+        mutator = "none",
+        mapName = "unknown",
+      } = req.body ?? {};
+      try {
+        const message = await anthropic.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 300,
+          system: [
+            {
+              type: "text",
+              text: COMMENTARY_SYSTEM_PROMPT,
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          messages: [
+            {
+              role: "user",
+              content: `${playerCount} players, map: ${mapName}, mutator: ${mutator}. Generate commentary.`,
+            },
+          ],
+        });
+        const raw =
+          message.content[0].type === "text" ? message.content[0].text : "{}";
+        let commentary: Record<string, string> = {};
+        try {
+          commentary = JSON.parse(raw);
+        } catch {
+          commentary = { general: "The battle rages on!" };
+        }
+        return res.json({ ok: true, commentary });
+      } catch (err) {
+        logger.error("match-commentary generation failed", err);
+        return res.status(500).json({ error: "Commentary generation failed" });
+      }
+    },
+  );
+
+  // ── NPC Lore Generation ────────────────────────────────────────────────────
+  const BOT_LORE_SYSTEM_PROMPT =
+    'You generate faction lore for AI opponents in a real-time strategy game. Return ONLY valid JSON with fields: {"factionName": string, "emblem": string (single emoji), "defeatQuote": string (max 12 words, dramatic), "victoryQuote": string (max 12 words, triumphant)}.';
+
+  const botLoreCache = new Map<
+    string,
+    {
+      factionName: string;
+      emblem: string;
+      defeatQuote: string;
+      victoryQuote: string;
+    }
+  >();
+
+  const BOT_PERSONALITIES = [
+    "aggressive",
+    "economic",
+    "diplomatic",
+    "ghost",
+  ] as const;
+
+  async function initBotLore(): Promise<void> {
+    if (!process.env.ANTHROPIC_API_KEY) return;
+    for (const personality of BOT_PERSONALITIES) {
+      try {
+        const message = await anthropic.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 120,
+          system: [
+            {
+              type: "text",
+              text: BOT_LORE_SYSTEM_PROMPT,
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          messages: [
+            {
+              role: "user",
+              content: `Generate lore for a ${personality} AI faction.`,
+            },
+          ],
+        });
+        const raw =
+          message.content[0].type === "text" ? message.content[0].text : "{}";
+        try {
+          const lore = JSON.parse(raw);
+          botLoreCache.set(personality, lore);
+        } catch {
+          botLoreCache.set(personality, {
+            factionName: `The ${personality.charAt(0).toUpperCase() + personality.slice(1)} Order`,
+            emblem: "⚔️",
+            defeatQuote: "We shall not be forgotten.",
+            victoryQuote: "The vaults are ours.",
+          });
+        }
+      } catch (err) {
+        logger.error(`bot-lore generation failed for ${personality}`, err);
+      }
+    }
+  }
+
+  initBotLore().catch((err) => logger.error("bot-lore init failed", err));
+
+  app.get("/api/vaultfront/bot-lore/:personality", (req, res) => {
+    const personality = req.params.personality;
+    const lore = botLoreCache.get(personality);
+    if (!lore) {
+      return res.status(404).json({ error: "Lore not yet generated" });
+    }
+    return res.json({ ok: true, lore });
+  });
+
+  // ── Mission Brief System ───────────────────────────────────────────────────
+  const missionRateLimit = rateLimit({ windowMs: 10_000, max: 5 });
+  const MISSION_SYSTEM_PROMPT =
+    'You generate unique match objectives for a real-time strategy game called VaultFront. Return ONLY valid JSON: {"objectiveText": string (max 20 words, specific and achievable), "conditionType": "VAULTS_CAPTURED" | "CONVOYS_DELIVERED" | "TICKS_HELD_LEAD", "conditionValue": number, "bonusElo": number (10-40)}. Make objectives specific and achievable in a typical match.';
+
+  app.post(
+    "/api/vaultfront/match-mission",
+    missionRateLimit,
+    async (req, res) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return res.status(503).json({ error: "Mission service unavailable" });
+      }
+      const {
+        mapName = "unknown",
+        playerCount = 4,
+        mutator = "none",
+        vaultSiteCount = 5,
+      } = req.body ?? {};
+      try {
+        const message = await anthropic.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 150,
+          system: [
+            {
+              type: "text",
+              text: MISSION_SYSTEM_PROMPT,
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          messages: [
+            {
+              role: "user",
+              content: `Map: ${mapName}. Players: ${playerCount}. Mutator: ${mutator}. Vault sites: ${vaultSiteCount}. Generate a mission.`,
+            },
+          ],
+        });
+        const raw =
+          message.content[0].type === "text" ? message.content[0].text : "{}";
+        let mission: {
+          objectiveText: string;
+          conditionType: string;
+          conditionValue: number;
+          bonusElo: number;
+        } = {
+          objectiveText: "Capture 2 vault sites before tick 500.",
+          conditionType: "VAULTS_CAPTURED",
+          conditionValue: 2,
+          bonusElo: 20,
+        };
+        try {
+          mission = JSON.parse(raw);
+        } catch {
+          // use default
+        }
+        return res.json({ ok: true, mission });
+      } catch (err) {
+        logger.error("match-mission generation failed", err);
+        return res.status(500).json({ error: "Mission generation failed" });
+      }
+    },
+  );
+
+  // ── AI Coach Overlay ───────────────────────────────────────────────────────
+  const coachRateLimit = rateLimit({ windowMs: 60_000, max: 3 });
+  const COACH_SYSTEM_PROMPT =
+    "You are a tactical coach for VaultFront, a browser real-time strategy game. Analyze the player's top decisions from a match and provide a 3-paragraph tactical debrief. Paragraph 1: what worked well. Paragraph 2: the costliest mistake. Paragraph 3: one concrete improvement for next match. Be specific, encouraging, and concise (2-3 sentences per paragraph). Reference actual events from the log.";
+
+  app.post("/api/vaultfront/match-coach", coachRateLimit, async (req, res) => {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(503).json({ error: "Coach service unavailable" });
+    }
+    const identity = await resolveVaultFrontIdentity(req);
+    if (!identity) {
+      return res.status(401).json({ error: "Missing identity" });
+    }
+    const { events = [] } = req.body ?? {};
+    const eventSummary = (
+      events as Array<{ type: string; tick: number; detail?: string }>
+    )
+      .slice(0, 10)
+      .map(
+        (e) => `[tick ${e.tick}] ${e.type}${e.detail ? `: ${e.detail}` : ""}`,
+      )
+      .join("\n");
+
+    try {
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.flushHeaders();
+
+      const stream = anthropic.messages.stream({
+        model: "claude-sonnet-4-6",
+        max_tokens: 600,
+        system: [
+          {
+            type: "text",
+            text: COACH_SYSTEM_PROMPT,
+            cache_control: { type: "ephemeral" },
+          },
+        ],
+        messages: [
+          {
+            role: "user",
+            content: `My top 10 match events:\n${eventSummary || "No events recorded."}\n\nPlease provide my tactical debrief.`,
+          },
+        ],
+      });
+
+      stream.on("text", (text) => {
+        res.write(`data: ${JSON.stringify({ text })}\n\n`);
+      });
+      stream.on("finalMessage", () => {
+        res.write("data: [DONE]\n\n");
+        res.end();
+      });
+      stream.on("error", (err) => {
+        logger.error("match-coach stream error", err);
+        res.end();
+      });
+    } catch (err) {
+      logger.error("match-coach failed", err);
+      return res.status(500).json({ error: "Coach generation failed" });
+    }
+  });
 
   // ── Player Stats / Leaderboard API ───────────────────────────────────────
   const statsRateLimit = rateLimit({

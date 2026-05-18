@@ -582,6 +582,146 @@ class PlayerStatsStore {
    * `EloRating.SEASONAL_SOFT_RESET_CAP` points, pulling toward DEFAULT_RATING.
    * Called by VaultSeasonScheduler on season rollover.
    */
+  /** Award dynasty to the season's top-rated player and break any prior dynasty. */
+  async awardDynasty(
+    winnerPersistentId: string,
+    emblem: string,
+  ): Promise<void> {
+    if (!pool) return;
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      // Break the existing dynasty holder (mark broken_by the new winner)
+      await client.query(
+        `UPDATE player_stats
+            SET dynasty_tier = 'broken', dynasty_broken_by = $1
+          WHERE dynasty_tier NOT IN ('none','broken')`,
+        [winnerPersistentId],
+      );
+      // Award new dynasty
+      await client.query(
+        `UPDATE player_stats
+            SET dynasty_tier        = 'active',
+                dynasty_seasons_won = dynasty_seasons_won + 1,
+                dynasty_emblem      = $2
+          WHERE persistent_id = $1`,
+        [winnerPersistentId, emblem],
+      );
+      await client.query("COMMIT");
+    } catch (err) {
+      await client.query("ROLLBACK");
+      log.error("awardDynasty failed", { err: String(err) });
+    } finally {
+      client.release();
+    }
+  }
+
+  /** Return the player with the highest Elo (for dynasty award). */
+  async getTopRatedPlayer(): Promise<
+    { persistentId: string; displayName: string; eloRating: number } | undefined
+  > {
+    if (!pool) {
+      // In-memory path
+      let top: InMemoryPlayerRecord | undefined;
+      for (const rec of this.memPlayers.values()) {
+        if (!top || rec.eloRating > top.eloRating) top = rec;
+      }
+      return top
+        ? {
+            persistentId: top.persistentId,
+            displayName: top.displayName,
+            eloRating: top.eloRating,
+          }
+        : undefined;
+    }
+    const result = await pool
+      .query(
+        `SELECT persistent_id, display_name, elo_rating
+           FROM player_stats
+           ORDER BY elo_rating DESC
+           LIMIT 1`,
+      )
+      .catch(() => null);
+    const row = result?.rows[0];
+    if (!row) return undefined;
+    return {
+      persistentId: row.persistent_id,
+      displayName: row.display_name,
+      eloRating: Number(row.elo_rating),
+    };
+  }
+
+  /** Write anti-cheat timing signals for a match row; flag if suspiciously low stddev. */
+  async recordAntiCheatSignals(
+    gameId: string,
+    persistentId: string,
+    signals: {
+      cmdMeanIntervalMs: number;
+      cmdStddevMs: number;
+      cmdActionsPerTick: number;
+    },
+  ): Promise<void> {
+    const flagged =
+      signals.cmdActionsPerTick > 2.5 ||
+      (signals.cmdMeanIntervalMs < 50 && signals.cmdStddevMs < 5);
+    if (pool) {
+      await pool
+        .query(
+          `UPDATE match_history
+             SET cmd_mean_interval_ms = $3,
+                 cmd_stddev_ms        = $4,
+                 cmd_actions_per_tick = $5,
+                 anti_cheat_flagged   = $6
+           WHERE game_id = $1 AND persistent_id = $2`,
+          [
+            gameId,
+            persistentId,
+            signals.cmdMeanIntervalMs,
+            signals.cmdStddevMs,
+            signals.cmdActionsPerTick,
+            flagged,
+          ],
+        )
+        .catch((err) =>
+          log.error("recordAntiCheatSignals failed", { err: String(err) }),
+        );
+    }
+  }
+
+  /** Return the N most recent anti-cheat flagged match rows. */
+  async getFlaggedMatches(limit = 50): Promise<
+    Array<{
+      persistentId: string;
+      gameId: string;
+      cmdMeanIntervalMs: number;
+      cmdStddevMs: number;
+      cmdActionsPerTick: number;
+      createdAt: string;
+    }>
+  > {
+    if (!pool) return [];
+    const result = await pool
+      .query(
+        `SELECT persistent_id, game_id, cmd_mean_interval_ms,
+                cmd_stddev_ms, cmd_actions_per_tick, created_at
+           FROM match_history
+          WHERE anti_cheat_flagged = TRUE
+          ORDER BY created_at DESC
+          LIMIT $1`,
+        [limit],
+      )
+      .catch(() => null);
+    if (!result) return [];
+    return result.rows.map((r) => ({
+      persistentId: r.persistent_id,
+      gameId: r.game_id,
+      cmdMeanIntervalMs: Number(r.cmd_mean_interval_ms ?? 0),
+      cmdStddevMs: Number(r.cmd_stddev_ms ?? 0),
+      cmdActionsPerTick: Number(r.cmd_actions_per_tick ?? 0),
+      createdAt: new Date(r.created_at).toISOString(),
+    }));
+  }
+
   async seasonalSoftReset(): Promise<void> {
     const cap = EloRating.SEASONAL_SOFT_RESET_CAP;
     const def = EloRating.DEFAULT_RATING;

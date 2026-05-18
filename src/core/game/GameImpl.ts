@@ -463,9 +463,16 @@ export class GameImpl implements Game {
 
   drainPackedTileUpdates(): Uint32Array {
     const pairs = this.tileUpdatePairs;
-    const packed = new Uint32Array(pairs.length);
-    for (let i = 0; i < pairs.length; i++) {
-      packed[i] = pairs[i];
+    // Dedup: multiple updates to the same tile in one tick → keep only last state.
+    const last = new Map<number, number>();
+    for (let i = 0; i + 1 < pairs.length; i += 2) {
+      last.set(pairs[i], pairs[i + 1]);
+    }
+    const packed = new Uint32Array(last.size * 2);
+    let idx = 0;
+    for (const [tile, state] of last) {
+      packed[idx++] = tile;
+      packed[idx++] = state;
     }
     pairs.length = 0;
     return packed;

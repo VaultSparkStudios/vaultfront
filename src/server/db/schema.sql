@@ -146,3 +146,34 @@ CREATE TABLE IF NOT EXISTS tournament_matches (
 
 CREATE INDEX IF NOT EXISTS idx_tournament_matches_tid
   ON tournament_matches (tournament_id, round);
+
+-- ── Dynasty Mode ───────────────────────────────────────────────────────────────
+ALTER TABLE player_stats
+  ADD COLUMN IF NOT EXISTS dynasty_tier        VARCHAR(16)  NOT NULL DEFAULT 'none',
+  ADD COLUMN IF NOT EXISTS dynasty_seasons_won INT          NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS dynasty_broken_by   VARCHAR(64),
+  ADD COLUMN IF NOT EXISTS dynasty_emblem      VARCHAR(64);
+
+-- ── Anti-Cheat Behavioral Signals ─────────────────────────────────────────────
+ALTER TABLE match_history
+  ADD COLUMN IF NOT EXISTS cmd_mean_interval_ms  FLOAT,
+  ADD COLUMN IF NOT EXISTS cmd_stddev_ms         FLOAT,
+  ADD COLUMN IF NOT EXISTS cmd_actions_per_tick  FLOAT,
+  ADD COLUMN IF NOT EXISTS anti_cheat_flagged    BOOLEAN NOT NULL DEFAULT FALSE;
+
+CREATE INDEX IF NOT EXISTS idx_match_history_anticheat
+  ON match_history (persistent_id, anti_cheat_flagged)
+  WHERE anti_cheat_flagged = TRUE;
+
+-- ── Play Style / Session Insight ───────────────────────────────────────────────
+ALTER TABLE match_history
+  ADD COLUMN IF NOT EXISTS style_aggression  FLOAT,
+  ADD COLUMN IF NOT EXISTS style_economy     FLOAT,
+  ADD COLUMN IF NOT EXISTS style_deception   FLOAT,
+  ADD COLUMN IF NOT EXISTS style_resilience  FLOAT;
+
+-- ── Clan ELO (Clan Wars) ───────────────────────────────────────────────────────
+ALTER TABLE clans
+  ADD COLUMN IF NOT EXISTS clan_elo          INT  NOT NULL DEFAULT 1200,
+  ADD COLUMN IF NOT EXISTS clan_wins         INT  NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS clan_losses       INT  NOT NULL DEFAULT 0;

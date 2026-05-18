@@ -9,6 +9,7 @@ import {
 import { TileRef } from "../game/GameMap";
 import {
   GameUpdateType,
+  MapEventType,
   VaultFrontExecutionChainState,
   VaultFrontSquadObjectiveState,
   VaultFrontStatusUpdate,
@@ -28,6 +29,7 @@ interface VaultSite {
   reducedRewardNextCapture: boolean;
   uncontrolledSinceTick: number;
   vacantAlertFiredAtTick: number;
+  accumulatedPassiveGold: bigint;
 }
 
 interface VaultConvoy {
@@ -115,6 +117,65 @@ export class VaultFrontExecution implements Execution {
   private readonly lastStandBonusDurationTicks = 900; // 90s
   private readonly lastStandOpponentGoldMultiplier = 1.4;
 
+  // Vault Heist — last-resort steal (≤2 territories)
+  private heistActivated = new Set<number>();
+  private heistConvoyId = new Map<number, number>();
+  private heistCooldownUntil = new Map<number, number>();
+  private readonly heistGoldCap = 200_000n;
+  private readonly heistActivationCost = 20_000n;
+  private readonly heistCooldownTicks = 1_200;
+
+  // Bounty Board — emergent coalition targeting
+  private convoyInterceptsBy = new Map<number, Map<number, number>>();
+  private activeBounties = new Map<
+    number,
+    { reward: bigint; chargesLeft: number; expiresAtTick: number }
+  >();
+  private readonly bountyThreshold = 3;
+  private readonly bountyReward = 150_000n;
+  private readonly bountyCharges = 3;
+  private readonly bountyDurationTicks = 3_000;
+
+  // Warchest Hunt — tick-500 gold-leader targeting event
+  private warchestMarkPlayerID: number | null = null;
+  private warchestHuntUntilTick = 0;
+  private warchestHuntFired = false;
+  private readonly warchestHuntDurationTicks = 1_200;
+  private readonly warchestHuntMultiplier = 2n;
+
+  // Map Events System
+  private activeMapEvent: MapEventType | null = null;
+  private mapEventUntilTick = 0;
+  private nextMapEventTick = 0;
+  private readonly mapEventMinIntervalTicks = 4_000;
+  private readonly mapEventMaxIntervalTicks = 6_000;
+  private readonly mapEventPool: MapEventType[] = [
+    "vault_bonanza",
+    "supply_disruption",
+    "intelligence_breach",
+    "gold_rush",
+    "siege_protocol",
+    "diplomatic_window",
+  ];
+
+  // Intel Layer — pay gold to reveal enemy convoy routes
+  private intelActiveUntilTick = new Map<number, number>();
+  private deepIntelActiveUntilTick = new Map<number, number>();
+  private readonly intelCost = 30_000n;
+  private readonly deepIntelCost = 80_000n;
+  private readonly intelDurationTicks = 600;
+
+  // Economic Warfare — sabotage, bribe, trade deal
+  private sabotageCharges = new Map<number, Map<number, number>>();
+  private dispatchDelayUntilTick = new Map<number, number>();
+  private tradeDealNextConvoy = new Map<number, number>();
+  private readonly sabotageCost = 40_000n;
+  private readonly sabotageChargesPerUse = 3;
+  private readonly sabotageTollFraction = 0.15;
+  private readonly bribeCost = 25_000n;
+  private readonly brideDelayTicks = 600;
+  private readonly tradeDealShareFraction = 0.08;
+
   private weeklyMutator:
     | "none"
     | "lane_fog"
@@ -178,7 +239,20 @@ export class VaultFrontExecution implements Execution {
         cooldownUntil: 0,
         maskedUntil: 0,
       });
+      this.heistCooldownUntil.set(player.smallID(), 0);
+      this.convoyInterceptsBy.set(player.smallID(), new Map());
+      this.intelActiveUntilTick.set(player.smallID(), 0);
+      this.deepIntelActiveUntilTick.set(player.smallID(), 0);
+      this.sabotageCharges.set(player.smallID(), new Map());
+      this.dispatchDelayUntilTick.set(player.smallID(), 0);
     }
+
+    this.nextMapEventTick =
+      this.mapEventMinIntervalTicks +
+      this.random.nextInt(
+        0,
+        this.mapEventMaxIntervalTicks - this.mapEventMinIntervalTicks,
+      );
 
     if (this.game.config().vaultSitesEnabled()) {
       this.createVaultSites();
@@ -241,6 +315,8 @@ export class VaultFrontExecution implements Execution {
       this.tickCountersurveillance(ticks);
     }
 
+    this.checkWarchestHunt(ticks);
+    this.tickMapEvents(ticks);
     this.publishStatusUpdate();
   }
 
@@ -289,6 +365,7 @@ export class VaultFrontExecution implements Execution {
       reducedRewardNextCapture: false,
       uncontrolledSinceTick: 0,
       vacantAlertFiredAtTick: -1,
+      accumulatedPassiveGold: 0n,
     }));
   }
 
@@ -338,6 +415,24 @@ export class VaultFrontExecution implements Execution {
         return;
       case "ghost_route":
         this.applyGhostRouteCommand(player, ticks);
+        return;
+      case "vault_heist":
+        this.applyVaultHeistCommand(player, ticks);
+        return;
+      case "purchase_intel":
+        this.applyPurchaseIntelCommand(player, ticks, false);
+        return;
+      case "purchase_deep_intel":
+        this.applyPurchaseIntelCommand(player, ticks, true);
+        return;
+      case "sabotage":
+        this.applySabotageCommand(player, command, ticks);
+        return;
+      case "bribe":
+        this.applyBribeCommand(player, command, ticks);
+        return;
+      case "trade_deal":
+        this.applyTradeDealCommand(player, command, ticks);
         return;
       default:
         return;
@@ -557,6 +652,424 @@ export class VaultFrontExecution implements Execution {
       null,
       "Ghost route activated — convoy is cloaked",
       60,
+    );
+  }
+
+  // ── Vault Heist ──────────────────────────────────────────────────────────
+
+  private applyVaultHeistCommand(player: Player, ticks: number): void {
+    const pid = player.smallID();
+    if (this.heistActivated.has(pid)) {
+      this.game.displayMessage(
+        "Vault Heist is already primed on your active convoy.",
+        MessageType.CHAT,
+        player.id(),
+      );
+      return;
+    }
+    if (ticks < (this.heistCooldownUntil.get(pid) ?? 0)) {
+      this.game.displayMessage(
+        "Vault Heist is on cooldown.",
+        MessageType.CHAT,
+        player.id(),
+      );
+      return;
+    }
+    if (player.numTilesOwned() > 2) {
+      this.game.displayMessage(
+        "Vault Heist is only available when you control 2 or fewer territories.",
+        MessageType.CHAT,
+        player.id(),
+      );
+      return;
+    }
+    if (player.gold() < this.heistActivationCost) {
+      this.game.displayMessage(
+        `Vault Heist requires ${this.heistActivationCost.toLocaleString()} gold.`,
+        MessageType.CHAT,
+        player.id(),
+      );
+      return;
+    }
+    const convoy = this.convoys.find((c) => c.ownerID === pid);
+    if (!convoy) {
+      this.game.displayMessage(
+        "Vault Heist requires an active convoy in transit.",
+        MessageType.CHAT,
+        player.id(),
+      );
+      return;
+    }
+    player.addGold(-this.heistActivationCost);
+    this.heistActivated.add(pid);
+    this.heistConvoyId.set(pid, convoy.id);
+    this.game.displayMessage(
+      `VAULT HEIST primed — convoy will extract gold from the next vault site it reaches.`,
+      MessageType.CAPTURED_ENEMY_UNIT,
+      player.id(),
+    );
+  }
+
+  private resolveHeistOnArrival(
+    convoy: VaultConvoy,
+    destTile: TileRef,
+    ticks: number,
+  ): void {
+    const pid = convoy.ownerID;
+    if (!this.heistActivated.has(pid)) return;
+    if (this.heistConvoyId.get(pid) !== convoy.id) return;
+
+    const site = this.vaultSites.find(
+      (s) => s.tile === destTile && s.passiveOwnerID !== null,
+    );
+    if (!site) {
+      this.heistActivated.delete(pid);
+      this.heistConvoyId.delete(pid);
+      return;
+    }
+
+    const stolenRaw = site.accumulatedPassiveGold / 2n;
+    const stolen =
+      stolenRaw > this.heistGoldCap ? this.heistGoldCap : stolenRaw;
+    if (stolen <= 0n) {
+      this.heistActivated.delete(pid);
+      this.heistConvoyId.delete(pid);
+      return;
+    }
+
+    const victimID = site.passiveOwnerID;
+    const victim =
+      victimID !== null ? this.game.playerBySmallID(victimID) : null;
+    if (victim?.isPlayer() && victim.isAlive()) {
+      victim.addGold(-stolen);
+    }
+    const heistPlayer = this.game.playerBySmallID(pid);
+    if (heistPlayer.isPlayer()) {
+      heistPlayer.addGold(stolen, destTile);
+    }
+    site.accumulatedPassiveGold -= stolen;
+
+    this.heistActivated.delete(pid);
+    this.heistConvoyId.delete(pid);
+    this.heistCooldownUntil.set(pid, ticks + this.heistCooldownTicks);
+
+    this.game.addUpdate({
+      type: GameUpdateType.HeistExecuted,
+      heistPlayerID: pid,
+      victimPlayerID: victimID,
+      goldStolen: Number(stolen),
+      tile: destTile,
+    });
+    this.emitActivity(
+      "heist_executed",
+      destTile,
+      pid,
+      victimID,
+      `VAULT HEIST! +${stolen.toLocaleString()}g extracted`,
+      200,
+    );
+    if (heistPlayer.isPlayer()) {
+      this.game.displayMessage(
+        `VAULT HEIST succeeded! Extracted ${stolen.toLocaleString()} gold from the vault.`,
+        MessageType.CAPTURED_ENEMY_UNIT,
+        heistPlayer.id(),
+        stolen,
+      );
+    }
+  }
+
+  // ── Bounty Board ─────────────────────────────────────────────────────────
+
+  private trackConvoyIntercept(
+    interceptorID: number,
+    victimID: number,
+    ticks: number,
+  ): void {
+    const bounty = this.activeBounties.get(victimID);
+    if (bounty && ticks <= bounty.expiresAtTick) {
+      const interceptor = this.game.playerBySmallID(interceptorID);
+      if (interceptor.isPlayer() && interceptor.isAlive()) {
+        interceptor.addGold(bounty.reward);
+        bounty.chargesLeft--;
+        this.game.addUpdate({
+          type: GameUpdateType.BountyCollected,
+          collectorPlayerID: interceptorID,
+          targetPlayerID: victimID,
+          rewardGold: Number(bounty.reward),
+          chargesLeft: bounty.chargesLeft,
+        });
+        this.emitActivity(
+          "bounty_collected",
+          interceptor.isPlayer()
+            ? (interceptor.tiles()[0] ??
+                this.vaultSites[0]?.tile ??
+                (0 as unknown as TileRef))
+            : (0 as unknown as TileRef),
+          interceptorID,
+          victimID,
+          `Bounty collected! +${bounty.reward.toLocaleString()}g`,
+          180,
+        );
+        this.game.displayMessage(
+          `Bounty claimed! +${bounty.reward.toLocaleString()} gold for intercepting ${this.game.playerBySmallID(victimID).isPlayer() ? (this.game.playerBySmallID(victimID) as Player).displayName() : "unknown"}'s convoy.`,
+          MessageType.CAPTURED_ENEMY_UNIT,
+          interceptor.id(),
+          bounty.reward,
+        );
+      }
+      if (bounty.chargesLeft <= 0) {
+        this.activeBounties.delete(victimID);
+      }
+      return;
+    }
+
+    const interceptsMap =
+      this.convoyInterceptsBy.get(victimID) ?? new Map<number, number>();
+    const count = (interceptsMap.get(interceptorID) ?? 0) + 1;
+    interceptsMap.set(interceptorID, count);
+    this.convoyInterceptsBy.set(victimID, interceptsMap);
+
+    if (count >= this.bountyThreshold && !this.activeBounties.has(victimID)) {
+      const expiresAt = ticks + this.bountyDurationTicks;
+      this.activeBounties.set(victimID, {
+        reward: this.bountyReward,
+        chargesLeft: this.bountyCharges,
+        expiresAtTick: expiresAt,
+      });
+      this.game.addUpdate({
+        type: GameUpdateType.BountyBoardActivated,
+        targetPlayerID: victimID,
+        rewardGold: Number(this.bountyReward),
+        chargesLeft: this.bountyCharges,
+        expiresAtTick: expiresAt,
+      });
+      const target = this.game.playerBySmallID(victimID);
+      const targetName = target.isPlayer() ? target.displayName() : "unknown";
+      this.game.displayMessage(
+        `BOUNTY BOARD: ${targetName} has a ${this.bountyReward.toLocaleString()} gold bounty! Intercept their next convoy to collect.`,
+        MessageType.ATTACK_REQUEST,
+        null,
+      );
+    }
+  }
+
+  // ── Warchest Hunt ────────────────────────────────────────────────────────
+
+  private checkWarchestHunt(ticks: number): void {
+    if (
+      this.warchestHuntFired ||
+      ticks < 500 ||
+      !this.game.config().vaultSitesEnabled()
+    )
+      return;
+    if (ticks > 500) {
+      this.warchestHuntFired = true;
+      return;
+    }
+
+    this.warchestHuntFired = true;
+    const players = this.game.players().filter((p) => p.isAlive());
+    if (players.length < 2) return;
+
+    const leader = players.reduce((best, p) =>
+      p.gold() > best.gold() ? p : best,
+    );
+    this.warchestMarkPlayerID = leader.smallID();
+    this.warchestHuntUntilTick = ticks + this.warchestHuntDurationTicks;
+
+    this.game.addUpdate({
+      type: GameUpdateType.WarchestHuntStarted,
+      markPlayerID: leader.smallID(),
+      durationTicks: this.warchestHuntDurationTicks,
+      interceptMultiplier: Number(this.warchestHuntMultiplier),
+    });
+    this.game.displayMessage(
+      `WARCHEST HUNT: ${leader.displayName()} is THE MARK! Convoys hitting their vaults carry 2× gold for the next 120 seconds.`,
+      MessageType.ATTACK_REQUEST,
+      null,
+    );
+  }
+
+  // ── Map Events System ─────────────────────────────────────────────────────
+
+  private tickMapEvents(ticks: number): void {
+    if (!this.game.config().vaultSitesEnabled()) return;
+
+    if (this.activeMapEvent !== null && ticks >= this.mapEventUntilTick) {
+      this.game.addUpdate({
+        type: GameUpdateType.MapEventExpired,
+        eventType: this.activeMapEvent,
+      });
+      this.activeMapEvent = null;
+      this.nextMapEventTick =
+        ticks +
+        this.mapEventMinIntervalTicks +
+        this.random.nextInt(
+          0,
+          this.mapEventMaxIntervalTicks - this.mapEventMinIntervalTicks,
+        );
+    }
+
+    if (this.activeMapEvent === null && ticks >= this.nextMapEventTick) {
+      const idx = this.random.nextInt(0, this.mapEventPool.length - 1);
+      const eventType = this.mapEventPool[idx];
+      const duration = 600 + this.random.nextInt(0, 600);
+      this.activeMapEvent = eventType;
+      this.mapEventUntilTick = ticks + duration;
+
+      this.game.addUpdate({
+        type: GameUpdateType.MapEventFired,
+        eventType,
+        durationTicks: duration,
+        startTick: ticks,
+      });
+      this.game.displayMessage(
+        `MAP EVENT: ${this.mapEventLabel(eventType)} is active for ${Math.ceil(duration / 10)}s!`,
+        MessageType.ATTACK_REQUEST,
+        null,
+      );
+    }
+  }
+
+  private mapEventLabel(event: MapEventType): string {
+    const labels: Record<MapEventType, string> = {
+      vault_bonanza: "Vault Bonanza (2× site rewards)",
+      supply_disruption: "Supply Disruption (convoy dispatch locked)",
+      intelligence_breach: "Intelligence Breach (all routes visible)",
+      gold_rush: "Gold Rush (3× next delivery, then site resets)",
+      siege_protocol: "Siege Protocol (territory expansion blocked)",
+      diplomatic_window: "Diplomatic Window (no combat damage)",
+    };
+    return labels[event] ?? event;
+  }
+
+  private isMapEventActive(eventType: MapEventType): boolean {
+    return this.activeMapEvent === eventType;
+  }
+
+  // ── Match Intel Layer ─────────────────────────────────────────────────────
+
+  private applyPurchaseIntelCommand(
+    player: Player,
+    ticks: number,
+    deep: boolean,
+  ): void {
+    const cost = deep ? this.deepIntelCost : this.intelCost;
+    if (player.gold() < cost) {
+      this.game.displayMessage(
+        `Intel requires ${cost.toLocaleString()} gold.`,
+        MessageType.CHAT,
+        player.id(),
+      );
+      return;
+    }
+    player.addGold(-cost);
+    const untilTick = ticks + this.intelDurationTicks;
+    if (deep) {
+      this.deepIntelActiveUntilTick.set(player.smallID(), untilTick);
+      this.intelActiveUntilTick.set(player.smallID(), untilTick);
+    } else {
+      this.intelActiveUntilTick.set(player.smallID(), untilTick);
+    }
+    const label = deep ? "Deep Intel" : "Intel";
+    this.game.displayMessage(
+      `${label} purchased — enemy convoy routes revealed for ${Math.ceil(this.intelDurationTicks / 10)}s.`,
+      MessageType.RECEIVED_GOLD_FROM_TRADE,
+      player.id(),
+    );
+  }
+
+  // ── Economic Warfare ──────────────────────────────────────────────────────
+
+  private applySabotageCommand(
+    player: Player,
+    command: VaultFrontCommand,
+    ticks: number,
+  ): void {
+    const targetID = command.targetPlayerSmallID;
+    if (targetID === undefined) return;
+    if (player.gold() < this.sabotageCost) {
+      this.game.displayMessage(
+        `Sabotage requires ${this.sabotageCost.toLocaleString()} gold.`,
+        MessageType.CHAT,
+        player.id(),
+      );
+      return;
+    }
+    player.addGold(-this.sabotageCost);
+    const charges =
+      this.sabotageCharges.get(targetID) ?? new Map<number, number>();
+    charges.set(
+      player.smallID(),
+      (charges.get(player.smallID()) ?? 0) + this.sabotageChargesPerUse,
+    );
+    this.sabotageCharges.set(targetID, charges);
+    const target = this.game.playerBySmallID(targetID);
+    const targetName = target.isPlayer() ? target.displayName() : "unknown";
+    this.game.displayMessage(
+      `Sabotage deployed against ${targetName}. Their next ${this.sabotageChargesPerUse} convoys pay a 15% gold toll.`,
+      MessageType.ATTACK_REQUEST,
+      player.id(),
+    );
+    this.game.displayMessage(
+      `${player.displayName()} has sabotaged your convoy routes — next ${this.sabotageChargesPerUse} deliveries taxed 15%.`,
+      MessageType.UNIT_CAPTURED_BY_ENEMY,
+      target.isPlayer() ? target.id() : null,
+    );
+  }
+
+  private applyBribeCommand(
+    player: Player,
+    command: VaultFrontCommand,
+    ticks: number,
+  ): void {
+    const targetID = command.targetPlayerSmallID;
+    if (targetID === undefined) return;
+    if (player.gold() < this.bribeCost * 2n) {
+      this.game.displayMessage(
+        `Bribe requires ${(this.bribeCost * 2n).toLocaleString()} gold.`,
+        MessageType.CHAT,
+        player.id(),
+      );
+      return;
+    }
+    player.addGold(-this.bribeCost);
+    const target = this.game.playerBySmallID(targetID);
+    if (target.isPlayer() && target.isAlive()) {
+      target.addGold(this.bribeCost);
+      const currentDelay = this.dispatchDelayUntilTick.get(targetID) ?? 0;
+      this.dispatchDelayUntilTick.set(
+        targetID,
+        Math.max(currentDelay, ticks + this.brideDelayTicks),
+      );
+      this.game.displayMessage(
+        `Bribe accepted. Your next convoy dispatch is delayed 60 seconds. (+${this.bribeCost.toLocaleString()}g received)`,
+        MessageType.RECEIVED_GOLD_FROM_TRADE,
+        target.id(),
+        this.bribeCost,
+      );
+      this.game.displayMessage(
+        `Bribe sent to ${target.displayName()} — their dispatch delayed 60s.`,
+        MessageType.CHAT,
+        player.id(),
+      );
+    }
+  }
+
+  private applyTradeDealCommand(
+    player: Player,
+    command: VaultFrontCommand,
+    _ticks: number,
+  ): void {
+    const targetID = command.targetPlayerSmallID;
+    if (targetID === undefined) return;
+    const target = this.game.playerBySmallID(targetID);
+    if (!target.isPlayer()) return;
+    this.tradeDealNextConvoy.set(player.smallID(), targetID);
+    this.game.displayMessage(
+      `Trade deal offered to ${target.displayName()} — 8% of your next convoy delivery shared.`,
+      MessageType.RECEIVED_GOLD_FROM_TRADE,
+      player.id(),
     );
   }
 
@@ -827,6 +1340,7 @@ export class VaultFrontExecution implements Execution {
 
     const passiveGold = this.vaultPassiveGoldPerMinuteEffective();
     owner.addGold(passiveGold, site.tile);
+    site.accumulatedPassiveGold += passiveGold;
     this.game.stats().vaultPassiveGold(owner, passiveGold);
     this.game.displayMessage(
       `Vault ${site.id} generated +${passiveGold.toLocaleString()} gold passive income.`,
@@ -956,7 +1470,10 @@ export class VaultFrontExecution implements Execution {
       | "beacon_pulse"
       | "jam_breaker"
       | "comeback_surge"
-      | "ghost_reveal",
+      | "ghost_reveal"
+      | "heist_executed"
+      | "bounty_collected"
+      | "map_event",
   ): boolean {
     return (
       this.weeklyMutator === "lane_fog" &&
@@ -1479,8 +1996,16 @@ export class VaultFrontExecution implements Execution {
           continue;
         }
 
-        const gold = convoy.goldReward / 2n;
+        let gold = convoy.goldReward / 2n;
         const troops = Math.floor(convoy.troopsReward / 2);
+
+        // Warchest Hunt: 2× intercept gold when targeting the mark's convoys
+        if (
+          this.warchestMarkPlayerID === owner.smallID() &&
+          ticks <= this.warchestHuntUntilTick
+        ) {
+          gold *= this.warchestHuntMultiplier;
+        }
 
         interceptor.addGold(gold, currentTile);
         interceptor.addTroops(troops);
@@ -1490,6 +2015,25 @@ export class VaultFrontExecution implements Execution {
         this.game.stats().vaultInteraction(interceptor);
         this.resetExecutionChain(owner.smallID());
         this.contributeToSquadObjective(interceptor, ticks, currentTile);
+
+        // Bounty Board tracking
+        this.trackConvoyIntercept(
+          interceptor.smallID(),
+          owner.smallID(),
+          ticks,
+        );
+
+        // Sabotage charges on interceptor's convoys (track owner perspective)
+        const ownerSabotageCharges =
+          this.sabotageCharges.get(owner.smallID()) ?? new Map();
+        for (const [saboteurID, charges] of ownerSabotageCharges) {
+          if (charges > 0) {
+            const toll =
+              gold / BigInt(Math.round(1 / this.sabotageTollFraction));
+            owner.addGold(-toll < 0n ? 0n : -toll);
+            ownerSabotageCharges.set(saboteurID, Math.max(0, charges - 1));
+          }
+        }
 
         this.game.displayMessage(
           `You captured a Vault Convoy in transit from ${owner.displayName()} (+${gold.toLocaleString()} gold, +${troops.toLocaleString()} troops).`,
@@ -1520,7 +2064,46 @@ export class VaultFrontExecution implements Execution {
         continue;
       }
 
-      owner.addGold(convoy.goldReward, convoy.destinationTile);
+      // Heist: resolve before standard delivery gold
+      this.resolveHeistOnArrival(convoy, convoy.destinationTile, ticks);
+
+      // Sabotage toll on delivery
+      const deliverySabotageCharges =
+        this.sabotageCharges.get(owner.smallID()) ?? new Map();
+      let goldAfterSabotage = convoy.goldReward;
+      for (const [, charges] of deliverySabotageCharges) {
+        if (charges > 0) {
+          const toll = BigInt(
+            Math.floor(Number(convoy.goldReward) * this.sabotageTollFraction),
+          );
+          goldAfterSabotage =
+            goldAfterSabotage > toll ? goldAfterSabotage - toll : 0n;
+          for (const [sid, sc] of deliverySabotageCharges) {
+            deliverySabotageCharges.set(sid, Math.max(0, sc - 1));
+          }
+          break;
+        }
+      }
+
+      // Trade deal: share fraction with a target player
+      const tradeDealTarget = this.tradeDealNextConvoy.get(owner.smallID());
+      if (tradeDealTarget !== undefined) {
+        this.tradeDealNextConvoy.delete(owner.smallID());
+        const shareGold = BigInt(
+          Math.floor(Number(goldAfterSabotage) * this.tradeDealShareFraction),
+        );
+        const tradeTarget = this.game.playerBySmallID(tradeDealTarget);
+        if (tradeTarget.isPlayer() && tradeTarget.isAlive()) {
+          tradeTarget.addGold(shareGold);
+          this.game.displayMessage(
+            `Trade deal: ${shareGold.toLocaleString()} gold shared with ${tradeTarget.displayName()}.`,
+            MessageType.RECEIVED_GOLD_FROM_TRADE,
+            owner.id(),
+          );
+        }
+      }
+
+      owner.addGold(goldAfterSabotage, convoy.destinationTile);
       owner.addTroops(convoy.troopsReward);
       this.game.stats().vaultConvoyDelivered(owner);
       this.game.stats().vaultInteraction(owner);
@@ -1700,7 +2283,10 @@ export class VaultFrontExecution implements Execution {
       | "beacon_pulse"
       | "jam_breaker"
       | "comeback_surge"
-      | "ghost_reveal",
+      | "ghost_reveal"
+      | "heist_executed"
+      | "bounty_collected"
+      | "map_event",
     tile: TileRef,
     sourcePlayerID: number | null,
     targetPlayerID: number | null,

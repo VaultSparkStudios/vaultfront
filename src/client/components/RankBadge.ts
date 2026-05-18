@@ -60,6 +60,8 @@ export class RankBadge extends LitElement {
   @property({ type: String }) label: EloLabel = "Silver";
   @property({ type: Number, attribute: "matches-played" }) matchesPlayed = 0;
   @property({ type: Boolean, attribute: "compact" }) compact = false;
+  @property({ type: String, attribute: "dynasty-emblem" }) dynastyEmblem = "";
+  @property({ type: String, attribute: "dynasty-tier" }) dynastyTier = "none";
 
   createRenderRoot() {
     return this;
@@ -84,12 +86,25 @@ export class RankBadge extends LitElement {
       `;
     }
 
+    const hasDynasty = this.dynastyTier !== "none" && this.dynastyEmblem !== "";
+
     return html`
-      <span
-        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-semibold ${colors.bg} ${colors.text} ${colors.border}"
-        title="${this.label} — ${this.elo} Elo"
-      >
-        ${icon} ${this.compact ? this.label : `${this.label} · ${this.elo}`}
+      <span class="inline-flex items-center gap-1">
+        ${hasDynasty
+          ? html`<span
+              class="text-xs"
+              title="Dynasty ${this.dynastyTier} — ${this.dynastyEmblem}"
+              >${this.dynastyEmblem}</span
+            >`
+          : ""}
+        <span
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-semibold ${colors.bg} ${colors.text} ${colors.border}"
+          title="${this.label} — ${this.elo} Elo${hasDynasty
+            ? ` · Dynasty ${this.dynastyTier}`
+            : ""}"
+        >
+          ${icon} ${this.compact ? this.label : `${this.label} · ${this.elo}`}
+        </span>
       </span>
     `;
   }
