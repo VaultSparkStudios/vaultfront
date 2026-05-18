@@ -13,6 +13,17 @@ Key wins: last-stand-event, convoy-intercept-predictor, ai-battle-narrative,
 smart-spectator-camera, convoy-ghost-route, bot-vaultfront-awareness,
 api-auth-security, context-token-ledger, all mutator expansions, Elo/rank system.
 
+## Completed (2026-05-18 — Repair /implement pass)
+
+All 6 items from `docs/AUDIT_2026-05-18.md` shipped: startup-brief-repair,
+contract-hud-live-progress, coach-hint-site-signal, stream-overlay-reconnect-memory,
+narrator-bus-token-guardrails, and anti-cheat-alert-cooldown.
+
+## Follow-ups
+
+- Fix unrelated global lint blockers in e2e/project-service config and Studio script lint debt.
+- Fix pre-existing `src/server/Master.ts(166,30)` type error so `npm run build-prod` can complete.
+
 ## Deferred to Project Agents
 
 - cross-repo item owned by another repo agent:

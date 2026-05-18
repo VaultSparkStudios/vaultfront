@@ -50,3 +50,10 @@ Session scope was continuation/HUD pass rather than new-feature-heavy board clea
 capitalEfficiency +8 (all AI endpoints now cache system prompts → ~40% token reduction on repeat calls),
 engagement +5 (prophecy + heist/bounty/warchest HUD = every mechanic now has dramatic player feedback),
 devHealth +3 (vault_heist wired through Schemas + Transport correctly).
+
+## Sprint: 2026-05-18 — Repair Audit → Implement Pass (SIL estimate: 880/1000)
+
+Shipped all 6 May 18 repair audit items. Highlights: `/start` brief render repaired, contract HUD now updates live every tick, coach hints use real vault-site state, streaming overlays replay recent events on reconnect, narrator prompts are deduped/capped, and anti-cheat alerting now has cooldown plus bounded retention.
+
+**Delta from prior estimate (858 → 880):** +22 pts.
+devHealth +6 (focused regression coverage and local lint clean), processQuality +7 (startup protocol repaired), engagement +4 (live contract feedback + better coach relevance), automationCoverage +3 (helper fallbacks + debug state), capitalEfficiency +2 (narrator prompt cap/dedup).

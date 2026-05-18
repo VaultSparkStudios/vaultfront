@@ -25,7 +25,6 @@ export class ContractHudWidget extends LitElement implements Layer {
   @state() private contracts: ContractProgress[] = [];
   @state() private visible = false;
 
-  private fetchedAt = 0;
   private readonly FETCH_INTERVAL_TICKS = 300; // refresh every 30s
   private tickCount = 0;
 
@@ -67,33 +66,32 @@ export class ContractHudWidget extends LitElement implements Layer {
 
   tick(): void {
     this.tickCount++;
-    if (this.tickCount < this.FETCH_INTERVAL_TICKS) return;
-    this.tickCount = 0;
 
     // Update progress based on VaultFront activity events
     const updates = this.game?.updatesSinceLastTick();
-    if (!updates) return;
+    const activities = updates?.[GameUpdateType.VaultFrontActivity];
 
-    const activities = updates[GameUpdateType.VaultFrontActivity];
-    if (!activities) return;
-
-    let changed = false;
-    for (const act of activities) {
-      if (act.activity === "convoy_intercepted") {
-        this.incrementContract("interceptionTiming");
-        changed = true;
-      } else if (act.activity === "vault_captured") {
-        this.incrementContract("objectiveDenial");
-        changed = true;
-      } else if (act.activity === "comeback_surge") {
-        this.incrementContract("comebackExecution");
-        changed = true;
+    if (activities) {
+      let changed = false;
+      for (const act of activities) {
+        if (act.activity === "convoy_intercepted") {
+          this.incrementContract("interceptionTiming");
+          changed = true;
+        } else if (act.activity === "vault_captured") {
+          this.incrementContract("objectiveDenial");
+          changed = true;
+        } else if (act.activity === "comeback_surge") {
+          this.incrementContract("comebackExecution");
+          changed = true;
+        }
       }
+      if (changed) this.requestUpdate();
     }
-    if (changed) this.requestUpdate();
 
-    // Re-fetch from server periodically
-    void this.loadContracts();
+    if (this.tickCount >= this.FETCH_INTERVAL_TICKS) {
+      this.tickCount = 0;
+      void this.loadContracts();
+    }
   }
 
   private incrementContract(key: string): void {

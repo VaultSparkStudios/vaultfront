@@ -27,12 +27,14 @@ export interface StreamSnapshot {
 interface StreamState {
   clients: Set<Response>;
   lastSnapshot: StreamSnapshot | null;
+  recentEvents: object[];
   timer: ReturnType<typeof setInterval> | null;
 }
 
 const HEARTBEAT_MS = 5_000;
+const MAX_RECENT_EVENTS = 12;
 
-class StreamingBus {
+export class StreamingBus {
   private streams = new Map<string, StreamState>();
 
   private getOrCreate(gameId: string): StreamState {
@@ -40,9 +42,11 @@ class StreamingBus {
       const state: StreamState = {
         clients: new Set(),
         lastSnapshot: null,
+        recentEvents: [],
         timer: null,
       };
       state.timer = setInterval(() => this.heartbeat(gameId), HEARTBEAT_MS);
+      state.timer.unref?.();
       this.streams.set(gameId, state);
     }
     return this.streams.get(gameId)!;
@@ -64,6 +68,9 @@ class StreamingBus {
       res.write(
         `data: ${JSON.stringify({ type: "snapshot", ...state.lastSnapshot })}\n\n`,
       );
+    }
+    for (const event of state.recentEvents) {
+      res.write(`data: ${JSON.stringify({ type: "replay", event })}\n\n`);
     }
 
     Logger.info(`StreamingBus: overlay client connected to ${gameId}`, {
@@ -107,6 +114,7 @@ class StreamingBus {
   }
 
   private broadcast(state: StreamState, payload: object): void {
+    this.remember(state, payload);
     const line = `data: ${JSON.stringify(payload)}\n\n`;
     const dead: Response[] = [];
     for (const res of state.clients) {
@@ -119,6 +127,20 @@ class StreamingBus {
     dead.forEach((r) => state.clients.delete(r));
   }
 
+  private remember(state: StreamState, payload: object): void {
+    const type = (payload as { type?: string }).type;
+    if (type === "heartbeat" || type === "connected" || type === "replay") {
+      return;
+    }
+    state.recentEvents.push(payload);
+    if (state.recentEvents.length > MAX_RECENT_EVENTS) {
+      state.recentEvents.splice(
+        0,
+        state.recentEvents.length - MAX_RECENT_EVENTS,
+      );
+    }
+  }
+
   private cleanup(gameId: string): void {
     const state = this.streams.get(gameId);
     if (state?.timer) clearInterval(state.timer);
@@ -127,6 +149,14 @@ class StreamingBus {
 
   hasSubscribers(gameId: string): boolean {
     return (this.streams.get(gameId)?.clients.size ?? 0) > 0;
+  }
+
+  debugState(gameId: string): { subscribers: number; recentEvents: number } {
+    const state = this.streams.get(gameId);
+    return {
+      subscribers: state?.clients.size ?? 0,
+      recentEvents: state?.recentEvents.length ?? 0,
+    };
   }
 }
 

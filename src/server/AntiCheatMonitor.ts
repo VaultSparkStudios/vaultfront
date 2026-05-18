@@ -14,6 +14,10 @@ const THRESHOLD = Number(process.env.ANTI_CHEAT_ALERT_THRESHOLD ?? 3);
 const INTERVAL_MS = Number(
   process.env.ANTI_CHEAT_POLL_INTERVAL_MS ?? 30 * 60 * 1000,
 );
+const ALERT_COOLDOWN_MS = Number(
+  process.env.ANTI_CHEAT_ALERT_COOLDOWN_MS ?? 30 * 60 * 1000,
+);
+const MAX_SEEN_GAME_IDS = 1_000;
 
 export class AntiCheatMonitor {
   private timer: ReturnType<typeof setInterval> | null = null;
@@ -43,7 +47,11 @@ export class AntiCheatMonitor {
 
       for (const r of newRows) this.seenGameIds.add(r.gameId);
 
-      if (newRows.length >= THRESHOLD) {
+      const now = Date.now();
+      if (
+        newRows.length >= THRESHOLD &&
+        now - this.lastAlertedAt >= ALERT_COOLDOWN_MS
+      ) {
         const summary = newRows
           .slice(0, 5)
           .map(
@@ -52,14 +60,42 @@ export class AntiCheatMonitor {
           )
           .join("\n");
         DiscordNotifier.antiCheatAlert(newRows.length, summary);
-        this.lastAlertedAt = Date.now();
+        this.lastAlertedAt = now;
         Logger.warn("AntiCheatMonitor: threshold exceeded", {
           count: newRows.length,
         });
       }
+      this.pruneSeenGameIds();
     } catch (err) {
       Logger.warn("AntiCheatMonitor poll failed", { err });
     }
+  }
+
+  private pruneSeenGameIds(): void {
+    if (this.seenGameIds.size <= MAX_SEEN_GAME_IDS) return;
+    const overflow = this.seenGameIds.size - MAX_SEEN_GAME_IDS;
+    let deleted = 0;
+    for (const gameId of this.seenGameIds) {
+      this.seenGameIds.delete(gameId);
+      deleted += 1;
+      if (deleted >= overflow) break;
+    }
+  }
+
+  async pollForTest(): Promise<void> {
+    await this.poll();
+  }
+
+  debugState(): {
+    seenGameIds: number;
+    lastAlertedAt: number;
+    running: boolean;
+  } {
+    return {
+      seenGameIds: this.seenGameIds.size,
+      lastAlertedAt: this.lastAlertedAt,
+      running: this.timer !== null,
+    };
   }
 }
 
