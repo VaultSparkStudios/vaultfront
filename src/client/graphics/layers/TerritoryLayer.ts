@@ -58,6 +58,11 @@ export class TerritoryLayer implements Layer {
 
   private lastFocusedPlayer: PlayerView | null = null;
 
+  // Fog-of-war memory decay — tracks tick of last ownership change per tile.
+  // Enemy tiles desaturate over time to signal "stale" intel.
+  private tileMemoryAge = new Map<TileRef, number>();
+  private readonly MEMORY_DECAY_MAX_TICKS = 1200; // ~2 minutes to full desaturation
+
   constructor(
     private game: GameView,
     private eventBus: EventBus,
@@ -85,7 +90,10 @@ export class TerritoryLayer implements Layer {
       this.spawnHighlight();
     }
 
-    this.game.recentlyUpdatedTiles().forEach((t) => this.enqueueTile(t));
+    this.game.recentlyUpdatedTiles().forEach((t) => {
+      this.enqueueTile(t);
+      this.tileMemoryAge.set(t, this.game.ticks());
+    });
     const updates = this.game.updatesSinceLastTick();
     const unitUpdates = updates !== null ? updates[GameUpdateType.Unit] : [];
     unitUpdates.forEach((update) => {
@@ -596,8 +604,34 @@ export class TerritoryLayer implements Layer {
       let territoryCol = owner.territoryColor(tile);
       if (cbMode)
         territoryCol = this.colorBlindAdjust(territoryCol, owner.smallID());
+      const myPlayer2 = this.game.myPlayer();
+      const isEnemy =
+        myPlayer2 !== null &&
+        owner.id() !== myPlayer2.id() &&
+        !owner.isFriendly(myPlayer2);
+      if (isEnemy) {
+        territoryCol = this.applyMemoryDecay(tile, territoryCol);
+      }
       this.paintTile(this.imageData, tile, territoryCol, 150);
     }
+  }
+
+  private applyMemoryDecay(tile: TileRef, color: Colord): Colord {
+    const lastChangeTick = this.tileMemoryAge.get(tile) ?? 0;
+    const staleness = Math.min(
+      1,
+      (this.game.ticks() - lastChangeTick) / this.MEMORY_DECAY_MAX_TICKS,
+    );
+    if (staleness <= 0) return color;
+    // Blend toward grey (128, 128, 128) proportional to staleness, max 40% grey blend
+    const blend = staleness * 0.4;
+    const rgb = color.toRgb();
+    const grey = 128;
+    return colord({
+      r: Math.round(rgb.r * (1 - blend) + grey * blend),
+      g: Math.round(rgb.g * (1 - blend) + grey * blend),
+      b: Math.round(rgb.b * (1 - blend) + grey * blend),
+    });
   }
 
   alternateViewColor(other: PlayerView): Colord {
