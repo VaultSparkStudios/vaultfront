@@ -29,6 +29,7 @@ import { Client } from "./Client";
 import { narratorBus } from "./NarratorBus";
 import { replayStore } from "./ReplayStore";
 import { spectatorBus } from "./SpectatorBus";
+import { streamingBus } from "./StreamingBus";
 import { VaultMetrics } from "./VaultMetrics";
 export enum GamePhase {
   Lobby = "LOBBY",
@@ -930,6 +931,7 @@ export class GameServer {
     });
     spectatorBus.closeGame(this.id);
     narratorBus.closeGame(this.id);
+    streamingBus.closeGame(this.id);
     if (!this._hasPrestarted && !this._hasStarted) {
       this.log.info(`game not started, not archiving game`);
       return;

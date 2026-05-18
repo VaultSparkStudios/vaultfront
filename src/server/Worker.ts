@@ -41,6 +41,7 @@ import { PrivilegeRefresher } from "./PrivilegeRefresher";
 import { rematchStore } from "./RematchStore";
 import { replayHighlightStore } from "./ReplayHighlightStore";
 import { replayStore } from "./ReplayStore";
+import { streamingBus } from "./StreamingBus";
 import { tournamentStore } from "./TournamentStore";
 import { verifyTurnstileToken } from "./Turnstile";
 import { tutorialOrchestrator } from "./TutorialOrchestrator";
@@ -1967,6 +1968,21 @@ export async function startWorker() {
       return res.json({ ok: true });
     },
   );
+
+  // ── Streaming Overlay API ────────────────────────────────────────────────
+  // Streamers add this as an OBS browser source (transparent, 1280×200):
+  //   https://your-server/api/stream/:gameId/overlay
+  app.get("/api/stream/:gameId/overlay", (req, res) => {
+    const gameId = req.params.gameId;
+    if (!gameId || gameId.length > 64) {
+      return res.status(400).end();
+    }
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+    streamingBus.subscribe(gameId, res);
+  });
 
   // ── Player Stats / Leaderboard API ───────────────────────────────────────
   const statsRateLimit = rateLimit({
