@@ -31,6 +31,7 @@ import { logger } from "./Logger";
 import { playerStatsStore } from "./PlayerStatsStore";
 
 import { GameEnv } from "../core/configuration/Config";
+import { antiCheatMonitor } from "./AntiCheatMonitor";
 import { clanStore } from "./ClanStore";
 import { MapPlaylist } from "./MapPlaylist";
 import { startPolling } from "./PollingLoop";
@@ -710,6 +711,7 @@ export async function startWorker() {
   }
 
   vaultSeasonScheduler.start();
+  antiCheatMonitor.start();
 
   const privilegeRefresher = new PrivilegeRefresher(
     config.jwtIssuer() + "/cosmetics.json",

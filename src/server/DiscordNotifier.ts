@@ -289,4 +289,19 @@ export const DiscordNotifier = {
       },
     ]);
   },
+
+  /**
+   * Alert when anti-cheat signals exceed the configured threshold.
+   */
+  antiCheatAlert(count: number, summary: string): void {
+    send([
+      {
+        title: `🚨 Anti-Cheat Alert — ${count} flagged match${count === 1 ? "" : "es"}`,
+        description: `**${count} new flagged match${count === 1 ? "" : "es"}** detected in the last poll window.\n\n${summary}`,
+        color: Colors.red,
+        footer: { text: "Review via /api/admin/anti-cheat/flagged" },
+        timestamp: new Date().toISOString(),
+      },
+    ]);
+  },
 };
