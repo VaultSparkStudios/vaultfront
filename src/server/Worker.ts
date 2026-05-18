@@ -1101,6 +1101,75 @@ export async function startWorker() {
     });
   });
 
+  // ── Unified A/B Results Dashboard endpoint ───────────────────────────────
+  app.get("/api/admin/ab/results", async (req, res) => {
+    if (req.headers[config.adminHeader()] !== config.adminToken()) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const dockTop = vaultFrontDockVariantStats.get("top") ?? {
+      assignedUsers: 0,
+      events: {},
+    };
+    const dockStack = vaultFrontDockVariantStats.get("stack") ?? {
+      assignedUsers: 0,
+      events: {},
+    };
+    const recapGoal = vaultFrontRecapVariantStats.get("goal_focus") ?? {
+      assignedUsers: 0,
+      events: {},
+    };
+    const recapRequeue = vaultFrontRecapVariantStats.get("requeue_focus") ?? {
+      assignedUsers: 0,
+      events: {},
+    };
+    return res.json({
+      generatedAt: Date.now(),
+      experiments: [
+        {
+          id: "dock_layout_v1",
+          description: "Dock layout: top vs stack",
+          variants: {
+            top: { users: dockTop.assignedUsers, events: dockTop.events },
+            stack: {
+              users: dockStack.assignedUsers,
+              events: dockStack.events,
+            },
+          },
+        },
+        {
+          id: "recap_cta_v1",
+          description: "Win recap CTA: goal_focus vs requeue_focus",
+          variants: {
+            goal_focus: {
+              users: recapGoal.assignedUsers,
+              events: recapGoal.events,
+            },
+            requeue_focus: {
+              users: recapRequeue.assignedUsers,
+              events: recapRequeue.events,
+            },
+          },
+        },
+        {
+          id: "vault_runtime_v1",
+          description: "Runtime reward and HUD variants",
+          rewardVariants: Object.fromEntries(
+            [...vaultFrontRuntimeRewardStats.entries()].map(([k, v]) => [
+              k,
+              { users: v.assignedUsers, events: v.events },
+            ]),
+          ),
+          hudVariants: Object.fromEntries(
+            [...vaultFrontRuntimeHudStats.entries()].map(([k, v]) => [
+              k,
+              { users: v.assignedUsers, events: v.events },
+            ]),
+          ),
+        },
+      ],
+    });
+  });
+
   app.post("/api/vaultfront/outcome", async (req, res) => {
     const identity = await resolveVaultFrontIdentity(req);
     if (!identity) {
