@@ -25,18 +25,18 @@
 
 ╔══ SCORE ═══════════════════════════════════════════════════════╗
 ║                                                                  ║
-║    0/1000   ░░░░░░░░░░░░░░░░░░░░░░░░   ?%                        ║
-║    SIL v3.0  ·  Avg3: ?  ·  Velocity 0→                          ║
-║    Last active: 0d  ·  Last closeout: ?d  ·  (active = newest o  ║
-║    Trend    →  (last 5 sessions)                                 ║
+║    960/1000   ███████████████████████░   96%                     ║
+║    SIL v3.0  ·  Avg3: 80  ·  Velocity 80↑                        ║
+║    Last active: 0d  ·  Last closeout: 0d  ·  (active = newest o  ║
+║    Trend    ↑  (last 5 sessions)                                 ║
 ║                                                                  ║
 ║    Category         Score  Bar        Spark   Δ                  ║
 ║    ─────────────── ────── ────────── ──────── ─                  ║
-║    Dev Health         0    ░░░░░░░░░░  —        →                ║
-║    Alignment          0    ░░░░░░░░░░  —        →                ║
-║    Momentum           0    ░░░░░░░░░░  —        →                ║
-║    Engagement         0    ░░░░░░░░░░  —        →                ║
-║    Process Qual       0    ░░░░░░░░░░  —        →                ║
+║    Dev Health         8    █░░░░░░░░░  —        →                ║
+║    Alignment         30    ███░░░░░░░  —        →                ║
+║    Momentum          10    █░░░░░░░░░  —        →                ║
+║    Engagement        25    ███░░░░░░░  —        →                ║
+║    Process Qual       7    █░░░░░░░░░  —        →                ║
 ║    Coherence         93    █████████░  ········ →                ║
 ║    Security          90    █████████░  ········ →                ║
 ║    Ecosystem         65    ███████░░░  ········ →                ║
@@ -52,9 +52,9 @@
 
 ╔══ SIGNALS ═════════════════════════════════════════════════════╗
 ║  ✓  Tests         N/A (protocol repo)                            ║
-║  ⛔  Velocity      0   ·  Debt: →                                 ║
-║  ✓  Runway        unknown                                        ║
-║  ✓  Headroom      100% remaining · ~9 large item(s) fit          ║
+║  ✓  Velocity      80 ↑  ·  Debt: →                               ║
+║  ✓  Runway        strong                                         ║
+║  ✓  Headroom      99% remaining · ~9 large item(s) fit           ║
 ║  ⛔  Context age   ?d                                             ║
 ║  ✓  IGNIS         39292 FORGE  ·  4d old                         ║
 ║  ✓  Truth         green  ·  Genome: ?                            ║
@@ -70,16 +70,16 @@
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ PORTFOLIO TASK BOARDS ═══════════════════════════════════════╗
-║  Total: 4884 open · 4692 unblocked · 192 blocked                 ║
-║  Crit 226 · High 903 · 24/28 repos active                        ║
+║  Total: 5018 open · 4807 unblocked · 211 blocked                 ║
+║  Crit 234 · High 928 · 24/28 repos active                        ║
 ║                                                                  ║
-║                             812 open · 767 unblk · C88 H218      ║
-║                             477 open · 455 unblk · C 4 H132      ║
+║                             823 open · 777 unblk · C94 H222      ║
+║                             488 open · 466 unblk · C 4 H139      ║
 ║                             131 open · 127 unblk · C 2 H 7       ║
 ║                              25 open · 25 unblk · C 0 H 0        ║
 ║                             231 open · 227 unblk · C 3 H15       ║
 ║                             162 open · 156 unblk · C12 H23       ║
-║                             142 open · 138 unblk · C16 H51       ║
+║                             144 open · 139 unblk · C16 H53       ║
 ║                               3 open ·  3 unblk · C 0 H 0        ║
 ║    … +16 more — run: node scripts/lib/cross-repo-tasks.mjs       ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -90,8 +90,8 @@
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ MOMENTUM METER ══════════════════════════════════════════════╗
-║  Velocity:   —  0→  (last 5 sessions)                            ║
-║  Intent:     ?% achieved last 5                                  ║
+║  Velocity:   —  80↑  (last 5 sessions)                           ║
+║  Intent:     100% achieved last 5                                ║
 ║  Streak:     — (last intent not achieved)                        ║
 ╚════════════════════════════════════════════════════════════════╝
 

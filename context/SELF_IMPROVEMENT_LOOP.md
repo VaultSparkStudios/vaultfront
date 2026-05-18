@@ -2,6 +2,15 @@
 
 Detailed internal scoring, audit trends, and brainstorming are maintained privately.
 
+<!-- rolling-status-start -->
+
+Total: 960/1000 | Velocity: 80→ | Debt: → | Velocity trend: ↑
+Avgs — 3: 80.0 | Momentum runway: strong | Intent rate: 100%
+3-session: Dev 8 | Align 30 | Momentum 10 | Engage 25 | Process 7
+Last session: 2026-05-18 Session 4
+
+<!-- rolling-status-end -->
+
 ## Sprint: 2026-05-17 — Full Audit → Implement Pass (SIL v3.0 score: 832/1000)
 
 Shipped all 19 audit items across two sessions. Highlights: last-stand-event,
