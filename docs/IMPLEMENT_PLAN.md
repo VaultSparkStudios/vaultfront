@@ -1,3 +1,33 @@
+# Implement Plan — AUDIT_2026-05-17_S3 (Session 3)
+
+> Session 3 plan below. Session 2 plan (all 24 shipped) preserved for reference below the divider.
+
+## Session 3 — Optimal Efficiency Sequence (19 items)
+
+| Seq | Slug                        | Effort | Priority | Rationale                             |
+| --- | --------------------------- | ------ | -------- | ------------------------------------- |
+| 1   | automated-anti-cheat-alerts | 2h     | 17.5     | Security, server-only, fast win       |
+| 2   | dynasty-story-engine        | 2h     | 32.0     | 🔥 #1 priority, Worker.ts AI endpoint |
+| 3   | bot-ai-persona-backstories  | 2h     | 21.0     | Same Worker.ts context                |
+| 4   | cinematic-intercept-moment  | 2h     | 24.0     | 🔥 UX, PixiJS client                  |
+| 5   | season-contract-hud         | 2h     | 17.5     | Lit component, same client context    |
+| 6   | in-game-mutator-vote        | 2h     | 17.5     | WinModal, same context                |
+| 7   | ignis-founder-feedback-loop | 4h     | 21.7     | Foundation endpoint + DB              |
+| 8   | in-game-micro-coach         | 4h     | 24.7     | 🔥 AI + CoachHintEngine client        |
+| 9   | predictive-pre-match-oracle | 4h     | 18.9     | AI + GameStartingModal                |
+| 10  | living-match-narrator       | 4h     | 31.3     | 🔥 SpectatorBus + NarratorBus         |
+| 11  | route-intelligence-network  | 4h     | 21.7     | VaultFrontExecution new command       |
+| 12  | match-replay-highlight-reel | 4h     | 16.3     | ReplayPanel + WinModal                |
+| 13  | streaming-overlay-api       | 4h     | 18.9     | StreamingBus server infra             |
+| 14  | ab-results-dashboard        | 4h     | 11.6     | Admin page                            |
+| 15  | fog-of-war-memory-decay     | 8h     | 21.7     | 🔥 TerritoryLayer large change        |
+| 16  | spectator-economy           | 8h     | 19.3     | SpectatorBet DB + endpoints           |
+| 17  | world-events-system         | 8h     | 19.3     | WorldEventScheduler server            |
+| 18  | clan-war-tournament         | 8h     | 14.4     | TournamentStore extension             |
+| 19  | narrative-batch-caching     | 2h     | 15.0     | Token-cost — measure last             |
+
+---
+
 # Implement Plan — AUDIT_2026-05-17 Session 2
 
 Generated: 2026-05-17 · 24 items · Combined Priority: 943.5

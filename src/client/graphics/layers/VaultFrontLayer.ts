@@ -1,10 +1,17 @@
 import { Cell } from "../../../core/game/Game";
 import { TileRef } from "../../../core/game/GameMap";
 import {
+  BountyBoardActivatedUpdate,
+  BountyCollectedUpdate,
   GameUpdateType,
+  HeistExecutedUpdate,
   LastStandActivatedUpdate,
+  MapEventExpiredUpdate,
+  MapEventFiredUpdate,
+  MapEventType,
   VaultFrontActivityUpdate,
   VaultFrontStatusUpdate,
+  WarchestHuntStartedUpdate,
 } from "../../../core/game/GameUpdates";
 import { GameView } from "../../../core/game/GameView";
 import { TransformHandler } from "../TransformHandler";
@@ -39,6 +46,27 @@ export class VaultFrontLayer implements Layer {
   private lastStandActivatedAtTick = -1;
   private lastStandData: LastStandActivatedUpdate | null = null;
   private readonly lastStandBannerTicks = 50; // 5s banner
+
+  // World Events — global map event HUD banner
+  private activeWorldEvent: MapEventFiredUpdate | null = null;
+  private worldEventShownAtTick = -1;
+  private readonly worldEventBannerInTicks = 80; // 8s entry banner
+
+  // Vault Heist — flash alert when a heist executes
+  private heistAlert: HeistExecutedUpdate | null = null;
+  private heistAlertTick = -1;
+  private readonly heistAlertTicks = 60; // 6s
+
+  // Bounty Board — persistent overlay showing active bounty on a player
+  private activeBounty: BountyBoardActivatedUpdate | null = null;
+  private bountyCollectedTick = -1;
+  private bountyCollectedData: BountyCollectedUpdate | null = null;
+  private readonly bountyCollectedAlertTicks = 50;
+
+  // Warchest Hunt — mark/crosshair overlay
+  private warchestHunt: WarchestHuntStartedUpdate | null = null;
+  private warchestShownAtTick = -1;
+  private readonly warchestBannerTicks = 80;
 
   constructor(
     private game: GameView,
@@ -87,6 +115,57 @@ export class VaultFrontLayer implements Layer {
     if (lastStandUpdates && lastStandUpdates.length > 0) {
       this.lastStandData = lastStandUpdates[lastStandUpdates.length - 1];
       this.lastStandActivatedAtTick = now;
+    }
+
+    // Vault Heist flash alert
+    const heistUpdates = updates[
+      GameUpdateType.HeistExecuted
+    ] as HeistExecutedUpdate[];
+    if (heistUpdates && heistUpdates.length > 0) {
+      this.heistAlert = heistUpdates[heistUpdates.length - 1];
+      this.heistAlertTick = now;
+    }
+
+    // Bounty Board
+    const bountyActivated = updates[
+      GameUpdateType.BountyBoardActivated
+    ] as BountyBoardActivatedUpdate[];
+    if (bountyActivated && bountyActivated.length > 0) {
+      this.activeBounty = bountyActivated[bountyActivated.length - 1];
+    }
+    const bountyCollected = updates[
+      GameUpdateType.BountyCollected
+    ] as BountyCollectedUpdate[];
+    if (bountyCollected && bountyCollected.length > 0) {
+      this.bountyCollectedData = bountyCollected[bountyCollected.length - 1];
+      this.bountyCollectedTick = now;
+      if (this.activeBounty && this.bountyCollectedData.chargesLeft <= 0) {
+        this.activeBounty = null;
+      }
+    }
+
+    // Warchest Hunt
+    const warchestUpdates = updates[
+      GameUpdateType.WarchestHuntStarted
+    ] as WarchestHuntStartedUpdate[];
+    if (warchestUpdates && warchestUpdates.length > 0) {
+      this.warchestHunt = warchestUpdates[warchestUpdates.length - 1];
+      this.warchestShownAtTick = now;
+    }
+
+    // World Events: track fired/expired map events
+    const mapFiredUpdates = updates[
+      GameUpdateType.MapEventFired
+    ] as MapEventFiredUpdate[];
+    if (mapFiredUpdates && mapFiredUpdates.length > 0) {
+      this.activeWorldEvent = mapFiredUpdates[mapFiredUpdates.length - 1];
+      this.worldEventShownAtTick = now;
+    }
+    const mapExpiredUpdates = updates[
+      GameUpdateType.MapEventExpired
+    ] as MapEventExpiredUpdate[];
+    if (mapExpiredUpdates && mapExpiredUpdates.length > 0) {
+      this.activeWorldEvent = null;
     }
 
     // Surge Chronicle: detect local player surge entry
@@ -139,6 +218,10 @@ export class VaultFrontLayer implements Layer {
     this.drawSurgeChronicle(ctx);
     this.drawLastStandBanner(ctx);
     this.drawMutatorBanner(ctx);
+    this.drawWorldEventBanner(ctx);
+    this.drawHeistAlert(ctx);
+    this.drawBountyBoard(ctx);
+    this.drawWarchestBanner(ctx);
   }
 
   private prefersReducedMotion(): boolean {
@@ -1049,6 +1132,387 @@ export class VaultFrontLayer implements Layer {
     ctx.font = `10px Overpass, sans-serif`;
     ctx.fillText(label.desc, w / 2, by + 46);
     ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  private drawWorldEventBanner(ctx: CanvasRenderingContext2D): void {
+    if (!this.activeWorldEvent || this.worldEventShownAtTick < 0) return;
+    const now = this.game.ticks();
+    const elapsed = now - this.worldEventShownAtTick;
+    if (elapsed > this.worldEventBannerInTicks) return;
+
+    const fadeIn = 8;
+    const fadeOut = 14;
+    const holdEnd = this.worldEventBannerInTicks - fadeOut;
+    let alpha: number;
+    if (elapsed < fadeIn) {
+      alpha = elapsed / fadeIn;
+    } else if (elapsed > holdEnd) {
+      alpha = 1 - (elapsed - holdEnd) / fadeOut;
+    } else {
+      alpha = 1;
+    }
+    alpha = Math.max(0, Math.min(1, alpha));
+
+    const eventMeta: Record<
+      MapEventType,
+      { emoji: string; name: string; desc: string; accent: string }
+    > = {
+      vault_bonanza: {
+        emoji: "💰",
+        name: "VAULT BONANZA",
+        desc: "All vault captures pay double gold  •  Window is brief",
+        accent: "rgba(251, 191, 36, 0.9)",
+      },
+      supply_disruption: {
+        emoji: "🚫",
+        name: "SUPPLY DISRUPTION",
+        desc: "Convoy gold yields −40%  •  Intercepts now more lucrative",
+        accent: "rgba(248, 113, 113, 0.9)",
+      },
+      intelligence_breach: {
+        emoji: "👁",
+        name: "INTELLIGENCE BREACH",
+        desc: "All intel revealed globally  •  No safe routes",
+        accent: "rgba(167, 139, 250, 0.9)",
+      },
+      gold_rush: {
+        emoji: "⛏",
+        name: "GOLD RUSH",
+        desc: "Passive income doubled  •  Stake your claim now",
+        accent: "rgba(52, 211, 153, 0.9)",
+      },
+      siege_protocol: {
+        emoji: "🏰",
+        name: "SIEGE PROTOCOL",
+        desc: "Capture speed ×1.5  •  Defenses weaken globally",
+        accent: "rgba(251, 146, 60, 0.9)",
+      },
+      diplomatic_window: {
+        emoji: "🤝",
+        name: "DIPLOMATIC WINDOW",
+        desc: "Alliance bonuses active  •  Coordinate to dominate",
+        accent: "rgba(56, 189, 248, 0.9)",
+      },
+    };
+
+    const meta = eventMeta[this.activeWorldEvent.eventType];
+    if (!meta) return;
+
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+    const secsLeft = Math.max(
+      0,
+      Math.ceil(
+        (this.activeWorldEvent.startTick +
+          this.activeWorldEvent.durationTicks -
+          now) /
+          10,
+      ),
+    );
+
+    const bannerW = Math.min(460, w - 32);
+    const bx = (w - bannerW) / 2;
+    const by = h - 100;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    // Backdrop
+    ctx.fillStyle = "rgba(2, 6, 23, 0.92)";
+    ctx.strokeStyle = meta.accent;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bannerW, 58, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    // Left accent stripe
+    ctx.fillStyle = meta.accent;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, 4, 58, [8, 0, 0, 8]);
+    ctx.fill();
+
+    // Emoji + event name
+    ctx.fillStyle = meta.accent;
+    ctx.font = `bold 11px Overpass, sans-serif`;
+    ctx.textAlign = "left";
+    ctx.fillText(`${meta.emoji}  WORLD EVENT`, bx + 14, by + 16);
+
+    ctx.fillStyle = "rgba(248, 250, 252, 0.97)";
+    ctx.font = `bold 15px Overpass, sans-serif`;
+    ctx.fillText(meta.name, bx + 14, by + 34);
+
+    ctx.fillStyle = "rgba(203, 213, 225, 0.82)";
+    ctx.font = `10px Overpass, sans-serif`;
+    ctx.fillText(meta.desc, bx + 14, by + 50);
+
+    // Countdown badge
+    const badgeText = `${secsLeft}s`;
+    ctx.fillStyle = "rgba(30, 41, 59, 0.85)";
+    ctx.beginPath();
+    ctx.roundRect(bx + bannerW - 44, by + 12, 36, 20, 4);
+    ctx.fill();
+    ctx.fillStyle = meta.accent;
+    ctx.font = `bold 10px Overpass, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText(badgeText, bx + bannerW - 26, by + 25);
+
+    ctx.restore();
+  }
+
+  private drawHeistAlert(ctx: CanvasRenderingContext2D): void {
+    if (this.heistAlertTick < 0 || !this.heistAlert) return;
+    const now = this.game.ticks();
+    const elapsed = now - this.heistAlertTick;
+    if (elapsed > this.heistAlertTicks) return;
+
+    const fadeIn = 6;
+    const fadeOut = 12;
+    const holdEnd = this.heistAlertTicks - fadeOut;
+    let alpha =
+      elapsed < fadeIn
+        ? elapsed / fadeIn
+        : elapsed > holdEnd
+          ? 1 - (elapsed - holdEnd) / fadeOut
+          : 1;
+    alpha = Math.max(0, Math.min(1, alpha));
+
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+    const myID = this.game.myPlayer()?.smallID();
+    const isVictim = this.heistAlert.victimPlayerID === myID;
+    const isHeister = this.heistAlert.heistPlayerID === myID;
+
+    const accent = isVictim
+      ? "rgba(248, 113, 113, 0.9)"
+      : isHeister
+        ? "rgba(52, 211, 153, 0.9)"
+        : "rgba(251, 191, 36, 0.9)";
+    const goldK = Math.round(this.heistAlert.goldStolen / 1000);
+    const headline = isVictim
+      ? `💀 VAULT HEISTED — ${goldK}k gold stolen from you`
+      : isHeister
+        ? `💰 VAULT HEIST — extracted ${goldK}k gold!`
+        : `💀 VAULT HEIST in progress — ${goldK}k gold extracted`;
+
+    const bannerW = Math.min(480, w - 32);
+    const bx = (w - bannerW) / 2;
+    const by = h * 0.3;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    // Vignette for victim
+    if (isVictim) {
+      const vg = ctx.createRadialGradient(
+        w / 2,
+        h / 2,
+        h * 0.15,
+        w / 2,
+        h / 2,
+        h * 0.7,
+      );
+      vg.addColorStop(0, "rgba(220, 38, 38, 0)");
+      vg.addColorStop(1, `rgba(185, 28, 28, ${alpha * 0.4})`);
+      ctx.fillStyle = vg;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    ctx.fillStyle = "rgba(2, 6, 23, 0.93)";
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bannerW, 42, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = accent;
+    ctx.font = `bold 14px Overpass, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText(headline, w / 2, by + 26);
+
+    ctx.restore();
+  }
+
+  private drawBountyBoard(ctx: CanvasRenderingContext2D): void {
+    const now = this.game.ticks();
+
+    // Bounty collected flash
+    if (this.bountyCollectedTick >= 0 && this.bountyCollectedData) {
+      const elapsed = now - this.bountyCollectedTick;
+      if (elapsed < this.bountyCollectedAlertTicks) {
+        const fadeOut = 12;
+        const holdEnd = this.bountyCollectedAlertTicks - fadeOut;
+        let alpha =
+          elapsed < 6
+            ? elapsed / 6
+            : elapsed > holdEnd
+              ? 1 - (elapsed - holdEnd) / fadeOut
+              : 1;
+        alpha = Math.max(0, Math.min(1, alpha));
+
+        const w = ctx.canvas.width;
+        const myID = this.game.myPlayer()?.smallID();
+        const isCollector = this.bountyCollectedData.collectorPlayerID === myID;
+        const goldK = Math.round(this.bountyCollectedData.rewardGold / 1000);
+        const msg = isCollector
+          ? `🏆 BOUNTY CLAIMED — +${goldK}k gold!`
+          : `🎯 Bounty collected — ${goldK}k gold paid out`;
+
+        const bannerW = Math.min(420, w - 32);
+        const bx = (w - bannerW) / 2;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = "rgba(2, 6, 23, 0.92)";
+        ctx.strokeStyle = "rgba(251, 191, 36, 0.9)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(bx, 72, bannerW, 36, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "rgba(253, 224, 71, 0.97)";
+        ctx.font = `bold 13px Overpass, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText(msg, w / 2, 96);
+        ctx.restore();
+      }
+    }
+
+    // Persistent bounty card (top-right)
+    if (!this.activeBounty) return;
+    if (now >= this.activeBounty.expiresAtTick) {
+      this.activeBounty = null;
+      return;
+    }
+
+    const w = ctx.canvas.width;
+    const cardW = 180;
+    const cardH = 52;
+    const cx = w - cardW - 8;
+    const cy = 8;
+    const secsLeft = Math.max(
+      0,
+      Math.ceil((this.activeBounty.expiresAtTick - now) / 10),
+    );
+    const goldK = Math.round(this.activeBounty.rewardGold / 1000);
+
+    const myID = this.game.myPlayer()?.smallID();
+    const isTarget = this.activeBounty.targetPlayerID === myID;
+
+    ctx.save();
+    ctx.fillStyle = isTarget
+      ? "rgba(127, 29, 29, 0.9)"
+      : "rgba(2, 6, 23, 0.92)";
+    ctx.strokeStyle = isTarget
+      ? "rgba(252, 165, 165, 0.8)"
+      : "rgba(251, 191, 36, 0.8)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(cx, cy, cardW, cardH, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = isTarget
+      ? "rgba(252, 165, 165, 0.95)"
+      : "rgba(251, 191, 36, 0.95)";
+    ctx.font = `bold 10px Overpass, sans-serif`;
+    ctx.textAlign = "left";
+    ctx.fillText(
+      isTarget ? "🎯 BOUNTY ON YOU" : "🎯 BOUNTY ACTIVE",
+      cx + 8,
+      cy + 14,
+    );
+
+    ctx.fillStyle = "rgba(248, 250, 252, 0.9)";
+    ctx.font = `bold 13px Overpass, sans-serif`;
+    ctx.fillText(`${goldK}k per intercept`, cx + 8, cy + 30);
+
+    ctx.fillStyle = "rgba(148, 163, 184, 0.8)";
+    ctx.font = `9px Overpass, sans-serif`;
+    ctx.fillText(
+      `${this.activeBounty.chargesLeft} charges • ${secsLeft}s`,
+      cx + 8,
+      cy + 44,
+    );
+    ctx.restore();
+  }
+
+  private drawWarchestBanner(ctx: CanvasRenderingContext2D): void {
+    if (!this.warchestHunt || this.warchestShownAtTick < 0) return;
+    const now = this.game.ticks();
+    const elapsed = now - this.warchestShownAtTick;
+    if (elapsed > this.warchestBannerTicks) return;
+
+    const fadeIn = 8;
+    const fadeOut = 14;
+    const holdEnd = this.warchestBannerTicks - fadeOut;
+    let alpha =
+      elapsed < fadeIn
+        ? elapsed / fadeIn
+        : elapsed > holdEnd
+          ? 1 - (elapsed - holdEnd) / fadeOut
+          : 1;
+    alpha = Math.max(0, Math.min(1, alpha));
+
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+    const myID = this.game.myPlayer()?.smallID();
+    const isMark = this.warchestHunt.markPlayerID === myID;
+    const secsLeft = Math.max(
+      0,
+      Math.ceil(this.warchestHunt.durationTicks / 10),
+    );
+
+    const accent = isMark
+      ? "rgba(248, 113, 113, 0.9)"
+      : "rgba(250, 204, 21, 0.9)";
+    const headline = isMark
+      ? `👑 YOU ARE THE WARCHEST MARK — ${secsLeft}s`
+      : `⛏ WARCHEST HUNT — gold leader marked for ${secsLeft}s`;
+    const sub = isMark
+      ? "Opponents earn 2× intercept bonus targeting your convoys — defend!"
+      : `Intercepts on the mark pay ${this.warchestHunt.interceptMultiplier}× gold — strike now`;
+
+    const bannerW = Math.min(500, w - 32);
+    const bx = (w - bannerW) / 2;
+    const by = isMark ? h * 0.28 : 16;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    if (isMark) {
+      const vg = ctx.createRadialGradient(
+        w / 2,
+        h / 2,
+        h * 0.1,
+        w / 2,
+        h / 2,
+        h * 0.65,
+      );
+      vg.addColorStop(0, "rgba(220, 38, 38, 0)");
+      vg.addColorStop(1, `rgba(153, 27, 27, ${alpha * 0.35})`);
+      ctx.fillStyle = vg;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    ctx.fillStyle = "rgba(2, 6, 23, 0.92)";
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bannerW, 56, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = accent;
+    ctx.font = `bold 14px Overpass, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText(headline, w / 2, by + 20);
+
+    ctx.fillStyle = "rgba(203, 213, 225, 0.85)";
+    ctx.font = `10px Overpass, sans-serif`;
+    ctx.fillText(sub, w / 2, by + 38);
+
     ctx.restore();
   }
 

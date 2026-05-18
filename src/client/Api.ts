@@ -1161,6 +1161,25 @@ export async function fetchMatchOracle(playerIds: string[]): Promise<{
   }
 }
 
+export async function fetchMatchProphecy(
+  mapName: string,
+  playerCount: number,
+  mutator: string,
+): Promise<string | null> {
+  try {
+    const res = await fetch(`${getApiBase()}/api/vaultfront/match-prophecy`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mapName, playerCount, mutator }),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { ok: boolean; prophecy?: string };
+    return data.prophecy ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // ── Micro-Coach Hint ────────────────────────────────────────────────────────
 
 export function pushNarratorEvent(

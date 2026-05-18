@@ -1459,13 +1459,24 @@ export async function startWorker() {
         )
         .join("\n");
       const minutes = Math.floor(durationSeconds / 60);
-      const prompt = `You are a battle chronicler for VaultFront, a browser real-time strategy game where players contest vault sites, route convoys, and trigger comeback surges.\n\nMatch duration: ${minutes} minutes\n${winnerId ? `Winner: ${winnerId}\n` : ""}Key events:\n${eventSummary}\n\nWrite a 3-paragraph battle chronicle in an epic, cinematic tone. First paragraph: the opening moves and territory struggles. Second paragraph: the pivotal vault and convoy moments. Third paragraph: the endgame and outcome. Keep each paragraph to 2-3 sentences. Use dramatic but accurate language.`;
 
       try {
         const message = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 400,
-          messages: [{ role: "user", content: prompt }],
+          system: [
+            {
+              type: "text",
+              text: "You are a battle chronicler for VaultFront, a browser real-time strategy game where players contest vault sites, route convoys, and trigger comeback surges. Write a 3-paragraph battle chronicle in an epic, cinematic tone. First paragraph: the opening moves and territory struggles. Second paragraph: the pivotal vault and convoy moments. Third paragraph: the endgame and outcome. Keep each paragraph to 2-3 sentences.",
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          messages: [
+            {
+              role: "user",
+              content: `Match duration: ${minutes} minutes\n${winnerId ? `Winner: ${winnerId}\n` : ""}Key events:\n${eventSummary}`,
+            },
+          ],
         });
         const narrative =
           message.content[0].type === "text" ? message.content[0].text : "";

@@ -1,14 +1,129 @@
 import { LitElement, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
+import { fetchMatchOracle, fetchMatchProphecy } from "./Api";
 import { translateText } from "./Utils";
+
+interface OraclePrediction {
+  playerId: string;
+  deltaIfWin: number;
+  deltaIfLoss: number;
+  threat?: string;
+}
 
 @customElement("game-starting-modal")
 export class GameStartingModal extends LitElement {
   @state()
   isVisible = false;
 
+  @state()
+  private oraclePredictions: OraclePrediction[] = [];
+
+  @state()
+  private myPrediction: OraclePrediction | null = null;
+
+  @state()
+  private prophecy: string | null = null;
+  private prophecyVisible = false;
+
   createRenderRoot() {
     return this;
+  }
+
+  async showWithPlayers(
+    playerIds: string[],
+    myPlayerId: string,
+    mapName = "unknown",
+    mutator = "none",
+  ): Promise<void> {
+    this.isVisible = true;
+    this.oraclePredictions = [];
+    this.myPrediction = null;
+    this.prophecy = null;
+    this.prophecyVisible = false;
+    this.requestUpdate();
+
+    if (playerIds.length >= 2) {
+      const [oracleResult, prophecyText] = await Promise.all([
+        fetchMatchOracle(playerIds).catch(() => null),
+        fetchMatchProphecy(mapName, playerIds.length, mutator).catch(
+          () => null,
+        ),
+      ]);
+
+      if (oracleResult?.predictions) {
+        this.oraclePredictions = oracleResult.predictions;
+        this.myPrediction =
+          oracleResult.predictions.find((p) => p.playerId === myPlayerId) ??
+          null;
+      }
+
+      if (prophecyText) {
+        this.prophecy = prophecyText;
+        this.prophecyVisible = true;
+        // Fade out prophecy after 8s
+        setTimeout(() => {
+          this.prophecyVisible = false;
+          this.requestUpdate();
+        }, 8_000);
+      }
+
+      this.requestUpdate();
+
+      // Auto-hide oracle card after 30s
+      setTimeout(() => {
+        this.oraclePredictions = [];
+        this.myPrediction = null;
+        this.requestUpdate();
+      }, 30_000);
+    }
+  }
+
+  private renderProphecyCard() {
+    if (!this.prophecy) return null;
+    return html`
+      <div
+        class="mt-3 rounded-lg border border-purple-500/40 bg-purple-900/20 p-3 text-left transition-opacity duration-1000 ${this
+          .prophecyVisible
+          ? "opacity-100"
+          : "opacity-0"}"
+      >
+        <div
+          class="text-xs font-semibold text-purple-300 mb-1.5 tracking-wider"
+        >
+          🔮 THE ORACLE SPEAKS
+        </div>
+        <p class="text-sm text-slate-200 italic leading-relaxed m-0">
+          "${this.prophecy}"
+        </p>
+      </div>
+    `;
+  }
+
+  private renderOracleCard() {
+    if (!this.myPrediction) return null;
+    const p = this.myPrediction;
+    return html`
+      <div
+        class="mt-3 rounded-lg border border-amber-500/40 bg-amber-900/20 p-3 text-left"
+      >
+        <div class="text-xs font-semibold text-amber-300 mb-1.5">
+          ⚡ Oracle Prediction
+        </div>
+        <div class="text-xs text-slate-300 flex justify-between mb-1">
+          <span>Win →</span>
+          <span class="text-green-400 font-semibold">+${p.deltaIfWin} ELO</span>
+        </div>
+        <div class="text-xs text-slate-300 flex justify-between">
+          <span>Loss →</span>
+          <span class="text-red-400 font-semibold">${p.deltaIfLoss} ELO</span>
+        </div>
+        ${p.threat
+          ? html`<div class="text-xs text-slate-400 mt-1.5">
+              ⚠ Biggest threat: <span class="text-amber-300">${p.threat}</span>
+            </div>`
+          : null}
+      </div>
+    `;
   }
 
   render() {
@@ -40,6 +155,7 @@ export class GameStartingModal extends LitElement {
         <p class="text-base my-5 bg-black/30 p-2.5 rounded">
           ${translateText("game_starting_modal.title")}
         </p>
+        ${this.renderProphecyCard()} ${this.renderOracleCard()}
       </div>
     `;
   }

@@ -187,7 +187,8 @@ export class SendVaultConvoyCommandIntentEvent implements GameEvent {
       | "reroute_silo"
       | "reroute_safest"
       | "escort"
-      | "sell_intel",
+      | "sell_intel"
+      | "vault_heist",
   ) {}
 }
 

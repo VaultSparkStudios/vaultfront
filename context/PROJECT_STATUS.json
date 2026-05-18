@@ -7,7 +7,7 @@
   "currentFocus": "Post-implement: surface ghost_route in UI, integrate RankBadge in leaderboard, test spectator camera in live replay.",
   "nextMilestone": "UI polish pass — ghost_route button, leaderboard rank badge, live spectator camera test.",
   "blockers": [],
-  "lastUpdated": "2026-05-17",
+  "lastUpdated": "2026-05-18",
   "lifecycle": "alpha",
   "audience": "internal",
   "truthAuditStatus": "green",

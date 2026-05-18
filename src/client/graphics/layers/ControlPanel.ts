@@ -2466,6 +2466,15 @@ export class ControlPanel extends LitElement implements Layer {
                   >
                     Sell Intel (earn gold)
                   </button>
+                  <button
+                    class="col-span-2 ${compact
+                      ? "px-2 py-1.5"
+                      : "px-1.5 py-1"} rounded bg-red-500/20 text-red-100 hover:bg-red-500/30"
+                    title="Last-resort: costs 20k gold. Your next convoy will extract 50% of any vault site's gold on delivery (capped 200k). Only available when you hold ≤2 territories."
+                    @click=${() => this.sendVaultHeistCommand()}
+                  >
+                    💀 Vault Heist (20k gold)
+                  </button>
                 </div>
                 ${ownConvoy ? this.renderReroutePreviewPanel(ownConvoy) : ""}
                 ${this.renderRewardExplainPanel(convoy)}
@@ -2507,6 +2516,11 @@ export class ControlPanel extends LitElement implements Layer {
   private sendSellIntelCommand() {
     this.eventBus.emit(new SendVaultConvoyCommandIntentEvent("sell_intel"));
     logHudTelemetry("hud_command_sell_intel");
+  }
+
+  private sendVaultHeistCommand() {
+    this.eventBus.emit(new SendVaultConvoyCommandIntentEvent("vault_heist"));
+    logHudTelemetry("hud_command_vault_heist");
   }
 
   private sendRerouteSafestCommand() {

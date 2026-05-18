@@ -32,12 +32,18 @@
       "innovation": 9,
       "effortLabel": "4h",
       "effortHours": 4,
-      "priority": 94.0,
+      "priority": 94,
       "title": "Vault Heist — last-resort steal from the gold leader",
       "description": "When a player is reduced to 2 or fewer territories they unlock a one-time 'VAULT HEIST' command: their next convoy, if it successfully delivers to any vault site they don't control, extracts 50% of that site's accumulated gold reserves (capped at 200k). The command costs 20k gold to activate, displays a skull icon above the convoy, and is visible to all players. Creates genuine comeback tension and forces the leader to actively defend rather than coast. Nobody in the browser-RTS space has a mechanic this surgically satisfying.",
       "recipe": "Add VaultConvoyCommandType.VAULT_HEIST to VaultConvoyCommandExecution.ts. Add heistActivated boolean + heistConvoyId to VaultFrontExecution player state. On convoy arrival in tickConvoyArrivals(), if heist active, deduct 50% of destination site gold reserves and credit to the heist player. Broadcast HEIST_EXECUTED GameUpdateType. Render skull badge on the convoy icon in VaultFrontLayer.ts. Gate: player must have ≤2 territories + pay 20k gold.",
-      "shipped": false,
-      "executionLog": []
+      "shipped": true,
+      "executionLog": [
+        {
+          "at": "2026-05-18",
+          "status": "done",
+          "note": "Implemented session-2"
+        }
+      ]
     },
     {
       "slug": "bounty-board",
@@ -52,8 +58,14 @@
       "title": "Bounty Board — emergent coalition targeting against convoy bullies",
       "description": "After any player loses 3 convoys to the same opponent within a single game, the server fires a BOUNTY_BOARD event: a visible card appears for all players displaying the target player's name and a 150k gold reward for whoever intercepts their next convoy. The bounty expires after 3 successful intercepts or 300 ticks. Creates emergent kingmaker coalition dynamics without requiring any formal alliance system — just social gravity. No browser RTS has this.",
       "recipe": "Track convoyInterceptsBy[playerId][opponentId] counter in VaultFrontExecution. On crossing threshold 3, emit GameUpdateType.BOUNTY_BOARD_ACTIVATED with targetPlayerId and reward amount. Store active bounty in VaultFrontExecution state. On any convoy intercept matching the target, credit 150k to interceptor and decrement bountyChargesRemaining. VaultFrontLayer.ts renders BountyCard overlay at screen top-right.",
-      "shipped": false,
-      "executionLog": []
+      "shipped": true,
+      "executionLog": [
+        {
+          "at": "2026-05-18",
+          "status": "done",
+          "note": "Implemented session-2"
+        }
+      ]
     },
     {
       "slug": "warchest-hunt",
@@ -68,8 +80,14 @@
       "title": "Warchest Hunt — tick-500 event that crowns a gold target",
       "description": "At tick 500, the server announces the current gold leader as 'THE MARK'. For the next 120 seconds, all convoys going TO any of their vault sites carry double intercept gold value for rivals — and double delivery gold for any ally who manages to deliver through contested territory. The Mark player sees a crown icon; everyone else sees a crosshair. Completely resets late-game momentum, breaks runaway leaders, and rewards aggressive players who stayed in the fight.",
       "recipe": "In VaultFrontExecution.ts tick(), at gameTick === 500, identify the player with highest total gold delivered. Emit GameUpdateType.WARCHEST_HUNT_STARTED with markPlayerId. Apply 2× intercept multiplier to convoys targeting mark's sites for 120s. Apply 2× delivery multiplier for allies of mark. VaultFrontLayer.ts renders crown badge on mark territory + crosshair badge on opponents' view.",
-      "shipped": false,
-      "executionLog": []
+      "shipped": true,
+      "executionLog": [
+        {
+          "at": "2026-05-18",
+          "status": "done",
+          "note": "Implemented session-2"
+        }
+      ]
     },
     {
       "slug": "vault-prophecy",
@@ -84,8 +102,14 @@
       "title": "Vault Prophecy — AI-generated atmospheric match oracle at game start",
       "description": "At game start, Claude Haiku generates a cryptic, atmospheric 2-sentence prophecy for the match based on map name, player count, and active mutator. Example: 'The eastern vaults shall taste fire before the third wave. He who hoards will feed the hungry.' Display it as a styled card overlay for 8 seconds. Purely atmospheric, occasionally accidentally accurate, enormously shareable. Boosts CREATIVITY pillar (currently 0.20 — weakest signal) and gives every game a story before it starts. Zero competitors have anything like this.",
       "recipe": "On game start in GameStartingModal.ts, POST /api/match-prophecy with {mapName, playerCount, mutator}. Call claude-haiku-4-5-20251001 with system prompt: 'You are an ancient oracle. Generate a 2-sentence cryptic prophecy about a battle. Be poetic, vague, dramatic. Never mention specific mechanics.' Render ProphecyCard overlay (CSS dark gradient, serif font, fades after 8s). Cost: ~200 tok/match ≈ $0.00004. Enable prompt caching on system prompt.",
-      "shipped": false,
-      "executionLog": []
+      "shipped": true,
+      "executionLog": [
+        {
+          "at": "2026-05-18",
+          "status": "done",
+          "note": "Implemented session-2"
+        }
+      ]
     },
     {
       "slug": "live-tournament-mode",
@@ -116,8 +140,14 @@
       "title": "Map Events System — random mid-match events that alter game state",
       "description": "Every 400–600 ticks, a random map event fires from a pool of 6: VAULT_BONANZA (all site rewards 2× for 120s), SUPPLY_DISRUPTION (no convoy dispatches for 60s), INTELLIGENCE_BREACH (all enemy convoy routes revealed for 45s), GOLD_RUSH (next delivery to any site worth 3× but site resets), SIEGE_PROTOCOL (all territory expansion blocked for 90s), DIPLOMATIC_WINDOW (no combat damage for 30s — pure convoy racing). Announced via full-width banner.",
       "recipe": "Add MapEventScheduler to VaultFrontExecution with nextEventTick (400 + random(200)). On trigger, pick from EVENT_POOL, emit GameUpdateType.MAP_EVENT_FIRED with eventType + durationTicks. Handle each event type in relevant execution methods (tickConvoyArrivals, AttackExecution, etc.). VaultFrontLayer.ts renders event banner. Reset nextEventTick after each event.",
-      "shipped": false,
-      "executionLog": []
+      "shipped": true,
+      "executionLog": [
+        {
+          "at": "2026-05-18",
+          "status": "done",
+          "note": "Implemented session-2"
+        }
+      ]
     },
     {
       "slug": "live-event-commentary",
@@ -132,8 +162,14 @@
       "title": "Live Event Commentary — real-time AI sports ticker during gameplay",
       "description": "Subscribe to key game events (vault capture, convoy intercept, last-stand, surge activation, heist) and generate one-line commentary that scrolls along the bottom of the screen like a sports ticker. Claude Haiku generates 5–10 lines at match start based on player count and mutator; client consumes them on event triggers so no API call happens mid-game. Cost: ~300 tok/match upfront. Creates spectator energy and makes solo play feel observed and epic.",
       "recipe": "POST /api/match-commentary with {playerCount, mutator, mapName} at match start. Haiku returns JSON array of 10 commentary templates keyed to event types. ClientGameRunner.ts stores them. On each qualifying GameUpdateType event, dequeue matching commentary and render CommentaryTicker component (CSS marquee at bottom, fades after 4s). Prompt-cached system prompt.",
-      "shipped": false,
-      "executionLog": []
+      "shipped": true,
+      "executionLog": [
+        {
+          "at": "2026-05-18",
+          "status": "done",
+          "note": "Implemented session-2"
+        }
+      ]
     },
     {
       "slug": "dynasty-mode",
@@ -144,7 +180,7 @@
       "innovation": 8,
       "effortLabel": "1d",
       "effortHours": 16,
-      "priority": 46.0,
+      "priority": 46,
       "title": "Dynasty Mode — cross-season player bloodlines with inherited advantages",
       "description": "Players who finish a season in Gold tier or above earn a Dynasty Flag — a visual heraldic emblem displayed beside their name in all future games. Dynasty players start each game with +5k gold and a slight ELO floor. Dynasties can be 'broken' — defeating a Dynasty player in their first match earns the victor a 'Dynasty Slayer' badge and +50 bonus ELO. Creates persistent stakes across the wipe, makes veterans visible and targetable, and gives newcomers a story goal.",
       "recipe": "Add dynastyTier, dynastyFlag, dynastyBrokenBy fields to PlayerStatsStore. In VaultSeasonScheduler seasonal reset: players finishing Gold+ retain dynasty. Extend RankBadge.ts to show DynastyFlag overlay. In WinCheckExecution.ts, detect dynasty-vs-newcomer upset and emit DYNASTY_BROKEN event. EloRating applies +50 bonus on dynasty-break.",
@@ -196,8 +232,14 @@
       "title": "Match Intel Layer — pay gold to temporarily reveal enemy convoy routes",
       "description": "New VaultFrontCommand: PURCHASE_INTEL (cost: 30k gold). Reveals all enemy active convoy routes on your map for 60 seconds with dotted-line overlays. A second tier: DEEP_INTEL (80k) reveals convoy gold amounts and ETA. Creates a meaningful gold sink, rewards strategic investment, and adds an information-warfare dimension to VaultFront's convoy meta. Pairs with the ghost-route system for genuine cat-and-mouse gameplay.",
       "recipe": "Add VaultConvoyCommandType.PURCHASE_INTEL and PURCHASE_DEEP_INTEL. Handle in VaultConvoyCommandExecution.ts: deduct gold, set intelActiveUntilTick on player state. In VaultFrontStatusUpdate, include visible enemy convoys only when intelActive. VaultFrontLayer.ts renders revealed routes as dashed overlay lines with distinct color. Intel icon in GameLeftSidebar with gold cost tooltip.",
-      "shipped": false,
-      "executionLog": []
+      "shipped": true,
+      "executionLog": [
+        {
+          "at": "2026-05-18",
+          "status": "done",
+          "note": "Implemented session-2"
+        }
+      ]
     },
     {
       "slug": "ai-coach-overlay",
@@ -224,7 +266,7 @@
       "innovation": 8,
       "effortLabel": "2h",
       "effortHours": 2,
-      "priority": 36.0,
+      "priority": 36,
       "title": "NPC Lore Generation — AI faction names and post-battle quotes for bot opponents",
       "description": "Bot opponents get procedurally generated faction names, emblems, and defeat/victory quotes by Claude Haiku. 'The Iron Quorum has fallen. Their last convoy burned at dawn.' Generated once per bot personality type and cached permanently. Transforms bot-heavy matches from sterile to cinematic. Boosts CREATIVITY pillar (0.20 — weakest signal). Entirely cosmetic — zero gameplay risk.",
       "recipe": "Add /api/bot-lore endpoint called once at server start per bot personality type. Haiku generates {factionName, emblem (emoji), defeatQuote, victoryQuote} for each of 4 bot types. Cache in-memory + server JSON file. BotExecution.ts surfaces bot factionName via PlayerImpl display name. WinModal shows botDefeatQuote or botVictoryQuote on match end. Cost: 400 tok × 4 types = ~$0.00032 total, permanent cache.",
@@ -244,8 +286,14 @@
       "title": "Live Replay Theater — post-death ghost-POV replay with annotated key moments",
       "description": "When a player is eliminated, instead of immediately switching to full-spectator, display a 30-second replay of their final 150 ticks from a cinematic ghost POV. Annotate the 3 most consequential moments (biggest gold swing, final convoy loss, vault site loss) with subtle highlight rings and timestamps. Then auto-transition to live spectator. Gives context, reduces frustration, and teaches strategy implicitly.",
       "recipe": "ClientGameRunner.ts maintains a 150-tick ring buffer of serialized game state snapshots. On player elimination, trigger ReplayTheater mode: replay the buffer at 1.5× speed using existing replay infrastructure. Annotation data: compare gold delta, convoy outcomes, and vault ownership across the buffer to identify 3 max-delta ticks. Render AnnotationRing components via GameRenderer in ghost-color theme. Auto-exit to spectator after replay.",
-      "shipped": false,
-      "executionLog": []
+      "shipped": true,
+      "executionLog": [
+        {
+          "at": "2026-05-18",
+          "status": "done",
+          "note": "Implemented session-2"
+        }
+      ]
     },
     {
       "slug": "economic-warfare-expansion",
@@ -356,8 +404,14 @@
       "title": "Claude Prompt Caching — 90% input token reduction on all Claude endpoints",
       "description": "The /api/battle-narrative, /api/match-prophecy, and /api/match-commentary system prompts are identical for every call. Enable Anthropic prompt caching (cache_control: {type: 'ephemeral'}) on all system prompt blocks. Expected reduction: ~90% on cached input tokens. At 800 tok system prompt × 100 matches/day = 72k tokens saved/day. Measurement: log cache_creation_input_tokens vs cache_read_input_tokens in the ledger.",
       "recipe": "In each Claude API handler, restructure Anthropic SDK call to pass system prompt as content block with cache_control: {type: 'ephemeral'}. Verify cache_read_input_tokens > 0 in second call. Log both fields to context-meter ledger via Stop-hook writer. Apply to all 3 existing endpoints + all new Claude endpoints added this session.",
-      "shipped": false,
-      "executionLog": []
+      "shipped": true,
+      "executionLog": [
+        {
+          "at": "2026-05-18",
+          "status": "done",
+          "note": "Implemented session-2"
+        }
+      ]
     },
     {
       "slug": "color-blind-mode",
