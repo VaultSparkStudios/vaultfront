@@ -24,6 +24,8 @@ import {
   recordVaultFrontFunnelTelemetry,
   recordVaultFrontOutcomeTelemetry,
   recordVaultFrontRecapEvent,
+  ReplayHighlight,
+  requestReplayHighlight,
   shareMatchInvite,
   shareReplayHighlight,
   updateVaultFrontSeasonContracts,
@@ -152,6 +154,9 @@ export class WinModal extends LitElement implements Layer {
   private highlightCopied = false;
 
   @state()
+  private replayHighlight: ReplayHighlight | null = null;
+
+  @state()
   private playStyleLabel: string | null = null;
 
   @state()
@@ -261,6 +266,20 @@ export class WinModal extends LitElement implements Layer {
             >
               ${this.highlightCopied ? "Clip copied!" : "Share Clip"}
             </button>
+            ${this.replayHighlight
+              ? html`<a
+                  href=${this.replayHighlight.shareUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="flex-1 px-3 py-2 text-sm cursor-pointer bg-violet-600/70 text-white border-0 rounded-sm transition-all duration-200 hover:bg-violet-600/90 hover:-translate-y-px text-center no-underline"
+                  title="${this.replayHighlight.ogTitle}"
+                >
+                  ▶ Watch Highlight<br /><span
+                    class="text-[10px] text-violet-200/80"
+                    >${this.replayHighlight.topMoment}</span
+                  >
+                </a>`
+              : ""}
           </div>
         </div>
       </div>
@@ -814,6 +833,17 @@ export class WinModal extends LitElement implements Layer {
         this.requestUpdate();
       }
     });
+
+    // Fetch replay highlight in background
+    const gameId = this.game?.gameID();
+    if (gameId) {
+      void requestReplayHighlight(gameId).then((h) => {
+        if (h) {
+          this.replayHighlight = h;
+          this.requestUpdate();
+        }
+      });
+    }
   }
 
   hide() {
