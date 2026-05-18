@@ -355,6 +355,38 @@ class ClanStore {
     }
   }
 
+  /** Fetch the current dynasty story for a clan. */
+  async getDynastyStory(clanId: string): Promise<string | null> {
+    if (!pool) return null;
+    const result = await pool
+      .query<{
+        dynasty_story: string | null;
+      }>(`SELECT dynasty_story FROM clans WHERE id = $1`, [clanId])
+      .catch(() => null);
+    return result?.rows[0]?.dynasty_story ?? null;
+  }
+
+  /** Append a new chapter to the clan's dynasty story. */
+  async appendDynastyStory(clanId: string, chapter: string): Promise<void> {
+    const trimmed = chapter.slice(0, 512);
+    const current = (await this.getDynastyStory(clanId)) ?? "";
+    const separator = current ? "\n\n" : "";
+    const updated = (current + separator + trimmed).slice(-4096);
+    if (pool) {
+      await pool
+        .query(`UPDATE clans SET dynasty_story = $2 WHERE id = $1`, [
+          clanId,
+          updated,
+        ])
+        .catch(() => null);
+    }
+  }
+
+  /** Get the clanId for a player. */
+  getClanForPlayer(persistentId: string): string | undefined {
+    return this.playerClan.get(persistentId);
+  }
+
   async hydrateFromDb(): Promise<void> {
     if (!pool) return;
     try {

@@ -1052,3 +1052,129 @@ export async function shareReplayHighlight(gameId: string): Promise<void> {
     // clipboard blocked
   }
 }
+
+// ── Dynasty Story Engine ────────────────────────────────────────────────────
+
+export async function fetchDynastyStory(
+  clanId: string,
+): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/vaultfront/dynasty-story/${encodeURIComponent(clanId)}`,
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as { story?: string };
+    return data.story ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function generateDynastyStoryChapter(input: {
+  clanId: string;
+  clanName: string;
+  recentOutcomes: string[];
+  topMoments: string[];
+}): Promise<{ chapter: string; story: string } | null> {
+  try {
+    const res = await fetch(`${getApiBase()}/api/vaultfront/dynasty-story`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      ok: boolean;
+      chapter?: string;
+      story?: string;
+    };
+    if (!data.ok) return null;
+    return { chapter: data.chapter ?? "", story: data.story ?? "" };
+  } catch {
+    return null;
+  }
+}
+
+// ── Bot Persona Backstories ─────────────────────────────────────────────────
+
+export async function fetchBotPersona(
+  personality: string,
+  seed: string,
+): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/vaultfront/bot-persona?personality=${encodeURIComponent(personality)}&seed=${encodeURIComponent(seed)}`,
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as { persona?: string };
+    return data.persona ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// ── IGNIS Founder Signal ────────────────────────────────────────────────────
+
+export async function recordIgnisSignal(input: {
+  itemSlug: string;
+  signal: "accept" | "reject" | "pivot";
+  sessionId?: string;
+}): Promise<void> {
+  try {
+    await fetch(`${getApiBase()}/api/ignis/signal`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+  } catch {
+    // fire-and-forget
+  }
+}
+
+// ── Match Oracle (pre-match ELO prediction) ─────────────────────────────────
+
+export async function fetchMatchOracle(playerIds: string[]): Promise<{
+  predictions: Array<{
+    playerId: string;
+    deltaIfWin: number;
+    deltaIfLoss: number;
+    threat?: string;
+  }>;
+} | null> {
+  try {
+    const params = new URLSearchParams();
+    playerIds.forEach((id) => params.append("players", id));
+    const res = await fetch(
+      `${getApiBase()}/api/vaultfront/match-oracle?${params.toString()}`,
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as {
+      predictions: Array<{
+        playerId: string;
+        deltaIfWin: number;
+        deltaIfLoss: number;
+        threat?: string;
+      }>;
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ── Micro-Coach Hint ────────────────────────────────────────────────────────
+
+export async function fetchMicroHint(params: {
+  gold: number;
+  sites: number;
+}): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/vaultfront/micro-hint?gold=${params.gold}&sites=${params.sites}`,
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as { hint?: string };
+    return data.hint ?? null;
+  } catch {
+    return null;
+  }
+}

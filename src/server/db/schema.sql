@@ -177,3 +177,33 @@ ALTER TABLE clans
   ADD COLUMN IF NOT EXISTS clan_elo          INT  NOT NULL DEFAULT 1200,
   ADD COLUMN IF NOT EXISTS clan_wins         INT  NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS clan_losses       INT  NOT NULL DEFAULT 0;
+
+-- ── Dynasty Story Engine ────────────────────────────────────────────────────────
+ALTER TABLE clans
+  ADD COLUMN IF NOT EXISTS dynasty_story     TEXT;
+
+-- ── IGNIS Founder Signal Feedback Loop ─────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS ignis_signals (
+  id           SERIAL       PRIMARY KEY,
+  item_slug    VARCHAR(128) NOT NULL,
+  signal       VARCHAR(16)  NOT NULL CHECK (signal IN ('accept', 'reject', 'pivot')),
+  session_id   VARCHAR(128),
+  created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ignis_signals_slug
+  ON ignis_signals (item_slug, created_at DESC);
+
+-- ── Spectator Economy ─────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS spectator_bets (
+  id             SERIAL       PRIMARY KEY,
+  game_id        VARCHAR(64)  NOT NULL,
+  spectator_id   VARCHAR(128) NOT NULL,
+  prediction     VARCHAR(256) NOT NULL,
+  amount         INT          NOT NULL DEFAULT 0,
+  outcome        VARCHAR(16),           -- 'win' | 'loss' | null (unresolved)
+  created_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_spectator_bets_game
+  ON spectator_bets (game_id);

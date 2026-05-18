@@ -1640,6 +1640,120 @@ export async function startWorker() {
     }
   });
 
+  // ── Dynasty Story Engine ─────────────────────────────────────────────────
+  const dynastyRateLimit = rateLimit({ windowMs: 60_000, max: 10 });
+
+  const DYNASTY_SYSTEM_PROMPT =
+    "You are the chronicler of VaultFront dynasty histories. Write exactly one sentence (max 120 characters) as a new chapter entry for this clan's legend. Tone: epic, specific, past-tense. Reference the actual events provided. No quotation marks.";
+
+  const DynastyStorySchema = z.object({
+    clanId: z.string().max(64),
+    clanName: z.string().max(64),
+    recentOutcomes: z.array(z.string().max(128)).max(5),
+    topMoments: z.array(z.string().max(128)).max(3),
+  });
+
+  app.post(
+    "/api/vaultfront/dynasty-story",
+    dynastyRateLimit,
+    async (req, res) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return res.status(503).json({ error: "Dynasty service unavailable" });
+      }
+      const identity = await resolveVaultFrontIdentity(req);
+      if (!identity) {
+        return res.status(401).json({ error: "Missing identity" });
+      }
+      const parsed = DynastyStorySchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid request" });
+      }
+      const { clanId, clanName, recentOutcomes, topMoments } = parsed.data;
+      const userContent = `Clan: ${clanName}\nRecent results: ${recentOutcomes.join("; ")}\nKey moments: ${topMoments.join("; ")}`;
+      try {
+        const msg = await anthropic.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 80,
+          system: [
+            {
+              type: "text",
+              text: DYNASTY_SYSTEM_PROMPT,
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          messages: [{ role: "user", content: userContent }],
+        });
+        const chapter =
+          (msg.content[0] as { type: string; text: string }).text?.trim() ?? "";
+        if (chapter) {
+          await clanStore.appendDynastyStory(clanId, chapter);
+        }
+        const story = await clanStore.getDynastyStory(clanId);
+        return res.json({ ok: true, chapter, story });
+      } catch (err) {
+        logger.error("dynasty-story generation failed", err);
+        return res.status(500).json({ error: "Dynasty story failed" });
+      }
+    },
+  );
+
+  app.get("/api/vaultfront/dynasty-story/:clanId", async (req, res) => {
+    const clanId = req.params.clanId?.slice(0, 64) ?? "";
+    const story = await clanStore.getDynastyStory(clanId);
+    return res.json({ ok: true, story });
+  });
+
+  // ── Bot Persona Backstories ───────────────────────────────────────────────
+  const personaCache = new Map<string, string>();
+
+  const BOT_PERSONA_SYSTEM_PROMPT =
+    "Generate a VaultFront bot commander persona. Format: 'CODENAME — one sentence origin story (max 100 chars)'. Tone: gritty, tactical, specific to the personality archetype. No quotes around the output.";
+
+  app.get("/api/vaultfront/bot-persona", async (req, res) => {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(503).json({ error: "Persona service unavailable" });
+    }
+    const personality = String(req.query["personality"] ?? "").slice(0, 32);
+    const seed = String(req.query["seed"] ?? "").slice(0, 32);
+    const cacheKey = `${personality}:${seed}`;
+    const cached = personaCache.get(cacheKey);
+    if (cached) return res.json({ ok: true, persona: cached });
+
+    const archetypes: Record<string, string> = {
+      aggressor: "relentless attacker who sacrifices economy for dominance",
+      economist: "trade-focused strategist who wins through convoy supremacy",
+      diplomat: "alliance builder who betrays at the critical moment",
+      ghost: "deception specialist who moves convoys through ghost routes",
+    };
+    const archetype = archetypes[personality] ?? "mysterious commander";
+    try {
+      const msg = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 60,
+        system: [
+          {
+            type: "text",
+            text: BOT_PERSONA_SYSTEM_PROMPT,
+            cache_control: { type: "ephemeral" },
+          },
+        ],
+        messages: [
+          {
+            role: "user",
+            content: `Personality: ${personality} — ${archetype}. Seed: ${seed}`,
+          },
+        ],
+      });
+      const persona =
+        (msg.content[0] as { type: string; text: string }).text?.trim() ?? "";
+      if (persona) personaCache.set(cacheKey, persona);
+      return res.json({ ok: true, persona });
+    } catch (err) {
+      logger.error("bot-persona generation failed", err);
+      return res.status(500).json({ error: "Persona generation failed" });
+    }
+  });
+
   // ── Player Stats / Leaderboard API ───────────────────────────────────────
   const statsRateLimit = rateLimit({
     windowMs: 60_000, // 1 minute
