@@ -1163,6 +1163,41 @@ export async function fetchMatchOracle(playerIds: string[]): Promise<{
 
 // ── Micro-Coach Hint ────────────────────────────────────────────────────────
 
+export function pushNarratorEvent(
+  gameId: string,
+  activity: string,
+  label?: string,
+): void {
+  fetch(
+    `${getApiBase()}/api/vaultfront/narrator/${encodeURIComponent(gameId)}/event`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ activity, label }),
+    },
+  ).catch(() => undefined);
+}
+
+export function subscribeNarrator(
+  gameId: string,
+  onCommentary: (text: string) => void,
+): () => void {
+  const url = `${getApiBase()}/api/vaultfront/narrator/${encodeURIComponent(gameId)}`;
+  const es = new EventSource(url);
+  es.onmessage = (e) => {
+    try {
+      const data = JSON.parse(e.data as string) as {
+        type: string;
+        text?: string;
+      };
+      if (data.type === "commentary" && data.text) onCommentary(data.text);
+    } catch {
+      // ignore
+    }
+  };
+  return () => es.close();
+}
+
 export async function fetchMicroHint(params: {
   gold: number;
   sites: number;

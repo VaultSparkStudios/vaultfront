@@ -10,6 +10,7 @@ import { AttacksDisplay } from "./layers/AttacksDisplay";
 import { BuildMenu } from "./layers/BuildMenu";
 import { ChatDisplay } from "./layers/ChatDisplay";
 import { ChatModal } from "./layers/ChatModal";
+import { CoachHintEngine } from "./layers/CoachHintEngine";
 import { ControlPanel } from "./layers/ControlPanel";
 import { DynamicUILayer } from "./layers/DynamicUILayer";
 import { EmojiTable } from "./layers/EmojiTable";
@@ -26,6 +27,7 @@ import { Leaderboard } from "./layers/Leaderboard";
 import { MainRadialMenu } from "./layers/MainRadialMenu";
 import { MultiTabModal } from "./layers/MultiTabModal";
 import { NameLayer } from "./layers/NameLayer";
+import { NarratorReporter } from "./layers/NarratorReporter";
 import { NukeTrajectoryPreviewLayer } from "./layers/NukeTrajectoryPreviewLayer";
 import { PerformanceOverlay } from "./layers/PerformanceOverlay";
 import { PlayerInfoOverlay } from "./layers/PlayerInfoOverlay";
@@ -179,6 +181,17 @@ export function createRenderer(
     contractHud.game = game;
   }
 
+  const coachHint = document.querySelector(
+    "coach-hint-engine",
+  ) as CoachHintEngine;
+  if (coachHint instanceof CoachHintEngine) {
+    coachHint.game = game;
+  }
+
+  const narratorRep = new NarratorReporter();
+  narratorRep.game = game;
+  narratorRep.setGameId(game.gameID());
+
   const replayPanel = document.querySelector("replay-panel") as ReplayPanel;
   if (!(replayPanel instanceof ReplayPanel)) {
     console.error("replay panel not found");
@@ -313,6 +326,8 @@ export function createRenderer(
     new NameLayer(game, transformHandler, eventBus),
     interceptCelebration,
     contractHud,
+    coachHint,
+    narratorRep,
     eventsDisplay,
     attacksDisplay,
     chatDisplay,

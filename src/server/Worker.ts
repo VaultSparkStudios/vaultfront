@@ -33,7 +33,9 @@ import { playerStatsStore } from "./PlayerStatsStore";
 import { GameEnv } from "../core/configuration/Config";
 import { antiCheatMonitor } from "./AntiCheatMonitor";
 import { clanStore } from "./ClanStore";
+import { pool } from "./db/pool";
 import { MapPlaylist } from "./MapPlaylist";
+import { narratorBus } from "./NarratorBus";
 import { startPolling } from "./PollingLoop";
 import { PrivilegeRefresher } from "./PrivilegeRefresher";
 import { rematchStore } from "./RematchStore";
@@ -1242,6 +1244,66 @@ export async function startWorker() {
     return res.json({ generatedAt: Date.now(), count: rows.length, rows });
   });
 
+  // ── IGNIS Founder Signal Feedback Loop ───────────────────────────────────
+  const ignisSignalSchema = z.object({
+    itemSlug: z.string().max(128),
+    signal: z.enum(["accept", "reject", "pivot"]),
+    sessionId: z.string().max(128).optional(),
+  });
+
+  const ignisRateLimit = rateLimit({ windowMs: 60_000, max: 120 });
+
+  app.post("/api/ignis/signal", ignisRateLimit, async (req, res) => {
+    const parsed = ignisSignalSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "Invalid signal" });
+    }
+    const { itemSlug, signal, sessionId } = parsed.data;
+    if (pool) {
+      await pool
+        .query(
+          `INSERT INTO ignis_signals (item_slug, signal, session_id) VALUES ($1, $2, $3)`,
+          [itemSlug, signal, sessionId ?? null],
+        )
+        .catch(() => null);
+    }
+    return res.json({ ok: true });
+  });
+
+  app.get("/api/ignis/signals", async (req, res) => {
+    if (req.headers[config.adminHeader()] !== config.adminToken()) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    if (!pool) return res.json({ ok: true, signals: [] });
+    const result = await pool
+      .query<{
+        item_slug: string;
+        signal: string;
+        count: string;
+      }>(
+        `SELECT item_slug, signal, COUNT(*) as count
+           FROM ignis_signals
+          GROUP BY item_slug, signal
+          ORDER BY item_slug, signal`,
+      )
+      .catch(() => null);
+    if (!result) return res.json({ ok: true, signals: [] });
+    const bySlug: Record<string, Record<string, number>> = {};
+    for (const row of result.rows) {
+      bySlug[row.item_slug] ??= {};
+      bySlug[row.item_slug][row.signal] = Number(row.count);
+    }
+    const signals = Object.entries(bySlug).map(([slug, counts]) => ({
+      slug,
+      accept: counts["accept"] ?? 0,
+      reject: counts["reject"] ?? 0,
+      pivot: counts["pivot"] ?? 0,
+      net: (counts["accept"] ?? 0) - (counts["reject"] ?? 0),
+    }));
+    signals.sort((a, b) => b.net - a.net);
+    return res.json({ ok: true, signals, generatedAt: Date.now() });
+  });
+
   // ── Season / Mutator API ──────────────────────────────────────────────────
   const seasonRateLimit = rateLimit({
     windowMs: 60_000, // 1 minute
@@ -1577,6 +1639,117 @@ export async function startWorker() {
     },
   );
 
+  // ── In-Game Micro-Coach Hint ─────────────────────────────────────────────
+  const microHintRateLimit = rateLimit({ windowMs: 180_000, max: 1 }); // 1 per 3 min
+
+  const MICRO_HINT_SYSTEM_PROMPT =
+    "You are a VaultFront real-time strategy coach. Give the player ONE concise in-game hint (max 90 characters). Focus on the most impactful immediate action they are not taking. Be specific, tactical, present-tense. No greeting, no punctuation at end.";
+
+  app.get(
+    "/api/vaultfront/micro-hint",
+    microHintRateLimit,
+    async (req, res) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return res.status(503).json({ error: "Coach unavailable" });
+      }
+      const gold = Number(req.query["gold"] ?? 0);
+      const sites = Number(req.query["sites"] ?? 0);
+      try {
+        const msg = await anthropic.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 50,
+          system: [
+            {
+              type: "text",
+              text: MICRO_HINT_SYSTEM_PROMPT,
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          messages: [
+            {
+              role: "user",
+              content: `Player gold: ${gold}, vault sites controlled: ${sites}. No vault commands issued yet this match.`,
+            },
+          ],
+        });
+        const hint =
+          (msg.content[0] as { type: string; text: string }).text?.trim() ?? "";
+        return res.json({ ok: true, hint });
+      } catch (err) {
+        logger.error("micro-hint failed", err);
+        return res.status(500).json({ error: "Hint generation failed" });
+      }
+    },
+  );
+
+  // ── Pre-Match Oracle (ELO prediction) ────────────────────────────────────
+  const oracleRateLimit = rateLimit({ windowMs: 30_000, max: 5 });
+
+  const ORACLE_SYSTEM_PROMPT =
+    "You are a VaultFront match predictor. Given player ELO ratings, return ONLY valid JSON with key 'predictions': array of {playerId, deltaIfWin, deltaIfLoss, threat?}. deltaIfWin and deltaIfLoss are integers. threat is the name/id of the most dangerous opponent for that player, or omitted. No prose, no markdown, just JSON.";
+
+  app.get("/api/vaultfront/match-oracle", oracleRateLimit, async (req, res) => {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(503).json({ error: "Oracle unavailable" });
+    }
+    const playerIdsRaw = req.query["players"];
+    const playerIds: string[] = Array.isArray(playerIdsRaw)
+      ? (playerIdsRaw as string[]).slice(0, 8)
+      : typeof playerIdsRaw === "string"
+        ? [playerIdsRaw]
+        : [];
+    if (playerIds.length < 2) {
+      return res.status(400).json({ error: "Need at least 2 players" });
+    }
+
+    // Fetch ELO for each player
+    const eloData = await Promise.all(
+      playerIds.map(async (id) => {
+        const stats = await playerStatsStore.getHistory(id, 1).catch(() => []);
+        return { id, elo: (stats[0] as { elo?: number })?.elo ?? 1200 };
+      }),
+    );
+    const eloSummary = eloData.map((p) => `${p.id}: ELO ${p.elo}`).join(", ");
+
+    try {
+      const msg = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 300,
+        system: [
+          {
+            type: "text",
+            text: ORACLE_SYSTEM_PROMPT,
+            cache_control: { type: "ephemeral" },
+          },
+        ],
+        messages: [
+          {
+            role: "user",
+            content: `Players: ${eloSummary}. Compute ELO deltas (K=32) and identify biggest threat per player.`,
+          },
+        ],
+      });
+      const raw =
+        (msg.content[0] as { type: string; text: string }).text?.trim() ?? "{}";
+      const parsed = JSON.parse(raw) as {
+        predictions?: Array<{
+          playerId: string;
+          deltaIfWin: number;
+          deltaIfLoss: number;
+          threat?: string;
+        }>;
+      };
+      return res.json({
+        ok: true,
+        predictions: parsed.predictions ?? [],
+        eloData,
+      });
+    } catch (err) {
+      logger.error("match-oracle failed", err);
+      return res.status(500).json({ error: "Oracle failed" });
+    }
+  });
+
   // ── AI Coach Overlay ───────────────────────────────────────────────────────
   const coachRateLimit = rateLimit({ windowMs: 60_000, max: 3 });
   const COACH_SYSTEM_PROMPT =
@@ -1753,6 +1926,47 @@ export async function startWorker() {
       return res.status(500).json({ error: "Persona generation failed" });
     }
   });
+
+  // ── Living Match Narrator (SSE) ──────────────────────────────────────────
+  const narratorEventRateLimit = rateLimit({ windowMs: 2_000, max: 3 }); // 3/2s per IP
+
+  const NarratorEventSchema = z.object({
+    activity: z.string().max(64),
+    label: z.string().max(128).optional(),
+  });
+
+  // Spectators / clients subscribe to commentary stream
+  app.get("/api/vaultfront/narrator/:gameId", (req, res) => {
+    const gameId = req.params.gameId;
+    if (!gameId || gameId.length > 64) {
+      return res.status(400).end();
+    }
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+    narratorBus.subscribe(gameId, res);
+  });
+
+  // Game clients push activity events for narration
+  app.post(
+    "/api/vaultfront/narrator/:gameId/event",
+    narratorEventRateLimit,
+    (req, res) => {
+      const gameId = req.params.gameId;
+      if (!gameId || gameId.length > 64) {
+        return res.status(400).json({ error: "Invalid gameId" });
+      }
+      const parsed = NarratorEventSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "Invalid event" });
+      }
+      const label =
+        parsed.data.label ?? parsed.data.activity.replace(/_/g, " ");
+      narratorBus.queueEvent(gameId, label);
+      return res.json({ ok: true });
+    },
+  );
 
   // ── Player Stats / Leaderboard API ───────────────────────────────────────
   const statsRateLimit = rateLimit({

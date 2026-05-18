@@ -26,6 +26,7 @@ import {
 import { createPartialGameRecord, getClanTag } from "../core/Util";
 import { archive, finalizeGameRecord } from "./Archive";
 import { Client } from "./Client";
+import { narratorBus } from "./NarratorBus";
 import { replayStore } from "./ReplayStore";
 import { spectatorBus } from "./SpectatorBus";
 import { VaultMetrics } from "./VaultMetrics";
@@ -928,6 +929,7 @@ export class GameServer {
       }
     });
     spectatorBus.closeGame(this.id);
+    narratorBus.closeGame(this.id);
     if (!this._hasPrestarted && !this._hasStarted) {
       this.log.info(`game not started, not archiving game`);
       return;
