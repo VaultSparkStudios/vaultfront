@@ -1,7 +1,10 @@
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import {
+  BountyBoardActivatedUpdate,
   GameUpdateType,
+  LastStandActivatedUpdate,
+  VaultFrontActivityUpdate,
   VaultFrontStatusUpdate,
 } from "../../../core/game/GameUpdates";
 import { GameView } from "../../../core/game/GameView";
@@ -9,9 +12,24 @@ import { fetchMicroHint } from "../../Api";
 import type { Layer } from "./Layer";
 import { uiStateManager } from "./UIStateManager";
 
-const HINT_TRIGGER_TICKS = 1200; // 2 min
-const HINT_MIN_INTERVAL_TICKS = 1800; // 3 min between hints
-const HINT_DISMISS_MS = 12000;
+const HINT_TRIGGER_TICKS = 1200; // 2 min before first idle hint
+const HINT_MIN_INTERVAL_TICKS = 1800; // 3 min between any hints
+
+// Per-trigger cooldowns (in ticks) — shorter because these are contextual
+const TRIGGER_COOLDOWNS: Record<HintTrigger, number> = {
+  idle: HINT_MIN_INTERVAL_TICKS,
+  convoy_lost: 1800, // 3 min
+  bounty_placed: 900, // 90s
+  last_stand_nearby: 600, // 60s
+  chain_broken: 900, // 90s
+};
+
+type HintTrigger =
+  | "idle"
+  | "convoy_lost"
+  | "bounty_placed"
+  | "last_stand_nearby"
+  | "chain_broken";
 
 @customElement("coach-hint-engine")
 export class CoachHintEngine extends LitElement implements Layer {
@@ -21,11 +39,13 @@ export class CoachHintEngine extends LitElement implements Layer {
   @state() private visible = false;
 
   private tickCount = 0;
-  private lastHintTick = -HINT_MIN_INTERVAL_TICKS;
-  private hintDismissTimer: ReturnType<typeof setTimeout> | null = null;
   private hasIssuedVaultCommand = false;
-  private hasFetched = false;
   private latestStatus: VaultFrontStatusUpdate | null = null;
+  private hintDismissTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Last tick each trigger fired — avoids per-trigger cooldown collisions */
+  private lastHintTickByTrigger = new Map<HintTrigger, number>();
+  /** True while an async fetch is in flight — prevents concurrent calls */
+  private fetching = false;
 
   createRenderRoot() {
     return this;
@@ -35,43 +55,111 @@ export class CoachHintEngine extends LitElement implements Layer {
     if (!this.game) return;
     this.tickCount++;
 
-    // Check if user has opted in (stored in user settings / localStorage)
     if (localStorage.getItem("coachHintsDisabled") === "true") return;
 
     const updates = this.game.updatesSinceLastTick();
-    const statusUpdates = updates?.[GameUpdateType.VaultFrontStatus] as
+    if (!updates) return;
+
+    // Track latest vault-site state
+    const statusUpdates = updates[GameUpdateType.VaultFrontStatus] as
       | VaultFrontStatusUpdate[]
       | undefined;
     if (statusUpdates && statusUpdates.length > 0) {
       this.latestStatus = statusUpdates[statusUpdates.length - 1];
     }
 
-    const activityUpdates = updates?.[GameUpdateType.VaultFrontActivity];
+    // Track whether player has issued vault commands (idle hint guard)
+    const activityUpdates = updates[
+      GameUpdateType.VaultFrontActivity
+    ] as VaultFrontActivityUpdate[];
     if (
-      activityUpdates?.some((activity) =>
+      activityUpdates?.some((a) =>
         [
           "convoy_launched",
           "convoy_rerouted",
           "convoy_escorted",
           "jam_breaker",
           "ghost_reveal",
-        ].includes(activity.activity),
+        ].includes(a.activity),
       )
     ) {
       this.hasIssuedVaultCommand = true;
     }
 
+    // Evaluate event triggers (ordered by priority)
+    const trigger = this.detectTrigger(updates);
+    if (trigger && !this.fetching) {
+      void this.fetchAndShow(trigger);
+    }
+  }
+
+  private detectTrigger(
+    updates: ReturnType<GameView["updatesSinceLastTick"]>,
+  ): HintTrigger | null {
+    const mySmallId = this.game.myPlayer()?.smallID();
+
+    // convoy_lost: one of my convoys was intercepted
+    const activities = updates?.[GameUpdateType.VaultFrontActivity] as
+      | VaultFrontActivityUpdate[]
+      | undefined;
+    if (
+      mySmallId !== undefined &&
+      activities?.some(
+        (a) =>
+          a.activity === "convoy_intercepted" && a.targetPlayerID === mySmallId,
+      ) &&
+      this.canTrigger("convoy_lost")
+    ) {
+      return "convoy_lost";
+    }
+
+    // bounty_placed: a bounty was placed on me
+    const bountyUpdates = updates?.[GameUpdateType.BountyBoardActivated] as
+      | BountyBoardActivatedUpdate[]
+      | undefined;
+    if (
+      mySmallId !== undefined &&
+      bountyUpdates?.some((b) => b.targetPlayerID === mySmallId) &&
+      this.canTrigger("bounty_placed")
+    ) {
+      return "bounty_placed";
+    }
+
+    // last_stand_nearby: last-stand activated near my sites
+    const lastStandUpdates = updates?.[GameUpdateType.LastStandActivated] as
+      | LastStandActivatedUpdate[]
+      | undefined;
+    if (
+      lastStandUpdates &&
+      lastStandUpdates.length > 0 &&
+      this.canTrigger("last_stand_nearby")
+    ) {
+      return "last_stand_nearby";
+    }
+
+    // chain_broken: comeback_surge ending can indicate chain pressure reset
+    if (
+      activities?.some((a) => a.activity === "comeback_surge") &&
+      this.canTrigger("chain_broken")
+    ) {
+      return "chain_broken";
+    }
+
+    // idle: 2 min elapsed, player hasn't issued a vault command
     if (
       this.tickCount >= HINT_TRIGGER_TICKS &&
       !this.hasIssuedVaultCommand &&
-      !this.hasFetched &&
-      this.tickCount - this.lastHintTick >= HINT_MIN_INTERVAL_TICKS
+      this.canTrigger("idle")
     ) {
-      this.hasFetched = true;
-      const state = uiStateManager.get();
-      const sites = this.localVaultSiteCount();
-      void this.fetchAndShow(Number(state.playerGold), sites);
+      return "idle";
     }
+
+    return null;
+  }
+
+  private canTrigger(trigger: HintTrigger): boolean {
+    const lastTick = this.lastHintTickByTrigger.get(trigger) ?? -Infinity;
+    return this.tickCount - lastTick >= TRIGGER_COOLDOWNS[trigger];
   }
 
   private localVaultSiteCount(): number {
@@ -83,18 +171,26 @@ export class CoachHintEngine extends LitElement implements Layer {
     ).length;
   }
 
-  private async fetchAndShow(gold: number, sites: number): Promise<void> {
-    const hint = await fetchMicroHint({ gold, sites });
+  private async fetchAndShow(trigger: HintTrigger): Promise<void> {
+    this.fetching = true;
+    this.lastHintTickByTrigger.set(trigger, this.tickCount);
+    const state = uiStateManager.get();
+    const sites = this.localVaultSiteCount();
+    const hint = await fetchMicroHint({
+      gold: Number(state.playerGold),
+      sites,
+      trigger,
+    });
+    this.fetching = false;
     if (!hint) return;
     this.hint = hint;
     this.visible = true;
-    this.lastHintTick = this.tickCount;
 
     if (this.hintDismissTimer) clearTimeout(this.hintDismissTimer);
     this.hintDismissTimer = setTimeout(() => {
       this.visible = false;
       this.hint = null;
-    }, HINT_DISMISS_MS);
+    }, 12_000);
   }
 
   private dismiss(): void {

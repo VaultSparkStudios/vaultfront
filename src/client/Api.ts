@@ -501,6 +501,63 @@ export async function updateVaultFrontSeasonContracts(delta: {
   }
 }
 
+export interface DailyChallenge {
+  challengeId: string;
+  description: string;
+  progress: number;
+  target: number;
+  rewardGold: number;
+  completed: boolean;
+}
+
+export async function fetchDailyChallenge(): Promise<DailyChallenge | null> {
+  try {
+    const authHeader = await getAuthHeader();
+    const res = await fetch(`${getApiBase()}/api/vaultfront/daily-challenge`, {
+      headers: authHeader ? { Authorization: authHeader } : {},
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as DailyChallenge;
+  } catch {
+    return null;
+  }
+}
+
+export interface VaultFrontContractsSnapshot {
+  eloRating: number;
+  eloLabel: string;
+  matchesPlayed: number;
+  isDecaying: boolean;
+  eloHistory: number[];
+}
+
+export async function fetchVaultFrontContracts(): Promise<
+  VaultFrontContractsSnapshot | false
+> {
+  try {
+    const authHeader = await getAuthHeader();
+    if (!authHeader) return false;
+    const response = await fetch(`${getApiBase()}/api/vaultfront/contracts`, {
+      headers: { Authorization: authHeader },
+    });
+    if (!response.ok) return false;
+    const json = await response.json();
+    if (typeof json.eloRating !== "number" || typeof json.eloLabel !== "string")
+      return false;
+    return {
+      eloRating: json.eloRating as number,
+      eloLabel: json.eloLabel as string,
+      matchesPlayed: (json.matchesPlayed as number) ?? 0,
+      isDecaying: (json.isDecaying as boolean) ?? false,
+      eloHistory: Array.isArray(json.eloHistory)
+        ? (json.eloHistory as number[])
+        : [],
+    };
+  } catch {
+    return false;
+  }
+}
+
 async function vaultFrontIdentityHeaders(): Promise<Record<string, string>> {
   const authHeader = await getAuthHeader();
   if (authHeader) {
@@ -986,6 +1043,7 @@ export interface ReplayHighlight {
   gameId: string;
   highlightId: string;
   topMoment: string;
+  autoHighlightTick?: number;
   clipStartTurn: number;
   clipEndTurn: number;
   shareUrl: string;
@@ -1220,11 +1278,14 @@ export function subscribeNarrator(
 export async function fetchMicroHint(params: {
   gold: number;
   sites: number;
+  trigger?: string;
 }): Promise<string | null> {
   try {
-    const res = await fetch(
-      `${getApiBase()}/api/vaultfront/micro-hint?gold=${params.gold}&sites=${params.sites}`,
-    );
+    const url = new URL(`${getApiBase()}/api/vaultfront/micro-hint`);
+    url.searchParams.set("gold", String(params.gold));
+    url.searchParams.set("sites", String(params.sites));
+    if (params.trigger) url.searchParams.set("trigger", params.trigger);
+    const res = await fetch(url.toString());
     if (!res.ok) return null;
     const data = (await res.json()) as { hint?: string };
     return data.hint ?? null;

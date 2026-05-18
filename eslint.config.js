@@ -13,7 +13,13 @@ const gitignorePath = path.resolve(__dirname, ".gitignore");
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   includeIgnoreFile(gitignorePath),
-  { ignores: ["src/server/gatekeeper/**", "tests/pathfinding/playground/**"] },
+  {
+    ignores: [
+      "src/server/gatekeeper/**",
+      "tests/pathfinding/playground/**",
+      "e2e/**",
+    ],
+  },
   { files: ["**/*.{js,mjs,cjs,ts}"] },
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   pluginJs.configs.recommended,
@@ -97,6 +103,11 @@ export default [
     },
     rules: {
       "@typescript-eslint/prefer-nullish-coalescing": "off",
+      // Ops scripts are not subject to strict style rules
+      "no-empty": "off",
+      "no-useless-escape": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      eqeqeq: "off",
     },
   },
 ];

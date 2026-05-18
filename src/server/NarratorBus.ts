@@ -5,7 +5,8 @@
  * - Subscribes to game activity events batched per game
  * - Calls Claude Haiku every 15s max per game to generate 1-sentence commentary
  * - Broadcasts SSE lines to subscribed HTTP clients (spectators)
- * - Clients connect via GET /api/vaultfront/narrator/:gameId
+ * - Clients connect via GET /api/vaultfront/narrator/:gameId?persona=hype|tactical|comedic
+ * - Each spectator can choose their own commentary persona; commentary is per-group
  */
 
 import Anthropic from "@anthropic-ai/sdk";
@@ -22,19 +23,35 @@ function getAnthropicClient(): Anthropic {
   return anthropic;
 }
 
-const NARRATOR_SYSTEM_PROMPT =
-  "You are a live sports commentator for VaultFront, a real-time strategy game. Generate ONE sentence of exciting broadcast commentary (max 100 characters) based on the game event provided. Tone: energetic, present-tense, specific. No emojis, no quotes.";
+export type NarratorPersona = "hype" | "tactical" | "comedic";
+
+const PERSONA_PROMPTS: Record<NarratorPersona, string> = {
+  hype: "You are a hype live sports commentator for VaultFront, a real-time strategy game. Generate ONE sentence of exciting broadcast commentary (max 100 characters). Tone: energetic, present-tense, exclamation-heavy, crowd-pumping. No emojis, no quotes.",
+  tactical:
+    "You are a tactical analyst commentating VaultFront, a real-time strategy game. Generate ONE sentence of incisive strategic commentary (max 100 characters). Tone: precise, observational, focused on decision-making and implications. No emojis, no quotes.",
+  comedic:
+    "You are a comedic color commentator for VaultFront, a real-time strategy game. Generate ONE sentence of witty commentary (max 100 characters). Tone: dry, playful, finds the absurd angle in every event. No emojis, no quotes.",
+};
 
 const RATE_LIMIT_MS = 15_000; // 15s minimum between calls per game
 const MAX_PENDING_EVENTS = 12;
 const MAX_COMMENTARY_CHARS = 140;
 
 interface GameNarratorState {
-  clients: Set<Response>;
+  clients: Map<Response, NarratorPersona>;
   lastCallMs: number;
-  lastCommentary: string | null;
+  lastCommentaryByPersona: Map<NarratorPersona, string>;
   pendingEvents: string[];
   timer: ReturnType<typeof setTimeout> | null;
+  /** NarratorContextSnapshot — injected by Worker.ts for contextual commentary */
+  context: NarratorContextSnapshot | null;
+}
+
+export interface NarratorContextSnapshot {
+  tickBucket: "early" | "mid" | "late";
+  leadingPlayer: string;
+  siteBalance: string;
+  mutator: string;
 }
 
 export class NarratorBus {
@@ -43,19 +60,24 @@ export class NarratorBus {
   private getOrCreate(gameId: string): GameNarratorState {
     if (!this.games.has(gameId)) {
       this.games.set(gameId, {
-        clients: new Set(),
+        clients: new Map(),
         lastCallMs: 0,
-        lastCommentary: null,
+        lastCommentaryByPersona: new Map(),
         pendingEvents: [],
         timer: null,
+        context: null,
       });
     }
     return this.games.get(gameId)!;
   }
 
-  subscribe(gameId: string, res: Response): void {
+  subscribe(
+    gameId: string,
+    res: Response,
+    persona: NarratorPersona = "hype",
+  ): void {
     const state = this.getOrCreate(gameId);
-    state.clients.add(res);
+    state.clients.set(res, persona);
 
     res.on("close", () => {
       state.clients.delete(res);
@@ -64,22 +86,30 @@ export class NarratorBus {
       }
     });
 
-    res.write('data: {"type":"connected"}\n\n');
-    if (state.lastCommentary) {
+    res.write(`data: ${JSON.stringify({ type: "connected", persona })}\n\n`);
+    const lastCommentary = state.lastCommentaryByPersona.get(persona);
+    if (lastCommentary) {
       res.write(
-        `data: ${JSON.stringify({ type: "commentary", text: state.lastCommentary, replay: true })}\n\n`,
+        `data: ${JSON.stringify({ type: "commentary", text: lastCommentary, persona, replay: true })}\n\n`,
       );
     }
     Logger.info(`NarratorBus: client subscribed to ${gameId}`, {
       count: state.clients.size,
+      persona,
     });
   }
 
   /** Queue an activity event for narration. */
-  queueEvent(gameId: string, activityLabel: string): void {
+  queueEvent(
+    gameId: string,
+    activityLabel: string,
+    context?: NarratorContextSnapshot,
+  ): void {
     if (!process.env.ANTHROPIC_API_KEY) return;
     const state = this.games.get(gameId);
     if (!state || state.clients.size === 0) return;
+
+    if (context) state.context = context;
 
     if (state.pendingEvents[state.pendingEvents.length - 1] === activityLabel) {
       return;
@@ -103,10 +133,34 @@ export class NarratorBus {
     if (!state) return;
     state.timer = null;
 
-    const events = [...new Set(state.pendingEvents.splice(0, 3))]; // max 3 unique events per call
+    const events = [...new Set(state.pendingEvents.splice(0, 3))];
     if (events.length === 0) return;
     state.lastCallMs = Date.now();
 
+    // Determine which personas have active subscribers
+    const activePersonas = new Set(state.clients.values());
+    if (activePersonas.size === 0) return;
+
+    // Build context suffix for the user message
+    const ctx = state.context;
+    const contextSuffix = ctx
+      ? ` [Phase: ${ctx.tickBucket}; Leader: ${ctx.leadingPlayer}; Sites: ${ctx.siteBalance}; Mutator: ${ctx.mutator}]`
+      : "";
+    const userContent = `Events: ${events.join("; ")}${contextSuffix}`;
+
+    await Promise.allSettled(
+      [...activePersonas].map((persona) =>
+        this.flushForPersona(gameId, state, persona, userContent),
+      ),
+    );
+  }
+
+  private async flushForPersona(
+    gameId: string,
+    state: GameNarratorState,
+    persona: NarratorPersona,
+    userContent: string,
+  ): Promise<void> {
     try {
       const msg = await getAnthropicClient().messages.create({
         model: "claude-haiku-4-5-20251001",
@@ -114,16 +168,11 @@ export class NarratorBus {
         system: [
           {
             type: "text",
-            text: NARRATOR_SYSTEM_PROMPT,
+            text: PERSONA_PROMPTS[persona],
             cache_control: { type: "ephemeral" },
           },
         ],
-        messages: [
-          {
-            role: "user",
-            content: `Events: ${events.join("; ")}`,
-          },
-        ],
+        messages: [{ role: "user", content: userContent }],
       });
       const commentary =
         (msg.content[0] as { type: string; text: string }).text?.trim() ?? "";
@@ -131,20 +180,44 @@ export class NarratorBus {
         const safeCommentary = commentary
           .replace(/\s+/g, " ")
           .slice(0, MAX_COMMENTARY_CHARS);
-        state.lastCommentary = safeCommentary;
-        this.broadcast(gameId, { type: "commentary", text: safeCommentary });
+        state.lastCommentaryByPersona.set(persona, safeCommentary);
+        this.broadcastToPersona(gameId, state, persona, {
+          type: "commentary",
+          text: safeCommentary,
+          persona,
+        });
       }
     } catch (err) {
-      Logger.warn("NarratorBus: generation failed", { gameId, err });
+      Logger.warn("NarratorBus: generation failed", { gameId, persona, err });
     }
   }
 
-  private broadcast(gameId: string, payload: object): void {
+  private broadcastToPersona(
+    gameId: string,
+    state: GameNarratorState,
+    persona: NarratorPersona,
+    payload: object,
+  ): void {
+    const line = `data: ${JSON.stringify(payload)}\n\n`;
+    const dead: Response[] = [];
+    for (const [res, clientPersona] of state.clients) {
+      if (clientPersona !== persona) continue;
+      try {
+        res.write(line);
+      } catch {
+        dead.push(res);
+      }
+    }
+    dead.forEach((r) => state.clients.delete(r));
+  }
+
+  /** Broadcast a raw payload to ALL subscribers for a game (any persona). */
+  broadcastRaw(gameId: string, payload: object): void {
     const state = this.games.get(gameId);
     if (!state) return;
     const line = `data: ${JSON.stringify(payload)}\n\n`;
     const dead: Response[] = [];
-    for (const res of state.clients) {
+    for (const [res] of state.clients) {
       try {
         res.write(line);
       } catch {
@@ -159,7 +232,7 @@ export class NarratorBus {
     if (!state) return;
     if (state.timer) clearTimeout(state.timer);
     const end = `data: ${JSON.stringify({ type: "game_over" })}\n\n`;
-    for (const res of state.clients) {
+    for (const [res] of state.clients) {
       try {
         res.write(end);
         res.end();
@@ -185,7 +258,7 @@ export class NarratorBus {
     return {
       subscribers: state?.clients.size ?? 0,
       pendingEvents: state?.pendingEvents.length ?? 0,
-      hasLastCommentary: Boolean(state?.lastCommentary),
+      hasLastCommentary: state?.lastCommentaryByPersona.size !== 0,
     };
   }
 }

@@ -28,6 +28,8 @@ export interface ReplayHighlight {
   topMoment: string;
   clipStartTurn: number;
   clipEndTurn: number;
+  /** Tick number of the most exciting 30s window — for "Best Moment" seek. */
+  autoHighlightTick: number;
   shareUrl: string;
   ogTitle: string;
 }
@@ -39,9 +41,14 @@ interface CachedHighlight {
 
 /** Intent-type excitement weights used in turn scoring */
 const INTENT_WEIGHTS: Record<string, number> = {
+  intercept: 10,
   execution_chain: 10,
+  last_stand: 8,
   surge: 8,
+  heist: 7,
   vault_capture: 6,
+  bounty_collected: 5,
+  surge_entry: 4,
   convoy_deliver: 4,
   beacon_charge: 3,
 };
@@ -150,6 +157,7 @@ class ReplayHighlightStore {
       topMoment,
       clipStartTurn,
       clipEndTurn,
+      autoHighlightTick: clipStartTurn,
       shareUrl,
       ogTitle: `VaultFront Highlight — ${topMoment} on ${mapName || "Unknown Map"}`,
     };
@@ -163,6 +171,7 @@ class ReplayHighlightStore {
       topMoment: "Full Match",
       clipStartTurn: 0,
       clipEndTurn: 0,
+      autoHighlightTick: 0,
       shareUrl: `${PLAY_BASE}/replay/${encodeURIComponent(gameId)}?highlight=${highlightId}`,
       ogTitle: `VaultFront Replay — ${mapName || "Unknown Map"}`,
     };

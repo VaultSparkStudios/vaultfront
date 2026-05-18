@@ -17,7 +17,9 @@ import type { AllPlayersStats, Winner } from "../../../core/Schemas";
 import {
   castMutatorVote,
   createRematch,
+  fetchDynastyStory,
   fetchMutatorVoteStatus,
+  fetchVaultFrontContracts,
   fetchVaultFrontRecapAssignment,
   getUserMe,
   type MutatorVoteCandidate,
@@ -172,6 +174,26 @@ export class WinModal extends LitElement implements Layer {
   @state()
   private mutatorVoteSentKey: string | null = null;
 
+  @state()
+  private eloData: {
+    previous: number;
+    current: number;
+    label: string;
+    animated: number;
+    tierChanged: boolean;
+  } | null = null;
+
+  @state()
+  private shareCardCopied = false;
+
+  @state()
+  private dynastyStory: string | null = null;
+
+  @state()
+  private dynastyStoryTyped = "";
+
+  private dynastyStoryTyperTimer: ReturnType<typeof setTimeout> | null = null;
+
   // Override to prevent shadow DOM creation
   createRenderRoot() {
     return this;
@@ -280,6 +302,14 @@ export class WinModal extends LitElement implements Layer {
                   >
                 </a>`
               : ""}
+          </div>
+          <div class="flex justify-end">
+            <button
+              @click=${this._handleShareCard}
+              class="px-3 py-1.5 text-xs cursor-pointer bg-teal-600/60 text-white border-0 rounded-sm transition-all duration-200 hover:bg-teal-600/90"
+            >
+              ${this.shareCardCopied ? "Card saved!" : "Save Result Card"}
+            </button>
           </div>
         </div>
       </div>
@@ -528,7 +558,43 @@ export class WinModal extends LitElement implements Layer {
         </div>
 
         ${this.renderSeasonalContracts()} ${this.renderReplayMoments()}
-        ${this.renderPlayStyleCard()}
+        ${this.renderEloSection()} ${this.renderPlayStyleCard()}
+        ${this.renderDynastyStory()}
+      </div>
+    `;
+  }
+
+  private renderEloSection() {
+    if (!this.isRankedGame || !this.eloData) return null;
+    const { previous, current, label, animated, tierChanged } = this.eloData;
+    const delta = current - previous;
+    const isGain = delta >= 0;
+    const deltaText = isGain ? `+${delta}` : `${delta}`;
+    const deltaColor = isGain ? "text-emerald-400" : "text-rose-400";
+    return html`
+      <div
+        class="mt-2 rounded-sm border border-indigo-400/40 bg-indigo-900/20 p-3 flex items-center justify-between gap-2 ${tierChanged
+          ? "animate-pulse"
+          : ""}"
+      >
+        <div class="flex flex-col gap-0.5">
+          <div class="text-xs uppercase tracking-wide text-indigo-300">
+            Ranked ${label}
+          </div>
+          <div class="text-xl font-bold text-white tabular-nums">
+            ${Math.round(animated)}
+          </div>
+        </div>
+        <div
+          class="text-sm font-bold ${deltaColor} tabular-nums ${tierChanged
+            ? "text-base"
+            : ""}"
+        >
+          ${deltaText}
+          ${tierChanged
+            ? html`<span class="text-amber-300 ml-1">Tier Up!</span>`
+            : ""}
+        </div>
       </div>
     `;
   }
@@ -563,6 +629,36 @@ export class WinModal extends LitElement implements Layer {
               </div>
             `,
           )}
+        </div>
+      </div>
+    `;
+  }
+
+  private renderDynastyStory() {
+    if (!this.dynastyStory) return null;
+    const shareText = `${this.dynastyStory.split(".")[0]}. #VaultFront`;
+    return html`
+      <div
+        class="mt-2 rounded-sm border border-amber-400/40 bg-amber-900/15 p-3"
+      >
+        <div
+          class="text-xs uppercase tracking-wide text-amber-300 mb-1 flex items-center justify-between"
+        >
+          <span>Clan Legacy</span>
+          <button
+            class="text-xs px-2 py-0.5 bg-amber-500/20 border border-amber-400/30 rounded text-amber-200 hover:bg-amber-500/40 transition-colors cursor-pointer"
+            @click=${() => {
+              void navigator.clipboard.writeText(shareText);
+            }}
+          >
+            Share
+          </button>
+        </div>
+        <div class="text-sm text-slate-200 leading-relaxed">
+          ${this.dynastyStoryTyped}${this.dynastyStoryTyped.length <
+          (this.dynastyStory?.length ?? 0)
+            ? html`<span class="animate-pulse">▌</span>`
+            : ""}
         </div>
       </div>
     `;
@@ -841,8 +937,91 @@ export class WinModal extends LitElement implements Layer {
         if (h) {
           this.replayHighlight = h;
           this.requestUpdate();
+          // Wire autoHighlightTick into ReplayPanel for "Best Moment" button
+          if (h.autoHighlightTick !== undefined) {
+            const panel = document.querySelector("replay-panel") as
+              | (HTMLElement & {
+                  autoHighlightTick?: number | null;
+                  highlightShareUrl?: string;
+                })
+              | null;
+            if (panel) {
+              panel.autoHighlightTick = h.autoHighlightTick;
+              panel.highlightShareUrl = h.shareUrl;
+            }
+          }
         }
       });
+    }
+
+    // Fetch dynasty story if player belongs to a clan
+    void getUserMe().then(async (me) => {
+      const clanId =
+        me &&
+        typeof me === "object" &&
+        "user" in me &&
+        me.user &&
+        typeof me.user === "object" &&
+        "clanId" in me.user
+          ? (me.user as { clanId?: string }).clanId
+          : undefined;
+      if (!clanId) return;
+      const story = await fetchDynastyStory(clanId);
+      if (!story) return;
+      this.dynastyStory = story;
+      this.dynastyStoryTyped = "";
+      this.requestUpdate();
+      // Typewriter effect: 10ms per char
+      let i = 0;
+      const type = () => {
+        if (i >= story.length) return;
+        this.dynastyStoryTyped = story.slice(0, ++i);
+        this.requestUpdate();
+        this.dynastyStoryTyperTimer = setTimeout(type, 10);
+      };
+      type();
+    });
+
+    // Fetch Elo after short delay so the server has time to record match result
+    if (this.isRankedGame) {
+      setTimeout(() => {
+        void fetchVaultFrontContracts().then((snapshot) => {
+          if (!snapshot) return;
+          const prevElo = parseInt(
+            localStorage.getItem("vaultfront.lastElo") ?? "1200",
+            10,
+          );
+          const current = snapshot.eloRating;
+          const tierChanged =
+            Math.floor(prevElo / 200) !== Math.floor(current / 200);
+          const start = prevElo;
+          const end = current;
+          this.eloData = {
+            previous: prevElo,
+            current,
+            label: snapshot.eloLabel,
+            animated: start,
+            tierChanged,
+          };
+          this.requestUpdate();
+          localStorage.setItem("vaultfront.lastElo", String(current));
+
+          // Animate the counter from previous to current
+          const duration = 1200;
+          const startTime = performance.now();
+          const step = (now: number) => {
+            const t = Math.min((now - startTime) / duration, 1);
+            const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+            this.eloData = {
+              ...this.eloData!,
+              animated: start + (end - start) * eased,
+            };
+            this.requestUpdate();
+            if (t < 1) requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        });
+      }, 3000);
     }
   }
 
@@ -852,6 +1031,13 @@ export class WinModal extends LitElement implements Layer {
     this.showButtons = false;
     this.mutatorVoteCandidates = [];
     this.mutatorVoteSentKey = null;
+    this.dynastyStory = null;
+    this.dynastyStoryTyped = "";
+    if (this.dynastyStoryTyperTimer !== null) {
+      clearTimeout(this.dynastyStoryTyperTimer);
+      this.dynastyStoryTyperTimer = null;
+    }
+    this.eloData = null;
     this.requestUpdate();
   }
 
@@ -915,6 +1101,72 @@ export class WinModal extends LitElement implements Layer {
     setTimeout(() => {
       this.highlightCopied = false;
     }, 3000);
+  };
+
+  private _handleShareCard = async () => {
+    const isWin = this.isWin;
+    const eloDelta = this.eloData
+      ? this.eloData.current - this.eloData.previous
+      : null;
+    const eloLabel = this.eloData?.label ?? "";
+    const topCard = this.recapCards[0];
+    const topStat = topCard
+      ? `${topCard.title}: ${topCard.myValue}`
+      : "VaultFront match";
+
+    try {
+      const canvas = new OffscreenCanvas(480, 240);
+      const ctx = canvas.getContext("2d") as OffscreenCanvasRenderingContext2D;
+
+      // Background
+      ctx.fillStyle = isWin ? "#1e3a2f" : "#2d1a1a";
+      ctx.fillRect(0, 0, 480, 240);
+
+      // Accent stripe
+      ctx.fillStyle = isWin ? "#22c55e" : "#ef4444";
+      ctx.fillRect(0, 0, 8, 240);
+
+      // Outcome
+      ctx.font = "bold 36px sans-serif";
+      ctx.fillStyle = isWin ? "#4ade80" : "#f87171";
+      ctx.fillText(isWin ? "VICTORY" : "DEFEAT", 28, 60);
+
+      // Elo delta
+      if (eloDelta !== null) {
+        ctx.font = "bold 22px sans-serif";
+        ctx.fillStyle = eloDelta >= 0 ? "#86efac" : "#fca5a5";
+        ctx.fillText(
+          `${eloDelta >= 0 ? "+" : ""}${eloDelta} Elo · ${eloLabel}`,
+          28,
+          96,
+        );
+      }
+
+      // Top stat
+      ctx.font = "16px sans-serif";
+      ctx.fillStyle = "#e2e8f0";
+      ctx.fillText(topStat, 28, 130);
+
+      // Brand
+      ctx.font = "bold 14px sans-serif";
+      ctx.fillStyle = "#60a5fa";
+      ctx.fillText("VaultFront", 28, 220);
+
+      const blob = await canvas.convertToBlob({ type: "image/png" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "vaultfront-result.png";
+      a.click();
+      URL.revokeObjectURL(url);
+
+      this.shareCardCopied = true;
+      setTimeout(() => {
+        this.shareCardCopied = false;
+      }, 3000);
+    } catch {
+      // OffscreenCanvas not supported — silent fail
+    }
   };
 
   private onRecapPrimaryRequeueClick = () => {

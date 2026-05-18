@@ -163,7 +163,7 @@ export async function startMaster() {
     server.close(() => {
       log.info(`[master] HTTP server closed, forwarding signal to workers`);
       for (const worker of Object.values(cluster.workers ?? {})) {
-        worker?.process.kill(signal);
+        worker?.process.kill(signal as NodeJS.Signals);
       }
       setTimeout(() => {
         log.info(`[master] exiting`);

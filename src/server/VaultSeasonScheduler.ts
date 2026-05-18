@@ -111,6 +111,8 @@ export interface SeasonStatus {
     candidates: Array<{ key: string; name: string }>;
     closesAt: number | null;
   } | null;
+  /** Top-3 candidates by current vote count (only populated when vote is open) */
+  voteStandings: Array<{ key: string; name: string; votes: number }>;
 }
 
 // ── Internal vote state ────────────────────────────────────────────────────
@@ -431,6 +433,18 @@ class VaultSeasonScheduler {
       };
     }
 
+    let voteStandings: SeasonStatus["voteStandings"] = [];
+    if (this.currentVote !== null && Date.now() < this.currentVote.openUntil) {
+      voteStandings = [...this.currentVote.votes.entries()]
+        .map(([key, votes]) => ({
+          key,
+          name: MUTATOR_DEFS[key]?.name ?? key,
+          votes,
+        }))
+        .sort((a, b) => b.votes - a.votes)
+        .slice(0, 3);
+    }
+
     return {
       currentMutator: {
         key: mutator.key,
@@ -440,6 +454,7 @@ class VaultSeasonScheduler {
       weekNumber: weekNum,
       mutatorEndsAt,
       vote,
+      voteStandings,
     };
   }
 }

@@ -577,6 +577,27 @@ class PlayerStatsStore {
     };
   }
 
+  /** Returns the last N elo_after values from match history for sparkline rendering. */
+  async getEloHistory(persistentId: string, limit = 10): Promise<number[]> {
+    if (pool) {
+      const res = await pool.query<{ elo_after: number }>(
+        `SELECT elo_after FROM match_history
+         WHERE persistent_id = $1
+         ORDER BY created_at DESC
+         LIMIT $2`,
+        [persistentId, limit],
+      );
+      return res.rows.map((r) => r.elo_after).reverse();
+    }
+    // In-memory fallback: derive from match history
+    return this.memHistory
+      .filter((h) => h.persistentId === persistentId)
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, limit)
+      .map((h) => h.eloAfter)
+      .reverse();
+  }
+
   /**
    * Seasonal soft-reset: reduce every player's Elo by up to
    * `EloRating.SEASONAL_SOFT_RESET_CAP` points, pulling toward DEFAULT_RATING.

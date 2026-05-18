@@ -9,6 +9,7 @@ import {
   VaultFrontStatusUpdate,
 } from "../../../core/game/GameUpdates";
 import { GameView } from "../../../core/game/GameView";
+import { DailyChallenge, fetchDailyChallenge } from "../../Api";
 import { crazyGamesSDK } from "../../CrazyGamesSDK";
 import { PauseGameIntentEvent, SendWinnerEvent } from "../../Transport";
 import { translateText } from "../../Utils";
@@ -128,6 +129,9 @@ export class GameRightSidebar extends LitElement implements Layer {
   @state()
   private vaultDebugActive = false;
 
+  @state()
+  private dailyChallenge: DailyChallenge | null = null;
+
   private hasWinner = false;
   private isLobbyCreator = false;
   private spawnBarVisible = false;
@@ -178,6 +182,14 @@ export class GameRightSidebar extends LitElement implements Layer {
     this.eventBus.on(SendWinnerEvent, () => {
       this.hasWinner = true;
       this.requestUpdate();
+    });
+
+    // Fetch daily challenge once at game start
+    void fetchDailyChallenge().then((ch) => {
+      if (ch) {
+        this.dailyChallenge = ch;
+        this.requestUpdate();
+      }
     });
 
     this.requestUpdate();
@@ -929,6 +941,46 @@ export class GameRightSidebar extends LitElement implements Layer {
     this.focusTile(item.actionTile ?? item.tile);
   }
 
+  private renderDailyChallenge() {
+    const ch = this.dailyChallenge;
+    if (!ch) return null;
+    const pct =
+      ch.target > 0
+        ? Math.min(100, Math.round((ch.progress / ch.target) * 100))
+        : 0;
+    return html`
+      <div
+        class="fixed bottom-24 right-4 z-[900] w-44 rounded-md border border-amber-400/40 bg-slate-950/80 px-2.5 py-2 text-[10px] text-amber-50 shadow-lg"
+        style="zoom: ${this.hudScale};"
+      >
+        <div
+          class="text-[9px] uppercase tracking-wider text-amber-300 mb-1 flex items-center justify-between"
+        >
+          <span>Daily Challenge</span>
+          <span class="text-amber-400">${ch.rewardGold}g</span>
+        </div>
+        <div class="text-[10px] text-slate-200 leading-snug mb-1.5">
+          ${ch.description}
+        </div>
+        <div class="h-1.5 rounded-full bg-slate-700 overflow-hidden">
+          <div
+            class="h-full rounded-full ${ch.completed
+              ? "bg-emerald-400"
+              : "bg-amber-400"} transition-all"
+            style="width:${pct}%"
+          ></div>
+        </div>
+        <div
+          class="text-right text-[9px] mt-0.5 ${ch.completed
+            ? "text-emerald-300"
+            : "text-slate-400"}"
+        >
+          ${ch.completed ? "✓ Complete" : `${ch.progress}/${ch.target}`}
+        </div>
+      </div>
+    `;
+  }
+
   private renderObjectiveRail() {
     const items = this.objectiveRailItems();
     if (items.length === 0) return null;
@@ -1097,7 +1149,7 @@ export class GameRightSidebar extends LitElement implements Layer {
     });
 
     return html`
-      ${this.renderObjectiveRail()}
+      ${this.renderObjectiveRail()} ${this.renderDailyChallenge()}
       <aside
         class=${`w-fit flex flex-row items-center gap-2 py-2 px-3 bg-gray-800/70 backdrop-blur-xs shadow-xs min-[1200px]:rounded-lg rounded-bl-lg transition-transform duration-300 ease-out transform text-white ${
           this._isVisible ? "translate-x-0" : "translate-x-full"

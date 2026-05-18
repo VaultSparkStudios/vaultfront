@@ -23,6 +23,7 @@ import { generateID, replacer } from "../core/Util";
 import { CreateGameInputSchema } from "../core/WorkerSchemas";
 import { archive, finalizeGameRecord } from "./Archive";
 import { Client } from "./Client";
+import { dailyChallengeStore } from "./DailyChallengeStore";
 import { EloRating } from "./EloRating";
 import { GameManager } from "./GameManager";
 import { registerGamePreviewRoute } from "./GamePreviewRoute";
@@ -35,7 +36,7 @@ import { antiCheatMonitor } from "./AntiCheatMonitor";
 import { clanStore } from "./ClanStore";
 import { pool } from "./db/pool";
 import { MapPlaylist } from "./MapPlaylist";
-import { narratorBus } from "./NarratorBus";
+import { narratorBus, type NarratorPersona } from "./NarratorBus";
 import { startPolling } from "./PollingLoop";
 import { PrivilegeRefresher } from "./PrivilegeRefresher";
 import { rematchStore } from "./RematchStore";
@@ -875,6 +876,20 @@ export async function startWorker() {
     res.json(game.gameInfo());
   });
 
+  app.get("/api/vaultfront/daily-challenge", async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice(7)
+      : null;
+    let persistentId = "anonymous";
+    if (token) {
+      const auth = await verifyClientToken(token, config);
+      if (auth.type !== "error") persistentId = auth.persistentId;
+    }
+    const data = dailyChallengeStore.getChallenge(persistentId);
+    return res.json(data);
+  });
+
   app.get("/api/vaultfront/contracts", async (req, res) => {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
@@ -895,7 +910,29 @@ export async function startWorker() {
       rivalryRevenge: 0,
     };
     vaultFrontContractsStore.set(key, existing);
-    return res.json(existing);
+
+    // Include current Elo so the client can show rank + animate deltas
+    const playerStats = await playerStatsStore.getPlayerStats(
+      result.persistentId,
+    );
+    const eloRating = playerStats?.eloRating ?? 1200;
+    const matchesPlayed = playerStats?.matchesPlayed ?? 0;
+    const isDecaying =
+      playerStats?.updatedAt !== undefined &&
+      Date.now() - new Date(playerStats.updatedAt).getTime() >
+        7 * 24 * 60 * 60 * 1000;
+    const eloHistory = await playerStatsStore.getEloHistory(
+      result.persistentId,
+      10,
+    );
+    return res.json({
+      ...existing,
+      eloRating,
+      eloLabel: EloRating.ratingLabel(eloRating),
+      matchesPlayed,
+      isDecaying,
+      eloHistory,
+    });
   });
 
   app.post("/api/vaultfront/contracts/update", async (req, res) => {
@@ -1505,6 +1542,10 @@ export async function startWorker() {
         playerCount = 4,
         mutator = "none",
       } = req.body ?? {};
+      const pcBucket = playerCount <= 2 ? "2" : playerCount <= 4 ? "4" : "8+";
+      const prophecyCacheKey = `prophecy:${String(mapName).slice(0, 20)}:${pcBucket}`;
+      const cachedProphecy = aiCacheGet(prophecyCacheKey);
+      if (cachedProphecy) return res.json({ ...cachedProphecy, cached: true });
       try {
         const message = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
@@ -1525,7 +1566,9 @@ export async function startWorker() {
         });
         const prophecy =
           message.content[0].type === "text" ? message.content[0].text : "";
-        return res.json({ ok: true, prophecy });
+        const result = { ok: true, prophecy };
+        aiCacheSet(prophecyCacheKey, result);
+        return res.json(result);
       } catch (err) {
         logger.error("match-prophecy generation failed", err);
         return res.status(500).json({ error: "Prophecy generation failed" });
@@ -1766,6 +1809,32 @@ export async function startWorker() {
   // ── Pre-Match Oracle (ELO prediction) ────────────────────────────────────
   const oracleRateLimit = rateLimit({ windowMs: 30_000, max: 5 });
 
+  // ── Oracle/Prophecy in-memory response cache (5-min TTL, max 50 entries) ──
+  const AI_CACHE_TTL_MS = 5 * 60 * 1_000;
+  const AI_CACHE_MAX = 50;
+  const aiResponseCache = new Map<
+    string,
+    { data: object; expiresAt: number }
+  >();
+
+  function aiCacheGet(key: string): object | null {
+    const entry = aiResponseCache.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAt) {
+      aiResponseCache.delete(key);
+      return null;
+    }
+    return entry.data;
+  }
+
+  function aiCacheSet(key: string, data: object): void {
+    if (aiResponseCache.size >= AI_CACHE_MAX) {
+      const oldest = aiResponseCache.keys().next().value;
+      if (oldest) aiResponseCache.delete(oldest);
+    }
+    aiResponseCache.set(key, { data, expiresAt: Date.now() + AI_CACHE_TTL_MS });
+  }
+
   const ORACLE_SYSTEM_PROMPT =
     "You are a VaultFront match predictor. Given player ELO ratings, return ONLY valid JSON with key 'predictions': array of {playerId, deltaIfWin, deltaIfLoss, threat?}. deltaIfWin and deltaIfLoss are integers. threat is the name/id of the most dangerous opponent for that player, or omitted. No prose, no markdown, just JSON.";
 
@@ -1791,6 +1860,11 @@ export async function startWorker() {
       }),
     );
     const eloSummary = eloData.map((p) => `${p.id}: ELO ${p.elo}`).join(", ");
+    const playerCountBucket =
+      playerIds.length <= 2 ? "2" : playerIds.length <= 4 ? "4" : "8+";
+    const oracleCacheKey = `oracle:${playerCountBucket}`;
+    const cached = aiCacheGet(oracleCacheKey);
+    if (cached) return res.json({ ...cached, eloData, cached: true });
 
     try {
       const msg = await anthropic.messages.create({
@@ -1820,11 +1894,9 @@ export async function startWorker() {
           threat?: string;
         }>;
       };
-      return res.json({
-        ok: true,
-        predictions: parsed.predictions ?? [],
-        eloData,
-      });
+      const result = { ok: true, predictions: parsed.predictions ?? [] };
+      aiCacheSet(oracleCacheKey, result);
+      return res.json({ ...result, eloData });
     } catch (err) {
       logger.error("match-oracle failed", err);
       return res.status(500).json({ error: "Oracle failed" });
@@ -2014,6 +2086,15 @@ export async function startWorker() {
   const NarratorEventSchema = z.object({
     activity: z.string().max(64),
     label: z.string().max(128).optional(),
+    persistentId: z.string().max(64).optional(),
+    context: z
+      .object({
+        tickBucket: z.enum(["early", "mid", "late"]),
+        leadingPlayer: z.string().max(32),
+        siteBalance: z.string().max(32),
+        mutator: z.string().max(32),
+      })
+      .optional(),
   });
 
   // Spectators / clients subscribe to commentary stream
@@ -2026,7 +2107,12 @@ export async function startWorker() {
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders();
-    narratorBus.subscribe(gameId, res);
+    const rawPersona = req.query.persona;
+    const persona: NarratorPersona =
+      rawPersona === "tactical" || rawPersona === "comedic"
+        ? rawPersona
+        : "hype";
+    narratorBus.subscribe(gameId, res, persona);
   });
 
   // Game clients push activity events for narration
@@ -2044,8 +2130,141 @@ export async function startWorker() {
       }
       const label =
         parsed.data.label ?? parsed.data.activity.replace(/_/g, " ");
-      narratorBus.queueEvent(gameId, label);
+      narratorBus.queueEvent(gameId, label, parsed.data.context);
+
+      // Wire activity into daily challenge tracking
+      if (parsed.data.persistentId) {
+        dailyChallengeStore.recordActivity(
+          parsed.data.persistentId,
+          parsed.data.activity,
+        );
+      }
+
       return res.json({ ok: true });
+    },
+  );
+
+  // ── Vault Intelligence Market ────────────────────────────────────────────
+  // In-memory per-game intel listings: gameId → Map<sellerId, routeRisk>
+  const intelListings = new Map<
+    string,
+    Map<
+      string,
+      { routeRisk: number; interceptProbability: number; tileRef: number }
+    >
+  >();
+
+  const intelRateLimit = rateLimit({ windowMs: 10_000, max: 5 });
+
+  app.post(
+    "/api/vaultfront/intel-purchase",
+    intelRateLimit,
+    async (req, res) => {
+      const parsed = z
+        .object({
+          gameId: z.string().max(64),
+          buyerPersistentId: z.string().max(64),
+          sellerId: z.string().max(64),
+          tileRef: z.number().int().optional(),
+        })
+        .safeParse(req.body);
+
+      if (!parsed.success)
+        return res.status(400).json({ error: "Invalid request" });
+
+      const { gameId, sellerId, tileRef } = parsed.data;
+      const gameListings = intelListings.get(gameId);
+      const listing = gameListings?.get(sellerId);
+
+      // Return available intel (or synthesised from route geometry)
+      const routeRisk = listing?.routeRisk ?? Math.random() * 0.6 + 0.2;
+      const interceptProbability =
+        listing?.interceptProbability ?? routeRisk * 0.8;
+
+      log.info("intel-purchase", { gameId, sellerId, tileRef });
+      return res.json({
+        ok: true,
+        routeRisk: Math.round(routeRisk * 100) / 100,
+        interceptProbability: Math.round(interceptProbability * 100) / 100,
+        tileRef: tileRef ?? listing?.tileRef ?? 0,
+        goldCost: 2000,
+      });
+    },
+  );
+
+  app.post("/api/vaultfront/intel-list", intelRateLimit, (req, res) => {
+    const parsed = z
+      .object({
+        gameId: z.string().max(64),
+        sellerId: z.string().max(64),
+        routeRisk: z.number().min(0).max(1),
+        interceptProbability: z.number().min(0).max(1),
+        tileRef: z.number().int(),
+      })
+      .safeParse(req.body);
+    if (!parsed.success)
+      return res.status(400).json({ error: "Invalid listing" });
+
+    const { gameId, sellerId, routeRisk, interceptProbability, tileRef } =
+      parsed.data;
+    if (!intelListings.has(gameId)) intelListings.set(gameId, new Map());
+    intelListings
+      .get(gameId)!
+      .set(sellerId, { routeRisk, interceptProbability, tileRef });
+    return res.json({ ok: true });
+  });
+
+  // ── Spectator Crowd Prediction ───────────────────────────────────────────
+  // Per-game in-memory prediction tally: gameId → {intercept: n, delivery: n}
+  const crowdPredictions = new Map<
+    string,
+    { intercept: number; delivery: number }
+  >();
+
+  const crowdPredictRateLimit = rateLimit({ windowMs: 30_000, max: 3 });
+
+  app.post(
+    "/api/vaultfront/narrator/:gameId/predict",
+    crowdPredictRateLimit,
+    (req, res) => {
+      const gameId = req.params.gameId;
+      if (!gameId || gameId.length > 64)
+        return res.status(400).json({ error: "Invalid gameId" });
+
+      const parsed = z
+        .object({
+          outcome: z.enum(["intercept", "delivery"]),
+          persistentId: z.string().max(64).optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success)
+        return res.status(400).json({ error: "Invalid prediction" });
+
+      const tally = crowdPredictions.get(gameId) ?? {
+        intercept: 0,
+        delivery: 0,
+      };
+      tally[parsed.data.outcome]++;
+      crowdPredictions.set(gameId, tally);
+
+      const total = tally.intercept + tally.delivery;
+      const interceptPct =
+        total > 0 ? Math.round((tally.intercept / total) * 100) : 50;
+
+      // Broadcast updated tally to all narrator SSE subscribers for this game
+      narratorBus.broadcastRaw(gameId, {
+        type: "crowd_vote",
+        interceptPct,
+        deliveryPct: 100 - interceptPct,
+        total,
+      });
+
+      return res.json({
+        ok: true,
+        interceptPct,
+        deliveryPct: 100 - interceptPct,
+        total,
+      });
     },
   );
 

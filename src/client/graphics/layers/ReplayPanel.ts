@@ -32,6 +32,12 @@ export class ReplayPanel extends LitElement implements Layer {
   @property({ type: Boolean })
   isSingleplayer = false;
 
+  @property({ type: Number, attribute: "auto-highlight-tick" })
+  autoHighlightTick: number | null = null;
+
+  @property({ type: String, attribute: "highlight-share-url" })
+  highlightShareUrl = "";
+
   @state()
   private _clipState: "idle" | "copying" | "copied" | "error" = "idle";
 
@@ -152,6 +158,18 @@ export class ReplayPanel extends LitElement implements Layer {
               >
                 ${clipLabel}
               </button>
+              ${this.autoHighlightTick !== null && this.highlightShareUrl
+                ? html`
+                    <a
+                      href=${this.highlightShareUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="mt-1 w-full py-1 px-2 text-xs text-amber-200 bg-amber-600/30 border border-amber-500/40 rounded-sm cursor-pointer hover:bg-amber-600/50 transition-colors no-underline flex items-center justify-center gap-1"
+                    >
+                      ⚡ Best Moment
+                    </a>
+                  `
+                : null}
             `
           : null}
       </div>

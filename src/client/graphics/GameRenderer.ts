@@ -32,6 +32,7 @@ import { NukeTrajectoryPreviewLayer } from "./layers/NukeTrajectoryPreviewLayer"
 import { PerformanceOverlay } from "./layers/PerformanceOverlay";
 import { PlayerInfoOverlay } from "./layers/PlayerInfoOverlay";
 import { PlayerPanel } from "./layers/PlayerPanel";
+import { PlayStyleChip } from "./layers/PlayStyleChip";
 import { RailroadLayer } from "./layers/RailroadLayer";
 import { ReplayPanel } from "./layers/ReplayPanel";
 import { SAMRadiusLayer } from "./layers/SAMRadiusLayer";
@@ -188,6 +189,13 @@ export function createRenderer(
     coachHint.game = game;
   }
 
+  const playStyleChip = document.querySelector(
+    "play-style-chip",
+  ) as PlayStyleChip;
+  if (playStyleChip instanceof PlayStyleChip) {
+    playStyleChip.game = game;
+  }
+
   const narratorRep = new NarratorReporter();
   narratorRep.game = game;
   narratorRep.setGameId(game.gameID());
@@ -327,6 +335,7 @@ export function createRenderer(
     interceptCelebration,
     contractHud,
     coachHint,
+    playStyleChip,
     narratorRep,
     eventsDisplay,
     attacksDisplay,

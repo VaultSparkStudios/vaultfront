@@ -62,9 +62,50 @@ export class RankBadge extends LitElement {
   @property({ type: Boolean, attribute: "compact" }) compact = false;
   @property({ type: String, attribute: "dynasty-emblem" }) dynastyEmblem = "";
   @property({ type: String, attribute: "dynasty-tier" }) dynastyTier = "none";
+  @property({ type: Boolean, attribute: "decaying" }) decaying = false;
+  @property({ type: Array, attribute: "elo-history" }) eloHistory: number[] =
+    [];
 
   createRenderRoot() {
     return this;
+  }
+
+  private renderSparkline() {
+    const pts = this.eloHistory;
+    if (pts.length < 2) return null;
+    const W = 60;
+    const H = 18;
+    const minV = Math.min(...pts);
+    const maxV = Math.max(...pts);
+    const range = maxV - minV || 1;
+    const xStep = W / (pts.length - 1);
+    const coords = pts.map(
+      (v, i) =>
+        `${(i * xStep).toFixed(1)},${(H - ((v - minV) / range) * H).toFixed(1)}`,
+    );
+    const rising = pts[pts.length - 1] >= pts[0];
+    const stroke = rising ? "#4ade80" : "#f87171";
+    const label = rising ? "Climbing ▲" : "Dropping ▼";
+    const labelColor = rising ? "text-emerald-400" : "text-rose-400";
+    return html`
+      <span class="hidden group-hover:inline-flex items-center gap-1 ml-1">
+        <svg
+          width="${W}"
+          height="${H}"
+          viewBox="0 0 ${W} ${H}"
+          class="overflow-visible"
+        >
+          <polyline
+            points="${coords.join(" ")}"
+            fill="none"
+            stroke="${stroke}"
+            stroke-width="1.5"
+            stroke-linejoin="round"
+          />
+        </svg>
+        <span class="text-[10px] ${labelColor}">${label}</span>
+      </span>
+    `;
   }
 
   private get placementComplete() {
@@ -87,9 +128,13 @@ export class RankBadge extends LitElement {
     }
 
     const hasDynasty = this.dynastyTier !== "none" && this.dynastyEmblem !== "";
+    const decayClass = this.decaying
+      ? "outline outline-2 outline-orange-400 animate-pulse"
+      : "";
+    const decayTitle = this.decaying ? " · Rank Decaying — play to stop" : "";
 
     return html`
-      <span class="inline-flex items-center gap-1">
+      <span class="inline-flex items-center gap-1 group">
         ${hasDynasty
           ? html`<span
               class="text-xs"
@@ -98,13 +143,17 @@ export class RankBadge extends LitElement {
             >`
           : ""}
         <span
-          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-semibold ${colors.bg} ${colors.text} ${colors.border}"
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-semibold ${colors.bg} ${colors.text} ${colors.border} ${decayClass}"
           title="${this.label} — ${this.elo} Elo${hasDynasty
             ? ` · Dynasty ${this.dynastyTier}`
-            : ""}"
+            : ""}${decayTitle}"
         >
           ${icon} ${this.compact ? this.label : `${this.label} · ${this.elo}`}
+          ${this.decaying
+            ? html`<span class="text-orange-300 text-[10px]">↓</span>`
+            : ""}
         </span>
+        ${this.renderSparkline()}
       </span>
     `;
   }

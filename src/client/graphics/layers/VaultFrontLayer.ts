@@ -68,6 +68,20 @@ export class VaultFrontLayer implements Layer {
   private warchestShownAtTick = -1;
   private readonly warchestBannerTicks = 80;
 
+  // Mutator Vote Banner — shown once at tick 3000 for 30 ticks when vote is open
+  private readonly VOTE_BANNER_START_TICK = 3000;
+  private readonly VOTE_BANNER_DURATION_TICKS = 40;
+  private voteBannerShownAtTick = -1;
+  private voteBannerStandings: Array<{ name: string; votes: number }> = [];
+
+  // Intel Market tooltip — shown after buy_intel activity event
+  private intelTooltip: {
+    routeRisk: number;
+    interceptProbability: number;
+    shownAtTick: number;
+  } | null = null;
+  private readonly INTEL_TOOLTIP_TICKS = 120; // 12s
+
   constructor(
     private game: GameView,
     private transform: TransformHandler,
@@ -200,6 +214,27 @@ export class VaultFrontLayer implements Layer {
         this.prevChainExpiresAtTick = chainState?.expiresAtTick ?? 0;
       }
     }
+
+    // Fetch vote standings once at tick 3000 if not already fetched
+    if (now === this.VOTE_BANNER_START_TICK && this.voteBannerShownAtTick < 0) {
+      void this.fetchVoteStandings(now);
+    }
+  }
+
+  private async fetchVoteStandings(atTick: number): Promise<void> {
+    try {
+      const res = await fetch("/api/season/current");
+      if (!res.ok) return;
+      const data = (await res.json()) as {
+        voteStandings?: Array<{ name: string; votes: number }>;
+      };
+      if (data.voteStandings && data.voteStandings.length > 0) {
+        this.voteBannerStandings = data.voteStandings;
+        this.voteBannerShownAtTick = atTick;
+      }
+    } catch {
+      // ignore — non-critical
+    }
   }
 
   renderLayer(ctx: CanvasRenderingContext2D): void {
@@ -207,6 +242,7 @@ export class VaultFrontLayer implements Layer {
       return;
     }
 
+    // Non-banner draws always run (no conflict)
     this.drawSurgeOverlays(ctx);
     this.drawConvoys(ctx);
     this.drawVaultSites(ctx);
@@ -215,13 +251,114 @@ export class VaultFrontLayer implements Layer {
     this.drawSquadObjectiveRings(ctx);
     this.drawExecutionChainHUD(ctx);
     this.drawSurgeHUD(ctx);
-    this.drawSurgeChronicle(ctx);
-    this.drawLastStandBanner(ctx);
-    this.drawMutatorBanner(ctx);
-    this.drawWorldEventBanner(ctx);
-    this.drawHeistAlert(ctx);
+
+    // Banner slot: only the highest-priority active banner renders.
+    // Priority: LAST_STAND > HEIST > SURGE_CHRONICLE > WARCHEST > WORLD_EVENT > BOUNTY > MUTATOR
+    this.drawBannerSlot(ctx);
+
+    // Intel market tooltip
+    this.drawIntelTooltip(ctx);
+  }
+
+  /** Renders only the highest-priority active full-screen banner. */
+  private drawBannerSlot(ctx: CanvasRenderingContext2D): void {
+    const now = this.game.ticks();
+
+    if (
+      this.lastStandActivatedAtTick >= 0 &&
+      now - this.lastStandActivatedAtTick < this.lastStandBannerTicks
+    ) {
+      this.drawLastStandBanner(ctx);
+      return;
+    }
+    if (
+      this.heistAlertTick >= 0 &&
+      now - this.heistAlertTick < this.heistAlertTicks
+    ) {
+      this.drawHeistAlert(ctx);
+      return;
+    }
+    if (
+      this.surgeChronicleEntryTick >= 0 &&
+      now - this.surgeChronicleEntryTick < this.surgeChronicleFlashTicks
+    ) {
+      this.drawSurgeChronicle(ctx);
+      return;
+    }
+    if (
+      this.warchestShownAtTick >= 0 &&
+      now - this.warchestShownAtTick < this.warchestBannerTicks
+    ) {
+      this.drawWarchestBanner(ctx);
+      return;
+    }
+    if (this.activeWorldEvent !== null) {
+      this.drawWorldEventBanner(ctx);
+      return;
+    }
+    if (
+      this.voteBannerShownAtTick >= 0 &&
+      now - this.voteBannerShownAtTick < this.VOTE_BANNER_DURATION_TICKS &&
+      this.voteBannerStandings.length > 0
+    ) {
+      this.drawVoteStandingsBanner(ctx);
+      return;
+    }
+    // Bounty board and mutator banner are persistent; they both render if no higher-priority banner active
     this.drawBountyBoard(ctx);
-    this.drawWarchestBanner(ctx);
+    this.drawMutatorBanner(ctx);
+  }
+
+  private drawVoteStandingsBanner(ctx: CanvasRenderingContext2D): void {
+    const cw = ctx.canvas.width;
+    const ch = ctx.canvas.height;
+    const bw = Math.min(340, cw * 0.6);
+    const bh = 72;
+    const bx = (cw - bw) / 2;
+    const by = ch - bh - 48;
+
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = "rgba(15, 23, 42, 0.92)";
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bw, bh, 8);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(99, 102, 241, 0.6)";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    ctx.fillStyle = "#818cf8";
+    ctx.font = `bold 10px sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText("🗳  Community Vote — Next Mutator", cw / 2, by + 16);
+
+    const standings = this.voteBannerStandings.slice(0, 3);
+    const totalVotes = Math.max(
+      1,
+      standings.reduce((s, x) => s + x.votes, 0),
+    );
+    const cols = standings.length;
+    const colW = bw / cols;
+
+    standings.forEach((s, i) => {
+      const cx = bx + colW * i + colW / 2;
+      const pct = Math.round((s.votes / totalVotes) * 100);
+      ctx.fillStyle = "#e2e8f0";
+      ctx.font = `bold 11px sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText(s.name, cx, by + 36);
+      ctx.fillStyle = "#94a3b8";
+      ctx.font = `9px sans-serif`;
+      ctx.fillText(`${pct}%`, cx, by + 50);
+    });
+
+    ctx.fillStyle = "#475569";
+    ctx.font = `8px sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText("discord.gg/vaultfront to vote", cw / 2, by + 66);
+
+    ctx.restore();
   }
 
   private prefersReducedMotion(): boolean {
@@ -1736,5 +1873,62 @@ export class VaultFrontLayer implements Layer {
 
   private fontSize(): number {
     return Math.max(10, Math.min(18, this.transform.scale * 4.4));
+  }
+
+  /** Called by external code (e.g. Api response handler) to show an intel result. */
+  showIntelTooltip(routeRisk: number, interceptProbability: number): void {
+    this.intelTooltip = {
+      routeRisk,
+      interceptProbability,
+      shownAtTick: this.game.ticks(),
+    };
+  }
+
+  private drawIntelTooltip(ctx: CanvasRenderingContext2D): void {
+    if (!this.intelTooltip) return;
+    const age = this.game.ticks() - this.intelTooltip.shownAtTick;
+    if (age >= this.INTEL_TOOLTIP_TICKS) {
+      this.intelTooltip = null;
+      return;
+    }
+    const alpha = age < 10 ? age / 10 : age > 100 ? (120 - age) / 20 : 1;
+    const { routeRisk, interceptProbability } = this.intelTooltip;
+    const riskPct = Math.round(routeRisk * 100);
+    const interceptPct = Math.round(interceptProbability * 100);
+    const riskColor =
+      routeRisk > 0.6 ? "#f87171" : routeRisk > 0.35 ? "#fbbf24" : "#4ade80";
+
+    const cw = ctx.canvas.width;
+    const bw = 220;
+    const bh = 60;
+    const bx = cw - bw - 16;
+    const by = 80;
+
+    ctx.save();
+    ctx.globalAlpha = alpha * 0.92;
+    ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
+    ctx.strokeStyle = "rgba(99, 102, 241, 0.6)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bw, bh, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.globalAlpha = alpha;
+    ctx.font = "bold 11px sans-serif";
+    ctx.fillStyle = "#a5b4fc";
+    ctx.fillText("Route Intel", bx + 10, by + 18);
+
+    ctx.font = "12px sans-serif";
+    ctx.fillStyle = "#e2e8f0";
+    ctx.fillText(`Route Risk: `, bx + 10, by + 36);
+    ctx.fillStyle = riskColor;
+    ctx.fillText(`${riskPct}%`, bx + 90, by + 36);
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.fillText(`Intercept: `, bx + 10, by + 52);
+    ctx.fillStyle = riskColor;
+    ctx.fillText(`${interceptPct}%`, bx + 80, by + 52);
+    ctx.restore();
   }
 }

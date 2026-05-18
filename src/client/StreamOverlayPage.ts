@@ -18,6 +18,8 @@ interface OverlayState {
   tick: number;
   playerCount: number;
   mapName: string;
+  crowdInterceptPct: number | null;
+  crowdTotal: number;
 }
 
 @customElement("stream-overlay-page")
@@ -29,6 +31,8 @@ export class StreamOverlayPage extends LitElement {
     tick: 0,
     playerCount: 0,
     mapName: "",
+    crowdInterceptPct: null,
+    crowdTotal: 0,
   };
 
   @state() private gameId = "";
@@ -68,11 +72,19 @@ export class StreamOverlayPage extends LitElement {
           tick?: number;
           playerCount?: number;
           mapName?: string;
+          interceptPct?: number;
+          total?: number;
         };
         if (msg.type === "connected") {
           this.overlay = { ...this.overlay, connected: true };
         } else if (msg.type === "commentary" && msg.commentary) {
           this.showCommentary(msg.commentary);
+        } else if (msg.type === "crowd_vote") {
+          this.overlay = {
+            ...this.overlay,
+            crowdInterceptPct: msg.interceptPct ?? null,
+            crowdTotal: msg.total ?? 0,
+          };
         } else if (msg.type === "snapshot") {
           this.overlay = {
             ...this.overlay,
@@ -169,6 +181,31 @@ export class StreamOverlayPage extends LitElement {
           color: ${o.connected ? "#34d399" : "#f87171"};
           white-space: nowrap;
         }
+        .vf-crowd {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          min-width: 120px;
+        }
+        .vf-crowd-label {
+          font-size: 10px;
+          color: rgba(255, 255, 255, 0.55);
+        }
+        .vf-crowd-bar {
+          height: 6px;
+          border-radius: 3px;
+          background: rgba(255, 255, 255, 0.12);
+          overflow: hidden;
+          display: flex;
+        }
+        .vf-crowd-intercept {
+          background: #ef4444;
+          transition: width 0.4s ease;
+        }
+        .vf-crowd-delivery {
+          background: #22c55e;
+          transition: width 0.4s ease;
+        }
       </style>
       <div class="vf-overlay">
         <div class="vf-logo">⚡ VaultFront</div>
@@ -184,6 +221,26 @@ export class StreamOverlayPage extends LitElement {
           ${o.commentary ||
           (o.activity ? `🎯 ${o.activity}` : "Waiting for action…")}
         </div>
+        ${o.crowdInterceptPct !== null
+          ? html`
+              <div class="vf-divider"></div>
+              <div class="vf-crowd">
+                <div class="vf-crowd-label">
+                  Crowd: ${o.crowdInterceptPct}% intercept (${o.crowdTotal})
+                </div>
+                <div class="vf-crowd-bar">
+                  <div
+                    class="vf-crowd-intercept"
+                    style="width:${o.crowdInterceptPct}%"
+                  ></div>
+                  <div
+                    class="vf-crowd-delivery"
+                    style="width:${100 - o.crowdInterceptPct}%"
+                  ></div>
+                </div>
+              </div>
+            `
+          : ""}
         <div class="vf-status">${o.connected ? "● LIVE" : "○ Connecting"}</div>
       </div>
     `;
