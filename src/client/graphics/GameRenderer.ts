@@ -19,6 +19,7 @@ import { GameRightSidebar } from "./layers/GameRightSidebar";
 import { HeadsUpMessage } from "./layers/HeadsUpMessage";
 import { ImmunityTimer } from "./layers/ImmunityTimer";
 import { InGameHeaderAd } from "./layers/InGameHeaderAd";
+import { InterceptCelebration } from "./layers/InterceptCelebration";
 import { Layer } from "./layers/Layer";
 import { Leaderboard } from "./layers/Leaderboard";
 import { MainRadialMenu } from "./layers/MainRadialMenu";
@@ -163,6 +164,13 @@ export function createRenderer(
   winModal.eventBus = eventBus;
   winModal.game = game;
 
+  const interceptCelebration = document.querySelector(
+    "intercept-celebration",
+  ) as InterceptCelebration;
+  if (interceptCelebration instanceof InterceptCelebration) {
+    interceptCelebration.game = game;
+  }
+
   const replayPanel = document.querySelector("replay-panel") as ReplayPanel;
   if (!(replayPanel instanceof ReplayPanel)) {
     console.error("replay panel not found");
@@ -295,6 +303,7 @@ export function createRenderer(
     new DynamicUILayer(game, transformHandler, eventBus),
     new VaultFrontLayer(game, transformHandler),
     new NameLayer(game, transformHandler, eventBus),
+    interceptCelebration,
     eventsDisplay,
     attacksDisplay,
     chatDisplay,
