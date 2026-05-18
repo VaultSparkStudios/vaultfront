@@ -32,16 +32,26 @@ import { logger } from "./Logger";
 import { playerStatsStore } from "./PlayerStatsStore";
 
 import { GameEnv } from "../core/configuration/Config";
+import { achievementStore } from "./AchievementStore";
 import { antiCheatMonitor } from "./AntiCheatMonitor";
 import { clanStore } from "./ClanStore";
+import { clanWarStore } from "./ClanWarStore";
 import { pool } from "./db/pool";
+import { fortuneDeck } from "./FortuneDeck";
 import { MapPlaylist } from "./MapPlaylist";
 import { narratorBus, type NarratorPersona } from "./NarratorBus";
+import {
+  styleHistory,
+  type MatchHistoryEntry,
+  type PlayStyle,
+} from "./PlayerStatsStore";
 import { startPolling } from "./PollingLoop";
+import { predictionLeagueStore } from "./PredictionLeagueStore";
 import { PrivilegeRefresher } from "./PrivilegeRefresher";
 import { rematchStore } from "./RematchStore";
 import { replayHighlightStore } from "./ReplayHighlightStore";
 import { replayStore } from "./ReplayStore";
+import { seasonMilestoneStore } from "./SeasonMilestoneStore";
 import { streamingBus } from "./StreamingBus";
 import { tournamentStore } from "./TournamentStore";
 import { verifyTurnstileToken } from "./Turnstile";
@@ -2268,6 +2278,269 @@ export async function startWorker() {
     },
   );
 
+  // ── Pre-Match Intelligence Brief ─────────────────────────────────────────
+  const prematchBriefRateLimit = rateLimit({ windowMs: 30_000, max: 3 });
+  const PREMATCH_BRIEF_SYSTEM_PROMPT =
+    "You are a VaultFront tactical analyst. Generate a 2-sentence personalized pre-match brief for the player. Be specific: reference the map, the player's style, and their recent streak. Tone: confident, strategic. Maximum 180 characters total.";
+
+  app.get(
+    "/api/vaultfront/prematch-brief",
+    prematchBriefRateLimit,
+    async (req, res) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return res.status(503).json({ error: "Brief service unavailable" });
+      }
+      const persistentId = String(req.query.persistentId ?? "").slice(0, 64);
+      const mapName = String(req.query.mapName ?? "Unknown Map").slice(0, 64);
+      if (!persistentId) {
+        return res.status(400).json({ error: "Missing persistentId" });
+      }
+      const history = await playerStatsStore
+        .getHistory(persistentId, 5)
+        .catch(() => []);
+      const wins = history.filter((h: MatchHistoryEntry) => h.won).length;
+      const streak =
+        wins >= 4
+          ? "4-5 win streak"
+          : wins >= 3
+            ? "winning"
+            : wins <= 1
+              ? "losing streak"
+              : "mixed";
+      const style = String(req.query.style ?? "mixed").slice(0, 32);
+      const briefKey = `prematch:${style}:${mapName.slice(0, 12)}:${streak}`;
+      const cached = aiCacheGet(briefKey);
+      if (cached) return res.json({ ...cached, cached: true });
+      try {
+        const msg = await anthropic.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 120,
+          system: [
+            {
+              type: "text",
+              text: PREMATCH_BRIEF_SYSTEM_PROMPT,
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          messages: [
+            {
+              role: "user",
+              content: `Style: ${style}. Map: ${mapName}. Recent form: ${streak}. Last 5 results: ${wins}/5 wins.`,
+            },
+          ],
+        });
+        const brief =
+          (msg.content[0] as { type: string; text: string }).text?.trim() ?? "";
+        const result = { ok: true, brief };
+        aiCacheSet(briefKey, result);
+        return res.json(result);
+      } catch (err) {
+        logger.error("prematch-brief failed", err);
+        return res.status(500).json({ error: "Brief generation failed" });
+      }
+    },
+  );
+
+  // ── AI Sports-Journalism Match Recap ─────────────────────────────────────
+  const recapRateLimit = rateLimit({ windowMs: 60_000, max: 5 });
+  const RECAP_SYSTEM_PROMPT =
+    "You are a sports journalist covering VaultFront, a browser real-time strategy game. Write a 3-sentence dramatic match recap that reads like ESPN coverage. Reference the actual winner, key events, and what made this match special. Tone: exciting, specific, human. No bullet points.";
+  const matchRecapCache = new Map<string, string>();
+
+  app.get(
+    "/api/vaultfront/match-recap/:gameId",
+    recapRateLimit,
+    async (req, res) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return res.status(503).json({ error: "Recap service unavailable" });
+      }
+      const gameId = req.params.gameId?.slice(0, 64) ?? "";
+      if (!gameId) return res.status(400).json({ error: "Missing gameId" });
+      const cached = matchRecapCache.get(gameId);
+      if (cached) return res.json({ ok: true, recap: cached, cached: true });
+      const winner = String(req.query.winner ?? "unknown").slice(0, 32);
+      const events = String(req.query.events ?? "").slice(0, 256);
+      const durationMin = Math.round(
+        parseInt(String(req.query.durationSec ?? "0")) / 60,
+      );
+      try {
+        const msg = await anthropic.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 160,
+          system: [
+            {
+              type: "text",
+              text: RECAP_SYSTEM_PROMPT,
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          messages: [
+            {
+              role: "user",
+              content: `Winner: ${winner}. Duration: ${durationMin}min. Key events: ${events || "intercept, convoy delivery, surge activation"}.`,
+            },
+          ],
+        });
+        const recap =
+          (msg.content[0] as { type: string; text: string }).text?.trim() ?? "";
+        if (recap) matchRecapCache.set(gameId, recap);
+        if (matchRecapCache.size > 200) {
+          const firstKey = matchRecapCache.keys().next().value;
+          if (firstKey) matchRecapCache.delete(firstKey);
+        }
+        return res.json({ ok: true, recap });
+      } catch (err) {
+        logger.error("match-recap failed", err);
+        return res.status(500).json({ error: "Recap generation failed" });
+      }
+    },
+  );
+
+  // ── Post-Match AI Coach Debrief ───────────────────────────────────────────
+  const coachDebriefRateLimit = rateLimit({ windowMs: 60_000, max: 3 });
+  const COACH_DEBRIEF_SYSTEM_PROMPT =
+    "You are a VaultFront strategic coach analyzing a player's key decision moments. Identify 2-3 specific decision points where a different choice would have changed the outcome. For each: state the tick/moment, what happened, what the optimal play was, and why. Be specific, direct, and constructive. Format as a JSON array: [{tick, decision, optimal, why}].";
+  const coachDebriefCache = new Map<string, object[]>();
+
+  app.post(
+    "/api/vaultfront/coach-debrief",
+    coachDebriefRateLimit,
+    async (req, res) => {
+      if (!process.env.ANTHROPIC_API_KEY) {
+        return res.status(503).json({ error: "Coach debrief unavailable" });
+      }
+      const parsed = z
+        .object({
+          persistentId: z.string().max(64),
+          gameId: z.string().max(64),
+          activityLog: z
+            .array(
+              z.object({
+                type: z.string().max(64),
+                tick: z.number().int().min(0),
+                detail: z.string().max(128).optional(),
+              }),
+            )
+            .max(20)
+            .default([]),
+          matchStats: z
+            .object({
+              won: z.boolean(),
+              vaultCaptures: z.number().int().min(0).default(0),
+              convoyDeliveries: z.number().int().min(0).default(0),
+              style: z.string().max(32).optional(),
+            })
+            .optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success)
+        return res.status(400).json({ error: "Invalid request" });
+      const { persistentId, gameId, activityLog, matchStats } = parsed.data;
+      const cacheKey = `${gameId}:${persistentId}`;
+      const cached = coachDebriefCache.get(cacheKey);
+      if (cached) return res.json({ ok: true, moments: cached, cached: true });
+      const logText = activityLog
+        .slice(0, 10)
+        .map(
+          (e) => `[tick ${e.tick}] ${e.type}${e.detail ? `: ${e.detail}` : ""}`,
+        )
+        .join("; ");
+      const statsText = matchStats
+        ? `Result: ${matchStats.won ? "WIN" : "LOSS"}. Vaults: ${matchStats.vaultCaptures}. Convoys: ${matchStats.convoyDeliveries}. Style: ${matchStats.style ?? "mixed"}.`
+        : "";
+      try {
+        const msg = await anthropic.messages.create({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 400,
+          system: [
+            {
+              type: "text",
+              text: COACH_DEBRIEF_SYSTEM_PROMPT,
+              cache_control: { type: "ephemeral" },
+            },
+          ],
+          messages: [
+            { role: "user", content: `${statsText} Activity: ${logText}` },
+          ],
+        });
+        const raw =
+          (msg.content[0] as { type: string; text: string }).text?.trim() ??
+          "[]";
+        let moments: object[] = [];
+        try {
+          moments = JSON.parse(raw);
+        } catch {
+          moments = [];
+        }
+        if (!Array.isArray(moments)) moments = [];
+        coachDebriefCache.set(cacheKey, moments);
+        if (coachDebriefCache.size > 500) {
+          const firstKey = coachDebriefCache.keys().next().value;
+          if (firstKey) coachDebriefCache.delete(firstKey);
+        }
+        return res.json({ ok: true, moments });
+      } catch (err) {
+        logger.error("coach-debrief failed", err);
+        return res.status(500).json({ error: "Coach debrief failed" });
+      }
+    },
+  );
+
+  // ── Match Quality Rating ──────────────────────────────────────────────────
+  interface MatchRating {
+    gameId: string;
+    persistentId: string;
+    matchRating: number;
+    mapRating: number;
+    mapName: string;
+    comment?: string;
+    createdAt: number;
+  }
+  const matchRatings: MatchRating[] = [];
+
+  app.post("/api/vaultfront/match-rating", async (req, res) => {
+    const parsed = z
+      .object({
+        gameId: z.string().max(64),
+        persistentId: z.string().max(64),
+        matchRating: z.number().int().min(1).max(5),
+        mapRating: z.number().int().min(1).max(5),
+        mapName: z.string().max(64).default("unknown"),
+        comment: z.string().max(200).optional(),
+      })
+      .safeParse(req.body);
+    if (!parsed.success)
+      return res.status(400).json({ error: "Invalid rating" });
+    matchRatings.push({ ...parsed.data, createdAt: Date.now() });
+    if (matchRatings.length > 2000) matchRatings.shift();
+    return res.json({ ok: true });
+  });
+
+  app.get("/api/admin/match-ratings", (req, res) => {
+    const since = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    const recent = matchRatings.filter((r) => r.createdAt > since);
+    const byMap = new Map<
+      string,
+      { sum: number; count: number; matchSum: number }
+    >();
+    for (const r of recent) {
+      const e = byMap.get(r.mapName) ?? { sum: 0, count: 0, matchSum: 0 };
+      e.sum += r.mapRating;
+      e.matchSum += r.matchRating;
+      e.count++;
+      byMap.set(r.mapName, e);
+    }
+    const maps = [...byMap.entries()]
+      .map(([name, s]) => ({
+        mapName: name,
+        avgMapRating: Math.round((s.sum / s.count) * 10) / 10,
+        avgMatchRating: Math.round((s.matchSum / s.count) * 10) / 10,
+        ratingCount: s.count,
+      }))
+      .sort((a, b) => b.avgMapRating - a.avgMapRating);
+    return res.json({ ok: true, totalRatings: recent.length, maps });
+  });
+
   // ── Streaming Overlay API ────────────────────────────────────────────────
   // Streamers add this as an OBS browser source (transparent, 1280×200):
   //   https://your-server/api/stream/:gameId/overlay
@@ -2282,6 +2555,243 @@ export async function startWorker() {
     res.flushHeaders();
     streamingBus.subscribe(gameId, res);
   });
+
+  // ── Achievement Profile + Meta-Chains API ────────────────────────────────
+  app.get("/api/vaultfront/achievements/:persistentId", async (req, res) => {
+    const persistentId = String(req.params.persistentId ?? "").slice(0, 64);
+    if (!persistentId)
+      return res.status(400).json({ error: "Missing persistentId" });
+    const progress = achievementStore.getProgress(persistentId);
+    const metaChains = achievementStore.getMetaChainProgress(persistentId);
+    return res.json({ ok: true, achievements: progress, metaChains });
+  });
+
+  app.get(
+    "/api/vaultfront/achievements/meta-chains/:persistentId",
+    async (req, res) => {
+      const persistentId = String(req.params.persistentId ?? "").slice(0, 64);
+      if (!persistentId)
+        return res.status(400).json({ error: "Missing persistentId" });
+      return res.json({
+        ok: true,
+        metaChains: achievementStore.getMetaChainProgress(persistentId),
+      });
+    },
+  );
+
+  // ── Play-Style Career Arc API ─────────────────────────────────────────────
+  app.post("/api/vaultfront/style-history", async (req, res) => {
+    const parsed = z
+      .object({
+        persistentId: z.string().max(64),
+        matchId: z.string().max(64),
+        style: z.enum([
+          "Iron Fist",
+          "Convoy Lord",
+          "Shadow Broker",
+          "Balanced",
+        ]),
+      })
+      .safeParse(req.body);
+    if (!parsed.success)
+      return res.status(400).json({ error: "Invalid request" });
+    styleHistory.record(
+      parsed.data.persistentId,
+      parsed.data.matchId,
+      parsed.data.style as PlayStyle,
+    );
+    return res.json({ ok: true });
+  });
+
+  app.get("/api/vaultfront/style-history/:persistentId", (req, res) => {
+    const persistentId = String(req.params.persistentId ?? "").slice(0, 64);
+    if (!persistentId)
+      return res.status(400).json({ error: "Missing persistentId" });
+    const history = styleHistory.get(persistentId);
+    const trend = styleHistory.getTrend(persistentId);
+    return res.json({ ok: true, history, trend });
+  });
+
+  // ── Vault Fortune Post-Win Draw ───────────────────────────────────────────
+  const fortuneRateLimit = rateLimit({ windowMs: 60_000, max: 5 });
+
+  app.post("/api/vaultfront/win-fortune", fortuneRateLimit, (req, res) => {
+    const parsed = z
+      .object({
+        persistentId: z.string().max(64),
+        matchId: z.string().max(64),
+      })
+      .safeParse(req.body);
+    if (!parsed.success)
+      return res.status(400).json({ error: "Invalid request" });
+    const { item, alreadyOwned } = fortuneDeck.draw(
+      parsed.data.persistentId,
+      parsed.data.matchId,
+    );
+    return res.json({ ok: true, item, alreadyOwned });
+  });
+
+  // ── Spectator Prediction League ───────────────────────────────────────────
+  const predictionLeagueRateLimit = rateLimit({ windowMs: 30_000, max: 3 });
+
+  app.post(
+    "/api/vaultfront/prediction-league/predict",
+    predictionLeagueRateLimit,
+    (req, res) => {
+      const parsed = z
+        .object({
+          gameId: z.string().max(64),
+          spectatorId: z.string().max(64),
+          outcome: z.enum(["intercept", "delivery"]),
+        })
+        .safeParse(req.body);
+      if (!parsed.success)
+        return res.status(400).json({ error: "Invalid request" });
+      predictionLeagueStore.recordPrediction(
+        parsed.data.gameId,
+        parsed.data.spectatorId,
+        parsed.data.outcome,
+      );
+      return res.json({ ok: true });
+    },
+  );
+
+  app.get("/api/vaultfront/prediction-league/leaderboard", (req, res) => {
+    const weekOnly = req.query.week === "1";
+    const limit = Math.min(50, parseInt(String(req.query.limit ?? "10")));
+    return res.json({
+      ok: true,
+      leaderboard: predictionLeagueStore.getLeaderboard(limit, weekOnly),
+    });
+  });
+
+  app.get(
+    "/api/vaultfront/prediction-league/stats/:spectatorId",
+    (req, res) => {
+      const spectatorId = String(req.params.spectatorId ?? "").slice(0, 64);
+      const stats = predictionLeagueStore.getSpectatorStats(spectatorId);
+      if (!stats) return res.json({ ok: true, stats: null });
+      return res.json({ ok: true, stats });
+    },
+  );
+
+  // ── Clan War Scheduler ────────────────────────────────────────────────────
+  const clanWarRateLimit = rateLimit({ windowMs: 60_000, max: 10 });
+
+  app.post(
+    "/api/vaultfront/clan-war/challenge",
+    clanWarRateLimit,
+    async (req, res) => {
+      const parsed = z
+        .object({
+          challengerClanId: z.string().max(64),
+          targetClanId: z.string().max(64),
+          proposedAt: z
+            .number()
+            .int()
+            .min(Date.now() - 60_000), // not too far in past
+          mapName: z.string().max(64).optional(),
+          notes: z.string().max(200).optional(),
+          seriesFormat: z.enum(["bo3", "bo1"]).optional(),
+        })
+        .safeParse(req.body);
+      if (!parsed.success)
+        return res.status(400).json({ error: "Invalid request" });
+      const war = clanWarStore.challenge(parsed.data);
+      return res.json({ ok: true, war });
+    },
+  );
+
+  app.post(
+    "/api/vaultfront/clan-war/accept",
+    clanWarRateLimit,
+    async (req, res) => {
+      const parsed = z
+        .object({
+          warId: z.string().max(32),
+          byPersistentId: z.string().max(64),
+        })
+        .safeParse(req.body);
+      if (!parsed.success)
+        return res.status(400).json({ error: "Invalid request" });
+      const war = clanWarStore.accept(
+        parsed.data.warId,
+        parsed.data.byPersistentId,
+      );
+      if (!war)
+        return res
+          .status(404)
+          .json({ error: "War not found or already accepted" });
+      return res.json({ ok: true, war });
+    },
+  );
+
+  app.post(
+    "/api/vaultfront/clan-war/decline",
+    clanWarRateLimit,
+    async (req, res) => {
+      const parsed = z
+        .object({ warId: z.string().max(32) })
+        .safeParse(req.body);
+      if (!parsed.success)
+        return res.status(400).json({ error: "Invalid request" });
+      const war = clanWarStore.decline(parsed.data.warId);
+      if (!war) return res.status(404).json({ error: "War not found" });
+      return res.json({ ok: true, war });
+    },
+  );
+
+  app.get("/api/vaultfront/clan-war/upcoming", (req, res) => {
+    return res.json({ ok: true, wars: clanWarStore.getUpcoming() });
+  });
+
+  app.get("/api/vaultfront/clan-war/:clanId", (req, res) => {
+    const clanId = String(req.params.clanId ?? "").slice(0, 64);
+    return res.json({ ok: true, wars: clanWarStore.getForClan(clanId) });
+  });
+
+  // ── Season Pass Progression ───────────────────────────────────────────────
+  const seasonProgressRateLimit = rateLimit({ windowMs: 60_000, max: 20 });
+
+  app.get(
+    "/api/vaultfront/season-progress/:persistentId",
+    seasonProgressRateLimit,
+    async (req, res) => {
+      const persistentId = String(req.params.persistentId ?? "").slice(0, 64);
+      if (!persistentId)
+        return res.status(400).json({ error: "Missing persistentId" });
+      const season = vaultSeasonScheduler.getStatus();
+      const seasonId = `week-${season.weekNumber}`;
+      const milestones = seasonMilestoneStore.getProgress(
+        persistentId,
+        seasonId,
+      );
+      return res.json({ ok: true, seasonId, milestones });
+    },
+  );
+
+  app.post(
+    "/api/vaultfront/season-progress/claim",
+    seasonProgressRateLimit,
+    async (req, res) => {
+      const parsed = z
+        .object({
+          persistentId: z.string().max(64),
+          milestoneId: z.string().max(16),
+        })
+        .safeParse(req.body);
+      if (!parsed.success)
+        return res.status(400).json({ error: "Invalid request" });
+      const season = vaultSeasonScheduler.getStatus();
+      const seasonId = `week-${season.weekNumber}`;
+      const claimed = seasonMilestoneStore.claim(
+        parsed.data.persistentId,
+        seasonId,
+        parsed.data.milestoneId,
+      );
+      return res.json({ ok: true, claimed });
+    },
+  );
 
   // ── Player Stats / Leaderboard API ───────────────────────────────────────
   const statsRateLimit = rateLimit({

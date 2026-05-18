@@ -1293,3 +1293,279 @@ export async function fetchMicroHint(params: {
     return null;
   }
 }
+
+// ── Session 5 API functions ────────────────────────────────────────────────
+
+export type PlayStyle =
+  | "Iron Fist"
+  | "Convoy Lord"
+  | "Shadow Broker"
+  | "Balanced";
+
+export interface AchievementProgress {
+  id: string;
+  unlockedAt: number | null;
+  progress: number;
+  progressLabel: string;
+}
+
+export interface MetaChainProgress {
+  id: string;
+  name: string;
+  description: string;
+  reward: { badge: string; title: string };
+  requires: string[];
+  completedRequires: string[];
+  unlocked: boolean;
+  unlockedAt: number | null;
+}
+
+export interface FortuneItem {
+  id: string;
+  name: string;
+  description: string;
+  type: "title" | "badge" | "emoji";
+  rarity: "common" | "rare" | "legendary";
+  value: string;
+}
+
+export interface StyleEntry {
+  matchId: string;
+  style: PlayStyle;
+  timestamp: number;
+}
+
+export interface SeasonMilestoneProgress {
+  milestone: {
+    id: string;
+    tier: number;
+    title: string;
+    description: string;
+    metric: string;
+    target: number;
+    reward: { type: string; value: string };
+  };
+  progress: number;
+  target: number;
+  pct: number;
+  unlocked: boolean;
+  claimed: boolean;
+}
+
+export async function fetchAchievements(persistentId: string): Promise<{
+  achievements: AchievementProgress[];
+  metaChains: MetaChainProgress[];
+} | null> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/vaultfront/achievements/${encodeURIComponent(persistentId)}`,
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as {
+      achievements: AchievementProgress[];
+      metaChains: MetaChainProgress[];
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchStyleHistory(persistentId: string): Promise<{
+  history: StyleEntry[];
+  trend: { style: PlayStyle; count: number } | null;
+} | null> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/vaultfront/style-history/${encodeURIComponent(persistentId)}`,
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as {
+      history: StyleEntry[];
+      trend: { style: PlayStyle; count: number } | null;
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function postStyleHistory(
+  persistentId: string,
+  matchId: string,
+  style: PlayStyle,
+): Promise<void> {
+  fetch(`${getApiBase()}/api/vaultfront/style-history`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ persistentId, matchId, style }),
+  }).catch(() => undefined);
+}
+
+export async function fetchWinFortune(
+  persistentId: string,
+  matchId: string,
+): Promise<{ item: FortuneItem; alreadyOwned: boolean } | null> {
+  try {
+    const res = await fetch(`${getApiBase()}/api/vaultfront/win-fortune`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ persistentId, matchId }),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as { item: FortuneItem; alreadyOwned: boolean };
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchPrematchBrief(
+  persistentId: string,
+  mapName: string,
+  style?: PlayStyle,
+): Promise<string | null> {
+  try {
+    const url = new URL(`${getApiBase()}/api/vaultfront/prematch-brief`);
+    url.searchParams.set("persistentId", persistentId);
+    url.searchParams.set("mapName", mapName);
+    if (style) url.searchParams.set("style", style);
+    const res = await fetch(url.toString());
+    if (!res.ok) return null;
+    const data = (await res.json()) as { brief?: string };
+    return data.brief ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchMatchRecap(
+  gameId: string,
+  winner: string,
+  events: string,
+  durationSec: number,
+): Promise<string | null> {
+  try {
+    const url = new URL(
+      `${getApiBase()}/api/vaultfront/match-recap/${encodeURIComponent(gameId)}`,
+    );
+    url.searchParams.set("winner", winner);
+    url.searchParams.set("events", events);
+    url.searchParams.set("durationSec", String(durationSec));
+    const res = await fetch(url.toString());
+    if (!res.ok) return null;
+    const data = (await res.json()) as { recap?: string };
+    return data.recap ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export interface CoachDebriefMoment {
+  tick: number;
+  decision: string;
+  optimal: string;
+  why: string;
+}
+
+export async function fetchCoachDebrief(params: {
+  persistentId: string;
+  gameId: string;
+  activityLog?: Array<{ type: string; tick: number; detail?: string }>;
+  matchStats?: {
+    won: boolean;
+    vaultCaptures?: number;
+    convoyDeliveries?: number;
+    style?: string;
+  };
+}): Promise<CoachDebriefMoment[] | null> {
+  try {
+    const res = await fetch(`${getApiBase()}/api/vaultfront/coach-debrief`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(params),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { moments?: CoachDebriefMoment[] };
+    return data.moments ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function postMatchRating(params: {
+  gameId: string;
+  persistentId: string;
+  matchRating: number;
+  mapRating: number;
+  mapName: string;
+  comment?: string;
+}): Promise<void> {
+  fetch(`${getApiBase()}/api/vaultfront/match-rating`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  }).catch(() => undefined);
+}
+
+export async function fetchSeasonProgress(persistentId: string): Promise<{
+  seasonId: string;
+  milestones: SeasonMilestoneProgress[];
+} | null> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/vaultfront/season-progress/${encodeURIComponent(persistentId)}`,
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as {
+      seasonId: string;
+      milestones: SeasonMilestoneProgress[];
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function claimSeasonMilestone(
+  persistentId: string,
+  milestoneId: string,
+): Promise<boolean> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/vaultfront/season-progress/claim`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ persistentId, milestoneId }),
+      },
+    );
+    if (!res.ok) return false;
+    const data = (await res.json()) as { claimed?: boolean };
+    return data.claimed ?? false;
+  } catch {
+    return false;
+  }
+}
+
+export async function fetchPredictionLeaderboard(weekOnly = false): Promise<
+  Array<{
+    spectatorId: string;
+    accuracy: number;
+    totalPredictions: number;
+    weeklyScore: number;
+  }>
+> {
+  try {
+    const url = `${getApiBase()}/api/vaultfront/prediction-league/leaderboard?week=${weekOnly ? "1" : "0"}`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = (await res.json()) as {
+      leaderboard?: Array<{
+        spectatorId: string;
+        accuracy: number;
+        totalPredictions: number;
+        weeklyScore: number;
+      }>;
+    };
+    return data.leaderboard ?? [];
+  } catch {
+    return [];
+  }
+}

@@ -6,6 +6,19 @@ export interface TutorialTip {
   anchor?: string;
 }
 
+const ADVANCED_HINTS: Record<string, string> = {
+  convoy_first_launch:
+    "First convoy dispatched! Route through friendly territory. If intercepted, try Ghost Route to cloak the next one.",
+  heist_available:
+    "Vault Heist is available — steal gold from the dominant player's vault when you have fewer than 3 territories.",
+  intel_purchase_available:
+    "Purchase Intel (30k gold) to reveal all enemy convoy routes for 60 seconds — best used before a key intercept.",
+  ghost_route_unlocked:
+    "Ghost Route hides your convoy from enemy detection. Activate before dispatching on contested lanes.",
+  dynasty_season_start:
+    "Dynasty Season has started — your clan's combined gold pool carries across matches. Coordinate deliveries!",
+};
+
 const TUTORIAL_TIPS: TutorialTip[] = [
   {
     id: "first_vault_nearby",
@@ -96,12 +109,23 @@ export class TutorialTriggerEngine {
     }
     if (gold >= 30_000n && ticks > 200) {
       this.maybeShow("intel_hint");
+      this.maybeShowAdvanced("intel_purchase_available");
     }
     if (tiles <= 2 && gold >= 20_000n && ticks > 100) {
       this.maybeShow("vault_heist_hint");
+      this.maybeShowAdvanced("heist_available");
     }
     this.lastGold = gold;
     this.survivalTicks++;
+  }
+
+  onFirstConvoyLaunched(): void {
+    this.maybeShowAdvanced("convoy_first_launch");
+    this.maybeShowAdvanced("ghost_route_unlocked");
+  }
+
+  onDynastySeasonStart(): void {
+    this.maybeShowAdvanced("dynasty_season_start");
   }
 
   onConvoyIntercepted(): void {
@@ -119,6 +143,15 @@ export class TutorialTriggerEngine {
 
   onBountyBoard(): void {
     this.maybeShow("bounty_hint");
+  }
+
+  private maybeShowAdvanced(hintKey: string): void {
+    if (this.seenTips.has(`adv_${hintKey}`)) return;
+    const text = ADVANCED_HINTS[hintKey];
+    if (!text) return;
+    this.seenTips.add(`adv_${hintKey}`);
+    this.saveSeen();
+    this.emit({ id: `adv_${hintKey}`, text, anchor: "vault-panel" });
   }
 
   private maybeShow(tipId: string): void {

@@ -7,6 +7,8 @@
  *   turn order.
  * - On playback the client receives the input log and drives the simulation
  *   forward at configurable speed.
+ * - Manifests are HMAC-signed on finalization; verify before consuming for
+ *   achievement/Elo purposes to prevent tampered replay submissions.
  *
  * Storage: in-memory for development; swap `save`/`load` for S3 or Postgres
  * by implementing the ReplayBackend interface.
@@ -14,6 +16,8 @@
  * Status: SCAFFOLDED — wire ReplayStore.record() into GameServer turn loop,
  * then expose /api/replay/:id on Worker.
  */
+
+import { createHmac, timingSafeEqual } from "crypto";
 
 export interface ReplayIntent {
   /** Serialized player intent (matches existing transport format) */
@@ -42,6 +46,41 @@ export interface ReplayManifest {
   intents: ReplayIntent[];
   /** Full turn log — preferred over intents[] for playback when present */
   turns?: ReplayTurn[];
+  /** HMAC-SHA256 over canonical fields — set by finishRecording(), verified by verifySignature() */
+  signature?: string;
+}
+
+// ---------------------------------------------------------------------------
+// HMAC helpers — prevent tampered replays from faking achievements in tournaments
+// ---------------------------------------------------------------------------
+
+const REPLAY_SECRET =
+  process.env.REPLAY_SECRET ?? "dev-replay-secret-change-in-prod";
+
+function computeSignature(manifest: ReplayManifest): string {
+  const canonical = JSON.stringify({
+    gameId: manifest.gameId,
+    mapName: manifest.mapName,
+    seed: manifest.seed,
+    startedAt: manifest.startedAt,
+    endedAt: manifest.endedAt ?? null,
+    durationTurns: manifest.durationTurns,
+  });
+  return createHmac("sha256", REPLAY_SECRET).update(canonical).digest("hex");
+}
+
+/** Returns true when the manifest's signature matches the computed HMAC. */
+export function verifyReplaySignature(manifest: ReplayManifest): boolean {
+  if (!manifest.signature) return false;
+  const expected = computeSignature(manifest);
+  try {
+    return timingSafeEqual(
+      Buffer.from(manifest.signature, "hex"),
+      Buffer.from(expected, "hex"),
+    );
+  } catch {
+    return false;
+  }
 }
 
 export interface ReplayBackend {
@@ -146,6 +185,7 @@ export class ReplayStore {
     const recording = this.activeRecordings.get(gameId);
     if (!recording) return;
     recording.endedAt = Date.now();
+    recording.signature = computeSignature(recording);
     this.activeRecordings.delete(gameId);
     await this.backend.save(gameId, recording);
   }

@@ -19,6 +19,25 @@ All 6 items from `docs/AUDIT_2026-05-18.md` shipped: startup-brief-repair,
 contract-hud-live-progress, coach-hint-site-signal, stream-overlay-reconnect-memory,
 narrator-bus-token-guardrails, and anti-cheat-alert-cooldown.
 
+## Completed (2026-05-18 — Session 5 /implement pass)
+
+All 16 items from `docs/AUDIT_2026-05-18_S5.md` shipped:
+vault-fortune-post-win (FortuneDeck + WinModal fortune card), play-style-career-arc
+(styleHistory store + PlayStyleCareerArc component + postStyleHistory), achievement-chain-meta
+(5 meta-chains: vault_sovereign/convoy_legend/surge_master/speed_demon/grand_architect),
+ai-prematch-intelligence-brief (Haiku pre-match endpoint + LRU cache), clan-war-scheduler
+(ClanWarStore + challenge/accept/decline/result endpoints), season-pass-track-ui
+(SeasonMilestoneStore + SeasonPassTrack component), spectator-prediction-league
+(PredictionLeagueStore + weekly leaderboard), post-match-ai-coach-debrief (WinModal
+coach tab + fetchCoachDebrief), ai-narrative-game-recap (WinModal match story tab +
+fetchMatchRecap), tournament-bracket-ui (TournamentBracketView SVG component),
+achievement-profile-panel (AchievementsPanel + meta-chains display), advanced-tutorial-hints
+(ADVANCED_HINTS + onFirstConvoyLaunched/onDynastySeasonStart methods), match-outcome-rating
+(MatchRatingPrompt 5-star component + postMatchRating), replay-integrity-signature
+(HMAC-SHA256 in ReplayStore), mobile-layout-optimization (scaleFactor helper in
+VaultFrontLayer for narrow canvas banners), sil-score-pipeline-fix (rolling-status block
+in SELF_IMPROVEMENT_LOOP.md).
+
 ## Completed (2026-05-18 — Session 4 /implement pass)
 
 All 18 new items from `docs/AUDIT_2026-05-18.md` (Session 4) shipped:

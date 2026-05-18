@@ -369,6 +369,11 @@ export class VaultFrontLayer implements Layer {
     );
   }
 
+  /** Returns 0.72 on narrow (<600px) canvases for compact mobile banner scaling. */
+  private scaleFactor(ctx: CanvasRenderingContext2D): number {
+    return ctx.canvas.width < 600 ? 0.72 : 1;
+  }
+
   private drawVaultSites(ctx: CanvasRenderingContext2D): void {
     if (!this.status || this.status.sites.length === 0) return;
 
@@ -1139,8 +1144,11 @@ export class VaultFrontLayer implements Layer {
 
     const w = ctx.canvas.width;
     const h = ctx.canvas.height;
+    const sc = this.scaleFactor(ctx);
+    const bw = Math.round(148 * sc);
+    const bh2 = Math.round(40 * sc);
     const x = 16;
-    const y = h - 64;
+    const y = h - bh2 - 24;
     const pulse = 0.7 + 0.3 * Math.sin((now / 5) * Math.PI);
     const secsLeft = Math.ceil(remaining / 10);
 
@@ -1151,22 +1159,25 @@ export class VaultFrontLayer implements Layer {
     ctx.lineWidth = 2;
     ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
     ctx.beginPath();
-    ctx.roundRect(x, y, 148, 40, 8);
+    ctx.roundRect(x, y, bw, bh2, 8);
     ctx.fill();
     ctx.stroke();
     ctx.shadowBlur = 0;
 
     ctx.fillStyle = `rgba(110, 231, 183, ${pulse})`;
-    ctx.font = `bold 12px Overpass, sans-serif`;
+    ctx.font = `bold ${Math.round(12 * sc)}px Overpass, sans-serif`;
     ctx.textAlign = "left";
-    ctx.fillText("⚡ SURGE ACTIVE", x + 10, y + 16);
+    ctx.fillText("⚡ SURGE ACTIVE", x + 10, y + Math.round(16 * sc));
     ctx.fillStyle = "rgba(167, 243, 208, 0.85)";
-    ctx.font = `10px Overpass, sans-serif`;
-    ctx.fillText(`+gold  +troops  ${secsLeft}s left`, x + 10, y + 30);
+    ctx.font = `${Math.round(10 * sc)}px Overpass, sans-serif`;
+    ctx.fillText(
+      `+gold  +troops  ${secsLeft}s left`,
+      x + 10,
+      y + Math.round(30 * sc),
+    );
     ctx.restore();
 
-    // Ignore the no-explicit-any note: ctx.canvas.width/height are always numbers
-    void w; // used above
+    void w;
   }
 
   /**

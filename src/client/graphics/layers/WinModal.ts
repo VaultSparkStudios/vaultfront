@@ -16,13 +16,19 @@ import { appRelativePath, appRootPath } from "../../../core/RuntimeUrls";
 import type { AllPlayersStats, Winner } from "../../../core/Schemas";
 import {
   castMutatorVote,
+  type CoachDebriefMoment,
   createRematch,
+  fetchCoachDebrief,
   fetchDynastyStory,
+  fetchMatchRecap,
   fetchMutatorVoteStatus,
   fetchVaultFrontContracts,
   fetchVaultFrontRecapAssignment,
+  fetchWinFortune,
+  type FortuneItem,
   getUserMe,
   type MutatorVoteCandidate,
+  postStyleHistory,
   recordVaultFrontFunnelTelemetry,
   recordVaultFrontOutcomeTelemetry,
   recordVaultFrontRecapEvent,
@@ -185,6 +191,24 @@ export class WinModal extends LitElement implements Layer {
 
   @state()
   private shareCardCopied = false;
+
+  @state()
+  private fortuneItem: FortuneItem | null = null;
+
+  @state()
+  private fortuneRevealed = false;
+
+  @state()
+  private matchRecap: string | null = null;
+
+  @state()
+  private coachDebriefMoments: CoachDebriefMoment[] | null = null;
+
+  @state()
+  private coachDebriefLoading = false;
+
+  @state()
+  private activeTab: "recap" | "coach" | "fortune" = "recap";
 
   @state()
   private dynastyStory: string | null = null;
@@ -559,7 +583,162 @@ export class WinModal extends LitElement implements Layer {
 
         ${this.renderSeasonalContracts()} ${this.renderReplayMoments()}
         ${this.renderEloSection()} ${this.renderPlayStyleCard()}
-        ${this.renderDynastyStory()}
+        ${this.renderDynastyStory()} ${this.renderAITabSection()}
+      </div>
+    `;
+  }
+
+  private renderFortuneCard() {
+    if (!this.fortuneItem) return null;
+    const rarityColors: Record<string, string> = {
+      legendary: "border-amber-400/80 bg-amber-900/30",
+      rare: "border-violet-400/70 bg-violet-900/25",
+      common: "border-slate-400/40 bg-slate-900/20",
+    };
+    const cls = rarityColors[this.fortuneItem.rarity] ?? rarityColors.common;
+    return html`
+      <div class="mt-2 rounded-sm border ${cls} p-3">
+        <div class="text-xs uppercase tracking-wide text-amber-200 mb-1">
+          Post-Win Fortune
+        </div>
+        ${this.fortuneRevealed
+          ? html`
+              <div class="flex items-center gap-3">
+                <div class="text-3xl">
+                  ${this.fortuneItem.type === "emoji"
+                    ? this.fortuneItem.value
+                    : this.fortuneItem.type === "badge"
+                      ? "🏅"
+                      : "🏆"}
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-white">
+                    ${this.fortuneItem.name}
+                  </div>
+                  <div class="text-xs text-slate-300 capitalize">
+                    ${this.fortuneItem.rarity} · ${this.fortuneItem.type}
+                  </div>
+                </div>
+              </div>
+            `
+          : html`
+              <button
+                class="w-full py-2 text-sm bg-amber-500/20 border border-amber-400/40 rounded text-amber-200 cursor-pointer hover:bg-amber-500/35 transition-colors"
+                @click=${() => {
+                  this.fortuneRevealed = true;
+                  this.requestUpdate();
+                }}
+              >
+                ✦ Reveal Fortune
+              </button>
+            `}
+      </div>
+    `;
+  }
+
+  private renderAIMatchStory() {
+    if (!this.matchRecap) return null;
+    return html`
+      <div class="mt-2 rounded-sm border border-cyan-400/35 bg-cyan-900/15 p-3">
+        <div class="text-xs uppercase tracking-wide text-cyan-300 mb-1">
+          Match Story
+        </div>
+        <div class="text-sm text-slate-100 leading-relaxed italic">
+          ${this.matchRecap}
+        </div>
+      </div>
+    `;
+  }
+
+  private renderCoachDebrief() {
+    return html`
+      <div class="mt-2">
+        ${this.coachDebriefMoments === null
+          ? html`
+              <button
+                class="w-full py-2 text-sm bg-indigo-500/20 border border-indigo-400/40 rounded text-indigo-200 cursor-pointer hover:bg-indigo-500/35 transition-colors"
+                @click=${() => {
+                  this._loadCoachDebrief();
+                  this.requestUpdate();
+                }}
+                ?disabled=${this.coachDebriefLoading}
+              >
+                ${this.coachDebriefLoading
+                  ? "Loading coach debrief…"
+                  : "🎯 Get AI Coach Debrief"}
+              </button>
+            `
+          : this.coachDebriefMoments.length === 0
+            ? html`<div class="text-xs text-slate-500 text-center py-2">
+                No debrief moments available.
+              </div>`
+            : html`
+                <div class="space-y-2">
+                  ${this.coachDebriefMoments.map(
+                    (m) => html`
+                      <div
+                        class="rounded border border-indigo-400/30 bg-indigo-900/15 p-2"
+                      >
+                        <div
+                          class="text-xs uppercase tracking-wide text-indigo-300 mb-0.5"
+                        >
+                          ${m.decision}
+                        </div>
+                        <div class="text-sm text-slate-100">${m.optimal}</div>
+                        ${m.why
+                          ? html`<div class="text-xs text-indigo-200 mt-1">
+                              Why: ${m.why}
+                            </div>`
+                          : ""}
+                      </div>
+                    `,
+                  )}
+                </div>
+              `}
+      </div>
+    `;
+  }
+
+  private renderAITabSection() {
+    const hasAI =
+      this.matchRecap !== null ||
+      this.fortuneItem !== null ||
+      this.coachDebriefMoments !== null ||
+      this.coachDebriefLoading;
+    if (!hasAI && !this.isWin) return null;
+
+    const tabs: Array<{ key: "recap" | "coach" | "fortune"; label: string }> = [
+      { key: "recap", label: "📖 Story" },
+      { key: "coach", label: "🎯 Coach" },
+      { key: "fortune", label: "✦ Fortune" },
+    ];
+
+    return html`
+      <div class="mt-3 border-t border-slate-600/30 pt-2">
+        <div class="flex gap-1.5 mb-2">
+          ${tabs.map(
+            (t) => html`
+              <button
+                class="px-3 py-1 text-xs rounded cursor-pointer transition-colors border ${this
+                  .activeTab === t.key
+                  ? "bg-slate-600/50 border-slate-400/50 text-white"
+                  : "bg-transparent border-slate-600/30 text-slate-400 hover:text-slate-200"}"
+                @click=${() => {
+                  this.activeTab = t.key;
+                  this.requestUpdate();
+                  if (t.key === "coach" && this.coachDebriefMoments === null) {
+                    this._loadCoachDebrief();
+                  }
+                }}
+              >
+                ${t.label}
+              </button>
+            `,
+          )}
+        </div>
+        ${this.activeTab === "recap" ? this.renderAIMatchStory() : ""}
+        ${this.activeTab === "coach" ? this.renderCoachDebrief() : ""}
+        ${this.activeTab === "fortune" ? this.renderFortuneCard() : ""}
       </div>
     `;
   }
@@ -982,6 +1161,13 @@ export class WinModal extends LitElement implements Layer {
       type();
     });
 
+    // Non-ranked: trigger fortune + recap after short settle delay
+    if (!this.isRankedGame) {
+      setTimeout(() => {
+        this._triggerFortuneAndRecap();
+      }, 1200);
+    }
+
     // Fetch Elo after short delay so the server has time to record match result
     if (this.isRankedGame) {
       setTimeout(() => {
@@ -1017,7 +1203,12 @@ export class WinModal extends LitElement implements Layer {
               animated: start + (end - start) * eased,
             };
             this.requestUpdate();
-            if (t < 1) requestAnimationFrame(step);
+            if (t < 1) {
+              requestAnimationFrame(step);
+            } else {
+              // Elo animation complete — trigger fortune draw
+              this._triggerFortuneAndRecap();
+            }
           };
           requestAnimationFrame(step);
         });
@@ -1072,6 +1263,69 @@ export class WinModal extends LitElement implements Layer {
     this.hide();
     // Navigate to homepage and open matchmaking modal
     window.location.href = appRelativePath("?requeue");
+  }
+
+  private _triggerFortuneAndRecap(): void {
+    const gameId = this.game?.gameID();
+    if (!gameId) return;
+
+    void getUserMe().then((me) => {
+      const persistentId =
+        me && typeof me === "object" && "player" in me
+          ? ((me as { player?: { publicId?: string } }).player?.publicId ?? "")
+          : "";
+
+      void fetchWinFortune(persistentId, gameId).then((result) => {
+        if (result) {
+          this.fortuneItem = result.item;
+          this.requestUpdate();
+        }
+      });
+
+      void fetchMatchRecap(
+        gameId,
+        "unknown",
+        "intercept,convoy,surge",
+        this.matchLengthSeconds,
+      ).then((recap) => {
+        if (recap) {
+          this.matchRecap = recap;
+          this.requestUpdate();
+        }
+      });
+
+      if (persistentId && this.playStyleLabel) {
+        void postStyleHistory(
+          persistentId,
+          gameId,
+          this.playStyleLabel as import("../../Api").PlayStyle,
+        );
+      }
+    });
+  }
+
+  private _loadCoachDebrief(): void {
+    if (this.coachDebriefMoments !== null || this.coachDebriefLoading) return;
+    const gameId = this.game?.gameID();
+    if (!gameId) return;
+    this.coachDebriefLoading = true;
+    void getUserMe().then(async (me) => {
+      const persistentId =
+        me && typeof me === "object" && "player" in me
+          ? ((me as { player?: { publicId?: string } }).player?.publicId ?? "")
+          : "";
+      const moments = await fetchCoachDebrief({
+        persistentId,
+        gameId,
+        matchStats: {
+          won: this.isWin,
+          style: this.playStyleLabel ?? "Balanced",
+        },
+      });
+      this.coachDebriefMoments = moments ?? [];
+      this.coachDebriefLoading = false;
+      this.requestUpdate();
+    });
   }
 
   private _handleShare = async () => {

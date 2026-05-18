@@ -1,8 +1,31 @@
 <!-- generated-by: /implement skill v1.0 -->
 <!-- generated-at: 2026-05-18 -->
-<!-- source-audit: docs/AUDIT_2026-05-18.md -->
+<!-- source-audit: docs/AUDIT_2026-05-18_S5.md -->
 
-# Implement Plan — VaultFront Session 4
+# Implement Plan — VaultFront Session 5
+
+| Seq | Slug                               | Effort | Priority |
+| --- | ---------------------------------- | ------ | -------- |
+| 1   | sil-score-pipeline-fix             | 1h     | 10.1     |
+| 2   | replay-integrity-signature         | 1h     | 26.5     |
+| 3   | ai-prematch-intelligence-brief     | 1h     | 75.7     |
+| 4   | ai-narrative-game-recap            | 1h     | 60.6     |
+| 5   | post-match-ai-coach-debrief        | 2h     | 60.75    |
+| 6   | match-outcome-rating               | 1h     | 30.9     |
+| 7   | achievement-chain-meta             | 2h     | 96.0     |
+| 8   | achievement-profile-panel          | 2h     | 48.0     |
+| 9   | play-style-career-arc              | 2h     | 105.0    |
+| 10  | vault-fortune-post-win             | 2h     | 108.0    |
+| 11  | spectator-prediction-league        | 4h     | 73.0     |
+| 12  | clan-war-scheduler                 | 4h     | 74.4     |
+| 13  | tournament-bracket-ui              | 4h     | 48.7     |
+| 14  | season-pass-track-ui               | 4h     | 73.0     |
+| 15  | advanced-tutorial-contextual-hints | 2h     | 31.5     |
+| 16  | mobile-layout-optimization         | 4h     | 24.8     |
+
+---
+
+# Implement Plan — VaultFront Session 4 (historical)
 
 Generated: 2026-05-18 · 18 items · Combined Priority: 1026.2
 

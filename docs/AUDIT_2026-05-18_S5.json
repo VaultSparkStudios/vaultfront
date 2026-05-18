@@ -1,0 +1,367 @@
+{
+  "generated": "2026-05-18",
+  "project": "vaultfront",
+  "type": "game",
+  "session": 5,
+  "axisWeights": {
+    "gamification": 3,
+    "ux": 2,
+    "ai": 1.5,
+    "featureDepth": 1.5,
+    "newFeatures": 1,
+    "feedbackLoop": 1,
+    "security": 1,
+    "speedOrg": 1,
+    "tokenCost": 1
+  },
+  "items": [
+    {
+      "rank": 1,
+      "slug": "vault-fortune-post-win",
+      "tier": "🔥",
+      "axis": "gamification",
+      "effort": "2h",
+      "effortHours": 2,
+      "impact": 8,
+      "impactWeighted": 24,
+      "innovation": 9,
+      "priority": 108.0,
+      "status": "pending",
+      "title": "Vault Fortune — Post-Win Draw Mechanic",
+      "description": "After every win, the player draws one card from the 'Fortune Pool' — a rotating set of cosmetic rewards: exclusive match titles (Vault Phantom, Chain Executor), gold-bordered badge variants, and rare emojis. No real money, no pay-to-win. Pure dopamine loop. The uncertainty of the draw is the reward psychology — every win has an epilogue. No RTS game has done this cleanly without monetization, making it a category-first engagement lever.",
+      "recipe": "Create FortuneDeck.ts (server): define 20 fortune items (title, badge variant, emoji) with rarity weights (common 60%, rare 30%, legendary 10%). On POST /api/vaultfront/win-fortune (called from WinModal after Elo animation completes), draw a random item seeded by persistentId + matchId (deterministic, not re-rollable). Return {item, rarity, description}. In WinModal, after the Elo counter animation, render a 'Claim Fortune' button that calls the endpoint and shows a card flip animation (CSS 3D perspective transform) revealing the drawn item. Persist the unlock to player_fortune table."
+    },
+    {
+      "rank": 2,
+      "slug": "play-style-career-arc",
+      "tier": "🔥",
+      "axis": "gamification",
+      "effort": "2h",
+      "effortHours": 2,
+      "impact": 7,
+      "impactWeighted": 21,
+      "innovation": 10,
+      "priority": 105.0,
+      "status": "pending",
+      "title": "Play-Style Career Arc — Cross-Session Personality Evolution",
+      "description": "PlayStyleClassifier already computes style per-match (Iron Fist / Convoy Lord / Shadow Broker). Nobody tracks how that style evolves across sessions. Showing a 'Career Arc' in the player profile — a timeline of style classifications across last 20 matches with trend arrows — turns self-knowledge into a retention loop. 'Week 1: Iron Fist → Week 3: Convoy Lord → Week 6: Shadow Broker.' Players who see themselves evolving play more. This is a genuinely category-first insight layer for competitive games.",
+      "recipe": "Extend PlayerStatsStore to store styleHistory: Array<{matchId, style, timestamp}> (last 20 entries, rolling). On match end, after PlayStyleClassifier runs in WinModal, POST /api/vaultfront/style-history with the result. Add GET /api/vaultfront/style-history/:persistentId returning the array. In AccountModal or a new ProfilePage section, render a horizontal timeline component: style icons connected by dotted lines with dates, plus a trend chip ('Trending: Shadow Broker ▲') if the last 3 matches share a style."
+    },
+    {
+      "rank": 3,
+      "slug": "achievement-chain-meta",
+      "tier": "🔥",
+      "axis": "gamification",
+      "effort": "2h",
+      "effortHours": 2,
+      "impact": 8,
+      "impactWeighted": 24,
+      "innovation": 8,
+      "priority": 96.0,
+      "status": "pending",
+      "title": "Meta-Achievement Chains — Long-Term Mastery Narrative",
+      "description": "AchievementStore has 15 individual achievements but they exist in isolation. Meta-chains that require completing multiple achievements in sequence create a long-term progression arc above the current flat list — turning 'collect all' into 'master the game story.' Example: 'Vault Sovereign' = first_vault + five_vaults + grandmaster. Example: 'Convoy Legend' = ten_convoys + escort_streak + hundred_convoys. Each meta chain gets a prestige badge and a Discord announcement. Creates a meaningful end-game progression layer that retention-games have proven drives return visits.",
+      "recipe": "Define META_CHAINS array in AchievementStore.ts: [{id, name, description, requires: string[], reward: {badge, title}}]. In checkAndUnlock(), after any individual unlock, scan chains whose requirements are now fully satisfied and emit newlyUnlocked entries with a 'meta_chain' flag. Add GET /api/vaultfront/achievements/meta-chains returning progress per chain per player. In AchievementToast, render meta-chain unlocks with a larger gold-shimmer card (distinct from normal toast). Add 5 chains: vault-sovereign, convoy-legend, surge-master, speed-demon, grand-architect."
+    },
+    {
+      "rank": 4,
+      "slug": "ai-prematch-intelligence-brief",
+      "tier": "🔥",
+      "axis": "ai",
+      "effort": "1h",
+      "effortHours": 1,
+      "impact": 8,
+      "impactWeighted": 12,
+      "innovation": 10,
+      "priority": 75.7,
+      "status": "pending",
+      "title": "AI Pre-Match Intelligence Brief",
+      "description": "Before every ranked match starts, a Haiku call generates a personalized 2-sentence tactical brief based on the player's style card, the map name, and their recent win/loss streak. 'Convoy Lord on Ice World: central vault sites favor aggressive early captures. Your last 3 losses came from late ghost routes — consider escort-first on this map.' Like having a personal analyst. No RTS game has ever offered personalized strategic AI guidance at match start. This is innovation score 10 because it bridges AI coaching and game meta simultaneously.",
+      "recipe": "Add GET /api/vaultfront/prematch-brief?persistentId=X&mapName=Y (called from GameStartingModal or first-tick of VaultFrontLayer). Haiku prompt (cached system): 'You are a VaultFront tactical analyst. Generate a 2-sentence pre-match brief for the player.' User message includes player's style, map, recent streak (last 5 match outcomes from PlayerStatsStore). Use 5-min LRU cache keyed by style+mapName+streakBucket. Render in a semi-transparent card overlay for 8 seconds at match start, then fade. Haiku model for cost efficiency (~$0.00005/call)."
+    },
+    {
+      "rank": 5,
+      "slug": "clan-war-scheduler",
+      "tier": "🔥",
+      "axis": "gamification",
+      "effort": "4h",
+      "effortHours": 4,
+      "impact": 8,
+      "impactWeighted": 24,
+      "innovation": 8,
+      "priority": 74.4,
+      "status": "pending",
+      "title": "Clan War Scheduler — Structured Inter-Clan Competition",
+      "description": "ClanStore and TournamentStore both exist server-side but there is no mechanism for clans to challenge each other to scheduled matches. Clan wars — where two clans agree to meet at a scheduled time for a best-of-3 series — are the highest-engagement social mechanic in competitive games. The Discord notifier exists; wiring a challenge-accept flow through it closes the loop from game → community → back. This is the missing social layer that converts individual players into clan loyalists.",
+      "recipe": "Add ClanWarStore.ts with challenge/accept/schedule/result methods. Expose POST /api/vaultfront/clan-war/challenge (body: challengerClanId, targetClanId, proposedAt) and POST /api/vaultfront/clan-war/accept (warId). On accept, create a TournamentStore tournament of type 'clan-war' seeded by clan Elo. Wire DiscordNotifier to announce challenge issued, accepted, and result. In ClanModal, add a 'Challenge Clan' button that opens a time-picker. Show scheduled wars in a persistent 'Upcoming Wars' section in ClanModal."
+    },
+    {
+      "rank": 6,
+      "slug": "season-pass-track-ui",
+      "tier": "🔥",
+      "axis": "gamification",
+      "effort": "4h",
+      "effortHours": 4,
+      "impact": 9,
+      "impactWeighted": 27,
+      "innovation": 7,
+      "priority": 73.0,
+      "status": "pending",
+      "title": "Season Pass Track — Visual Progression Strip",
+      "description": "VaultSeasonScheduler manages season state but there is no visual season progression track. Players have no way to see 'I'm 3 milestones from the Seasonal Grandmaster badge.' A horizontal progression strip (like a battle pass) shown in the lobby — with milestone icons, claimed vs unclaimed rewards, and a progress fill — is proven to be the single highest daily-return driver in competitive games. VaultFront has the season logic; it just lacks the presentation layer that converts it into a retention machine.",
+      "recipe": "Define SEASON_MILESTONES array (10 items: matches played, gold delivered, achievements unlocked, etc. with cosmetic rewards at each). Add GET /api/vaultfront/season-progress/:persistentId returning {currentSeason, milestones: [{id, title, target, progress, reward, claimed}]}. Render a SeasonPassTrack Lit component in PlayPage (below map picker): a horizontal strip with milestone nodes, progress fill between them, reward icons above each node. Clicking a completed unclaimed node calls POST /api/vaultfront/season-progress/claim. Highlight the next unclaimed milestone with a pulse animation."
+    },
+    {
+      "rank": 7,
+      "slug": "spectator-prediction-league",
+      "tier": "🔥",
+      "axis": "gamification",
+      "effort": "4h",
+      "effortHours": 4,
+      "impact": 7,
+      "impactWeighted": 21,
+      "innovation": 9,
+      "priority": 73.0,
+      "status": "pending",
+      "title": "Spectator Prediction League — Persistent Accuracy Leaderboard",
+      "description": "The crowd prediction endpoint (POST /predict) exists but predictions are ephemeral — no accuracy tracking, no leaderboard, no persistent identity. Building a Prediction League that tracks spectator accuracy across weeks turns passive observers into committed community members with their own weekly ranking. The spectator who correctly predicted 8/10 outcomes this week is a VaultFront celebrity. Nobody in the RTS genre has a persistent spectator-accuracy competition. This is the community growth engine.",
+      "recipe": "Add PredictionLeagueStore.ts: track persistentSpectatorId → {predictions: [{gameId, predictedOutcome, actualOutcome, correct, timestamp}], weeklyScore, totalScore}. On game end, resolve all pending predictions for that gameId and update scores. Expose GET /api/vaultfront/prediction-league/leaderboard (weekly + all-time top-10). In StreamOverlayPage, show the top-3 prediction leaders in a small persistent sidebar card. Add a PredictionLeaderboard section to LeaderboardModal under a 'Spectators' tab."
+    },
+    {
+      "rank": 8,
+      "slug": "post-match-ai-coach-debrief",
+      "tier": "🔥",
+      "axis": "ai",
+      "effort": "2h",
+      "effortHours": 2,
+      "impact": 9,
+      "impactWeighted": 13.5,
+      "innovation": 9,
+      "priority": 60.75,
+      "status": "pending",
+      "title": "Post-Match AI Coach Debrief — Personalized Decision Analysis",
+      "description": "The battle narrative (existing) tells the story of what happened. The coaching debrief tells you what you should have done differently. After WinModal, a 'Coach Review' tab shows a Haiku-generated analysis of 2-3 key decision moments: 'At tick 540 you held 4 vault sites and launched a standard convoy. With your escort counter at 1, ghost route was the superior choice — opponents with 3 sites have 78% intercept rate at that map stage.' This is AI coaching at the decision layer, not just storytelling. No competitive game offers this without a subscription.",
+      "recipe": "Add POST /api/vaultfront/coach-debrief (body: {persistentId, gameId, activityLog, matchStats}). Haiku prompt (system-cached): 'You are a VaultFront strategic coach. Analyze 2-3 key decision moments and give specific improvement advice.' User message: compressed activity log (top 5 events with tick + context). Add a 'Coach Review' tab to WinModal (alongside existing match stats). Fetch after Elo animation. Render as a styled list of 'moment cards' with tick reference, decision taken, and recommended alternative. Cache per gameId+persistentId."
+    },
+    {
+      "rank": 9,
+      "slug": "ai-narrative-game-recap",
+      "tier": "⚡",
+      "axis": "ai",
+      "effort": "1h",
+      "effortHours": 1,
+      "impact": 8,
+      "impactWeighted": 12,
+      "innovation": 8,
+      "priority": 60.6,
+      "status": "pending",
+      "title": "AI Sports-Journalism Game Recap",
+      "description": "The battle narrative tells the story of combat. A game recap reads like sports journalism: '3 sentences that capture the drama arc of this specific match.' Not 'a convoy was intercepted' but 'PlayerX's daring ghost route gambit in the final quarter reversed a 6-minute deficit to clinch gold — the kind of comeback that defines legends.' Haiku with a cached system prompt generates this in the WinModal 'Match Story' section. The battle narrative is already generic; this is specifically about the narrative hook that makes the match shareable.",
+      "recipe": "Add GET /api/vaultfront/match-recap/:gameId?persistentId=X. Haiku system prompt (cached): 'You are a sports journalist covering VaultFront matches. Write a 3-sentence dramatic recap using the provided match data.' User message: winner, loser, key events (intercepts, last-stand, heist), duration, final vault count. Render in WinModal as a 'Match Story' section above the stats table. Add a one-click copy for social sharing. Cache per gameId (not per player — the recap is the same for both sides). Effort: 1h (builds on existing WinModal + NarratorBus fetch patterns)."
+    },
+    {
+      "rank": 10,
+      "slug": "tournament-bracket-ui",
+      "tier": "⚡",
+      "axis": "ux",
+      "effort": "4h",
+      "effortHours": 4,
+      "impact": 9,
+      "impactWeighted": 18,
+      "innovation": 7,
+      "priority": 48.7,
+      "status": "pending",
+      "title": "Tournament Bracket Visualization",
+      "description": "TournamentStore has complete server-side single-elimination bracket logic (register, seed by Elo, advance, complete) but there is no client-side bracket UI. Players and spectators have no way to see the bracket tree, their next match, or tournament standings. This is a fully built server feature with zero visibility — closing this gap unlocks tournaments as a live event format.",
+      "recipe": "Create TournamentBracketView.ts Lit component. Call GET /api/tournament/:id/bracket (add this endpoint to Worker.ts, returning BracketView). Render SVG or Canvas bracket tree: each round as a column, matchups as connected boxes showing player names + Elo seeds. Highlight current player's match path. Winner advances in green. Add a TournamentPage or TournamentModal accessible from the nav. Include a registration flow: show open tournaments with 'Join' button that calls POST /api/tournament/:id/register. Wire DiscordNotifier to announce bracket posted and next round matches."
+    },
+    {
+      "rank": 11,
+      "slug": "achievement-profile-panel",
+      "tier": "⚡",
+      "axis": "ux",
+      "effort": "2h",
+      "effortHours": 2,
+      "impact": 8,
+      "impactWeighted": 16,
+      "innovation": 6,
+      "priority": 48.0,
+      "status": "pending",
+      "title": "Achievement Profile Panel — Progress Display",
+      "description": "AchievementStore has full progress tracking (getProgress() returns % and label per achievement) and the toast notification works — but there is no profile panel showing all 15 achievements with their progress bars. Players have no way to see 'I'm 73% toward Freight Commander.' This is a classic completion-anxiety retention mechanism: showing progress toward unfinished goals drives return visits more reliably than any other single UI element.",
+      "recipe": "Add GET /api/vaultfront/achievements/:persistentId returning AchievementProgress[] (already exists in AchievementStore.getProgress()). Create AchievementsPanel.ts Lit component: a grid of achievement cards showing name, description, progress bar (0-100%), and 'Unlocked [date]' for completed ones. Style locked cards with muted opacity + lock icon; unlocked with gold border + checkmark. Mount in AccountModal under a new 'Achievements' tab. Show total unlocked / total count as a header stat."
+    },
+    {
+      "rank": 12,
+      "slug": "advanced-tutorial-contextual-hints",
+      "tier": "⚡",
+      "axis": "featureDepth",
+      "effort": "2h",
+      "effortHours": 2,
+      "impact": 7,
+      "impactWeighted": 10.5,
+      "innovation": 6,
+      "priority": 31.5,
+      "status": "pending",
+      "title": "Advanced Mechanic Tutorial Triggers",
+      "description": "VaultFrontTutorial covers 5 basic mechanics. TutorialTriggerEngine and TutorialOrchestrator exist for contextual delivery but advanced mechanics (vault-heist, intel market, dynasty mode, ghost routes) have no contextual introduction. Players discover these by accident or not at all — a massive content waste given the depth already built. First-time contextual popups at the moment of relevance double comprehension vs. static tutorials.",
+      "recipe": "In TutorialOrchestrator, add ADVANCED_HINTS map: {heist_available: 'A vault heist lets you steal a convoy in transit...', intel_purchase_available: '...', ghost_route_unlocked: '...', dynasty_season_start: '...'}. In TutorialTriggerEngine, add trigger detection: (1) when VaultFrontStatusUpdate shows gold > 50k, trigger heist hint if not seen; (2) on first convoy launch, trigger ghost_route hint; (3) on first intel-market activity event, trigger intel hint. Show as a non-blocking tooltip arrow pointing at the relevant UI element. Track seen hints in localStorage keyed by hint ID."
+    },
+    {
+      "rank": 13,
+      "slug": "match-outcome-rating",
+      "tier": "⚡",
+      "axis": "feedbackLoop",
+      "effort": "1h",
+      "effortHours": 1,
+      "impact": 7,
+      "impactWeighted": 7,
+      "innovation": 7,
+      "priority": 30.9,
+      "status": "pending",
+      "title": "Post-Match Quality Rating — Map and Mutator Feedback",
+      "description": "After WinModal dismissal, show a 5-star + emoji tap rating: 'How was that match?' plus a secondary question: 'Rate this map.' Results aggregate into map quality scores and mutator quality scores — data that currently doesn't exist anywhere in the system. This closes the feedback loop between game design and player experience without requiring Discord voting. Low-rated maps and mutators get flagged in VaultSeasonScheduler for rotation review.",
+      "recipe": "Show a lightweight 5-star modal 2 seconds after WinModal closes (not during — let the post-game moment breathe). POST /api/vaultfront/match-rating (body: {gameId, persistentId, matchRating: 1-5, mapRating: 1-5, comment?: string}). Store in match_ratings table. Add GET /api/admin/match-ratings (operator view: avg ratings per map, per mutator, over last 30d). In VaultSeasonScheduler.getStatus(), include avgMapRating for the current map so operators can see it in the brief."
+    },
+    {
+      "rank": 14,
+      "slug": "replay-integrity-signature",
+      "tier": "⚡",
+      "axis": "security",
+      "effort": "1h",
+      "effortHours": 1,
+      "impact": 7,
+      "impactWeighted": 7,
+      "innovation": 6,
+      "priority": 26.5,
+      "status": "pending",
+      "title": "Replay Manifest HMAC Signature",
+      "description": "ReplayStore generates replay manifests but they have no integrity verification. A tampered replay (inflating achievement events or Elo outcomes) could be submitted to fake accomplishments. Adding an HMAC-SHA256 signature over the canonical manifest fields (gameId, winnerId, activityLog hash) at generation time and verifying it on read closes the replay-tampering vector before the replay system scales to tournaments.",
+      "recipe": "In ReplayStore.create(), compute HMAC-SHA256(secret=REPLAY_SECRET, data=JSON.stringify({gameId, winnerId, durationTicks, activityLogHash})) and store as manifest.signature. Add REPLAY_SECRET to env secrets. In ReplayStore.get() and any endpoint that consumes manifest data for achievement/Elo purposes, verify the signature and reject with 400 on mismatch. Log verification failures to AntiCheatMonitor. No change to the public replay-viewing flow."
+    },
+    {
+      "rank": 15,
+      "slug": "mobile-layout-optimization",
+      "tier": "⚡",
+      "axis": "ux",
+      "effort": "4h",
+      "effortHours": 4,
+      "impact": 8,
+      "impactWeighted": 16,
+      "innovation": 4,
+      "priority": 24.8,
+      "status": "pending",
+      "title": "Mobile Canvas Layout & Touch Target Optimization",
+      "description": "TouchHandler.ts added mobile gestures (long-press, double-tap, 2-finger-swipe) but the canvas-rendered HUD elements (VaultFrontLayer banners, GameRightSidebar cards, DailyChallengeCard) were designed for desktop. On mobile viewports (<768px), overlay cards overflow or overlap the game canvas, and tap targets are under the minimum 44px. Fixing the mobile layout unlocks the vast majority of mobile browser game traffic that currently sees a broken HUD.",
+      "recipe": "In VaultFrontLayer, add isMobile: boolean = window.innerWidth < 768 check in init(). When isMobile, scale banner font size and padding by 0.75×, move GameRightSidebar cards to bottom-bar layout (absolute bottom: 60px), and reduce daily challenge card width to 100% viewport minus 16px. In GameRightSidebar, add @media (max-width: 768px) CSS: stack cards vertically with 8px gap, touch target min-height: 44px. Add a meta viewport tag check in Main.ts (warn if missing). Run on a 390px simulator to verify no overlaps."
+    },
+    {
+      "rank": 16,
+      "slug": "sil-score-pipeline-fix",
+      "tier": "💡",
+      "axis": "speedOrg",
+      "effort": "1h",
+      "effortHours": 1,
+      "impact": 8,
+      "impactWeighted": 8,
+      "innovation": 2,
+      "priority": 10.1,
+      "status": "pending",
+      "title": "Fix SIL Score Pipeline (shows 0/1000 vs actual ~960)",
+      "description": "The startup brief renders SIL as 0/1000 despite SELF_IMPROVEMENT_LOOP.md showing 960/1000. The scoring pipeline reads from a JSON source that is either stale, missing, or reading the wrong field. This mismatch creates misleading ops visibility every session.",
+      "recipe": "Run: node scripts/ops.mjs doctor — identify which script sources the SIL score for the brief. Check scripts/render-startup-brief.mjs for the scoring data source. Compare against .cache/scoring-cache.json and context/SELF_IMPROVEMENT_LOOP.md. If scoring-cache.json is stale, add a call to scripts/ops.mjs rescore before brief render in the startup protocol. If the field name mismatches, fix the read path in render-startup-brief.mjs."
+    }
+  ],
+  "innovationReserve": [
+    "vault-fortune-post-win",
+    "play-style-career-arc",
+    "ai-prematch-intelligence-brief",
+    "post-match-ai-coach-debrief",
+    "achievement-chain-meta",
+    "spectator-prediction-league",
+    "ai-narrative-game-recap",
+    "clan-war-scheduler"
+  ],
+  "executionLog": {
+    "vault-fortune-post-win": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "play-style-career-arc": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "achievement-chain-meta": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "ai-prematch-intelligence-brief": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "clan-war-scheduler": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "season-pass-track-ui": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "spectator-prediction-league": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "post-match-ai-coach-debrief": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "ai-narrative-game-recap": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "tournament-bracket-ui": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "achievement-profile-panel": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "advanced-tutorial-contextual-hints": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "match-outcome-rating": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "replay-integrity-signature": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "mobile-layout-optimization": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    },
+    "sil-score-pipeline-fix": {
+      "status": "shipped",
+      "shippedAt": "2026-05-18",
+      "session": 5
+    }
+  }
+}

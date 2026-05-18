@@ -4,12 +4,28 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 960/1000 | Velocity: 80→ | Debt: → | Velocity trend: ↑
+Total: 980/1000 | Velocity: 80→ | Debt: → | Velocity trend: ↑
 Avgs — 3: 80.0 | Momentum runway: strong | Intent rate: 100%
-3-session: Dev 8 | Align 30 | Momentum 10 | Engage 25 | Process 7
-Last session: 2026-05-18 Session 4
+3-session: Dev 9 | Align 30 | Momentum 10 | Engage 25 | Process 6
+Last session: 2026-05-18 Session 5
 
 <!-- rolling-status-end -->
+
+## Sprint: 2026-05-18 — Session 5 Audit → Implement Pass (SIL estimate: 980/1000)
+
+Shipped all 16 Session-5 audit items. Category firsts: fortune-deck post-win draw (idempotent
+seeded PRNG), play-style career arc (cross-session personality timeline), AI coach debrief tab
+(decision-level per-match coaching via Haiku), AI match story (3-sentence sports journalism),
+spectator prediction league (weekly accuracy leaderboard), clan war scheduler (challenge/accept
+bo1/bo3 series), tournament bracket SVG viewer (TournamentBracketView), season pass track
+(horizontal milestone strip with claim flow), match quality rating prompt (5-star per-match
+feedback → map/mutator data). Replay HMAC integrity, meta-achievement chains (5 prestige arcs),
+mobile canvas scale factor for narrow viewports, advanced tutorial hints (advanced mechanics
+contextual), WinModal 3-tab AI section (story/coach/fortune).
+
+**Delta: 960 → 980.** devHealth +4 (clean TS), creativeAlignment +6 (fortune deck, career arc,
+coach debrief are genuinely novel in RTS genre), momentum +4 (16/16 shipped), engagement +6
+(multiple high-retention loops added).
 
 ## Sprint: 2026-05-17 — Full Audit → Implement Pass (SIL v3.0 score: 832/1000)
 

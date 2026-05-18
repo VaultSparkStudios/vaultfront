@@ -51,6 +51,58 @@ export type AchievementEvent =
   | { type: "match_played"; totalMatches: number };
 
 // ---------------------------------------------------------------------------
+// Meta-chain definitions — prestige achievements composed of multiple base achievements
+// ---------------------------------------------------------------------------
+
+export interface MetaChainDefinition {
+  id: string;
+  name: string;
+  description: string;
+  requires: string[]; // base achievement IDs
+  reward: { badge: string; title: string };
+}
+
+const META_CHAINS: MetaChainDefinition[] = [
+  {
+    id: "vault_sovereign",
+    name: "Vault Sovereign",
+    description:
+      "Capture your first vault, control five simultaneously, and reach Grandmaster",
+    requires: ["first_vault", "five_vaults", "grandmaster"],
+    reward: { badge: "crown", title: "Vault Sovereign" },
+  },
+  {
+    id: "convoy_legend",
+    name: "Convoy Legend",
+    description:
+      "Deliver 10 convoys, escort 5 in a row, then deliver 100 total",
+    requires: ["ten_convoys", "escort_streak", "hundred_convoys"],
+    reward: { badge: "truck_gold", title: "Convoy Legend" },
+  },
+  {
+    id: "surge_master",
+    name: "Surge Master",
+    description: "Activate surge, then win after surge in a comeback victory",
+    requires: ["first_surge", "surge_win"],
+    reward: { badge: "lightning_prestige", title: "Surge Master" },
+  },
+  {
+    id: "speed_demon",
+    name: "Speed Demon",
+    description: "Win in under 10 minutes on any weekly mutator",
+    requires: ["speed_run", "mutator_win"],
+    reward: { badge: "flame_gold", title: "Speed Demon" },
+  },
+  {
+    id: "grand_architect",
+    name: "Grand Architect",
+    description: "Complete 50 matches, chain combos, and win a team objective",
+    requires: ["veteran", "triple_chain", "squad_objective"],
+    reward: { badge: "architect_crest", title: "Grand Architect" },
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Definitions
 // ---------------------------------------------------------------------------
 
@@ -377,6 +429,26 @@ export const achievementStore = {
       }
     }
 
+    // Check meta-chains after any new individual unlock
+    if (newlyUnlocked.length > 0) {
+      const allUnlocked = new Set(state.unlocked.keys());
+      for (const chain of META_CHAINS) {
+        if (allUnlocked.has(chain.id)) continue; // already unlocked
+        if (chain.requires.every((req) => allUnlocked.has(req))) {
+          state.unlocked.set(chain.id, Date.now());
+          newlyUnlocked.push({
+            id: chain.id,
+            name: chain.name,
+            description: chain.description + " [META]",
+          });
+          logger.info("Meta-chain unlocked", {
+            persistentId,
+            chainId: chain.id,
+          });
+        }
+      }
+    }
+
     return newlyUnlocked;
   },
 
@@ -391,6 +463,35 @@ export const achievementStore = {
     const state = playerStates.get(persistentId);
     if (!state) return [];
     return Array.from(state.unlocked.keys());
+  },
+
+  /** Returns meta-chain progress for a player. */
+  getMetaChainProgress(persistentId: string): Array<{
+    id: string;
+    name: string;
+    description: string;
+    reward: { badge: string; title: string };
+    requires: string[];
+    completedRequires: string[];
+    unlocked: boolean;
+    unlockedAt: number | null;
+  }> {
+    const state = playerStates.get(persistentId);
+    const unlocked = state?.unlocked ?? new Map<string, number>();
+    return META_CHAINS.map((chain) => {
+      const completedRequires = chain.requires.filter((r) => unlocked.has(r));
+      const isUnlocked = unlocked.has(chain.id);
+      return {
+        id: chain.id,
+        name: chain.name,
+        description: chain.description,
+        reward: chain.reward,
+        requires: chain.requires,
+        completedRequires,
+        unlocked: isUnlocked,
+        unlockedAt: isUnlocked ? (unlocked.get(chain.id) ?? null) : null,
+      };
+    });
   },
 
   /** Clears all state. Intended for test isolation only. */
