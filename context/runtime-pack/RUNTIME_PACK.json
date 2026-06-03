@@ -5,7 +5,7 @@
     "slug": "vaultfront",
     "name": "VaultFront",
     "repo": "VaultSparkStudios/vaultfront",
-    "localPath": "C:\\Users\\p4cka\\documents\\development\\VaultFront"
+    "localPath": "<dev-root>\\VaultFront"
   },
   "sourceTemplates": {
     "agents": "docs/templates/project-system/AGENTS_PROJECT.template.md",
@@ -138,7 +138,7 @@
       "local": [
         {
           "label": "workspace",
-          "path": "C:\\Users\\p4cka\\documents\\development\\VaultFront"
+          "path": "<dev-root>\\VaultFront"
         }
       ],
       "staging": [],
