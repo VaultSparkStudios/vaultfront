@@ -15,7 +15,7 @@
   "silRubricVersion": "3.0",
   "silMax": 1000,
   "silScoreLegacy500": null,
-  "silScore": 858,
+  "silScore": 849,
   "silCategoriesV3": {
     "devHealth": 85,
     "creativeAlignment": 85,
@@ -34,7 +34,7 @@
   "modelTierCtxLimit": 200000,
   "modelPlanMode": false,
   "modelPlanModeSlash": null,
-  "ignisScore": 39292,
+  "ignisScore": 43790,
   "ignisGrade": "FORGE",
-  "ignisLastComputed": "2026-05-14"
+  "ignisLastComputed": "2026-05-21"
 }
