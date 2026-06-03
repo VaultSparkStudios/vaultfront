@@ -36,3 +36,16 @@ Shipped all 6 items from `docs/AUDIT_2026-05-18.md`.
 - Anti-cheat monitor now has alert cooldown and bounded seen-game retention.
 
 **Verification:** focused Vitest suite passed (5 files), modified-file ESLint passed, startup brief render passed. Full lint/build remain blocked by unrelated pre-existing repo issues documented in the audit execution log.
+
+## 2026-06-03 — Launch Readiness Audit+Implement Pass Complete
+
+Shipped all 4 items from `docs/AUDIT_2026-06-03.md`.
+
+**New fixes added:**
+
+- Readiness endpoint: `/api/vaultfront/readiness` now reports server health, launch gates, test surfaces, free-tier posture, AI cost guardrail posture, and revenue-signal warning from both master and worker processes.
+- Tournament operations: `TournamentModal` can now seed a registration bracket and report per-match winners through the existing tournament APIs.
+- Startup/test registration: `context/PROJECT_STATUS.json` now declares VaultFront as a game repo with concrete test surfaces for unit/server regression, production build, E2E smoke, and local manual playtesting.
+- Cost discipline: free-tier posture is recorded as `exempt-internal`, with live revenue still explicitly marked unverified.
+
+**Verification:** focused readiness Vitest passed, TypeScript no-emit passed, and touched-file ESLint passed.

@@ -21,3 +21,13 @@ Append-only. Each session appends one entry. Never edit prior entries.
 - Files or systems touched: startup scripts, `ContractHudWidget`, `CoachHintEngine`, `StreamingBus`, `NarratorBus`, `AntiCheatMonitor`, focused regression tests, and public-safe context docs.
 - Risks created or removed: Removes stale-startup, HUD feedback, overlay reconnect, narrator token, and moderation-noise risks. Full repo lint/build still have unrelated pre-existing blockers.
 - Recommended next move: Fix `src/server/Master.ts(166,30)` and the e2e/project-service lint configuration so full `npm run lint` and `npm run build-prod` can become green gates again.
+
+---
+
+## 2026-06-03 — Launch readiness audit + implementation pass
+
+- Goal: Run `/start → /audit → /implement → /closeout` and personalize the audit around VaultFront's current flags: missing test surfaces, no live revenue signal, tournament playtest readiness, and launch evidence.
+- What changed: Added a shared VaultFront readiness payload and `/api/vaultfront/readiness` routes on master/worker; added tournament seed and winner-report controls; wrote `docs/AUDIT_2026-06-03.*`; registered test surfaces and cost/revenue posture in `PROJECT_STATUS.json`.
+- Files or systems touched: `src/server/VaultFrontReadiness.ts`, `src/server/Master.ts`, `src/server/Worker.ts`, `src/client/TournamentModal.ts`, readiness test, audit docs, implementation plan, and public-safe context docs.
+- Risks created or removed: Removes a launch-readiness blind spot and API-only tournament operations. Revenue remains unverified and should stay warning-level until observable telemetry exists.
+- Recommended next move: Run `npm run build-prod` and `npm run e2e`, then use the readiness endpoint as the tournament playtest gate.

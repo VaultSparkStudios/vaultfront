@@ -13,6 +13,7 @@ import { logger } from "./Logger";
 import { MapPlaylist } from "./MapPlaylist";
 import { MasterLobbyService } from "./MasterLobbyService";
 import { renderHtml } from "./RenderHtml";
+import { buildVaultFrontReadiness } from "./VaultFrontReadiness";
 
 const config = getServerConfigFromServer();
 const playlist = new MapPlaylist();
@@ -192,6 +193,16 @@ app.get("/api/health", (_req, res) => {
   } else {
     res.status(503).json({ status: "unavailable" });
   }
+});
+
+app.get("/api/vaultfront/readiness", (_req, res) => {
+  const healthy = lobbyService?.isHealthy() ?? false;
+  res.status(healthy ? 200 : 503).json(
+    buildVaultFrontReadiness({
+      healthy,
+      processRole: "master",
+    }),
+  );
 });
 
 // SPA fallback route

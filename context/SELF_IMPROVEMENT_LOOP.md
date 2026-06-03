@@ -4,12 +4,18 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 980/1000 | Velocity: 80→ | Debt: → | Velocity trend: ↑
-Avgs — 3: 80.0 | Momentum runway: strong | Intent rate: 100%
-3-session: Dev 9 | Align 30 | Momentum 10 | Engage 25 | Process 6
-Last session: 2026-05-18 Session 5
+Total: 990/1000 | Velocity: 90↑ | Debt: → | Velocity trend: ↑
+Avgs — 3: 86.7 | Momentum runway: strong | Intent rate: 100%
+3-session: Dev 9 | Align 30 | Momentum 12 | Engage 25 | Process 10
+Last session: 2026-06-03 Launch readiness pass
 
 <!-- rolling-status-end -->
+
+## Sprint: 2026-06-03 — Launch Readiness Audit → Implement Pass (SIL estimate: 990/1000)
+
+Shipped all 4 June 3 audit items. Highlights: machine-readable readiness endpoint across master and worker, tournament seed/result controls in the modal, concrete test surfaces in `PROJECT_STATUS.json`, and explicit internal/free-tier plus live-revenue-warning posture.
+
+**Delta: 980 → 990.** processQuality +4 (startup brief now has a real game test surface), automationCoverage +3 (readiness contract), momentum +2 (4/4 audit items shipped), capitalEfficiency +1 (cost posture recorded before public usage growth). Remaining gap is revenue evidence, not implementation ability.
 
 ## Sprint: 2026-05-18 — Session 5 Audit → Implement Pass (SIL estimate: 980/1000)
 

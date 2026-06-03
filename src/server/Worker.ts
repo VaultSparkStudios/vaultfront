@@ -56,6 +56,7 @@ import { streamingBus } from "./StreamingBus";
 import { tournamentStore } from "./TournamentStore";
 import { verifyTurnstileToken } from "./Turnstile";
 import { tutorialOrchestrator } from "./TutorialOrchestrator";
+import { buildVaultFrontReadiness } from "./VaultFrontReadiness";
 import {
   vaultSeasonScheduler,
   type SeasonStatus,
@@ -785,6 +786,16 @@ export async function startWorker() {
       max: 20, // 20 requests per IP per second
     }),
   );
+
+  app.get("/api/vaultfront/readiness", (_req, res) => {
+    res.json(
+      buildVaultFrontReadiness({
+        healthy: true,
+        processRole: "worker",
+        workerId,
+      }),
+    );
+  });
 
   app.post("/api/create_game/:id", async (req, res) => {
     const id = req.params.id;

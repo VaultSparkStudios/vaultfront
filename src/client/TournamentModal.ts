@@ -172,6 +172,52 @@ export class TournamentModal extends LitElement {
     }
   }
 
+  private async seedTournament(tournamentId: string): Promise<void> {
+    this.error = "";
+    this.successMsg = "";
+    try {
+      const res = await fetch(
+        `${getApiBase()}/api/tournaments/${encodeURIComponent(tournamentId)}/seed`,
+        { method: "POST" },
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        this.error = (data as { error: string }).error ?? "Seed failed.";
+        return;
+      }
+      this.successMsg = "Bracket seeded. First-round matches are live.";
+      await this.loadBracket(tournamentId);
+    } catch {
+      this.error = "Network error.";
+    }
+  }
+
+  private async reportWinner(matchId: number, winnerId: string): Promise<void> {
+    this.error = "";
+    this.successMsg = "";
+    try {
+      const res = await fetch(
+        `${getApiBase()}/api/tournaments/matches/${matchId}/report`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ winnerId }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        this.error =
+          (data as { error: string }).error ?? "Could not report result.";
+        return;
+      }
+      this.successMsg = "Result reported. Bracket advanced.";
+      if (this.activeBracket)
+        await this.loadBracket(this.activeBracket.tournament.id);
+    } catch {
+      this.error = "Network error.";
+    }
+  }
+
   render() {
     if (!this.isOpen) return nothing;
 
@@ -316,17 +362,29 @@ export class TournamentModal extends LitElement {
     return html`
       <div>
         <h3 class="font-bold text-base mb-1">${tournament.name}</h3>
-        <p class="text-sm text-gray-400 mb-4">
-          ${tournament.mapName || "Any map"} · Status:
-          <span
-            class="${tournament.status === "active"
-              ? "text-blue-400"
-              : tournament.status === "complete"
-                ? "text-green-400"
-                : "text-gray-400"}"
-            >${tournament.status}</span
-          >
-        </p>
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <p class="text-sm text-gray-400">
+            ${tournament.mapName || "Any map"} · Status:
+            <span
+              class="${tournament.status === "active"
+                ? "text-blue-400"
+                : tournament.status === "complete"
+                  ? "text-green-400"
+                  : "text-gray-400"}"
+              >${tournament.status}</span
+            >
+          </p>
+          ${tournament.status === "registration"
+            ? html`
+                <button
+                  @click=${() => this.seedTournament(tournament.id)}
+                  class="px-3 py-1.5 text-xs bg-amber-600 hover:bg-amber-500 text-white rounded cursor-pointer border-0 shrink-0"
+                >
+                  Seed bracket
+                </button>
+              `
+            : nothing}
+        </div>
         <div class="flex gap-6 overflow-x-auto pb-2">
           ${rounds.map(
             (roundMatches, ri) => html`
@@ -361,6 +419,20 @@ export class TournamentModal extends LitElement {
                           ${m.winnerId === m.playerA
                             ? html`<span class="text-green-400">W</span>`
                             : nothing}
+                          ${this.canReportWinner(m, m.playerA)
+                            ? html`
+                                <button
+                                  @click=${() =>
+                                    this.reportWinner(
+                                      m.id,
+                                      m.playerA as string,
+                                    )}
+                                  class="text-[10px] bg-green-700 hover:bg-green-600 text-white rounded px-1.5 py-0.5 border-0 cursor-pointer"
+                                >
+                                  Win
+                                </button>
+                              `
+                            : nothing}
                         </div>
                         <div class="border-t border-gray-700"></div>
                         <div
@@ -377,6 +449,20 @@ export class TournamentModal extends LitElement {
                           ${m.winnerId === m.playerB
                             ? html`<span class="text-green-400">W</span>`
                             : nothing}
+                          ${this.canReportWinner(m, m.playerB)
+                            ? html`
+                                <button
+                                  @click=${() =>
+                                    this.reportWinner(
+                                      m.id,
+                                      m.playerB as string,
+                                    )}
+                                  class="text-[10px] bg-green-700 hover:bg-green-600 text-white rounded px-1.5 py-0.5 border-0 cursor-pointer"
+                                >
+                                  Win
+                                </button>
+                              `
+                            : nothing}
                         </div>
                       </div>
                     `,
@@ -388,6 +474,17 @@ export class TournamentModal extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  private canReportWinner(
+    match: TournamentMatch,
+    playerId: string | null,
+  ): boolean {
+    return Boolean(
+      playerId &&
+        match.status !== "complete" &&
+        this.activeBracket?.tournament.status === "active",
+    );
   }
 
   private renderCreate() {

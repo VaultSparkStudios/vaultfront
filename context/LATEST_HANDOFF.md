@@ -2,6 +2,22 @@
 
 This repo now keeps only a public-safe handoff summary. Detailed handoff history is maintained privately.
 
+## Where We Left Off — 2026-06-03
+
+**Session goal:** `/start → /audit → /implement → /closeout` with a fresh, project-specific launch-readiness audit.
+
+**Shipped:** All 4 items from `docs/AUDIT_2026-06-03.md` (Priority sum: 89.2).
+
+**Impact:** VaultFront now has a machine-readable readiness endpoint, concrete startup test surfaces, explicit internal/free-tier cost posture, and tournament bracket controls that let an internal playtest run without raw API calls.
+
+**Verification:** `npx vitest run tests/server/VaultFrontReadiness.test.ts` passed; `tsc --noEmit` passed; touched-file ESLint passed.
+
+**Known residuals:** revenue signal remains warning-level until live checkout/supporter telemetry is observed. `npm run build-prod` and `npm run e2e` should be run as the next broader promotion gates.
+
+**Suggested next focus:** run the production build and E2E smoke, then use `/api/vaultfront/readiness` as the single launch/playtest contract for tournament validation.
+
+---
+
 ## Where We Left Off — 2026-05-18
 
 **Session goal:** `/start → /audit → /implement → /closeout` — fresh repair audit after prior large feature passes.

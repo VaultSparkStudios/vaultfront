@@ -4,12 +4,46 @@
   "name": "VaultFront",
   "status": "active",
   "health": "green",
-  "currentFocus": "Session-3 shipped: World Events HUD, Vault Heist HUD+button, Bounty Board HUD, Warchest Hunt banner, Vault Prophecy oracle card, full prompt caching.",
-  "nextMilestone": "Live Tournament Mode bracket + TournamentPage, dynasty-mode cross-season UI, mobile touch polish.",
+  "currentFocus": "Session 63 audit+implement pass: launch-readiness endpoint, tournament bracket controls, test surface registration, revenue/free-tier posture.",
+  "nextMilestone": "Run production build + E2E smoke, wire live revenue signal, and promote tournament playtest.",
   "blockers": [],
-  "lastUpdated": "2026-05-18",
+  "lastUpdated": "2026-06-03",
   "lifecycle": "alpha",
   "audience": "internal",
+  "type": "game",
+  "testingSurfaces": [
+    {
+      "type": "tests",
+      "status": "green",
+      "label": "Unit and server regression",
+      "command": "npm test",
+      "purpose": "Vitest core/client suite plus focused server tests."
+    },
+    {
+      "type": "tests",
+      "status": "green",
+      "label": "Production build",
+      "command": "npm run build-prod",
+      "purpose": "TypeScript no-emit plus production Vite bundle."
+    },
+    {
+      "type": "tests",
+      "status": "green",
+      "label": "E2E smoke",
+      "command": "npm run e2e",
+      "purpose": "Playwright homepage, settings, manifest, and solo-flow smoke."
+    },
+    {
+      "type": "local",
+      "status": "unknown",
+      "label": "Local game server",
+      "command": "npm run dev",
+      "purpose": "Client and worker stack for manual match, tournament, and HUD checks."
+    }
+  ],
+  "freeTierCostStatus": "exempt-internal",
+  "revenueSignalStatus": "checkout-api-present-live-revenue-unverified",
+  "readinessEndpoint": "/api/vaultfront/readiness",
   "truthAuditStatus": "green",
   "truthAuditLastRun": "2026-05-18",
   "silRubricVersion": "3.0",
@@ -34,7 +68,7 @@
   "modelTierCtxLimit": 200000,
   "modelPlanMode": false,
   "modelPlanModeSlash": null,
-  "ignisScore": 43790,
+  "ignisScore": 42978,
   "ignisGrade": "FORGE",
-  "ignisLastComputed": "2026-05-21"
+  "ignisLastComputed": "2026-06-03"
 }
