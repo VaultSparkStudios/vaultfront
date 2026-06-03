@@ -33,3 +33,6 @@ docs/cache-ledger.ndjson
 test-results/
 playwright-report/
 context/.session-lock
+
+# Private surfaces — never commit (sanitization 2026-06-03)
+docs/CREATIVE_DIRECTION_RECORD.md
