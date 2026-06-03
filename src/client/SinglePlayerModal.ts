@@ -217,6 +217,7 @@ export class SinglePlayerModal extends BaseModal {
         .inputMax=${1000000000}
         .inputStep=${100000}
         .inputValue=${this.startingGoldValue}
+        .toggleAriaLabel=${"Initial gold option"}
         .inputAriaLabel=${translateText("single_modal.starting_gold")}
         .inputPlaceholder=${translateText(
           "single_modal.starting_gold_placeholder",
@@ -637,7 +638,10 @@ export class SinglePlayerModal extends BaseModal {
   }
 
   private renderVaultBotHint(): TemplateResult {
-    const hints: Record<Difficulty, { label: string; desc: string; color: string }> = {
+    const hints: Record<
+      Difficulty,
+      { label: string; desc: string; color: string }
+    > = {
       [Difficulty.Easy]: {
         label: "Casual",
         desc: "Bots rarely contest vaults and issue convoys infrequently.",
@@ -663,7 +667,9 @@ export class SinglePlayerModal extends BaseModal {
     if (!hint) return html``;
     return html`
       <div class="mx-6 mb-4 px-4 py-3 rounded-xl border ${hint.color} text-xs">
-        <span class="font-bold uppercase tracking-wider">Vault Bot: ${hint.label}</span>
+        <span class="font-bold uppercase tracking-wider"
+          >Vault Bot: ${hint.label}</span
+        >
         <span class="ml-2 opacity-80">${hint.desc}</span>
       </div>
     `;

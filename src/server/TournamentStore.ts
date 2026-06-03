@@ -51,6 +51,16 @@ export interface BracketView {
   tournament: Tournament;
   rounds: TournamentMatch[][];
   slots: TournamentSlot[];
+  operations: TournamentOperationsBrief;
+}
+
+export interface TournamentOperationsBrief {
+  status: TournamentStatus;
+  registeredPlayers: number;
+  missingSlots: number;
+  nextAction: string;
+  nextMatchId: number | null;
+  overlayUrl: string;
 }
 
 class TournamentStore {
@@ -291,6 +301,11 @@ class TournamentStore {
       tournament: t,
       rounds,
       slots: this.slots.get(tournamentId) ?? [],
+      operations: buildOperationsBrief(
+        t,
+        rounds,
+        this.slots.get(tournamentId) ?? [],
+      ),
     };
   }
 
@@ -370,6 +385,37 @@ function groupByRound(
     (result[m.round] ??= []).push(m);
   }
   return result;
+}
+
+function buildOperationsBrief(
+  tournament: Tournament,
+  rounds: TournamentMatch[][],
+  slots: TournamentSlot[],
+): TournamentOperationsBrief {
+  const nextMatch =
+    rounds.flat().find((match) => match.status !== "complete") ?? null;
+  const missingSlots = Math.max(0, tournament.maxPlayers - slots.length);
+  let nextAction = "Tournament complete. Clip the final and share the bracket.";
+  if (tournament.status === "registration") {
+    nextAction =
+      missingSlots > 0
+        ? `Recruit ${missingSlots} more player(s), then seed the bracket.`
+        : "Seed the bracket.";
+  } else if (nextMatch) {
+    nextAction =
+      nextMatch.status === "pending"
+        ? `Run match #${nextMatch.id}: ${nextMatch.playerA ?? "BYE"} vs ${nextMatch.playerB ?? "BYE"}.`
+        : `Report the winner for match #${nextMatch.id}.`;
+  }
+
+  return {
+    status: tournament.status,
+    registeredPlayers: slots.length,
+    missingSlots,
+    nextAction,
+    nextMatchId: nextMatch?.id ?? null,
+    overlayUrl: `/stream-overlay?tournamentId=${encodeURIComponent(tournament.id)}`,
+  };
 }
 
 export const tournamentStore = new TournamentStore();

@@ -54,8 +54,10 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 
 - ~~Fix unrelated global lint blockers in e2e/project-service config and Studio script lint debt.~~ ✅ Done
 - ~~Fix pre-existing `src/server/Master.ts(166,30)` type error~~ ✅ Done
-- Run `npm run build-prod` and `npm run e2e` after this readiness pass to promote tournament playtest confidence.
+- ~~Run `npm run build-prod` and `npm run e2e` after this readiness pass to promote tournament playtest confidence.~~ ✅ Done (`build-prod` green; CI-style serial E2E green with one flaky retry)
 - Wire a live revenue signal into the startup brief once checkout or supporter telemetry is observable.
+- Repair broad `npm test` residuals: `VaultFrontExecution` mock/BigInt failures and `CoachHintEngine` trigger-field assertion.
+- Consider a compact/mobile tutorial pattern that teaches VaultFront mechanics without a modal overlay.
 
 ## Deferred to Project Agents
 

@@ -13,6 +13,7 @@
 
 import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
+import { recordVaultFrontPlaytestPulse } from "./Api";
 
 const TUTORIAL_SEEN_KEY = "vf-tutorial-seen";
 const TUTORIAL_VERSION = "1";
@@ -59,6 +60,7 @@ export class VaultFrontTutorial extends LitElement {
   static styles = css`
     :host {
       display: contents;
+      pointer-events: none;
     }
 
     .overlay {
@@ -70,6 +72,7 @@ export class VaultFrontTutorial extends LitElement {
       justify-content: center;
       z-index: 9999;
       font-family: "Overpass", sans-serif;
+      pointer-events: none;
     }
 
     .card {
@@ -80,6 +83,7 @@ export class VaultFrontTutorial extends LitElement {
       width: min(440px, calc(100vw - 32px));
       color: #f1f5f9;
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+      pointer-events: auto;
     }
 
     .progress {
@@ -171,25 +175,41 @@ export class VaultFrontTutorial extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this.style.pointerEvents = "none";
+    if (window.matchMedia("(max-width: 640px)").matches) {
+      return;
+    }
     const seen = localStorage.getItem(TUTORIAL_SEEN_KEY);
     if (seen !== TUTORIAL_VERSION) {
       // Slight delay so the game UI can render first
       setTimeout(() => {
         this.open = true;
+        void recordVaultFrontPlaytestPulse({
+          surface: "tutorial",
+          event: "shown",
+        });
       }, 800);
     }
   }
 
-  private dismiss() {
+  private dismiss(event: "skip" | "complete" = "skip") {
     localStorage.setItem(TUTORIAL_SEEN_KEY, TUTORIAL_VERSION);
     this.open = false;
+    void recordVaultFrontPlaytestPulse({
+      surface: "tutorial",
+      event,
+    });
   }
 
   private advance() {
     if (this.step < STEPS.length - 1) {
       this.step++;
+      void recordVaultFrontPlaytestPulse({
+        surface: "tutorial",
+        event: "advance",
+      });
     } else {
-      this.dismiss();
+      this.dismiss("complete");
     }
   }
 
@@ -221,7 +241,7 @@ export class VaultFrontTutorial extends LitElement {
           <div class="body">${current.body}</div>
 
           <div class="actions">
-            <button class="skip" @click=${this.dismiss}>
+            <button class="skip" @click=${() => this.dismiss("skip")}>
               ${isLast ? "" : "Skip tutorial"}
             </button>
             <button

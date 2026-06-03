@@ -25,6 +25,7 @@ export class ToggleInputCard extends LitElement {
   @property({ attribute: false }) inputMax?: number | string;
   @property({ attribute: false }) inputStep?: number | string;
   @property({ attribute: false }) inputValue?: number | string;
+  @property({ attribute: false }) toggleAriaLabel?: string;
   @property({ attribute: false }) inputAriaLabel?: string;
   @property({ attribute: false }) inputPlaceholder?: string;
   @property({ attribute: false }) defaultInputValue?: number | string;
@@ -106,6 +107,7 @@ export class ToggleInputCard extends LitElement {
       <div class="${cardClass(this.checked, "relative overflow-hidden")}">
         <button
           type="button"
+          aria-label=${this.toggleAriaLabel ?? nothing}
           aria-pressed=${this.checked}
           @click=${this.handleCardClick}
           class="w-full h-full p-3 flex flex-col items-center justify-between gap-2 focus:outline-none"

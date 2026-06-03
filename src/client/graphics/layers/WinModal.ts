@@ -31,6 +31,7 @@ import {
   postStyleHistory,
   recordVaultFrontFunnelTelemetry,
   recordVaultFrontOutcomeTelemetry,
+  recordVaultFrontPlaytestPulse,
   recordVaultFrontRecapEvent,
   ReplayHighlight,
   requestReplayHighlight,
@@ -356,6 +357,10 @@ export class WinModal extends LitElement implements Layer {
         event: `match_feedback_${signal}`,
         variant: this.recapCtaVariant,
         value: 1,
+      });
+      void recordVaultFrontPlaytestPulse({
+        surface: "match",
+        event: `feedback_${signal}`,
       });
     };
     return html`

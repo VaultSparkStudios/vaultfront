@@ -56,6 +56,10 @@ import { streamingBus } from "./StreamingBus";
 import { tournamentStore } from "./TournamentStore";
 import { verifyTurnstileToken } from "./Turnstile";
 import { tutorialOrchestrator } from "./TutorialOrchestrator";
+import {
+  buildVaultFrontPlaytestPulseSummary,
+  recordVaultFrontPlaytestPulse,
+} from "./VaultFrontPlaytestPulse";
 import { buildVaultFrontReadiness } from "./VaultFrontReadiness";
 import {
   vaultSeasonScheduler,
@@ -147,6 +151,16 @@ const VaultFrontFunnelTelemetrySchema = z.object({
     mid: z.record(z.string(), z.number().int().min(0).max(10_000)),
     late: z.record(z.string(), z.number().int().min(0).max(10_000)),
   }),
+});
+
+const VaultFrontPlaytestPulseEventSchema = z.object({
+  surface: z.enum(["tutorial", "match", "tournament", "retention"]),
+  event: z
+    .string()
+    .min(1)
+    .max(64)
+    .regex(/^[a-zA-Z0-9_.-]+$/),
+  value: z.number().int().min(1).max(10_000).default(1),
 });
 
 interface VaultFrontSeasonContractState {
@@ -793,6 +807,7 @@ export async function startWorker() {
         healthy: true,
         processRole: "worker",
         workerId,
+        playtestPulse: buildVaultFrontPlaytestPulseSummary(),
       }),
     );
   });
@@ -1338,6 +1353,10 @@ export async function startWorker() {
       return res.status(400).json({ error: z.prettifyError(parsed.error) });
     }
     recordFunnelTelemetry(parsed.data);
+    recordVaultFrontPlaytestPulse({
+      surface: "retention",
+      event: parsed.data.won ? "funnel_win" : "funnel_loss",
+    });
     return res.json({ ok: true });
   });
 
@@ -1360,6 +1379,19 @@ export async function startWorker() {
       generatedAt: Date.now(),
       summaries: summary,
     });
+  });
+
+  app.post("/api/vaultfront/playtest-pulse", async (req, res) => {
+    const parsed = VaultFrontPlaytestPulseEventSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: z.prettifyError(parsed.error) });
+    }
+    const summary = recordVaultFrontPlaytestPulse(parsed.data);
+    return res.json({ ok: true, summary });
+  });
+
+  app.get("/api/vaultfront/playtest-pulse/summary", async (_req, res) => {
+    return res.json(buildVaultFrontPlaytestPulseSummary());
   });
 
   // ── Anti-Cheat Admin ─────────────────────────────────────────────────────
@@ -3124,6 +3156,10 @@ export async function startWorker() {
   app.post("/api/tournaments/:id/seed", tourneyRateLimit, async (req, res) => {
     const result = await tournamentStore.seedBracket(req.params.id);
     if ("error" in result) return res.status(409).json(result);
+    recordVaultFrontPlaytestPulse({
+      surface: "tournament",
+      event: "seed_bracket",
+    });
     return res.json(result);
   });
 
@@ -3141,6 +3177,10 @@ export async function startWorker() {
         parsed.data.winnerId,
       );
       if ("error" in result) return res.status(409).json(result);
+      recordVaultFrontPlaytestPulse({
+        surface: "tournament",
+        event: "report_winner",
+      });
       return res.json(result);
     },
   );

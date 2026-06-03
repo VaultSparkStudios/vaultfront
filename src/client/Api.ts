@@ -441,6 +441,40 @@ const VaultFrontFunnelSummarySchema = z.object({
   ),
 });
 
+const VaultFrontPlaytestPulseEventSchema = z.object({
+  surface: z.enum(["tutorial", "match", "tournament", "retention"]),
+  event: z.string().min(1).max(64),
+  value: z.number().int().min(1).optional(),
+});
+
+const VaultFrontPlaytestPulseSummarySchema = z.object({
+  generatedAt: z.string(),
+  status: z.enum(["no-signal", "warming", "ready"]),
+  score: z.number(),
+  totals: z.object({
+    events: z.number(),
+    tutorialShown: z.number(),
+    tutorialCompleted: z.number(),
+    tutorialSkipped: z.number(),
+    matchFeedback: z.number(),
+    tournamentActions: z.number(),
+    retentionSignals: z.number(),
+  }),
+  rates: z.object({
+    tutorialCompletion: z.number(),
+    tutorialSkip: z.number(),
+  }),
+  freshness: z.object({
+    firstEventAt: z.string().nullable(),
+    lastEventAt: z.string().nullable(),
+    ageMinutes: z.number().nullable(),
+  }),
+  recent: z.array(
+    VaultFrontPlaytestPulseEventSchema.extend({ at: z.number() }),
+  ),
+  insights: z.array(z.string()),
+});
+
 export type VaultFrontDockAssignment = z.infer<
   typeof VaultFrontDockAssignmentSchema
 >;
@@ -465,6 +499,12 @@ export type VaultFrontFunnelTelemetryInput = z.infer<
 >;
 export type VaultFrontFunnelSummary = z.infer<
   typeof VaultFrontFunnelSummarySchema
+>;
+export type VaultFrontPlaytestPulseEvent = z.infer<
+  typeof VaultFrontPlaytestPulseEventSchema
+>;
+export type VaultFrontPlaytestPulseSummary = z.infer<
+  typeof VaultFrontPlaytestPulseSummarySchema
 >;
 
 export async function updateVaultFrontSeasonContracts(delta: {
@@ -935,6 +975,49 @@ export async function fetchVaultFrontFunnelSummary(
     }
     const json = await response.json();
     const parsed = VaultFrontFunnelSummarySchema.safeParse(json);
+    if (!parsed.success) {
+      return false;
+    }
+    return parsed.data;
+  } catch {
+    return false;
+  }
+}
+
+export async function recordVaultFrontPlaytestPulse(
+  input: VaultFrontPlaytestPulseEvent,
+): Promise<boolean> {
+  const parsed = VaultFrontPlaytestPulseEventSchema.safeParse(input);
+  if (!parsed.success) {
+    return false;
+  }
+  try {
+    const response = await fetch(
+      `${getApiBase()}/api/vaultfront/playtest-pulse`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      },
+    );
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function fetchVaultFrontPlaytestPulseSummary(): Promise<
+  VaultFrontPlaytestPulseSummary | false
+> {
+  try {
+    const response = await fetch(
+      `${getApiBase()}/api/vaultfront/playtest-pulse/summary`,
+    );
+    if (!response.ok) {
+      return false;
+    }
+    const json = await response.json();
+    const parsed = VaultFrontPlaytestPulseSummarySchema.safeParse(json);
     if (!parsed.success) {
       return false;
     }

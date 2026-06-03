@@ -47,6 +47,14 @@ interface BracketView {
   tournament: Tournament;
   rounds: TournamentMatch[][];
   slots: TournamentSlot[];
+  operations?: {
+    status: string;
+    registeredPlayers: number;
+    missingSlots: number;
+    nextAction: string;
+    nextMatchId: number | null;
+    overlayUrl: string;
+  };
 }
 
 type Tab = "browse" | "bracket" | "create";
@@ -357,7 +365,7 @@ export class TournamentModal extends LitElement {
       `;
     }
 
-    const { tournament, rounds } = this.activeBracket;
+    const { tournament, rounds, operations } = this.activeBracket;
 
     return html`
       <div>
@@ -385,6 +393,34 @@ export class TournamentModal extends LitElement {
               `
             : nothing}
         </div>
+        ${operations
+          ? html`
+              <div
+                class="mb-4 rounded bg-slate-950/60 border border-blue-500/30 p-3 text-xs text-slate-300"
+              >
+                <div class="flex items-center justify-between gap-3 mb-2">
+                  <span class="font-semibold text-blue-300"
+                    >Operator brief</span
+                  >
+                  <span class="text-slate-400"
+                    >${operations.registeredPlayers}/${tournament.maxPlayers}
+                    players</span
+                  >
+                </div>
+                <p class="text-slate-200 mb-2">${operations.nextAction}</p>
+                <div class="flex flex-wrap gap-2 text-[11px] text-slate-400">
+                  <span>Missing slots: ${operations.missingSlots}</span>
+                  <span
+                    >Next match:
+                    ${operations.nextMatchId === null
+                      ? "none"
+                      : `#${operations.nextMatchId}`}</span
+                  >
+                  <span>Overlay: ${operations.overlayUrl}</span>
+                </div>
+              </div>
+            `
+          : nothing}
         <div class="flex gap-6 overflow-x-auto pb-2">
           ${rounds.map(
             (roundMatches, ri) => html`

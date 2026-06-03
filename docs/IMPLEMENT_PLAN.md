@@ -1,11 +1,12 @@
-# Implement Plan — 2026-06-03 Audit
+# Implement Plan — 2026-06-03 Session 63 Audit
 
-1. `launch-readiness-command-center` — add shared readiness payload and expose it from master and worker.
-2. `tournament-bracket-ops` — add tournament seed/report controls to the existing modal.
-3. `registered-test-surface` — update `PROJECT_STATUS.json` so `/start` shows real test surfaces.
-4. `free-tier-revenue-discipline` — record internal/free-tier and revenue-signal posture in the same status contract and readiness endpoint.
+1. `playtest-pulse-command-center` — add a server-side alpha pulse model plus POST/summary endpoints.
+2. `tutorial-retention-signal` — send tutorial shown/advance/skip/complete events into the pulse.
+3. `tournament-streamer-brief` — add operations metadata to bracket views and render it in `TournamentModal`.
+4. `readiness-pulse-evidence` — attach playtest pulse status to `/api/vaultfront/readiness`.
 
 Verification:
 
-- `node --check` is not available for TypeScript; use `npx tsc --noEmit`.
-- Run focused Vitest for touched server helper and client compile coverage via typecheck.
+- Focused Vitest: `npx vitest run tests/server/VaultFrontPlaytestPulse.test.ts tests/server/VaultFrontReadiness.test.ts tests/server/TournamentStoreOps.test.ts`.
+- TypeScript: `.\\node_modules\\.bin\\tsc.cmd --noEmit`.
+- Touched-file ESLint: `.\\node_modules\\.bin\\eslint.cmd ...`.

@@ -49,3 +49,17 @@ Shipped all 4 items from `docs/AUDIT_2026-06-03.md`.
 - Cost discipline: free-tier posture is recorded as `exempt-internal`, with live revenue still explicitly marked unverified.
 
 **Verification:** focused readiness Vitest passed, TypeScript no-emit passed, and touched-file ESLint passed.
+
+## 2026-06-03 — Session 63 Playtest Pulse Audit+Implement Pass Complete
+
+Shipped all 4 items from `docs/AUDIT_2026-06-03_S63.md`.
+
+**New fixes added:**
+
+- Playtest pulse: new in-memory server summary for tutorial, match-feedback, tournament-ops, and retention signals, exposed through `/api/vaultfront/playtest-pulse`.
+- Readiness evidence: `/api/vaultfront/readiness` now includes playtest pulse status, score, freshness, and launch-gate evidence.
+- Tutorial telemetry: desktop first-run tutorial now records shown/advance/skip/complete events; compact/mobile viewports defer the modal so it does not block the play grid.
+- Tournament operations: bracket responses now include an operator brief with registered player count, missing slots, next action, next match, and overlay URL; `TournamentModal` renders it.
+- E2E compatibility: `/api/env` preserves `game_env` and now also exposes `env`; single-player start-button accessibility no longer collides with the "Starting gold" option.
+
+**Verification:** focused pulse/readiness/tournament Vitest passed, TypeScript no-emit passed, touched-file ESLint passed, production build passed, mobile single-player E2E passed, and CI-style serial E2E passed with one flaky retry. Broad `npm test` still fails on 3 pre-existing/non-touched tests in `VaultFrontExecution` and `CoachHintEngine`.

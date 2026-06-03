@@ -2,6 +2,14 @@ export interface VaultFrontReadinessInput {
   healthy: boolean;
   processRole: "master" | "worker";
   workerId?: number;
+  playtestPulse?: {
+    status: "no-signal" | "warming" | "ready";
+    score: number;
+    freshness: {
+      lastEventAt: string | null;
+      ageMinutes: number | null;
+    };
+  };
 }
 
 export interface VaultFrontReadinessPayload {
@@ -16,6 +24,7 @@ export interface VaultFrontReadinessPayload {
     revenueSignal: "warn";
     freeTierCost: "pass";
     aiCostGuardrail: "pass";
+    playtestPulse: "pass" | "warn";
   };
   testSurfaces: Array<{
     label: string;
@@ -27,6 +36,7 @@ export interface VaultFrontReadinessPayload {
     status: "pass" | "warn";
     evidence: string;
   }>;
+  playtestPulse?: VaultFrontReadinessInput["playtestPulse"];
 }
 
 const testSurfaces = [
@@ -57,6 +67,7 @@ export function buildVaultFrontReadiness(
   input: VaultFrontReadinessInput,
 ): VaultFrontReadinessPayload {
   const status = input.healthy ? "ready" : "degraded";
+  const pulseReady = input.playtestPulse?.status === "ready";
 
   return {
     project: "vaultfront",
@@ -70,6 +81,7 @@ export function buildVaultFrontReadiness(
       revenueSignal: "warn",
       freeTierCost: "pass",
       aiCostGuardrail: "pass",
+      playtestPulse: pulseReady ? "pass" : "warn",
     },
     testSurfaces,
     launchGates: [
@@ -97,6 +109,14 @@ export function buildVaultFrontReadiness(
         evidence:
           "Tournament, replay, contracts, season, and HUD test commands are registered.",
       },
+      {
+        gate: "playtest-pulse",
+        status: pulseReady ? "pass" : "warn",
+        evidence: input.playtestPulse
+          ? `Pulse ${input.playtestPulse.status} at score ${input.playtestPulse.score}; latest event ${input.playtestPulse.freshness.lastEventAt ?? "not recorded"}.`
+          : "No live playtest pulse attached to this process.",
+      },
     ],
+    playtestPulse: input.playtestPulse,
   };
 }

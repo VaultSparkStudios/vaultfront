@@ -4,6 +4,22 @@
 
 This repo now keeps only a public-safe handoff summary. Detailed handoff history is maintained privately.
 
+## Where We Left Off — 2026-06-03
+
+**Session goal:** `/start → /audit → /implement → /closeout` with a fresh, project-specific launch-readiness audit.
+
+**Shipped:** All 4 items from `docs/AUDIT_2026-06-03.md` (Priority sum: 89.2).
+
+**Impact:** VaultFront now has a machine-readable readiness endpoint, concrete startup test surfaces, explicit internal/free-tier cost posture, and tournament bracket controls that let an internal playtest run without raw API calls.
+
+**Verification:** `npx vitest run tests/server/VaultFrontReadiness.test.ts` passed; `tsc --noEmit` passed; touched-file ESLint passed.
+
+**Known residuals:** revenue signal remains warning-level until live checkout/supporter telemetry is observed. `npm run build-prod` and `npm run e2e` should be run as the next broader promotion gates.
+
+**Suggested next focus:** run the production build and E2E smoke, then use `/api/vaultfront/readiness` as the single launch/playtest contract for tournament validation.
+
+---
+
 ## Where We Left Off — 2026-05-18
 
 **Session goal:** `/start → /audit → /implement → /closeout` — fresh repair audit after prior large feature passes.
@@ -23,19 +39,3 @@ This repo now keeps only a public-safe handoff summary. Detailed handoff history
 ## Where We Left Off — 2026-05-17
 
 **Session goal:** `/start → /audit → /implement → /closeout` — full genius-level pass.
-
-**Shipped:** All 19 audit items from `docs/AUDIT_2026-05-17.md` (Priority sum: ~250).
-
-**Final commit:** `6a00d77f` — context write-backs (chore)
-
-**Branch state:** HEAD (detached — all commits on working branch)
-
-**No blockers.** Next session can start fresh with `/start` and run `/audit` against the updated baseline.
-
-**Key new files:**
-
-- `src/client/graphics/SpectatorAutoCamera.ts` — heatmap spectator camera
-- `src/client/components/RankBadge.ts` — Elo rank badge component
-- `scripts/record-session-ledger.mjs` — Stop-hook token ledger writer
-- `src/server/EloRating.ts`, `src/server/PlayerStatsStore.ts`, `src/server/VaultSeasonScheduler.ts` — all updated
-- `src/server/Worker.ts` — `/api/mutator-vote` + `/api/replay/:id/clip` endpoints

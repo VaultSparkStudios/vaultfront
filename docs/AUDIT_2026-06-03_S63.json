@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "/audit skill v1.0",
+  "generatedAt": "2026-06-03",
+  "project": "vaultfront",
+  "type": "game",
+  "summary": {
+    "totalItems": 4,
+    "combinedPriority": 104.7,
+    "top3": [
+      "playtest-pulse-command-center",
+      "tutorial-retention-signal",
+      "tournament-streamer-brief"
+    ]
+  },
+  "items": [
+    {
+      "slug": "playtest-pulse-command-center",
+      "tier": "fire",
+      "axis": "feedback_loop/gamification/speed",
+      "effort": "1h",
+      "impact": 9,
+      "innovation": 8,
+      "priority": 36.0,
+      "item": "Turn scattered alpha telemetry into a single playtest pulse that says whether VaultFront is fun, legible, and tournament-ready today.",
+      "recipe": "Add server-side playtest pulse recording and summary endpoints that aggregate tutorial completion, post-match feedback, tournament actions, and retention signals into one launch-facing payload.",
+      "status": "shipped"
+    },
+    {
+      "slug": "tutorial-retention-signal",
+      "tier": "fire",
+      "axis": "ux/feedback_loop/engagement",
+      "effort": "30m",
+      "impact": 8,
+      "innovation": 7,
+      "priority": 29.9,
+      "item": "Make first-session onboarding measurable without adding friction.",
+      "recipe": "Have VaultFrontTutorial post lightweight events for shown, step advance, skip, and complete so playtest pulse can distinguish confusion from churn.",
+      "status": "shipped"
+    },
+    {
+      "slug": "tournament-streamer-brief",
+      "tier": "high",
+      "axis": "gamification/ux/feature_depth",
+      "effort": "1h",
+      "impact": 8,
+      "innovation": 6,
+      "priority": 24.0,
+      "item": "Give every internal tournament a generated operator brief: state, missing slots, next actionable match, and overlay URL.",
+      "recipe": "Extend TournamentStore bracket views with a compact operations summary and expose it through existing bracket responses so the modal can show what to run next.",
+      "status": "shipped"
+    },
+    {
+      "slug": "readiness-pulse-evidence",
+      "tier": "high",
+      "axis": "security/process/capital",
+      "effort": "30m",
+      "impact": 7,
+      "innovation": 5,
+      "priority": 14.8,
+      "item": "Close the startup brief's stale revenue/compliance warning loop with live launch evidence instead of another static note.",
+      "recipe": "Include playtest pulse and evidence freshness in /api/vaultfront/readiness and PROJECT_STATUS so promotion checks can see whether the alpha has current behavioral signal.",
+      "status": "shipped"
+    }
+  ],
+  "innovationReserve": [
+    "playtest-pulse-command-center",
+    "tutorial-retention-signal"
+  ],
+  "skipped": [
+    {
+      "slug": "more-llm-narrative",
+      "reason": "VaultFront already has narrator, recap, coach, fortune, and story systems; current leverage is measuring whether those systems improve retention."
+    },
+    {
+      "slug": "public-payment-push",
+      "reason": "Revenue signal remains unverified and the project is internal alpha; pushing monetization before playtest pulse would violate cost discipline."
+    }
+  ],
+  "executionLog": [
+    {
+      "slug": "playtest-pulse-command-center",
+      "status": "shipped",
+      "summary": "Added the in-memory VaultFront playtest pulse model plus POST and summary endpoints for tutorial, match, tournament, and retention signals."
+    },
+    {
+      "slug": "tutorial-retention-signal",
+      "status": "shipped",
+      "summary": "VaultFrontTutorial now records shown, advance, skip, and complete events without blocking first-session flow."
+    },
+    {
+      "slug": "tournament-streamer-brief",
+      "status": "shipped",
+      "summary": "Bracket views now include an operations brief and TournamentModal renders the next action, missing slots, next match, and overlay URL."
+    },
+    {
+      "slug": "readiness-pulse-evidence",
+      "status": "shipped",
+      "summary": "Readiness payloads now include the playtest pulse gate, score, freshness, and launch evidence."
+    }
+  ]
+}
