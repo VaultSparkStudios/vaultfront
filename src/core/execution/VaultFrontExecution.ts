@@ -105,6 +105,10 @@ export class VaultFrontExecution implements Execution {
   private squadObjectiveWindows: SquadObjectiveWindow[] = [];
   private lastPublishedConvoyDebugKey = "";
 
+  // Chain Guardian: consecutive vault captures per player (resets on site loss)
+  private consecutiveVaultCaptures = new Map<number, number>();
+  private readonly CHAIN_GUARDIAN_THRESHOLD = 3;
+
   // Per-player command rate-limiting: ring buffer of last 5 command ticks
   private commandTimestamps = new Map<number, number[]>();
   private readonly commandRateWindowTicks = 10; // 1s at 10 tps
@@ -1308,6 +1312,7 @@ export class VaultFrontExecution implements Execution {
       }
       this.updateExecutionChainCapture(owner, ticks);
       this.openSquadObjectiveWindow(owner, site, ticks);
+      this.updateChainGuardian(owner, site.tile, ticks);
 
       const vacantBonus =
         site.vacantAlertFiredAtTick > 0 &&
@@ -1323,6 +1328,13 @@ export class VaultFrontExecution implements Execution {
       site.controllerID = null;
       site.controlTicks = 0;
       site.cooldownTicks = this.vaultCooldownTicksEffective();
+      // Reset previous owner's chain if site changes hands
+      if (
+        site.passiveOwnerID !== null &&
+        site.passiveOwnerID !== owner.smallID()
+      ) {
+        this.consecutiveVaultCaptures.set(site.passiveOwnerID, 0);
+      }
       site.passiveOwnerID = owner.smallID();
       site.nextPassiveGoldTick =
         ticks + this.vaultPassiveIncomeIntervalTicksEffective();
@@ -1545,7 +1557,8 @@ export class VaultFrontExecution implements Execution {
       | "ghost_reveal"
       | "heist_executed"
       | "bounty_collected"
-      | "map_event",
+      | "map_event"
+      | "chain_guardian_earned",
   ): boolean {
     return (
       this.weeklyMutator === "lane_fog" &&
@@ -1612,6 +1625,28 @@ export class VaultFrontExecution implements Execution {
       MessageType.CHAT,
       player.id(),
     );
+  }
+
+  private updateChainGuardian(
+    player: Player,
+    tile: TileRef,
+    ticks: number,
+  ): void {
+    const pid = player.smallID();
+    const prev = this.consecutiveVaultCaptures.get(pid) ?? 0;
+    const next = prev + 1;
+    this.consecutiveVaultCaptures.set(pid, next);
+    if (next === this.CHAIN_GUARDIAN_THRESHOLD) {
+      this.consecutiveVaultCaptures.set(pid, 0);
+      this.emitActivity(
+        "chain_guardian_earned",
+        tile,
+        pid,
+        null,
+        "Chain Guardian — 3 vault captures in a row!",
+        ticks,
+      );
+    }
   }
 
   private sweepExpiredSquadObjectives(ticks: number): void {
@@ -2358,7 +2393,8 @@ export class VaultFrontExecution implements Execution {
       | "ghost_reveal"
       | "heist_executed"
       | "bounty_collected"
-      | "map_event",
+      | "map_event"
+      | "chain_guardian_earned",
     tile: TileRef,
     sourcePlayerID: number | null,
     targetPlayerID: number | null,

@@ -480,7 +480,8 @@ export interface VaultFrontActivityUpdate {
     | "ghost_reveal"
     | "heist_executed"
     | "bounty_collected"
-    | "map_event";
+    | "map_event"
+    | "chain_guardian_earned";
   tile: TileRef;
   sourcePlayerID: number | null;
   targetPlayerID: number | null;

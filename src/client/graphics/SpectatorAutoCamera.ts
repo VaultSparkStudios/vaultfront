@@ -32,6 +32,7 @@ const HEAT_WEIGHTS: Record<VaultFrontActivityUpdate["activity"], number> = {
   heist_executed: 120,
   bounty_collected: 100,
   map_event: 85,
+  chain_guardian_earned: 40,
 };
 
 const HEAT_DECAY_PER_SECOND = 0.85;
