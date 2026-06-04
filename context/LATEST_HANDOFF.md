@@ -2,6 +2,22 @@
 
 This repo now keeps only a public-safe handoff summary. Detailed handoff history is maintained privately.
 
+## Where We Left Off — 2026-06-04
+
+**Session goal:** `/start → /audit → /implement → /closeout` with a comprehensive Session 64 audit across 9 axes.
+
+**Shipped:** All 12 Wave 1+2 items from `docs/AUDIT_2026-06-04_S64.md` (Priority sum: 251.3 shipped / 356.6 total).
+
+**Impact:** VaultFront's unit test gate is fully green for the first time (90 files / 637 tests). Entropy computed (0.08 — healthy). KPI panel now shows live playtest pulse status + player session stats. Chain Guardian badge rewards 3-consecutive-vault chains. Spectator Prediction League is publicly visible in the leaderboard. NarratorBus auto-blends commentary intensity by match phase. Pre-match brief appears in GameStartingModal for every multiplayer session.
+
+**Verification:** all 90 Vitest test files (637 tests) pass; `tsc --noEmit` clean; `npm run build-prod` green (Vite bundled in 13.4s); touched-file ESLint clean.
+
+**Known residuals:** Wave 3 items deferred to next session: rival-system (4h), mobile-tutorial-compact-strip (4h), revenue-telemetry-hookup (4h), narrator-shared-broadcast (2h), season-pass-mission-injection (8h), post-match-route-replay-ai (8h), adversarial-spectator-vote (1w). Revenue signal still warning-level until live checkout/supporter telemetry is observed.
+
+**Suggested next focus:** rival-system (Priority 24.4, highest deferred) → narrator-shared-broadcast (quick 2h token-cost win) → season-pass-mission-injection (highest innovation, 8h).
+
+---
+
 ## Where We Left Off — 2026-06-03
 
 **Session goal:** `/start → /audit → /implement → /closeout` with a fresh Session 63 playtest-pulse audit.

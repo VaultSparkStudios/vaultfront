@@ -6,6 +6,22 @@ This repo now keeps only a public-safe handoff summary. Detailed handoff history
 
 ## Where We Left Off — 2026-06-03
 
+**Session goal:** `/start → /audit → /implement → /closeout` with a fresh Session 63 playtest-pulse audit.
+
+**Shipped:** All 4 items from `docs/AUDIT_2026-06-03_S63.md` (Priority sum: 104.7).
+
+**Impact:** VaultFront now has a live playtest pulse contract for tutorial completion, match feedback, tournament operations, and retention signals. Readiness includes pulse freshness, tournament brackets show operator next-actions, first-run tutorial telemetry is recorded on desktop, and mobile no longer gets a blocking tutorial modal over the play grid.
+
+**Verification:** focused Vitest passed (6 tests); `tsc --noEmit` passed; touched-file ESLint passed; `npm run build-prod` passed; `CI=1 npm run e2e` passed overall with one flaky retry. Broad `npm test` still fails on 3 residual non-touched tests: two `VaultFrontExecution` failures and one `CoachHintEngine` assertion mismatch.
+
+**Known residuals:** revenue signal remains warning-level until live checkout/supporter telemetry is observed. Full parallel E2E is locally flaky under 6 workers; serial CI-style E2E is the reliable gate. Broad Vitest residuals should be repaired before claiming all unit surfaces green.
+
+**Suggested next focus:** fix the 3 broad Vitest residuals, then wire the playtest pulse summary into an internal operator dashboard or startup brief tile.
+
+---
+
+## Where We Left Off — 2026-06-03
+
 **Session goal:** `/start → /audit → /implement → /closeout` with a fresh, project-specific launch-readiness audit.
 
 **Shipped:** All 4 items from `docs/AUDIT_2026-06-03.md` (Priority sum: 89.2).
@@ -23,19 +39,3 @@ This repo now keeps only a public-safe handoff summary. Detailed handoff history
 ## Where We Left Off — 2026-05-18
 
 **Session goal:** `/start → /audit → /implement → /closeout` — fresh repair audit after prior large feature passes.
-
-**Shipped:** All 6 items from `docs/AUDIT_2026-05-18.md` (Priority sum: 101.4).
-
-**Impact:** Startup brief regeneration works again; contract HUD and micro-coach are now grounded in live match state; stream overlays and narrator SSE are more resilient; anti-cheat alerting is less noisy.
-
-**Verification:** startup brief render passed; focused Vitest suite passed (5 files); modified-file ESLint passed.
-
-**Known residuals:** full `npm run lint` still fails on unrelated e2e/project-service and Studio script lint debt; `npm run build-prod` still fails on pre-existing `src/server/Master.ts(166,30)`.
-
-**Suggested next focus:** clear the global lint/build blockers, then run a full production build and browser smoke for the new HUD/overlay flows.
-
----
-
-## Where We Left Off — 2026-05-17
-
-**Session goal:** `/start → /audit → /implement → /closeout` — full genius-level pass.

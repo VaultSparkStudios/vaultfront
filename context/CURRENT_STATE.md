@@ -50,6 +50,30 @@ Shipped all 4 items from `docs/AUDIT_2026-06-03.md`.
 
 **Verification:** focused readiness Vitest passed, TypeScript no-emit passed, and touched-file ESLint passed.
 
+## 2026-06-04 — Session 64 Comprehensive Audit+Implement Pass Complete
+
+Shipped all 12 Wave 1+2 items from `docs/AUDIT_2026-06-04_S64.md`.
+
+**Wave 1 (critical + quick):**
+
+- Vitest residuals: all 90 test files (637 tests) fully green — 3 pre-existing mock-staleness failures repaired (VaultFrontExecution x/y/isValidCoord/ref mocks, VaultFrontLifecycle accumulatedPassiveGold, CoachHintEngine trigger field)
+- Entropy computed: `entropyScore: 0.08` (healthy) written to PROJECT_STATUS.json
+- ContractHudWidget/VaultFrontLayer: intercept probability bar pulses with red glow when >70%; CoachHintEngine `convoy_danger` trigger (2-min cooldown)
+- CoachHintEngine: `economy_stall` trigger when gold <150k + no active convoys
+- CoachHintEngine: 5-min LRU cache keyed on {trigger, gold_bucket, sites} — expected 40-60% micro-hint call reduction
+- VaultFrontExecution: 3 rate-limiter boundary tests (exactly-5 / reject-6th / window-reset)
+
+**Wave 2 (feature additions):**
+
+- KPI panel: Playtest Pulse tile (traffic-light no-signal/warming/ready + score, tutorial completion rate, match feedback, tournament actions)
+- KPI panel: My Session stats card (matches played, avg first intercept, comeback rate, current Elo)
+- VaultFrontExecution: Chain Guardian badge — 3 consecutive vault captures emits `chain_guardian_earned` activity; added to GameUpdates union + SpectatorAutoCamera heat weights
+- LeaderboardModal: Prediction League tab with weekly accuracy table fetched from existing PredictionLeagueStore endpoint
+- NarratorBus: auto-blend blendMode (tactical/mixed/hype) computed from tickBucket; appended to persona system prompt at generation time — no new Haiku calls
+- GameStartingModal: AI pre-match brief wired — fetchPrematchBrief fetched in parallel with oracle + prophecy; renders as cyan 'Pre-Match Brief' card (endpoint + API already existed)
+
+**Verification:** all 90 test files (637 tests) pass; `tsc --noEmit` clean; `npm run build-prod` green; touched-file ESLint clean.
+
 ## 2026-06-03 — Session 63 Playtest Pulse Audit+Implement Pass Complete
 
 Shipped all 4 items from `docs/AUDIT_2026-06-03_S63.md`.

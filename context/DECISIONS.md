@@ -2,6 +2,22 @@
 
 Public-safe decisions only. Detailed internal decision history is maintained privately.
 
+## 2026-06-04 — Chain Guardian: threshold 3 consecutive captures, reset on site loss
+
+**Decision:** Chain Guardian badge fires when any player makes 3 consecutive vault captures. The chain resets when the player's `passiveOwnerID` is overwritten by a different player capturing a site they previously owned. This is a session-scoped counter (not persisted); it resets implicitly at match end.
+
+**Rationale:** Simplest implementation that still rewards the key skill expression without requiring cross-tick memory of complex defense sequences. The "consecutive" framing is player-intuitive and avoids confusion with the 3-step execution chain (capture → deliver → pulse-deny).
+
+---
+
+## 2026-06-04 — Narrator auto-blend: computed server-side from tickBucket only
+
+**Decision:** `blendMode` is computed server-side in NarratorBus from the `tickBucket` field alone (early → tactical, mid → mixed, late → hype). Not from score differential (which would require additional state). Client cannot supply blendMode — it's injected at queue time.
+
+**Rationale:** tickBucket is the single most reliable proxy for match drama without additional server-side tracking. Avoids adding a `scoreDelta` field to the context snapshot that would require Worker.ts to maintain cross-tick player score state.
+
+---
+
 ## 2026-04-06 — CANON-008: All VaultSpark IP is proprietary by default
 
 **Decision:** All code, content, assets, and designs created by VaultSpark Studios are proprietary and all rights are reserved by VaultSpark Studios LLC unless an open-source license is explicitly declared and approved by the Studio Owner. No agent may apply or imply an open-source license without Studio Owner direction.

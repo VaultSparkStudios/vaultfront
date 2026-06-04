@@ -2,9 +2,17 @@
 
 # Truth Audit
 
-Overall status: amber-green
-Last reviewed: 2026-06-03
+Overall status: green
+Last reviewed: 2026-06-04
 Public-safe summary only. Sensitive verification notes are maintained privately.
+
+## 2026-06-04
+
+- `docs/AUDIT_2026-06-04_S64.md` and JSON sidecar match shipped code/test changes.
+- All 90 Vitest test files (637 tests) pass — broad `npm test` is now fully green. Previous 3 pre-existing failures (VaultFrontExecution mock staleness, VaultFrontLifecycle BigInt, CoachHintEngine trigger field) are repaired.
+- `tsc --noEmit` clean; `npm run build-prod` green (Vite bundled in 13.4s); touched-file ESLint clean.
+- Entropy: 0.08 (healthy, computed and written to PROJECT_STATUS.json).
+- Truth status upgraded from amber-green to green — all major verification surfaces are now clean.
 
 ## 2026-06-03
 
