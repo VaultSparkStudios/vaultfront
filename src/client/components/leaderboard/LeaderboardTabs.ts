@@ -2,7 +2,7 @@ import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { translateText } from "../../Utils";
 
-export type LeaderboardTab = "players" | "clans";
+export type LeaderboardTab = "players" | "clans" | "predictions";
 
 @customElement("leaderboard-tabs")
 export class LeaderboardTabs extends LitElement {
@@ -29,6 +29,8 @@ export class LeaderboardTabs extends LitElement {
   private playerClass = this.getTabClass(this.activeTab === "players");
   @state()
   private clanClass = this.getTabClass(this.activeTab === "clans");
+  @state()
+  private predictionsClass = this.getTabClass(this.activeTab === "predictions");
 
   private handleTabChange(tab: LeaderboardTab) {
     this.dispatchEvent(
@@ -41,6 +43,7 @@ export class LeaderboardTabs extends LitElement {
 
     this.playerClass = this.getTabClass(tab === "players");
     this.clanClass = this.getTabClass(tab === "clans");
+    this.predictionsClass = this.getTabClass(tab === "predictions");
   }
 
   render() {
@@ -68,6 +71,16 @@ export class LeaderboardTabs extends LitElement {
           aria-selected=${this.activeTab === "clans"}
         >
           ${translateText("leaderboard_modal.clans_tab")}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="${this.predictionsClass}"
+          @click=${() => this.handleTabChange("predictions")}
+          id="predictions-leaderboard-tab"
+          aria-selected=${this.activeTab === "predictions"}
+        >
+          Prediction League
         </button>
       </div>
     `;
