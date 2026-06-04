@@ -37,6 +37,28 @@ const RATE_LIMIT_MS = 15_000; // 15s minimum between calls per game
 const MAX_PENDING_EVENTS = 12;
 const MAX_COMMENTARY_CHARS = 140;
 
+function computeBlendMode(
+  ctx: NarratorContextSnapshot,
+): "tactical" | "mixed" | "hype" {
+  if (ctx.tickBucket === "late") return "hype";
+  if (ctx.tickBucket === "mid") return "mixed";
+  return "tactical";
+}
+
+function blendedPersonaPrompt(
+  persona: NarratorPersona,
+  blendMode: "tactical" | "mixed" | "hype" | undefined,
+): string {
+  const base = PERSONA_PROMPTS[persona];
+  if (!blendMode || blendMode === "tactical") return base;
+  if (blendMode === "hype") {
+    // Endgame: intensify all personas toward hype energy
+    return `${base} The match is in its final decisive phase — amplify the drama and urgency in your commentary.`;
+  }
+  // Mixed: mid-game, add situational awareness note
+  return `${base} The match is at a critical midpoint — balance analysis with rising tension.`;
+}
+
 interface GameNarratorState {
   clients: Map<Response, NarratorPersona>;
   lastCallMs: number;
@@ -52,6 +74,8 @@ export interface NarratorContextSnapshot {
   leadingPlayer: string;
   siteBalance: string;
   mutator: string;
+  /** Auto-blend mode derived from match phase + score differential */
+  blendMode?: "tactical" | "mixed" | "hype";
 }
 
 export class NarratorBus {
@@ -109,7 +133,11 @@ export class NarratorBus {
     const state = this.games.get(gameId);
     if (!state || state.clients.size === 0) return;
 
-    if (context) state.context = context;
+    if (context) {
+      // Auto-compute blendMode from match phase + site balance
+      const blendMode = computeBlendMode(context);
+      state.context = { ...context, blendMode };
+    }
 
     if (state.pendingEvents[state.pendingEvents.length - 1] === activityLabel) {
       return;
@@ -162,13 +190,17 @@ export class NarratorBus {
     userContent: string,
   ): Promise<void> {
     try {
+      const systemPrompt = blendedPersonaPrompt(
+        persona,
+        state.context?.blendMode,
+      );
       const msg = await getAnthropicClient().messages.create({
         model: "claude-haiku-4-5-20251001",
         max_tokens: 60,
         system: [
           {
             type: "text",
-            text: PERSONA_PROMPTS[persona],
+            text: systemPrompt,
             cache_control: { type: "ephemeral" },
           },
         ],

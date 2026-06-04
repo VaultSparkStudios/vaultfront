@@ -1,6 +1,10 @@
 import { LitElement, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { fetchMatchOracle, fetchMatchProphecy } from "./Api";
+import {
+  fetchMatchOracle,
+  fetchMatchProphecy,
+  fetchPrematchBrief,
+} from "./Api";
 import { translateText } from "./Utils";
 
 interface OraclePrediction {
@@ -25,6 +29,9 @@ export class GameStartingModal extends LitElement {
   private prophecy: string | null = null;
   private prophecyVisible = false;
 
+  @state()
+  private prematchBrief: string | null = null;
+
   createRenderRoot() {
     return this;
   }
@@ -40,14 +47,16 @@ export class GameStartingModal extends LitElement {
     this.myPrediction = null;
     this.prophecy = null;
     this.prophecyVisible = false;
+    this.prematchBrief = null;
     this.requestUpdate();
 
     if (playerIds.length >= 2) {
-      const [oracleResult, prophecyText] = await Promise.all([
+      const [oracleResult, prophecyText, brief] = await Promise.all([
         fetchMatchOracle(playerIds).catch(() => null),
         fetchMatchProphecy(mapName, playerIds.length, mutator).catch(
           () => null,
         ),
+        fetchPrematchBrief(myPlayerId, mapName).catch(() => null),
       ]);
 
       if (oracleResult?.predictions) {
@@ -60,16 +69,18 @@ export class GameStartingModal extends LitElement {
       if (prophecyText) {
         this.prophecy = prophecyText;
         this.prophecyVisible = true;
-        // Fade out prophecy after 8s
         setTimeout(() => {
           this.prophecyVisible = false;
           this.requestUpdate();
         }, 8_000);
       }
 
+      if (brief) {
+        this.prematchBrief = brief;
+      }
+
       this.requestUpdate();
 
-      // Auto-hide oracle card after 30s
       setTimeout(() => {
         this.oraclePredictions = [];
         this.myPrediction = null;
@@ -126,6 +137,22 @@ export class GameStartingModal extends LitElement {
     `;
   }
 
+  private renderPrematchBrief() {
+    if (!this.prematchBrief) return null;
+    return html`
+      <div
+        class="mt-3 rounded-lg border border-cyan-500/40 bg-cyan-900/20 p-3 text-left"
+      >
+        <div class="text-xs font-semibold text-cyan-300 mb-1.5 tracking-wider">
+          🎯 Pre-Match Brief
+        </div>
+        <p class="text-sm text-slate-200 leading-relaxed m-0">
+          ${this.prematchBrief}
+        </p>
+      </div>
+    `;
+  }
+
   render() {
     const isVisible = this.isVisible;
     return html`
@@ -155,7 +182,8 @@ export class GameStartingModal extends LitElement {
         <p class="text-base my-5 bg-black/30 p-2.5 rounded">
           ${translateText("game_starting_modal.title")}
         </p>
-        ${this.renderProphecyCard()} ${this.renderOracleCard()}
+        ${this.renderPrematchBrief()} ${this.renderProphecyCard()}
+        ${this.renderOracleCard()}
       </div>
     `;
   }
