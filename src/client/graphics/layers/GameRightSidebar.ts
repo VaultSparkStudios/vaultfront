@@ -9,7 +9,12 @@ import {
   VaultFrontStatusUpdate,
 } from "../../../core/game/GameUpdates";
 import { GameView } from "../../../core/game/GameView";
-import { DailyChallenge, fetchDailyChallenge } from "../../Api";
+import {
+  DailyChallenge,
+  fetchDailyChallenge,
+  fetchVaultFrontPlaytestPulseSummary,
+  VaultFrontPlaytestPulseSummary,
+} from "../../Api";
 import { crazyGamesSDK } from "../../CrazyGamesSDK";
 import { PauseGameIntentEvent, SendWinnerEvent } from "../../Transport";
 import { translateText } from "../../Utils";
@@ -131,6 +136,11 @@ export class GameRightSidebar extends LitElement implements Layer {
 
   @state()
   private dailyChallenge: DailyChallenge | null = null;
+
+  @state()
+  private playtestPulse: VaultFrontPlaytestPulseSummary | null = null;
+  private playtestPulseLastFetchAt = 0;
+  private readonly PULSE_FETCH_INTERVAL_MS = 5 * 60 * 1000;
 
   private hasWinner = false;
   private isLobbyCreator = false;
@@ -421,6 +431,16 @@ export class GameRightSidebar extends LitElement implements Layer {
       this.kpiPanelVisible ? "1" : "0",
     );
     logHudTelemetry("hud_kpi_panel_toggle", { visible: this.kpiPanelVisible });
+    if (this.kpiPanelVisible) void this.refreshPlaytestPulse();
+  }
+
+  private async refreshPlaytestPulse(): Promise<void> {
+    const now = Date.now();
+    if (now - this.playtestPulseLastFetchAt < this.PULSE_FETCH_INTERVAL_MS)
+      return;
+    this.playtestPulseLastFetchAt = now;
+    const result = await fetchVaultFrontPlaytestPulseSummary();
+    if (result) this.playtestPulse = result;
   }
 
   private toggleVaultDebug(): void {
@@ -680,6 +700,43 @@ export class GameRightSidebar extends LitElement implements Layer {
           <div class="flex justify-between">
             <span>Timeline</span><span>${timelineJumps}</span>
           </div>
+        </div>
+        ${this.renderPlaytestPulseTile()}
+      </div>
+    `;
+  }
+
+  private renderPlaytestPulseTile() {
+    const p = this.playtestPulse;
+    const dot =
+      !p || p.status === "no-signal"
+        ? html`<span class="text-slate-400">⬤ no-signal</span>`
+        : p.status === "warming"
+          ? html`<span class="text-yellow-300">⬤ warming</span>`
+          : html`<span class="text-green-400">⬤ ready</span>`;
+    const tutCompletion = p
+      ? p.totals.tutorialShown > 0
+        ? `${Math.round((p.totals.tutorialCompleted / p.totals.tutorialShown) * 100)}%`
+        : "0%"
+      : "—";
+    return html`
+      <div class="mt-1 border-t border-cyan-300/20 pt-1">
+        <div class="flex justify-between items-center">
+          <span class="text-cyan-200/85">Playtest Pulse</span>${dot}
+        </div>
+        <div class="flex justify-between">
+          <span>Score</span><span>${p ? p.score : "—"}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Tutorial done</span><span>${tutCompletion}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Match feedback</span
+          ><span>${p ? p.totals.matchFeedback : "—"}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Tournament actions</span
+          ><span>${p ? p.totals.tournamentActions : "—"}</span>
         </div>
       </div>
     `;
