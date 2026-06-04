@@ -610,6 +610,19 @@ export class VaultFrontLayer implements Layer {
         ctx.roundRect(barX, barY, fillW, barH, 2);
         ctx.fill();
 
+        // Pulse glow behind bar when danger threshold crossed (>70%)
+        if (prob > 70) {
+          const pulse = 0.35 + 0.35 * Math.abs(Math.sin(Date.now() / 350));
+          ctx.save();
+          ctx.shadowColor = "rgba(239, 68, 68, 0.9)";
+          ctx.shadowBlur = 8 * pulse;
+          ctx.fillStyle = `rgba(239, 68, 68, ${pulse * 0.25})`;
+          ctx.beginPath();
+          ctx.roundRect(barX - 3, barY - 3, barW + 6, barH + 6, 4);
+          ctx.fill();
+          ctx.restore();
+        }
+
         ctx.fillStyle =
           prob >= 60
             ? "rgba(252, 165, 165, 0.9)"

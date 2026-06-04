@@ -14,6 +14,7 @@ import { uiStateManager } from "./UIStateManager";
 
 const HINT_TRIGGER_TICKS = 1200; // 2 min before first idle hint
 const HINT_MIN_INTERVAL_TICKS = 1800; // 3 min between any hints
+const ECONOMY_STALL_GOLD_THRESHOLD = 150_000;
 
 // Per-trigger cooldowns (in ticks) — shorter because these are contextual
 const TRIGGER_COOLDOWNS: Record<HintTrigger, number> = {
@@ -22,6 +23,8 @@ const TRIGGER_COOLDOWNS: Record<HintTrigger, number> = {
   bounty_placed: 900, // 90s
   last_stand_nearby: 600, // 60s
   chain_broken: 900, // 90s
+  convoy_danger: 1200, // 2 min — high intercept probability alert
+  economy_stall: 2400, // 4 min — low gold + no convoys in flight
 };
 
 type HintTrigger =
@@ -29,7 +32,9 @@ type HintTrigger =
   | "convoy_lost"
   | "bounty_placed"
   | "last_stand_nearby"
-  | "chain_broken";
+  | "chain_broken"
+  | "convoy_danger"
+  | "economy_stall";
 
 @customElement("coach-hint-engine")
 export class CoachHintEngine extends LitElement implements Layer {
@@ -143,6 +148,35 @@ export class CoachHintEngine extends LitElement implements Layer {
       this.canTrigger("chain_broken")
     ) {
       return "chain_broken";
+    }
+
+    // convoy_danger: any of my convoys has intercept probability > 70%
+    if (mySmallId !== undefined && this.latestStatus) {
+      const hasDangerConvoy = this.latestStatus.convoys.some(
+        (c) => c.ownerID === mySmallId && (c.interceptProbability ?? 0) > 70,
+      );
+      if (hasDangerConvoy && this.canTrigger("convoy_danger")) {
+        return "convoy_danger";
+      }
+    }
+
+    // economy_stall: low gold, no active convoys, past hint threshold
+    if (
+      mySmallId !== undefined &&
+      this.latestStatus &&
+      this.tickCount >= HINT_TRIGGER_TICKS
+    ) {
+      const gold = Number(uiStateManager.get().playerGold ?? 0);
+      const hasActiveConvoy = this.latestStatus.convoys.some(
+        (c) => c.ownerID === mySmallId,
+      );
+      if (
+        gold < ECONOMY_STALL_GOLD_THRESHOLD &&
+        !hasActiveConvoy &&
+        this.canTrigger("economy_stall")
+      ) {
+        return "economy_stall";
+      }
     }
 
     // idle: 2 min elapsed, player hasn't issued a vault command
