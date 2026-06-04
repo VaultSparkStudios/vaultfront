@@ -701,7 +701,52 @@ export class GameRightSidebar extends LitElement implements Layer {
             <span>Timeline</span><span>${timelineJumps}</span>
           </div>
         </div>
-        ${this.renderPlaytestPulseTile()}
+        ${this.renderPlaytestPulseTile()} ${this.renderSessionStatsTile()}
+      </div>
+    `;
+  }
+
+  private renderSessionStatsTile() {
+    const matches = this.kpiNumber("vaultfront.kpi.matches");
+    const firstInterceptSum = this.kpiNumber(
+      "vaultfront.kpi.firstInterceptTimeSum",
+    );
+    const firstInterceptSamples = this.kpiNumber(
+      "vaultfront.kpi.firstInterceptSamples",
+    );
+    const comebackWins = this.kpiNumber(
+      "vaultfront.kpi.comebackWinsFromBehind",
+    );
+    const behindMatches = this.kpiNumber("vaultfront.kpi.minute8BehindMatches");
+    const currentElo = Number(
+      localStorage.getItem("vaultfront.lastElo") ?? "0",
+    );
+
+    const avgIntercept =
+      firstInterceptSamples > 0
+        ? `${(firstInterceptSum / firstInterceptSamples).toFixed(1)}s`
+        : "—";
+    const comebackRate =
+      behindMatches > 0
+        ? `${Math.round((comebackWins / behindMatches) * 100)}%`
+        : "—";
+    const eloLabel = currentElo > 0 ? String(currentElo) : "—";
+
+    return html`
+      <div class="mt-1 border-t border-cyan-300/20 pt-1">
+        <div class="text-cyan-200/85">My Session</div>
+        <div class="flex justify-between">
+          <span>Matches played</span><span>${matches}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Avg 1st intercept</span><span>${avgIntercept}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Comeback rate</span><span>${comebackRate}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Current Elo</span><span>${eloLabel}</span>
+        </div>
       </div>
     `;
   }
