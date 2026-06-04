@@ -51,6 +51,9 @@ export class CoachHintEngine extends LitElement implements Layer {
   private lastHintTickByTrigger = new Map<HintTrigger, number>();
   /** True while an async fetch is in flight — prevents concurrent calls */
   private fetching = false;
+  /** 5-min LRU hint cache keyed on {trigger}_{gold_bucket}_{sites} */
+  private hintCache = new Map<string, { hint: string; expiresAt: number }>();
+  private readonly HINT_CACHE_TTL_MS = 5 * 60 * 1000;
 
   createRenderRoot() {
     return this;
@@ -205,18 +208,43 @@ export class CoachHintEngine extends LitElement implements Layer {
     ).length;
   }
 
+  private hintCacheKey(
+    trigger: HintTrigger,
+    gold: number,
+    sites: number,
+  ): string {
+    return `${trigger}_${Math.floor(gold / 50_000)}_${sites}`;
+  }
+
   private async fetchAndShow(trigger: HintTrigger): Promise<void> {
     this.fetching = true;
     this.lastHintTickByTrigger.set(trigger, this.tickCount);
     const state = uiStateManager.get();
+    const gold = Number(state.playerGold ?? 0);
     const sites = this.localVaultSiteCount();
-    const hint = await fetchMicroHint({
-      gold: Number(state.playerGold),
-      sites,
-      trigger,
-    });
+
+    const cacheKey = this.hintCacheKey(trigger, gold, sites);
+    const cached = this.hintCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      this.fetching = false;
+      this.hint = cached.hint;
+      this.visible = true;
+      if (this.hintDismissTimer) clearTimeout(this.hintDismissTimer);
+      this.hintDismissTimer = setTimeout(() => {
+        this.visible = false;
+        this.hint = null;
+      }, 12_000);
+      return;
+    }
+
+    const hint = await fetchMicroHint({ gold, sites, trigger });
     this.fetching = false;
     if (!hint) return;
+
+    this.hintCache.set(cacheKey, {
+      hint,
+      expiresAt: Date.now() + this.HINT_CACHE_TTL_MS,
+    });
     this.hint = hint;
     this.visible = true;
 

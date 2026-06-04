@@ -26,6 +26,7 @@ describe("CoachHintEngine", () => {
               { controllerID: null, passiveOwnerID: 7 },
               { controllerID: 2, passiveOwnerID: null },
             ],
+            convoys: [],
           },
         ],
       }),
