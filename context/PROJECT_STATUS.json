@@ -4,20 +4,24 @@
   "name": "VaultFront",
   "status": "active",
   "health": "green",
-  "currentFocus": "Session 63 audit+implement pass complete: playtest pulse, readiness pulse evidence, tournament operator brief, tutorial telemetry, and E2E compatibility fixes.",
-  "nextMilestone": "Repair broad Vitest residuals, surface playtest pulse in operator/startup views, wire live revenue signal, and promote tournament playtest.",
+  "currentFocus": "Session 64 audit+implement pass: Vitest gate fully green (90 files / 634 tests), entropy computed, wave 1 items executing.",
+  "nextMilestone": "Surface playtest pulse in operator/startup views, wire live revenue signal, ship rival-system and AI pre-match brief, promote tournament playtest.",
   "blockers": [],
-  "lastUpdated": "2026-06-03",
+  "lastUpdated": "2026-06-04",
   "lifecycle": "alpha",
   "audience": "internal",
   "type": "game",
+  "entropyScore": 0.08,
+  "entropyStatus": "healthy",
+  "entropyComputedAt": "2026-06-04",
+  "entropyMethod": "coherence-variance + decision-reversal count + intent-drift; all three at minimum — no off-axis features, 0 decision reversals in 5 sessions, 100% intent achievement, SIL coherence 100/100",
   "testingSurfaces": [
     {
       "type": "tests",
-      "status": "warn",
+      "status": "green",
       "label": "Unit and server regression",
       "command": "npm test",
-      "purpose": "Vitest core/client suite plus focused server tests. Focused Session 63 tests pass; broad npm test has 3 residual non-touched failures."
+      "purpose": "Vitest core/client suite plus focused server tests. All 90 test files (634 tests) pass as of Session 64 (3 pre-existing mock-staleness failures repaired)."
     },
     {
       "type": "tests",
@@ -71,5 +75,7 @@
   "modelPlanModeSlash": null,
   "ignisScore": 42978,
   "ignisGrade": "FORGE",
-  "ignisLastComputed": "2026-06-03"
+  "ignisLastComputed": "2026-06-03",
+  "sessionMode": "founder",
+  "sessionModeAutoShiftedAt": "2026-06-04T00:17:25.080Z"
 }
