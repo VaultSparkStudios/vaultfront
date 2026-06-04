@@ -37,6 +37,7 @@ describe("CoachHintEngine", () => {
     expect(fetchMicroHint).toHaveBeenCalledWith({
       gold: expect.any(Number),
       sites: 2,
+      trigger: expect.any(String),
     });
   });
 });

@@ -224,6 +224,9 @@ describe("VaultFront lifecycle integration", () => {
       passiveOwnerID: player.smallID(),
       nextPassiveGoldTick: 500,
       reducedRewardNextCapture: false,
+      uncontrolledSinceTick: 0,
+      vacantAlertFiredAtTick: -1,
+      accumulatedPassiveGold: 0n,
     };
     execution.vaultSites = [site];
 

@@ -188,6 +188,12 @@ describe("VaultFrontExecution", () => {
       playerBySmallID: () => owner,
       owner: () => owner,
       manhattanDist: (a: number, b: number) => Math.abs(a - b),
+      x: (tile: number) => tile % 100,
+      y: (tile: number) => Math.floor(tile / 100),
+      isValidCoord: () => true,
+      ref: (x: number, y: number) => x + y * 100,
+      setVaultSiteControllerIDs: vi.fn(),
+      debugPublishedStatus: vi.fn(),
       ticks: () => 1000,
       stats: () => ({
         vaultConvoyLaunched: () => {},
