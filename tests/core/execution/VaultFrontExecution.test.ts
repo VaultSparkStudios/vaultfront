@@ -1,5 +1,6 @@
+import { vi } from "vitest";
 import { VaultFrontExecution } from "../../../src/core/execution/VaultFrontExecution";
-import { UnitType } from "../../../src/core/game/Game";
+import { UnitType, VaultFrontCommand } from "../../../src/core/game/Game";
 
 function defaultRewardTuning() {
   return {
@@ -235,5 +236,87 @@ describe("VaultFrontExecution", () => {
       sourceTile: 9,
       destinationTile: 14,
     });
+  });
+
+  test("rate limiter allows exactly 5 commands in a 10-tick window", () => {
+    const execution = new VaultFrontExecution() as any;
+    const handleCommand = vi
+      .spyOn(execution, "handleCommand")
+      .mockImplementation(() => {});
+    const player = {
+      smallID: () => 1,
+      isPlayer: () => true,
+      isAlive: () => true,
+    } as any;
+    const cmd = (tick: number): VaultFrontCommand => ({
+      playerSmallID: 1,
+      type: "escort",
+      issuedAtTick: tick,
+    });
+    execution.game = { playerBySmallID: () => player };
+
+    const commands = [cmd(5), cmd(5), cmd(5), cmd(5), cmd(5)];
+    execution.game.drainVaultFrontCommands = () => commands;
+    execution.handleQueuedCommands(5);
+
+    expect(handleCommand).toHaveBeenCalledTimes(5);
+  });
+
+  test("rate limiter rejects the 6th command in the same window", () => {
+    const execution = new VaultFrontExecution() as any;
+    const handleCommand = vi
+      .spyOn(execution, "handleCommand")
+      .mockImplementation(() => {});
+    const player = {
+      smallID: () => 1,
+      isPlayer: () => true,
+      isAlive: () => true,
+    } as any;
+    const cmd = (tick: number): VaultFrontCommand => ({
+      playerSmallID: 1,
+      type: "escort",
+      issuedAtTick: tick,
+    });
+    execution.game = { playerBySmallID: () => player };
+
+    const commands = [cmd(5), cmd(5), cmd(5), cmd(5), cmd(5), cmd(5)];
+    execution.game.drainVaultFrontCommands = () => commands;
+    execution.handleQueuedCommands(5);
+
+    // Only 5 allowed in a 10-tick window
+    expect(handleCommand).toHaveBeenCalledTimes(5);
+  });
+
+  test("rate limiter resets at the next window boundary", () => {
+    const execution = new VaultFrontExecution() as any;
+    const handleCommand = vi
+      .spyOn(execution, "handleCommand")
+      .mockImplementation(() => {});
+    const player = {
+      smallID: () => 1,
+      isPlayer: () => true,
+      isAlive: () => true,
+    } as any;
+    execution.game = { playerBySmallID: () => player };
+
+    // Fill the window at tick 0
+    const firstBatch = Array.from({ length: 5 }, () => ({
+      playerSmallID: 1,
+      type: "escort" as const,
+      issuedAtTick: 0,
+    }));
+    execution.game.drainVaultFrontCommands = () => firstBatch;
+    execution.handleQueuedCommands(0);
+    expect(handleCommand).toHaveBeenCalledTimes(5);
+
+    // At tick 10 the window shifts — commands from tick 0 are no longer in window
+    handleCommand.mockClear();
+    const secondBatch = [
+      { playerSmallID: 1, type: "escort" as const, issuedAtTick: 10 },
+    ];
+    execution.game.drainVaultFrontCommands = () => secondBatch;
+    execution.handleQueuedCommands(10);
+
+    expect(handleCommand).toHaveBeenCalledTimes(1);
   });
 });
