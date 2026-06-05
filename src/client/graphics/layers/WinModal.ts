@@ -127,6 +127,9 @@ export class WinModal extends LitElement implements Layer {
   private seasonalContracts: SeasonalContract[] = [];
 
   @state()
+  private rivalryRevengeDelta = 0;
+
+  @state()
   private replayMoments: ReplayMoment[] = [];
 
   @state()
@@ -586,9 +589,10 @@ export class WinModal extends LitElement implements Layer {
           </div>
         </div>
 
-        ${this.renderSeasonalContracts()} ${this.renderReplayMoments()}
-        ${this.renderEloSection()} ${this.renderPlayStyleCard()}
-        ${this.renderDynastyStory()} ${this.renderAITabSection()}
+        ${this.renderRivalChallenge()} ${this.renderSeasonalContracts()}
+        ${this.renderReplayMoments()} ${this.renderEloSection()}
+        ${this.renderPlayStyleCard()} ${this.renderDynastyStory()}
+        ${this.renderAITabSection()}
       </div>
     `;
   }
@@ -885,6 +889,42 @@ export class WinModal extends LitElement implements Layer {
               </div>
             `;
           })}
+        </div>
+      </div>
+    `;
+  }
+
+  private renderRivalChallenge() {
+    if (this.rivalryRevengeDelta <= 0) return null;
+    const objective =
+      this.rivalryRevengeDelta === 1
+        ? "Run it back and intercept that rival's first Vault Convoy."
+        : "Press the rematch before the grudge cools and chain another counter-intercept.";
+    return html`
+      <div
+        class="mt-2 rounded-sm border border-orange-400/50 bg-orange-950/35 p-2"
+      >
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <div class="text-xs uppercase tracking-wide text-orange-200">
+              Rival Challenge
+            </div>
+            <div class="text-sm text-orange-50 mt-1">
+              ${this.rivalryRevengeDelta} revenge
+              ${this.rivalryRevengeDelta === 1 ? "counter" : "counters"} banked.
+              ${objective}
+            </div>
+          </div>
+          <div
+            class="shrink-0 rounded border border-orange-300/35 bg-orange-500/20 px-2 py-1 text-center"
+          >
+            <div class="text-[10px] uppercase tracking-wide text-orange-200">
+              Streak
+            </div>
+            <div class="text-lg font-bold text-orange-50">
+              ${this.rivalryRevengeDelta}
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -1801,6 +1841,7 @@ export class WinModal extends LitElement implements Layer {
       this.recapReason = "";
       this.momentRewards = [];
       this.seasonalContracts = [];
+      this.rivalryRevengeDelta = 0;
       this.matchLengthSeconds = 0;
       this.playStyleLabel = null;
       this.playStyleBars = [];
@@ -1960,6 +2001,7 @@ export class WinModal extends LitElement implements Layer {
         localStorage.getItem("vaultfront.rivalryRevengeCount") ?? "0",
       ),
     };
+    this.rivalryRevengeDelta = Math.max(0, seasonalMatch.rivalryRevengeDelta);
     this.seasonalContracts = this.updateSeasonalContractsLocal(seasonalMatch);
     void this.syncSeasonalContracts(seasonalMatch);
 

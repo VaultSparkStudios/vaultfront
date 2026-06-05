@@ -1,3 +1,4 @@
+import { render } from "lit";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WinModal } from "../../../../src/client/graphics/layers/WinModal";
 import { RankedType } from "../../../../src/core/game/Game";
@@ -22,6 +23,7 @@ vi.mock("../../../../src/client/Api", () => ({
   getUserMe: vi.fn(async () => null),
   recordVaultFrontFunnelTelemetry: vi.fn(async () => true),
   recordVaultFrontOutcomeTelemetry: vi.fn(async () => true),
+  recordVaultFrontPlaytestPulse: vi.fn(async () => true),
   recordVaultFrontRecapEvent: vi.fn(async () => true),
   updateVaultFrontSeasonContracts: vi.fn(async () => false),
 }));
@@ -145,5 +147,19 @@ describe("VaultFront recap coaching", () => {
     expect(plan[0]).toContain("Vault notice or objective rail");
     expect(plan.join(" ")).toContain("nearest contestable vault");
     expect(plan.join(" ")).toContain("fall behind again");
+  });
+
+  it("renders a rival challenge when rivalry revenge was earned", () => {
+    const modal = new WinModal() as any;
+    const container = document.createElement("div");
+    modal.rivalryRevengeDelta = 2;
+
+    render(modal.renderRivalChallenge(), container);
+
+    expect(container.textContent).toContain("Rival Challenge");
+    expect(container.textContent?.replace(/\s+/g, " ")).toContain(
+      "2 revenge counters banked",
+    );
+    expect(container.textContent).toContain("counter-intercept");
   });
 });

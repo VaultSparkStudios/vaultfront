@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "/audit skill v1.0",
+  "generatedAt": "2026-06-05",
+  "project": "vaultfront",
+  "type": "game",
+  "session": "S66",
+  "axisWeights": {
+    "gamification": 3,
+    "ux": 2,
+    "ai": 1.5,
+    "feature_depth": 1.5,
+    "new_features": 1,
+    "feedback_loop": 1,
+    "security": 1,
+    "speed": 1,
+    "token_cost": 1
+  },
+  "summary": {
+    "totalItems": 4,
+    "combinedPriority": 96.8,
+    "top3": [
+      "startup-turn-classifier-restore",
+      "mobile-tutorial-smoke-gate",
+      "rival-challenge-postmatch-loop"
+    ]
+  },
+  "items": [
+    {
+      "slug": "startup-turn-classifier-restore",
+      "tier": "fire",
+      "axis": "speed/process/token_cost",
+      "effort": "30m",
+      "impact": 8,
+      "innovation": 4,
+      "priority": 28.4,
+      "item": "The /start path still fails when compact handoff or startup brief imports model-router because scripts/lib/turn-classifier.mjs is missing. Restore the pure classifier dependency so startup rendering and handoff compaction stop breaking.",
+      "recipe": "Add scripts/lib/turn-classifier.mjs from the Studio Ops canonical pure classifier, then verify node scripts/compact-handoff.mjs and node scripts/render-startup-brief.mjs no longer fail at import time.",
+      "why": "VaultFront's product surface is strong, but session protocol fragility wastes every future agent pass. This also restores the token-cost routing layer that keeps trivial model-router calls out of expensive model paths.",
+      "status": "shipped"
+    },
+    {
+      "slug": "mobile-tutorial-smoke-gate",
+      "tier": "fire",
+      "axis": "ux/gamification/feedback_loop",
+      "effort": "1h",
+      "impact": 8,
+      "innovation": 5,
+      "priority": 26.6,
+      "item": "The mobile tutorial strip exists, but the remaining task board gate is still manual visual smoke. Add an automated mobile-width component smoke that proves the strip renders, advances, and records telemetry without blocking the viewport.",
+      "recipe": "Create a focused Vitest/jsdom test for VaultFrontTutorial that stubs matchMedia to mobile, uses fake timers for the delayed open, asserts .strip content/controls, advances a step, dismisses, and verifies tutorial pulse events.",
+      "why": "This converts the last mobile onboarding confidence gap into a repeatable gate. It protects the exact first-run path that was previously suppressed on compact screens.",
+      "status": "shipped"
+    },
+    {
+      "slug": "rival-challenge-postmatch-loop",
+      "tier": "fire",
+      "axis": "gamification/engagement/feature_depth",
+      "effort": "1h",
+      "impact": 8,
+      "innovation": 7,
+      "priority": 37.2,
+      "item": "VaultFront already tracks rivalry revenge progress, but the player only sees it as a contract counter. Turn that hidden retention signal into a post-match rival challenge prompt that names the next objective and pushes a rematch/requeue decision.",
+      "recipe": "Add a WinModal rival challenge card when rivalryRevengeDelta is positive: show the revenge count, a concrete next objective, and reuse the existing rematch/requeue actions. Add a focused unit test that localStorage rivalry progress renders the prompt.",
+      "why": "This uses an existing low-cost signal to create a sticky 'one more match' loop without any new paid AI calls. It makes player-to-player grudges legible, which is a high-retention game pattern that current UI underplays.",
+      "status": "shipped"
+    },
+    {
+      "slug": "s66-truth-sync",
+      "tier": "high",
+      "axis": "process/automation",
+      "effort": "30m",
+      "impact": 6,
+      "innovation": 3,
+      "priority": 17.4,
+      "item": "After shipping this pass, PROJECT_STATUS, TASK_BOARD, CURRENT_STATE, and SELF_IMPROVEMENT_LOOP need to reflect S66 evidence rather than leaving the next /start brief one session behind.",
+      "recipe": "Update public-safe context files with the S66 shipped items, verification commands, and next milestone; validate PROJECT_STATUS silScore still equals the sum of silCategoriesV3.",
+      "why": "VaultFront's startup brief consumes machine-readable truth first. Keeping it synchronized prevents phantom regressions in future start/closeout passes.",
+      "status": "shipped"
+    }
+  ],
+  "innovationReserve": [
+    "rival-challenge-postmatch-loop",
+    "mobile-tutorial-smoke-gate"
+  ],
+  "skipped": [
+    {
+      "slug": "live-revenue-observation",
+      "reason": "Still requires real checkout/supporter evidence; code already prevents false clearing."
+    },
+    {
+      "slug": "full-replay-ai-route-coach",
+      "reason": "High upside but broader than this reliability+retention pass and would add paid AI pressure."
+    },
+    {
+      "slug": "tournament-operator-live-playtest",
+      "reason": "Valuable manual validation, but the current pass prioritizes automated confidence and session fragility repair."
+    }
+  ],
+  "executionLog": [
+    {
+      "slug": "startup-turn-classifier-restore",
+      "status": "shipped",
+      "summary": "Restored the missing model-router helper chain used by startup rendering and compact handoff: turn classifier, SIL forecaster, visual sparkline primitive, and skill-cost ledger.",
+      "verification": [
+        "node --check scripts/lib/turn-classifier.mjs",
+        "node --check scripts/lib/sil-forecaster.mjs",
+        "node --check scripts/lib/visual-blocks.mjs",
+        "node --check scripts/lib/skill-cost-ledger.mjs",
+        "node scripts/compact-handoff.mjs",
+        "node scripts/render-startup-brief.mjs"
+      ]
+    },
+    {
+      "slug": "mobile-tutorial-smoke-gate",
+      "status": "shipped",
+      "summary": "Added a mobile-width component smoke for VaultFrontTutorial that proves the compact strip opens, advances, dismisses, and records tutorial pulse telemetry.",
+      "verification": [
+        "npx vitest run tests/client/VaultFrontTutorial.test.ts tests/client/graphics/layers/WinModal.test.ts",
+        "npm test"
+      ]
+    },
+    {
+      "slug": "rival-challenge-postmatch-loop",
+      "status": "shipped",
+      "summary": "WinModal now renders a Rival Challenge card when rivalry revenge progress is earned, converting the existing counter into a visible rematch/requeue retention prompt.",
+      "verification": [
+        "npx vitest run tests/client/VaultFrontTutorial.test.ts tests/client/graphics/layers/WinModal.test.ts",
+        "npm run build-prod",
+        "npm test"
+      ]
+    },
+    {
+      "slug": "s66-truth-sync",
+      "status": "shipped",
+      "summary": "Public-safe context, audit log, implementation plan, startup brief, gitignore, and PROJECT_STATUS were updated for S66 evidence with 640 passing tests and SIL 998.",
+      "verification": [
+        "npm run build-prod",
+        "npm test",
+        "node scripts/lib/write-project-status.mjs --check"
+      ]
+    }
+  ]
+}

@@ -4,6 +4,16 @@ Append-only. Each session appends one entry. Never edit prior entries.
 
 ---
 
+## 2026-06-05 — Session 66 protocol + mobile evidence + rival loop pass
+
+- Goal: Continue the active `/start → /audit → /implement → /closeout` goal with a fresh VaultFront-specific audit and full implementation.
+- What changed: Added `docs/AUDIT_2026-06-05_S66.*`; restored missing startup/model-router helper modules; added an automated mobile tutorial strip smoke; added a Rival Challenge post-match card in `WinModal`; ignored `.ops-cache/`; synced public-safe state to SIL 998 and 640-test evidence.
+- Files or systems touched: startup helper scripts, `VaultFrontTutorial` tests, `WinModal`, audit docs, implementation plan, startup/closeout docs, `.gitignore`, and public-safe context files.
+- Risks created or removed: Removes startup import fragility and turns the mobile tutorial smoke from manual-only to automated. Adds a visible rivalry retention prompt using existing local/session state with no new paid AI calls. Remaining risks are live revenue observation and manual internal playtest validation.
+- Recommended next move: Run an internal rivalry/rematch playtest, observe real revenue telemetry before flipping the revenue flag, then continue tournament promotion readiness.
+
+---
+
 ## 2026-06-05 — Session 65 closeout verification rerun
 
 - Goal: Continue the active `/start → /audit → /implement → /closeout` goal from current repo evidence and complete closeout proof.

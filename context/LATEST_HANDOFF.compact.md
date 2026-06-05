@@ -1,41 +1,56 @@
-<!-- fallback truncation (no API key) -->
+<!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
+<!-- source-hash: 303d359dcd4f -->
+<!-- generated-at: 2026-06-05T21:39:59.426Z -->
 
-# Latest Handoff
+# LATEST_HANDOFF (compact)
 
-This repo now keeps only a public-safe handoff summary. Detailed handoff history is maintained privately.
+Session 65 Handoff Summary
 
-## Where We Left Off — 2026-06-05
+Status
 
-**Session goal:** `/start → /audit → /implement → /closeout` with a fresh, project-specific audit personalized to VaultFront's current flags: mobile onboarding gap, malformed blocker preflight, stale status truth, and live revenue signal noise.
+- Last session: S65 (2026-06-05)
+- Shipped: 4/4 items from AUDIT_2026-06-05_S65.md (Priority 92.4)
+- Build: npm test green (90 files/638 tests + 9 server/23 tests); build-prod green; readiness suite 4/4
 
-**Shipped:** All 4 items from `docs/AUDIT_2026-06-05_S65.md` (Priority sum: 92.4). Mobile first-run tutorial now shows a compact bottom strip instead of disappearing. Readiness now has an explicit observed/unverified revenue-signal contract. Blocker preflight attempt-order output is readable again. `PROJECT_STATUS` now matches the 997 SIL estimate / 638-test evidence.
+Recent Wins (S65)
 
-**Impact:** VaultFront's mobile onboarding is measurable again without covering the play grid, and the Studio protocol signal path is cleaner: blockers render correctly, startup status reads the current project truth, and revenue remains warning-level until real checkout/supporter telemetry exists.
+- Mobile first-run tutorial: compact bottom strip (no longer covers play grid)
+- Readiness: explicit observed/unverified revenue-signal contract
+- Blocker preflight: attempt-order output readable
+- PROJECT_STATUS aligned to 997 SIL / 638 tests
 
-**Verification:** `node --check scripts/blocker-preflight.mjs`; `node --check scripts/lib/blocker-rules.mjs`; `node --check scripts/render-startup-brief.mjs`; `node scripts/ops.mjs blocker-preflight`; `npx vitest run tests/server/VaultFrontReadiness.test.ts` (4 passing); `npm test` green (90 files / 638 tests, plus 9 server files / 23 tests); `npm run build-prod` green; startup brief render + validation green with only the pre-existing recommended `HUMAN PRESSURE` block warning.
+Current Intent
 
-**Known residuals:** Revenue signal is still unverified until a real checkout/supporter event lands. Startup brief session numbering still renders as Session 63 despite newer public handoff entries. Larger deferred engagement features remain: rival-system, narrator-shared-broadcast, season-pass-mission-injection, post-match-route-replay-ai, and adversarial-spectator-vote.
+- Next focus: browser mobile tutorial smoke, then ship rival-system OR narrator-shared-broadcast (engagement depth vs token-cost tradeoff)
 
-**Suggested next focus:** Run a mobile tutorial smoke in browser, then ship `rival-system` or `narrator-shared-broadcast` depending on whether engagement depth or token-cost reduction matters more next session.
+Now Bucket (Top 3)
 
----
+1. rival-system (4h, Priority 24.4 — highest deferred)
+2. narrator-shared-broadcast (2h, token-cost reduction quick win)
+3. Mobile tutorial browser smoke test (verification of S65 ship)
 
-## Where We Left Off — 2026-06-04
+Blockers (Top 3)
 
-**Session goal:** `/start → /audit → /implement → /closeout` with a comprehensive Session 64 audit across 9 axes.
+1. Startup brief session numbering renders as Session 63 despite newer entries
+2. Revenue signal stuck warning-level — no real checkout/supporter telemetry
+3. Pre-existing recommended HUMAN PRESSURE block warning in startup validation
 
-**Shipped:** All 12 Wave 1+2 items from `docs/AUDIT_2026-06-04_S64.md` (Priority sum: 251.3 shipped / 356.6 total).
+Human-Blocked
 
-**Impact:** VaultFront's unit test gate is fully green for the first time (90 files / 637 tests). Entropy computed (0.08 — healthy). KPI panel now shows live playtest pulse status + player session stats. Chain Guardian badge rewards 3-consecutive-vault chains. Spectator Prediction League is publicly visible in the leaderboard. NarratorBus auto-blends commentary intensity by match phase. Pre-match brief appears in GameStartingModal for every multiplayer session.
+- Revenue telemetry observation: requires live checkout/supporter event — open since S63 (2026-06-03), ~3 sessions
+- No other human-blocked items tracked
 
-**Verification:** all 90 Vitest test files (637 tests) pass; `tsc --noEmit` clean; `npm run build-prod` green (Vite bundled in 13.4s); touched-file ESLint clean.
+Deferred Backlog
 
-**Known residuals:** Wave 3 items deferred to next session: rival-system (4h), mobile-tutorial-compact-strip (4h), revenue-telemetry-hookup (4h), narrator-shared-broadcast (2h), season-pass-mission-injection (8h), post-match-route-replay-ai (8h), adversarial-spectator-vote (1w). Revenue signal still warning-level until live checkout/supporter telemetry is observed.
+- season-pass-mission-injection (8h)
+- post-match-route-replay-ai (8h)
+- adversarial-spectator-vote (1w)
+- revenue-telemetry-hookup (4h, gated on human signal)
 
-**Suggested next focus:** rival-system (Priority 24.4, highest deferred) → narrator-shared-broadcast (quick 2h token-cost win) → season-pass-mission-injection (highest innovation, 8h).
+Hygiene Notes
 
----
+- .cache/ and ignis/output/ gitignored — post-start/closeout diffs stay clean
+- Serial CI-style E2E is reliable gate; parallel 6-worker E2E locally flaky
+- Prior S63 residuals (2 VaultFrontExecution + 1 CoachHintEngine failures) appear resolved per S64/S65 green runs
 
-## Where We Left Off — 2026-06-03
-
-**Session goal:** `/start → /audit → /implement → /closeout` with a fresh Session 63 playtest-pulse audit.
+Next Session Pointer: Run `/start` → mobile tutorial smoke → `/implement` rival-system or narrator-shared-broadcast.

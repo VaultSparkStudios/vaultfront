@@ -4,6 +4,22 @@ This repo now keeps only a public-safe handoff summary. Detailed handoff history
 
 ## Where We Left Off — 2026-06-05
 
+**Session goal:** `/start → /audit → /implement → /closeout` with a fresh S66 audit personalized to VaultFront's live flags: startup helper drift, mobile tutorial proof gap, rivalry/rematch engagement depth, and revenue-signal honesty.
+
+**Shipped:** All 4 items from `docs/AUDIT_2026-06-05_S66.md` (Priority sum: 96.8). Startup compact handoff and startup brief rendering are repaired with the missing helper chain. Mobile tutorial strip now has an automated compact-width telemetry smoke. Post-match `WinModal` now surfaces Rival Challenge progress when rivalry revenge counters are earned. `PROJECT_STATUS` now matches SIL 998 and 640-test evidence.
+
+**Impact:** VaultFront is less brittle for future Studio sessions and has a stronger retention loop without adding paid AI cost. The mobile onboarding gate is no longer only manual, and rivalry progress is visible at the exact moment a player can rematch or requeue.
+
+**Verification:** `node --check` passed for restored protocol helpers; `node scripts/compact-handoff.mjs` passed; `node scripts/render-startup-brief.mjs` passed; focused `VaultFrontTutorial` + `WinModal` Vitest passed (9 tests); `npm run build-prod` passed; `npm test` passed (91 files / 640 tests, plus 9 server files / 23 tests); `node scripts/lib/write-project-status.mjs --check` passed with `silScore=998`.
+
+**Known residuals:** Revenue signal remains unverified until a real checkout/supporter event is observed. Production build warnings remain non-blocking: public URL placeholders, mixed JSON import attributes, and large chunks. Manual internal rivalry/rematch playtest is still needed to validate the new retention card in live match flow.
+
+**Suggested next focus:** Internal rivalry/rematch playtest, then observe real revenue telemetry before setting `VAULTFRONT_REVENUE_OBSERVED=1`, then promote tournament playtest confidence.
+
+---
+
+## Where We Left Off — 2026-06-05
+
 **Session goal:** `/start → /audit → /implement → /closeout` with a fresh, project-specific audit personalized to VaultFront's current flags: mobile onboarding gap, malformed blocker preflight, stale status truth, and live revenue signal noise.
 
 **Shipped:** All 4 items from `docs/AUDIT_2026-06-05_S65.md` (Priority sum: 92.4). Mobile first-run tutorial now shows a compact bottom strip instead of disappearing. Readiness now has an explicit observed/unverified revenue-signal contract. Blocker preflight attempt-order output is readable again. `PROJECT_STATUS` now matches the 997 SIL estimate / 638-test evidence.

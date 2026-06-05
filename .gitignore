@@ -28,6 +28,7 @@ generated/WorldMapData.json.compressed
 
 # Runtime context-meter ledger (generated per-session, not source)
 .cache/
+.ops-cache/
 docs/cache-ledger.ndjson
 ignis/output/
 

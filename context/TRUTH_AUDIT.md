@@ -8,6 +8,12 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 
 ## 2026-06-05
 
+- `docs/AUDIT_2026-06-05_S66.md` and JSON sidecar match shipped code/test changes and mark all 4 items shipped.
+- Startup helper-chain truth: `node scripts/compact-handoff.mjs` and `node scripts/render-startup-brief.mjs` now pass after restoring missing helper modules.
+- Broad test evidence is now 91 main test files / 640 tests plus 9 server test files / 23 tests.
+- `npm run build-prod` passes; known non-blocking warnings remain for public URL placeholders, mixed JSON import attributes, and large chunks.
+- `PROJECT_STATUS.silScore` is 998 and matches the sum of `silCategoriesV3`.
+- `.ops-cache/` is ignored with `.cache/` so generated handoff cache does not create false dirty-worktree signals.
 - `docs/AUDIT_2026-06-05_S65.md` and JSON sidecar match shipped code/test changes and mark all 4 items shipped.
 - Fresh Codex closeout verification passed: blocker script syntax checks, blocker-preflight rendering, readiness focused Vitest (4 tests), production build, and broad `npm test`.
 - Broad test evidence is now 90 main test files / 638 tests plus 9 server test files / 23 tests.

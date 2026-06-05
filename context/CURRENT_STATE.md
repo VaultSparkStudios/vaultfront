@@ -6,6 +6,20 @@ Public-safe summary:
 - internal operational records were sanitized for public-repo safety on 2026-04-03
 - detailed internal state now lives in the private Studio OS / ops repository
 
+## 2026-06-05 — Session 66 Protocol + Mobile Evidence + Rival Loop Pass Complete
+
+Shipped all 4 items from `docs/AUDIT_2026-06-05_S66.md`.
+
+**New fixes added:**
+
+- Startup protocol helper chain restored: `turn-classifier`, `sil-forecaster`, `visual-blocks`, and `skill-cost-ledger` now let compact handoff and startup brief rendering complete cleanly.
+- Mobile first-run tutorial now has an automated compact-width smoke test proving the strip renders, advances, dismisses, and records tutorial pulse telemetry.
+- Post-match `WinModal` now surfaces a Rival Challenge card when rivalry revenge progress exists, turning the existing counter into a visible rematch/requeue retention prompt.
+- `.ops-cache/` is ignored with other generated session cache artifacts.
+- `PROJECT_STATUS` now reflects Session 66 focus, 640-test evidence, and SIL 998.
+
+**Verification:** `node --check` passed for all restored protocol helpers; `node scripts/compact-handoff.mjs` and `node scripts/render-startup-brief.mjs` pass; focused `VaultFrontTutorial` + `WinModal` Vitest passes 9 tests; `npm run build-prod` is green; broad `npm test` is green (91 files / 640 tests, plus 9 server files / 23 tests); `node scripts/lib/write-project-status.mjs --check` passes.
+
 ## 2026-06-05 — Session 65 Protocol + Mobile Onboarding Audit+Implement Pass Complete
 
 Shipped all 4 items from `docs/AUDIT_2026-06-05_S65.md`.

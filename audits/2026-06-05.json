@@ -2,39 +2,52 @@
   "schemaVersion": "1.3",
   "project": "vaultfront",
   "date": "2026-06-05",
-  "session": 65,
+  "session": 66,
   "agent": "codex",
   "kind": "closeout",
   "sil": {
-    "score": 997,
+    "score": 998,
     "max": 1000,
-    "delta": 0,
-    "note": "Held after verification rerun; no new product scope added in this continuation."
+    "delta": 1,
+    "note": "Session 66 repaired startup helper-chain fragility, added automated mobile onboarding evidence, and shipped a visible rival-retention loop."
   },
   "shipped": [
-    "mobile-tutorial-compact-strip",
-    "readiness-revenue-observer-contract",
-    "blocker-preflight-attempt-order",
-    "project-status-truth-sync"
+    "startup-turn-classifier-restore",
+    "mobile-tutorial-smoke-gate",
+    "rival-challenge-postmatch-loop",
+    "s66-truth-sync"
   ],
   "verification": [
     {
-      "command": "node --check scripts/blocker-preflight.mjs",
+      "command": "node --check scripts/lib/turn-classifier.mjs",
       "status": "pass"
     },
     {
-      "command": "node --check scripts/lib/blocker-rules.mjs",
+      "command": "node --check scripts/lib/sil-forecaster.mjs",
       "status": "pass"
     },
     {
-      "command": "node scripts/ops.mjs blocker-preflight",
-      "status": "pass",
-      "evidence": "Attempt order renders as one true-human-only bullet."
+      "command": "node --check scripts/lib/visual-blocks.mjs",
+      "status": "pass"
     },
     {
-      "command": "npx vitest run tests/server/VaultFrontReadiness.test.ts",
+      "command": "node --check scripts/lib/skill-cost-ledger.mjs",
+      "status": "pass"
+    },
+    {
+      "command": "node scripts/compact-handoff.mjs",
       "status": "pass",
-      "evidence": "1 file / 4 tests passed."
+      "evidence": "Compact handoff wrote context/LATEST_HANDOFF.compact.md."
+    },
+    {
+      "command": "node scripts/render-startup-brief.mjs",
+      "status": "pass",
+      "evidence": "Startup brief rendered cleanly for Session 67 with SIL 998."
+    },
+    {
+      "command": "npx vitest run tests/client/VaultFrontTutorial.test.ts tests/client/graphics/layers/WinModal.test.ts",
+      "status": "pass",
+      "evidence": "2 files / 9 tests passed."
     },
     {
       "command": "npm run build-prod",
@@ -44,17 +57,22 @@
     {
       "command": "npm test",
       "status": "pass",
-      "evidence": "90 main test files / 638 tests passed; server pass repeated 9 files / 23 tests."
+      "evidence": "91 main test files / 640 tests passed; server pass repeated 9 files / 23 tests."
+    },
+    {
+      "command": "node scripts/lib/write-project-status.mjs --check",
+      "status": "pass",
+      "evidence": "SIL invariant clean: silScore=998."
     }
   ],
   "residualRisks": [
-    "Mobile tutorial strip still needs a browser smoke for placement against the live control panel.",
     "Revenue signal remains unverified until a real checkout/supporter event is observed.",
-    "Production build has non-blocking warnings for public URL placeholders, JSON import attributes, and large chunks."
+    "Production build has non-blocking warnings for public URL placeholders, JSON import attributes, and large chunks.",
+    "Rival Challenge card still needs live internal playtest observation for rematch/requeue behavior."
   ],
   "next": [
-    "Run a mobile tutorial smoke in browser.",
+    "Run an internal rivalry/rematch playtest.",
     "Observe real revenue telemetry before setting VAULTFRONT_REVENUE_OBSERVED=1.",
-    "Pick the next engagement-depth item: rival-system or narrator-shared-broadcast."
+    "Promote tournament playtest confidence with the current readiness endpoint."
   ]
 }

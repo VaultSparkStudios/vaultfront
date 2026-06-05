@@ -4,12 +4,18 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 997/1000 | Velocity: 95↑ | Debt: → | Velocity trend: ↑
-Avgs — 3: 88.3 | Momentum runway: strong | Intent rate: 100%
-3-session: Dev 10 | Align 30 | Momentum 12 | Engage 27 | Process 10
-Last session: 2026-06-05 Session 65 protocol + mobile onboarding pass
+Total: 998/1000 | Velocity: 96↑ | Debt: → | Velocity trend: ↑
+Avgs — 3: 88.7 | Momentum runway: strong | Intent rate: 100%
+3-session: Dev 10 | Align 30 | Momentum 13 | Engage 28 | Process 10
+Last session: 2026-06-05 Session 66 protocol + mobile evidence + rival loop pass
 
 <!-- rolling-status-end -->
+
+## Sprint: 2026-06-05 — Session 66 Protocol + Mobile Evidence + Rival Loop Pass (SIL estimate: 998/1000)
+
+Shipped all 4 Session-66 audit items from `docs/AUDIT_2026-06-05_S66.md` (Priority sum: 96.8). Highlights: startup helper-chain restore for compact handoff/startup render, automated mobile tutorial strip smoke with telemetry assertions, Rival Challenge post-match card from existing rivalry revenge progress, and status/context truth sync to 640 passing tests.
+
+**Delta: 997 → 998.** devHealth +1 (startup render and compact handoff no longer fail on missing helper imports; broad tests still green), engagement +0 but better protected (rival challenge adds visible retention prompt), automationCoverage unchanged at ceiling, capitalEfficiency unchanged (no new paid usage), security unchanged.
 
 ## Sprint: 2026-06-05 — Session 65 Closeout Hygiene Continuation (SIL held: 997/1000)
 

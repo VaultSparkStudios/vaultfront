@@ -1,18 +1,19 @@
-# Implement Plan — 2026-06-05 S65
+# Implement Plan — 2026-06-05 S66
 
-Source: `docs/AUDIT_2026-06-05_S65.json`
+Source: `docs/AUDIT_2026-06-05_S66.json`
 
-| Order | Slug                                  | Effort | Priority | Rationale                                                                                   |
-| ----: | ------------------------------------- | -----: | -------: | ------------------------------------------------------------------------------------------- |
-|     1 | `blocker-preflight-attempt-order`     |    30m |     19.9 | Protocol correctness first; fixes start/closeout evidence readability.                      |
-|     2 | `project-status-truth-sync`           |    30m |     17.4 | Machine-readable truth source must match latest shipped state before rendering new briefs.  |
-|     3 | `readiness-revenue-observer-contract` |     1h |     22.1 | Readiness contract affects promotion gates and startup signal quality.                      |
-|     4 | `mobile-tutorial-compact-strip`       |     2h |     28.0 | Highest user-facing impact; depends only on client tutorial surface and existing telemetry. |
+## Optimal Sequence
 
-## Verification
+1. `startup-turn-classifier-restore` — foundational protocol repair; unblocks startup/compact probes and token routing.
+2. `mobile-tutorial-smoke-gate` — same onboarding surface as S65, now protected by automated mobile-width evidence.
+3. `rival-challenge-postmatch-loop` — retention feature on existing post-match/rivalry state with no paid AI expansion.
+4. `s66-truth-sync` — context/status write-back after verification evidence is known.
 
-- `node scripts/ops.mjs blocker-preflight`
-- `npx vitest run tests/server/VaultFrontReadiness.test.ts`
-- `node --check scripts/blocker-preflight.mjs`
-- `node --check scripts/lib/blocker-rules.mjs`
+## Verification Plan
+
+- `node --check scripts/lib/turn-classifier.mjs`
+- `node scripts/compact-handoff.mjs`
+- `node scripts/render-startup-brief.mjs`
+- `npx vitest run tests/client/VaultFrontTutorial.test.ts tests/client/graphics/layers/WinModal.test.ts`
 - `npm run build-prod`
+- `node scripts/lib/write-project-status.mjs --check`
