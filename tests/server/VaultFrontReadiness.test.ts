@@ -15,6 +15,7 @@ describe("buildVaultFrontReadiness", () => {
     expect(
       payload.launchGates.some((gate) => gate.gate === "revenue-signal"),
     ).toBe(true);
+    expect(payload.checks.revenueSignal).toBe("warn");
     expect(payload.checks.playtestPulse).toBe("warn");
   });
 
@@ -51,5 +52,22 @@ describe("buildVaultFrontReadiness", () => {
       payload.launchGates.find((gate) => gate.gate === "playtest-pulse")
         ?.evidence,
     ).toContain("score 64");
+  });
+
+  it("passes the revenue signal gate when live supporter evidence is supplied", () => {
+    const payload = buildVaultFrontReadiness({
+      healthy: true,
+      processRole: "master",
+      revenueSignal: {
+        status: "observed",
+        observedAt: "2026-06-05T14:00:00.000Z",
+      },
+    });
+
+    expect(payload.checks.revenueSignal).toBe("pass");
+    expect(
+      payload.launchGates.find((gate) => gate.gate === "revenue-signal")
+        ?.evidence,
+    ).toContain("2026-06-05T14:00:00.000Z");
   });
 });

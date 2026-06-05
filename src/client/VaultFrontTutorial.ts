@@ -17,6 +17,7 @@ import { recordVaultFrontPlaytestPulse } from "./Api";
 
 const TUTORIAL_SEEN_KEY = "vf-tutorial-seen";
 const TUTORIAL_VERSION = "1";
+const MOBILE_QUERY = "(max-width: 640px)";
 
 interface TutorialStep {
   icon: string;
@@ -55,6 +56,7 @@ const STEPS: TutorialStep[] = [
 @customElement("vault-front-tutorial")
 export class VaultFrontTutorial extends LitElement {
   @state() private open = false;
+  @state() private compact = false;
   @state() private step = 0;
 
   static styles = css`
@@ -171,18 +173,83 @@ export class VaultFrontTutorial extends LitElement {
     .next.finish:hover {
       background: rgba(5, 150, 105, 1);
     }
+
+    .strip {
+      position: fixed;
+      left: 8px;
+      right: 8px;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
+      z-index: 9998;
+      min-height: 44px;
+      display: grid;
+      grid-template-columns: auto 1fr auto auto auto;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid rgba(34, 211, 238, 0.45);
+      border-radius: 8px;
+      background: rgba(8, 13, 26, 0.94);
+      color: #e0f2fe;
+      font-family: "Overpass", sans-serif;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+      pointer-events: auto;
+    }
+
+    .strip-icon {
+      font-size: 1rem;
+    }
+
+    .strip-copy {
+      min-width: 0;
+    }
+
+    .strip-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      line-height: 1.05;
+    }
+
+    .strip-body {
+      color: #bae6fd;
+      font-size: 0.68rem;
+      line-height: 1.15;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .strip-step {
+      color: #67e8f9;
+      font-size: 0.65rem;
+      font-weight: 700;
+    }
+
+    .strip button {
+      border-radius: 6px;
+      border: 1px solid rgba(125, 211, 252, 0.5);
+      background: rgba(14, 116, 144, 0.8);
+      color: #ecfeff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 5px 8px;
+    }
+
+    .strip .strip-close {
+      border-color: rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.7);
+      color: #cbd5e1;
+      padding: 5px 7px;
+    }
   `;
 
   connectedCallback() {
     super.connectedCallback();
     this.style.pointerEvents = "none";
-    if (window.matchMedia("(max-width: 640px)").matches) {
-      return;
-    }
     const seen = localStorage.getItem(TUTORIAL_SEEN_KEY);
     if (seen !== TUTORIAL_VERSION) {
       // Slight delay so the game UI can render first
       setTimeout(() => {
+        this.compact = window.matchMedia(MOBILE_QUERY).matches;
         this.open = true;
         void recordVaultFrontPlaytestPulse({
           surface: "tutorial",
@@ -218,6 +285,27 @@ export class VaultFrontTutorial extends LitElement {
 
     const current = STEPS[this.step];
     const isLast = this.step === STEPS.length - 1;
+
+    if (this.compact) {
+      return html`
+        <div class="strip" @click=${(e: Event) => e.stopPropagation()}>
+          <span class="strip-icon">${current.icon}</span>
+          <div class="strip-copy">
+            <div class="strip-title">${current.title}</div>
+            <div class="strip-body">${current.body}</div>
+          </div>
+          <span class="strip-step">${this.step + 1}/${STEPS.length}</span>
+          <button
+            class="strip-close"
+            title="Dismiss tutorial"
+            @click=${() => this.dismiss("skip")}
+          >
+            x
+          </button>
+          <button @click=${this.advance}>${isLast ? "Done" : "Next"}</button>
+        </div>
+      `;
+    }
 
     return html`
       <div class="overlay" @click=${(e: Event) => e.stopPropagation()}>

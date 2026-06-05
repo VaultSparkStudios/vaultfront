@@ -203,6 +203,13 @@ app.get("/api/vaultfront/readiness", (_req, res) => {
     buildVaultFrontReadiness({
       healthy,
       processRole: "master",
+      revenueSignal:
+        process.env.VAULTFRONT_REVENUE_OBSERVED === "1"
+          ? {
+              status: "observed",
+              observedAt: process.env.VAULTFRONT_REVENUE_OBSERVED_AT,
+            }
+          : { status: "unverified" },
     }),
   );
 });

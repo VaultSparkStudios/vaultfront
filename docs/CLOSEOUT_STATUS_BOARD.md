@@ -1,27 +1,27 @@
 <!-- generated-by: scripts/render-closeout-board.mjs v1.0 -->
-<!-- generated-at: 2026-05-18 (Session ? closeout) -->
+<!-- generated-at: 2026-06-05 (Session ? closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
 ╔══ SESSION CLOSEOUT · VaultFront · S? ══════════════════════════╗
-║  Date: 2026-05-18  ·  SIL: 858/1000  ·  Velocity: —              ║
+║  Date: 2026-06-05  ·  SIL: 997/1000  ·  Velocity: —              ║
 ║  Mode: FOUNDER  ·  Agent: claude-code                            ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WHAT SHIPPED ════════════════════════════════════════════════╗
 ║  (no shipped bullets parsed from LATEST_HANDOFF — see git log)   ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ SCORES · SIL 858/1000 ═══════════════════════════════════════╗
-║    Dev Health         85   █████████░                            ║
-║    Alignment          85   █████████░                            ║
-║    Momentum           90   █████████░                            ║
-║    Engagement         85   █████████░                            ║
-║    Process Qual       80   ████████░░                            ║
-║    Coherence          93   █████████░                            ║
-║    Security           90   █████████░                            ║
-║    Ecosystem          65   ███████░░░                            ║
-║    Capital            83   ████████░░                            ║
-║    Automation         93   █████████░                            ║
+╔══ SCORES · SIL 997/1000 ═══════════════════════════════════════╗
+║    Dev Health         99   ██████████                            ║
+║    Alignment          100  ██████████                            ║
+║    Momentum           100  ██████████                            ║
+║    Engagement         100  ██████████                            ║
+║    Process Qual       100  ██████████                            ║
+║    Coherence          100  ██████████                            ║
+║    Security           99   ██████████                            ║
+║    Ecosystem          100  ██████████                            ║
+║    Capital            99   ██████████                            ║
+║    Automation         100  ██████████                            ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WRITE-BACK STATUS ═══════════════════════════════════════════╗
 ║  ✓ context/CURRENT_STATE.md                                      ║
@@ -32,19 +32,19 @@
 ║  ✓ context/SELF_IMPROVEMENT_LOOP.md                              ║
 ║  · docs/CREATIVE_DIRECTION_RECORD.md                             ║
 ║  ✓ context/TRUTH_AUDIT.md                                        ║
-║  · context/PROJECT_STATUS.json                                   ║
+║  ✓ context/PROJECT_STATUS.json                                   ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 46 files  ·  M:12 A:0 D:0 ?:34                         ║
-║  Ahead: 13  ·  Behind: 0                                         ║
+║  Changes: 23 files  ·  M:19 A:0 D:0 ?:4                          ║
+║  Ahead: 0  ·  Behind: 0                                          ║
 ║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
 ║  Doctor:        —                                                ║
 ║  Compliance:    —                                                ║
 ║  Tests:         —                                                ║
-║  IGNIS:         4d ago                                           ║
-║  Truth:         green                                            ║
+║  IGNIS:         2d ago                                           ║
+║  Truth:         amber-green                                      ║
 ║  Sanitization:  —                                                ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ NEXT SESSION ════════════════════════════════════════════════╗

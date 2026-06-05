@@ -12,6 +12,8 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 - All 90 Vitest test files (637 tests) pass — broad `npm test` is now fully green. Previous 3 pre-existing failures (VaultFrontExecution mock staleness, VaultFrontLifecycle BigInt, CoachHintEngine trigger field) are repaired.
 - `tsc --noEmit` clean; `npm run build-prod` green (Vite bundled in 13.4s); touched-file ESLint clean.
 - Entropy: 0.08 (healthy, computed and written to PROJECT_STATUS.json).
+- Session 65 truth sync: `PROJECT_STATUS.silScore` now matches the latest public-safe Session 65 estimate (997), and test evidence now says 638 tests instead of stale 634/637.
+- Revenue signal remains unverified. The readiness/startup code can now clear the warning only when explicit observed/verified evidence is supplied; it must not clear on `unverified`.
 - Truth status upgraded from amber-green to green — all major verification surfaces are now clean.
 
 ## 2026-06-03

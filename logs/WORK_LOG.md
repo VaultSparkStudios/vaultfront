@@ -4,6 +4,16 @@ Append-only. Each session appends one entry. Never edit prior entries.
 
 ---
 
+## 2026-06-05 — Session 65 protocol + mobile onboarding pass
+
+- Goal: `/start → /audit → /implement → /closeout` with a fresh, VaultFront-specific audit around current flags and blockers.
+- What changed: Added `docs/AUDIT_2026-06-05_S65.*`; fixed blocker-preflight attempt-order rendering; added a compact mobile tutorial strip with existing playtest-pulse telemetry; added an observed/unverified revenue-signal readiness contract; fixed startup-brief revenue status matching; synced `PROJECT_STATUS` to SIL 997 and 638-test evidence.
+- Files or systems touched: `VaultFrontTutorial`, `VaultFrontReadiness`, `Master`, `Worker`, startup/blocker scripts, readiness tests, audit docs, implementation plan, startup brief, and public-safe context docs.
+- Risks created or removed: Removes mobile no-guidance onboarding risk and malformed CANON-019 preflight evidence. Revenue remains deliberately warning-level until real checkout/supporter telemetry is observed.
+- Recommended next move: Browser-smoke the mobile tutorial strip, then ship `rival-system` or `narrator-shared-broadcast`.
+
+---
+
 ## 2026-04-16 — Session 0 | Studio OS baseline work log (S86 studio-ops seed)
 
 - Goal: Complete the Studio OS required-file map (14/15 → 15/15) so VaultFront clears the release-gate "Studio OS map intact" check.

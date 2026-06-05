@@ -57,7 +57,9 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 - ~~Run `npm run build-prod` and `npm run e2e` after this readiness pass to promote tournament playtest confidence.~~ ✅ Done (`build-prod` green; CI-style serial E2E green with one flaky retry)
 - Wire a live revenue signal into the startup brief once checkout or supporter telemetry is observable.
 - ~~Repair broad `npm test` residuals: `VaultFrontExecution` mock/BigInt failures and `CoachHintEngine` trigger-field assertion.~~ ✅ Done (Session 64 — all 90 test files / 637 tests green)
-- Consider a compact/mobile tutorial pattern that teaches VaultFront mechanics without a modal overlay.
+- ~~Consider a compact/mobile tutorial pattern that teaches VaultFront mechanics without a modal overlay.~~ ✅ Done (Session 65 — first-run mobile strip with tutorial pulse telemetry)
+- Run a mobile tutorial smoke in browser to verify strip placement against the live control panel.
+- Observe a real checkout/supporter event and set `VAULTFRONT_REVENUE_OBSERVED=1` only after evidence exists.
 
 ## Deferred to Project Agents
 

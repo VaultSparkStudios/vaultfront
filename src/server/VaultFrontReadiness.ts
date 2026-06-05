@@ -2,6 +2,10 @@ export interface VaultFrontReadinessInput {
   healthy: boolean;
   processRole: "master" | "worker";
   workerId?: number;
+  revenueSignal?: {
+    status: "unverified" | "observed";
+    observedAt?: string;
+  };
   playtestPulse?: {
     status: "no-signal" | "warming" | "ready";
     score: number;
@@ -21,7 +25,7 @@ export interface VaultFrontReadinessPayload {
   checks: {
     serverHealth: "pass" | "fail";
     testSurfacesRegistered: "pass";
-    revenueSignal: "warn";
+    revenueSignal: "pass" | "warn";
     freeTierCost: "pass";
     aiCostGuardrail: "pass";
     playtestPulse: "pass" | "warn";
@@ -68,6 +72,7 @@ export function buildVaultFrontReadiness(
 ): VaultFrontReadinessPayload {
   const status = input.healthy ? "ready" : "degraded";
   const pulseReady = input.playtestPulse?.status === "ready";
+  const revenueObserved = input.revenueSignal?.status === "observed";
 
   return {
     project: "vaultfront",
@@ -78,7 +83,7 @@ export function buildVaultFrontReadiness(
     checks: {
       serverHealth: input.healthy ? "pass" : "fail",
       testSurfacesRegistered: "pass",
-      revenueSignal: "warn",
+      revenueSignal: revenueObserved ? "pass" : "warn",
       freeTierCost: "pass",
       aiCostGuardrail: "pass",
       playtestPulse: pulseReady ? "pass" : "warn",
@@ -99,9 +104,10 @@ export function buildVaultFrontReadiness(
       },
       {
         gate: "revenue-signal",
-        status: "warn",
-        evidence:
-          "Checkout API is present, but startup brief still reports no live revenue signal.",
+        status: revenueObserved ? "pass" : "warn",
+        evidence: revenueObserved
+          ? `Live revenue/supporter signal observed${input.revenueSignal?.observedAt ? ` at ${input.revenueSignal.observedAt}` : ""}.`
+          : "Checkout API is present, but no live revenue/supporter signal has been observed.",
       },
       {
         gate: "playtest-surface",

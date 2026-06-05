@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "/audit skill v1.0",
+  "generatedAt": "2026-06-05",
+  "project": "vaultfront",
+  "type": "game",
+  "session": "S65",
+  "axisWeights": {
+    "gamification": 3,
+    "ux": 2,
+    "ai": 1.5,
+    "feature_depth": 1.5,
+    "new_features": 1,
+    "feedback_loop": 1,
+    "security": 1,
+    "speed": 1,
+    "token_cost": 1
+  },
+  "summary": {
+    "totalItems": 4,
+    "combinedPriority": 92.4,
+    "top3": [
+      "mobile-tutorial-compact-strip",
+      "readiness-revenue-observer-contract",
+      "blocker-preflight-attempt-order"
+    ]
+  },
+  "items": [
+    {
+      "slug": "mobile-tutorial-compact-strip",
+      "tier": "fire",
+      "axis": "ux/gamification/feedback_loop",
+      "effort": "2h",
+      "impact": 8,
+      "innovation": 7,
+      "priority": 28.0,
+      "item": "Mobile players currently skip the first-run VaultFront tutorial entirely because the modal is suppressed on narrow screens. Replace the silent suppression with a compact bottom strip that teaches the same progression without blocking the map.",
+      "recipe": "Update VaultFrontTutorial so mobile viewports render a 44px strip with step title/body, step count, dismiss, and next controls; keep desktop modal behavior; preserve shown/advance/skip/complete playtest-pulse telemetry.",
+      "why": "This closes the highest-friction onboarding gap left after S63: mobile now gets measurable guidance instead of no guidance. The strip respects the game viewport and keeps onboarding signal flowing into the playtest pulse.",
+      "status": "shipped"
+    },
+    {
+      "slug": "readiness-revenue-observer-contract",
+      "tier": "high",
+      "axis": "capital/feedback_loop/security",
+      "effort": "1h",
+      "impact": 7,
+      "innovation": 5,
+      "priority": 22.1,
+      "item": "The readiness endpoint always warns on revenue even when a future checkout/supporter event is available. Add a tiny observed/unverified contract so the warning clears only when explicit evidence exists.",
+      "recipe": "Extend buildVaultFrontReadiness with revenueSignal.status observed|unverified, wire master/worker from VAULTFRONT_REVENUE_OBSERVED, add a test for the pass state, and make startup-brief revenue status read PROJECT_STATUS before falling back to stale portfolio revenue docs.",
+      "why": "This keeps cost discipline honest without making revenue a permanent false alarm. It gives deploy/runtime checks one clear field to flip when the first real signal arrives.",
+      "status": "shipped"
+    },
+    {
+      "slug": "blocker-preflight-attempt-order",
+      "tier": "high",
+      "axis": "process/speed/security",
+      "effort": "30m",
+      "impact": 6,
+      "innovation": 4,
+      "priority": 19.9,
+      "item": "Start preflight renders a true-human-only blocker as one bullet per character because attemptOrder is a string but the Markdown renderer iterates it as an array.",
+      "recipe": "Change summarizeAttemptOrder to return ordered step arrays and make blocker-preflight tolerate legacy string outputs; verify node scripts/ops.mjs blocker-preflight renders one sane bullet per step.",
+      "why": "CANON-019 depends on blocker output being readable. A malformed preflight makes agents more likely to misclassify work as human-only or ignore the evidence trail.",
+      "status": "shipped"
+    },
+    {
+      "slug": "project-status-truth-sync",
+      "tier": "high",
+      "axis": "process/automation",
+      "effort": "30m",
+      "impact": 6,
+      "innovation": 3,
+      "priority": 17.4,
+      "item": "PROJECT_STATUS still reports silScore 992 and 634 tests while the latest SELF_IMPROVEMENT_LOOP and CURRENT_STATE say Session 64 landed at 996 with 637 tests green.",
+      "recipe": "Update context/PROJECT_STATUS.json currentFocus, nextMilestone, silScore, and testing surface evidence to match the latest authoritative session record.",
+      "why": "Startup brief, closeout board, and cross-repo status consume PROJECT_STATUS first. This prevents a stale machine-readable score from under-reporting VaultFront's actual readiness.",
+      "status": "shipped"
+    }
+  ],
+  "innovationReserve": ["mobile-tutorial-compact-strip"],
+  "skipped": [
+    {
+      "slug": "rival-system",
+      "reason": "Still valuable, but it is a larger engagement feature; this pass prioritizes launch-signal truth and onboarding gaps that block promotion confidence."
+    },
+    {
+      "slug": "season-pass-mission-injection",
+      "reason": "High-upside live-ops feature, deferred because mobile onboarding evidence should be repaired before adding more in-match prompts."
+    },
+    {
+      "slug": "post-match-route-replay-ai",
+      "reason": "Innovative but too broad for a protocol+readiness cleanup pass; keep for a dedicated replay session."
+    }
+  ],
+  "executionLog": [
+    {
+      "slug": "blocker-preflight-attempt-order",
+      "status": "shipped",
+      "summary": "summarizeAttemptOrder now returns ordered step arrays, and blocker-preflight tolerates legacy strings before rendering Markdown.",
+      "verification": [
+        "node --check scripts/blocker-preflight.mjs",
+        "node --check scripts/lib/blocker-rules.mjs",
+        "node scripts/ops.mjs blocker-preflight"
+      ]
+    },
+    {
+      "slug": "project-status-truth-sync",
+      "status": "shipped",
+      "summary": "PROJECT_STATUS now reflects Session 65 focus, next milestone, Session 64 637-test evidence, and SIL 996.",
+      "verification": ["npm run build-prod"]
+    },
+    {
+      "slug": "readiness-revenue-observer-contract",
+      "status": "shipped",
+      "summary": "Readiness payloads now support revenueSignal observed/unverified, master/worker wire the contract from VAULTFRONT_REVENUE_OBSERVED, and startup brief revenue copy can use PROJECT_STATUS when present.",
+      "verification": [
+        "npx vitest run tests/server/VaultFrontReadiness.test.ts",
+        "npm run build-prod"
+      ]
+    },
+    {
+      "slug": "mobile-tutorial-compact-strip",
+      "status": "shipped",
+      "summary": "VaultFrontTutorial now renders a compact mobile strip instead of suppressing onboarding on narrow screens, while preserving tutorial pulse telemetry.",
+      "verification": ["npm run build-prod"]
+    }
+  ]
+}

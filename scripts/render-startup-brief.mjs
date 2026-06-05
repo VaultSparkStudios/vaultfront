@@ -577,6 +577,11 @@ const versionDrift =
 const revGenDate =
   revSig.match(/Generated:\s*(\d{4}-\d{2}-\d{2})/)?.[1] ?? null;
 const revAge = revGenDate ? daysBetween(revGenDate, today) : 999;
+const revenueSignalStatus = String(status.revenueSignalStatus || "");
+const revenueSignalObserved =
+  /\b(observed|verified|live-revenue-observed|live-revenue-verified)\b/.test(
+    revenueSignalStatus,
+  ) && !revenueSignalStatus.includes("unverified");
 
 // ── Truth status ──────────────────────────────────────────────────────────────
 const truthStatus =
@@ -838,7 +843,13 @@ const sigIgnis = sig(
 );
 const sigCdr = cdrGap ? "⚠" : "✓";
 const sigVer = versionDrift ? "⚠" : "✓";
-const sigRev = revAge <= 7 ? "✓" : revAge <= 14 ? "⚠" : "⛔";
+const sigRev = revenueSignalObserved
+  ? "✓"
+  : revAge <= 7
+    ? "✓"
+    : revAge <= 14
+      ? "⚠"
+      : "⛔";
 const sigTruth =
   truthStatus === "green" ? "✓" : truthStatus === "yellow" ? "⚠" : "⛔";
 const complianceSnapshots = Array.isArray(complianceHistory.snapshots)
@@ -1201,7 +1212,7 @@ const lines = [
     `${sigVer}  Templates     ${versionDrift ? `version drift (start: ${startVer} vs tpl: ${startTplVer})` : `v${startVer || "?"} aligned`}`,
   ),
   row(
-    `${sigRev}  Revenue sig.  ${revGenDate ? `${revAge}d old (${revGenDate})` : "not found"}${revAge > 7 ? "  ⚠ stale" : ""}`,
+    `${sigRev}  Revenue sig.  ${revenueSignalObserved ? revenueSignalStatus : revGenDate ? `${revAge}d old (${revGenDate})` : revenueSignalStatus || "not found"}${!revenueSignalObserved && revAge > 7 ? "  ⚠ stale" : ""}`,
   ),
   row(`${sigDeploy}  Deploy gaps   ${deployLabel}`),
   row(`${sigDoctor}  Doctor        ${doctorDetail}`),

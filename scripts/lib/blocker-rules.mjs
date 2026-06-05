@@ -81,12 +81,18 @@ export function classifyBlocker(text) {
 export function summarizeAttemptOrder(text) {
   const info = classifyBlocker(text);
   if (info.signupUiOnly) {
-    return "true human-only (dashboard signup required)";
+    return ["true human-only (dashboard signup required)"];
   }
   if (!info.attemptable) {
-    return "true human-only — no agent path";
+    return ["true human-only — no agent path"];
   }
-  return `agent should try first → ${info.elevatedProbe !== "none" ? info.elevatedProbe : "secrets discovery"}`;
+  return [
+    "run secrets discovery",
+    info.elevatedProbe !== "none"
+      ? `run elevated/admin probe: ${info.elevatedProbe}`
+      : "run elevated/admin probe if a safe scripted path exists",
+    "escalate only if both checks prove no agent path",
+  ];
 }
 
 export { RULES };

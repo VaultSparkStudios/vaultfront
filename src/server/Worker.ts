@@ -807,6 +807,13 @@ export async function startWorker() {
         healthy: true,
         processRole: "worker",
         workerId,
+        revenueSignal:
+          process.env.VAULTFRONT_REVENUE_OBSERVED === "1"
+            ? {
+                status: "observed",
+                observedAt: process.env.VAULTFRONT_REVENUE_OBSERVED_AT,
+              }
+            : { status: "unverified" },
         playtestPulse: buildVaultFrontPlaytestPulseSummary(),
       }),
     );

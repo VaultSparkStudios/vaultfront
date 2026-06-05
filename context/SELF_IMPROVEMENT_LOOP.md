@@ -4,12 +4,18 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 996/1000 | Velocity: 94↑ | Debt: → | Velocity trend: ↑
+Total: 997/1000 | Velocity: 95↑ | Debt: → | Velocity trend: ↑
 Avgs — 3: 88.3 | Momentum runway: strong | Intent rate: 100%
 3-session: Dev 10 | Align 30 | Momentum 12 | Engage 27 | Process 10
-Last session: 2026-06-04 Session 64 comprehensive audit+implement pass
+Last session: 2026-06-05 Session 65 protocol + mobile onboarding pass
 
 <!-- rolling-status-end -->
+
+## Sprint: 2026-06-05 — Session 65 Protocol + Mobile Onboarding Pass (SIL estimate: 997/1000)
+
+Shipped all 4 Session-65 audit items from `docs/AUDIT_2026-06-05_S65.md` (Priority sum: 92.4). Highlights: mobile first-run tutorial strip, revenue readiness observer contract, blocker-preflight attempt-order repair, startup revenue false-pass fix, and PROJECT_STATUS truth sync to 997 / 638 tests.
+
+**Delta: 996 → 997.** processQuality +1 (blocker preflight and startup revenue signal corrected), engagement +1 (mobile tutorial guidance restored), automationCoverage unchanged, capitalEfficiency unchanged (no live revenue evidence yet), devHealth unchanged (build and focused tests green).
 
 ## Sprint: 2026-06-04 — Session 64 Comprehensive Audit → Implement Pass (SIL estimate: 996/1000)
 

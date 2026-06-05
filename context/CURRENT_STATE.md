@@ -6,6 +6,20 @@ Public-safe summary:
 - internal operational records were sanitized for public-repo safety on 2026-04-03
 - detailed internal state now lives in the private Studio OS / ops repository
 
+## 2026-06-05 — Session 65 Protocol + Mobile Onboarding Audit+Implement Pass Complete
+
+Shipped all 4 items from `docs/AUDIT_2026-06-05_S65.md`.
+
+**New fixes added:**
+
+- Mobile first-run tutorial now renders as a compact bottom strip on narrow screens instead of being suppressed entirely; tutorial pulse telemetry remains intact.
+- Readiness payloads now accept a `revenueSignal` contract with `observed` / `unverified` states, wired from `VAULTFRONT_REVENUE_OBSERVED` on master and worker.
+- Startup brief revenue logic now reads `PROJECT_STATUS.revenueSignalStatus` safely and no longer treats `unverified` as `verified`.
+- Blocker preflight attempt-order output now renders as ordered steps instead of one bullet per character.
+- `PROJECT_STATUS` now reflects the latest public-safe truth: Session 65 focus, 638-test evidence, and SIL 997.
+
+**Verification:** blocker scripts pass `node --check`; `node scripts/ops.mjs blocker-preflight` renders correctly; `tests/server/VaultFrontReadiness.test.ts` passes 4 tests; `npm test` is green (90 files / 638 tests, plus 9 server files / 23 tests); `npm run build-prod` is green; startup brief render and validation pass with only the existing recommended `HUMAN PRESSURE` warning.
+
 ## 2026-05-17 — Full Audit+Implement Pass Complete
 
 All 19 items from `docs/AUDIT_2026-05-17.md` shipped across two sessions.
