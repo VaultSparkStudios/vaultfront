@@ -28,19 +28,21 @@
  *   2 — file missing / unreadable
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, '..');
-const IS_DIRECT_RUN = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const ROOT = path.resolve(__dirname, "..");
+const IS_DIRECT_RUN =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
 const args = process.argv.slice(2);
-const JSON_MODE = args.includes('--json');
-const STDIN_MODE = args.includes('--stdin');
-const positional = args.filter((a) => !a.startsWith('--'));
-const targetPath = positional[0] || path.join(ROOT, 'docs', 'STARTUP_BRIEF.md');
+const JSON_MODE = args.includes("--json");
+const STDIN_MODE = args.includes("--stdin");
+const positional = args.filter((a) => !a.startsWith("--"));
+const targetPath = positional[0] || path.join(ROOT, "docs", "STARTUP_BRIEF.md");
 
 // ── Canonical blocks that MUST appear ───────────────────────────────────────
 // Each entry: { label, pattern, severity }
@@ -48,34 +50,34 @@ const targetPath = positional[0] || path.join(ROOT, 'docs', 'STARTUP_BRIEF.md');
 //           'recommended' — logged as warning but not a fail.
 const REQUIRED_BLOCKS = [
   {
-    label: 'SCORE box',
+    label: "SCORE box",
     pattern: /╔══\s*SCORE\s*═/,
-    severity: 'required',
+    severity: "required",
   },
   {
-    label: 'SIGNALS box',
+    label: "SIGNALS box",
     pattern: /╔══\s*SIGNALS\s*═/,
-    severity: 'required',
+    severity: "required",
   },
   {
-    label: 'WHERE WE LEFT OFF block',
+    label: "WHERE WE LEFT OFF block",
     pattern: /╔══\s*WHERE WE LEFT OFF/,
-    severity: 'required',
+    severity: "required",
   },
   {
-    label: 'GENIUS HIT LIST box',
+    label: "GENIUS HIT LIST box",
     pattern: /╔═+\s*GENIUS HIT LIST|║\s*GENIUS HIT LIST/,
-    severity: 'required',
+    severity: "required",
   },
   {
-    label: 'Project title header (Studio OS box)',
+    label: "Project title header (Studio OS box)",
     pattern: /╔═+╗[\s\S]{0,400}?FORGE|SPARKED|VAULTED/,
-    severity: 'recommended',
+    severity: "recommended",
   },
   {
-    label: 'HUMAN PRESSURE block',
+    label: "HUMAN PRESSURE block",
     pattern: /╔══\s*HUMAN PRESSURE/,
-    severity: 'recommended',
+    severity: "recommended",
   },
 ];
 
@@ -86,42 +88,49 @@ const FORBIDDEN_PATTERNS = [
   {
     label: 'Deprecated "Now bucket" heading',
     pattern: /^##\s+Now\s+[Bb]ucket\s*$/m,
-    reason: 'Deprecated since S81 — Unified Genius List replaces Now/Next/Blocked buckets.',
+    reason:
+      "Deprecated since S81 — Unified Genius List replaces Now/Next/Blocked buckets.",
   },
   {
     label: 'Deprecated "Next bucket" heading',
     pattern: /^##\s+Next\s+[Bb]ucket\s*$/m,
-    reason: 'Deprecated since S81 — Unified Genius List replaces Now/Next/Blocked buckets.',
+    reason:
+      "Deprecated since S81 — Unified Genius List replaces Now/Next/Blocked buckets.",
   },
   {
     label: 'Deprecated "Today" bucket heading',
     pattern: /^##\s+Today\s*$/m,
-    reason: 'Never a canonical bucket — improvised by non-studio-ops agents.',
+    reason: "Never a canonical bucket — improvised by non-studio-ops agents.",
   },
   {
     label: 'Non-canonical "Contradiction Sentinel" section',
-    pattern: /^##\s+Contradiction\s+Sentinel\s*$/mi,
-    reason: 'MindFrame product concept — not a Studio OS brief section. Canonical brief uses SIGNALS + GENIUS HIT LIST.',
+    pattern: /^##\s+Contradiction\s+Sentinel\s*$/im,
+    reason:
+      "MindFrame product concept — not a Studio OS brief section. Canonical brief uses SIGNALS + GENIUS HIT LIST.",
   },
   {
     label: 'Non-canonical "Executive Focus" section',
-    pattern: /^##\s+Executive\s+Focus\s*$/mi,
-    reason: 'Non-canonical prose — canonical brief uses WHERE WE LEFT OFF + GENIUS HIT LIST.',
+    pattern: /^##\s+Executive\s+Focus\s*$/im,
+    reason:
+      "Non-canonical prose — canonical brief uses WHERE WE LEFT OFF + GENIUS HIT LIST.",
   },
   {
     label: 'Non-canonical "Evidence Gaps" section',
-    pattern: /^##\s+Evidence\s+Gaps\s*$/mi,
-    reason: 'Non-canonical — canonical brief uses SIGNALS block for data-quality flags.',
+    pattern: /^##\s+Evidence\s+Gaps\s*$/im,
+    reason:
+      "Non-canonical — canonical brief uses SIGNALS block for data-quality flags.",
   },
   {
     label: 'Non-canonical "Decision Memory" section',
-    pattern: /^##\s+Decision\s+Memory\s*$/mi,
-    reason: 'Non-canonical — canonical brief uses WHERE WE LEFT OFF + SIGNALS, and memory lives in ~/.claude/projects/ (Claude) or ~/.codex/memories/ (Codex).',
+    pattern: /^##\s+Decision\s+Memory\s*$/im,
+    reason:
+      "Non-canonical — canonical brief uses WHERE WE LEFT OFF + SIGNALS, and memory lives in ~/.claude/projects/ (Claude) or ~/.codex/memories/ (Codex).",
   },
   {
     label: 'Non-canonical "Leverage" top-level section',
-    pattern: /^##\s+Leverage\s*$/mi,
-    reason: 'Non-canonical prose — if present as H2 alone. Leverage signal belongs inside GENIUS HIT LIST ranking, not a separate section.',
+    pattern: /^##\s+Leverage\s*$/im,
+    reason:
+      "Non-canonical prose — if present as H2 alone. Leverage signal belongs inside GENIUS HIT LIST ranking, not a separate section.",
   },
 ];
 
@@ -137,11 +146,24 @@ export function validateStartupBrief(body) {
     missingRecommended: [],
     forbiddenHits: [],
     bodyShape: null,
+    staleBrief: null,
   };
+
+  // S142 audit item 2 — brief integrity self-assertion. The renderer stamps
+  // `<!-- brief-coherent: true|false -->` after a three-way check (SIL log vs
+  // PROJECT_STATUS vs rendered headline). false → the brief is showing stale or
+  // unparseable state and /start must NOT proceed on it.
+  const coherentMatch = body.match(
+    /<!--\s*brief-coherent:\s*(true|false)\s*-->/i,
+  );
+  if (coherentMatch && coherentMatch[1].toLowerCase() === "false") {
+    findings.staleBrief =
+      "brief-coherent: false — renderer detected stale/unparseable SIL state (see ⛔ STALE BRIEF banner). Re-render before /start.";
+  }
 
   for (const block of REQUIRED_BLOCKS) {
     if (!block.pattern.test(body)) {
-      if (block.severity === 'required') {
+      if (block.severity === "required") {
         findings.missingRequired.push(block.label);
       } else {
         findings.missingRecommended.push(block.label);
@@ -151,35 +173,59 @@ export function validateStartupBrief(body) {
 
   for (const forbid of FORBIDDEN_PATTERNS) {
     if (forbid.pattern.test(body)) {
-      findings.forbiddenHits.push({ label: forbid.label, reason: forbid.reason });
+      findings.forbiddenHits.push({
+        label: forbid.label,
+        reason: forbid.reason,
+      });
     }
   }
 
   if (!looksLikeBoxBrief(body)) {
-    findings.bodyShape = 'brief does not contain box-drawing characters — likely an improvised prose brief rather than the canonical renderer output';
+    findings.bodyShape =
+      "brief does not contain box-drawing characters — likely an improvised prose brief rather than the canonical renderer output";
   }
 
   return {
-    ok: findings.missingRequired.length === 0
-      && findings.forbiddenHits.length === 0
-      && findings.bodyShape === null,
+    ok:
+      findings.missingRequired.length === 0 &&
+      findings.forbiddenHits.length === 0 &&
+      findings.bodyShape === null &&
+      findings.staleBrief === null,
     ...findings,
   };
+}
+
+export function briefBlockSizes(body) {
+  const blocks = [];
+  const re = /(╔[^\n]*\n[\s\S]*?╚[^\n]*╝)/g;
+  for (const match of body.matchAll(re)) {
+    const block = match[1];
+    const title =
+      block.match(/^╔[═\s]*([^═╗]+?)(?:\s*═|╗)/m)?.[1]?.trim() || "UNTITLED";
+    blocks.push({
+      title,
+      bytes: Buffer.byteLength(block, "utf8"),
+      lines: block.split(/\r?\n/).length,
+    });
+  }
+  return blocks.sort((a, b) => b.bytes - a.bytes);
 }
 
 async function readTarget() {
   if (STDIN_MODE) {
     return await new Promise((resolve, reject) => {
       const chunks = [];
-      process.stdin.on('data', (c) => chunks.push(c));
-      process.stdin.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
-      process.stdin.on('error', reject);
+      process.stdin.on("data", (c) => chunks.push(c));
+      process.stdin.on("end", () =>
+        resolve(Buffer.concat(chunks).toString("utf8")),
+      );
+      process.stdin.on("error", reject);
     });
   }
   if (!fs.existsSync(targetPath)) {
     throw new Error(`brief not found: ${targetPath}`);
   }
-  return fs.readFileSync(targetPath, 'utf8');
+  return fs.readFileSync(targetPath, "utf8");
 }
 
 if (IS_DIRECT_RUN) {
@@ -188,7 +234,13 @@ if (IS_DIRECT_RUN) {
     body = await readTarget();
   } catch (err) {
     if (JSON_MODE) {
-      process.stdout.write(JSON.stringify({ ok: false, error: err.message, source: targetPath }, null, 2) + '\n');
+      process.stdout.write(
+        JSON.stringify(
+          { ok: false, error: err.message, source: targetPath },
+          null,
+          2,
+        ) + "\n",
+      );
     } else {
       console.error(`✗ ${err.message}`);
     }
@@ -196,21 +248,98 @@ if (IS_DIRECT_RUN) {
   }
 
   const result = validateStartupBrief(body);
-  const fail = !result.ok;
+  let fail = !result.ok;
+
+  // S124 #8 — Token-budget enforcer. Brief is the only canonical /start
+  // surface — bloat = re-introducing the 100KB pre-v4 tax. Persist size to
+  // .cache/brief-size.json for doctor probe.
+  // S153 re-baseline: the 13/15KB budget predated the augment layer (S118
+  // R-H5/R-H12) and the S121–S142 tile additions (PROPAGATION · ARK · ARK
+  // PRIORITY · CASCADE · ANALYTICA · OBELISK · SIL GAPS · ROUTER — ~5.7KB of
+  // deliberate, individually-shipped surface). A fresh render+augment measured
+  // 20.9KB and hard-failed every /start deterministically. 24KB ≈ 5.2K tokens
+  // — still inside the v1.3 token-lean target (≤8K at session start).
+  // Trim-first rule stands: no-data boxes are skipped (augment S153).
+  const sizeBytes = Buffer.byteLength(body, "utf8");
+  const topBlocks = briefBlockSizes(body).slice(0, 5);
+  const BUDGET_WARN = 18_432; // 18KB
+  const BUDGET_FAIL = 24_576; // 24KB
+  const budgetStatus =
+    sizeBytes > BUDGET_FAIL
+      ? "fail"
+      : sizeBytes > BUDGET_WARN
+        ? "warn"
+        : "pass";
+  try {
+    const fs2 = await import("node:fs");
+    const path2 = await import("node:path");
+    const cacheDir = path2.join(
+      path2.dirname(targetPath || "."),
+      "..",
+      ".cache",
+    );
+    fs2.mkdirSync(cacheDir, { recursive: true });
+    fs2.writeFileSync(
+      path2.join(cacheDir, "brief-size.json"),
+      JSON.stringify(
+        {
+          generatedAt: new Date().toISOString(),
+          sizeBytes,
+          budgetWarn: BUDGET_WARN,
+          budgetFail: BUDGET_FAIL,
+          status: budgetStatus,
+          topBlocks,
+        },
+        null,
+        2,
+      ),
+    );
+  } catch {}
+  if (budgetStatus === "fail") fail = true;
+  if (!JSON_MODE && budgetStatus !== "pass") {
+    console.log(
+      `  ${budgetStatus === "fail" ? "⛔" : "⚠"}  brief size ${sizeBytes}B ${budgetStatus === "fail" ? `> ${BUDGET_FAIL}B (HARD FAIL — trim tiles)` : `> ${BUDGET_WARN}B (warn — approaching budget)`}`,
+    );
+    if (topBlocks.length) {
+      console.log("  top brief blocks by size:");
+      for (const block of topBlocks.slice(0, 3)) {
+        console.log(
+          `    - ${block.title}: ${block.bytes}B · ${block.lines} lines`,
+        );
+      }
+    }
+  }
 
   if (JSON_MODE) {
-    process.stdout.write(JSON.stringify({
-      ok: result.ok,
-      source: STDIN_MODE ? '<stdin>' : targetPath,
-      missingRequired: result.missingRequired,
-      missingRecommended: result.missingRecommended,
-      forbiddenHits: result.forbiddenHits,
-      bodyShape: result.bodyShape,
-    }, null, 2) + '\n');
+    process.stdout.write(
+      JSON.stringify(
+        {
+          ok: result.ok,
+          source: STDIN_MODE ? "<stdin>" : targetPath,
+          missingRequired: result.missingRequired,
+          missingRecommended: result.missingRecommended,
+          forbiddenHits: result.forbiddenHits,
+          bodyShape: result.bodyShape,
+          staleBrief: result.staleBrief,
+          budget: {
+            sizeBytes,
+            warnBytes: BUDGET_WARN,
+            failBytes: BUDGET_FAIL,
+            status: budgetStatus,
+            topBlocks,
+          },
+        },
+        null,
+        2,
+      ) + "\n",
+    );
   } else {
-    const header = `validate-brief-format · ${STDIN_MODE ? '<stdin>' : path.relative(process.cwd(), targetPath)}`;
+    const header = `validate-brief-format · ${STDIN_MODE ? "<stdin>" : path.relative(process.cwd(), targetPath)}`;
     console.log(header);
-    console.log('─'.repeat(Math.min(72, header.length + 8)));
+    console.log("─".repeat(Math.min(72, header.length + 8)));
+    if (result.staleBrief) {
+      console.log(`  ⛔  STALE BRIEF: ${result.staleBrief}`);
+    }
     if (result.bodyShape) {
       console.log(`  ⛔  ${result.bodyShape}`);
     }
@@ -230,13 +359,17 @@ if (IS_DIRECT_RUN) {
       }
     }
     if (!fail) {
-      console.log(`  ✓   conformant — all required canonical blocks present, no drift markers`);
+      console.log(
+        `  ✓   conformant — all required canonical blocks present, no drift markers`,
+      );
     } else {
-      console.log('');
-      console.log(`  Repair path: node scripts/ops.mjs onboard --repair --write`);
+      console.log("");
+      console.log(
+        `  Repair path: node scripts/ops.mjs onboard --repair --write`,
+      );
       console.log(`  Then re-render: node scripts/render-startup-brief.mjs`);
     }
-    console.log('');
+    console.log("");
   }
 
   process.exit(fail ? 1 : 0);

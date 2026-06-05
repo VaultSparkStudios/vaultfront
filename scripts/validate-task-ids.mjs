@@ -44,7 +44,23 @@ const lines = src.split(/\r?\n/);
 const rowRe = /^\|\s*(\d+)\s*\|/;
 const ids = new Map(); // id -> [{ line, snippet }]
 
+// Audit-result tables (header `| Audit ID | ... |`) reuse small sequential
+// numbers (1..N) as per-audit row indices — NOT task IDs. They must not be
+// validated for cross-table uniqueness, or every closed audit collides with
+// the next. Skip a table's rows once its header declares "Audit ID"; a blank
+// line / non-table line ends the table block and re-enables counting.
+let inAuditTable = false;
+
 lines.forEach((line, idx) => {
+  if (!/^\s*\|/.test(line)) {
+    inAuditTable = false;
+    return;
+  }
+  if (/^\|\s*audit id\s*\|/i.test(line)) {
+    inAuditTable = true;
+    return;
+  }
+  if (inAuditTable) return;
   const m = line.match(rowRe);
   if (!m) return;
   const id = Number(m[1]);

@@ -6,7 +6,7 @@
  * studio-wide model upgrades in one place.
  *
  * Rules:
- *   COMPLEX  → claude-opus-4-6    (strategy, deep analysis, extended thinking)
+ *   COMPLEX  → claude-opus-4-7    (strategy, deep analysis, extended thinking)
  *   MODERATE → claude-sonnet-4-6  (implementation, code, Q&A, most work)
  *   SIMPLE   → claude-haiku-4-5-20251001  (validations, lookups, quick checks)
  *
@@ -24,6 +24,25 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { classifyTurn as _classifyTurn } from "./turn-classifier.mjs";
+
+// S121 G3: file-based active-skill fallback for cross-process attribution.
+function readActiveSkillFile() {
+  try {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const cache = path.resolve(
+      __dirname,
+      "..",
+      "..",
+      ".cache",
+      "active-skill.json",
+    );
+    const j = JSON.parse(fs.readFileSync(cache, "utf8"));
+    if (j.skill && Date.now() - new Date(j.at).getTime() < 2 * 60 * 60 * 1000)
+      return j.skill;
+  } catch {}
+  return null;
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LEDGER_DEFAULT = path.resolve(
@@ -184,15 +203,30 @@ export function withLongCache(block) {
  * Build standard API request headers (no SDK required).
  * @param {string} apiKey
  * @param {object} [opts]
- * @param {boolean} [opts.useThinking=false] - include extended thinking beta
- * @param {boolean} [opts.longCache=false]   - include extended-cache-ttl-2025-04-11 beta
- * @param {boolean} [opts.files=false]       - include files-api-2025-04-14 beta
+ * @param {boolean} [opts.useThinking=false]   - interleaved-thinking-2025-05-14
+ * @param {boolean} [opts.longCache=false]     - extended-cache-ttl-2025-04-11
+ * @param {boolean} [opts.files=false]         - files-api-2025-04-14
+ * @param {boolean} [opts.compaction=false]    - compact-2026-01-12 (G5)
+ * @param {boolean} [opts.contextEditing=false]- context-management-2025-06-27 (G9)
+ * @param {boolean} [opts.mcpServers=false]    - mcp-client-2025-11-20 (G2)
+ * @param {boolean} [opts.managedAgents=false] - managed-agents-2026-04-01
  * @returns {object} headers
  */
-export function buildHeaders(
-  apiKey,
-  { useThinking = false, longCache = false, files = false } = {},
-) {
+export function buildHeaders(apiKey, opts = {}) {
+  const {
+    useThinking = false,
+    longCache = false,
+    files = false,
+    compaction = false,
+    contextEditing = false,
+    mcpServers = false,
+    managedAgents = false,
+    // S114 additions
+    memory = false,
+    citations = false,
+    webSearch = false,
+    codeExecution = false,
+  } = opts;
   const headers = {
     "Content-Type": "application/json",
     "x-api-key": apiKey,
@@ -202,8 +236,267 @@ export function buildHeaders(
   if (useThinking) betas.push("interleaved-thinking-2025-05-14");
   if (longCache) betas.push("extended-cache-ttl-2025-04-11");
   if (files) betas.push("files-api-2025-04-14");
-  if (betas.length) headers["anthropic-beta"] = betas.join(",");
+  if (compaction) betas.push("compact-2026-01-12");
+  if (contextEditing) betas.push("context-management-2025-06-27");
+  if (mcpServers) betas.push("mcp-client-2025-11-20");
+  if (managedAgents) betas.push("managed-agents-2026-04-01");
+  // S114 betas
+  if (memory) betas.push("context-management-2025-06-27"); // memory tool ships under context-management beta
+  if (citations) betas.push("citations-2025-04-01");
+  if (webSearch) betas.push("web-search-2025-03-13");
+  if (codeExecution) betas.push("code-execution-2025-05-22");
+  if (betas.length) headers["anthropic-beta"] = [...new Set(betas)].join(",");
   return headers;
+}
+
+/**
+ * G5 — Build a server-side compaction config block for long-running calls.
+ * The Compaction API (beta `compact-2026-01-12`) summarises older turns when
+ * the input window crosses `triggerTokens`. Replaces our handoff-trim heuristic
+ * for `/go` passes and any multi-step agent loop.
+ *
+ * Only effective on Opus 4.6 / 4.7 + Sonnet 4.6. No-op on other models.
+ *
+ * @param {object} [opts]
+ * @param {number} [opts.triggerTokens=50000] - min input tokens before compaction triggers (>=50k required)
+ * @param {string} [opts.strategy='compact_20260112'] - server strategy identifier
+ * @returns {{ context_management: object }} request-body fragment to spread into the call body
+ */
+export function buildCompactionConfig({
+  triggerTokens = 50_000,
+  strategy = "compact_20260112",
+} = {}) {
+  return {
+    context_management: {
+      edits: [
+        {
+          type: strategy,
+          trigger: {
+            type: "input_tokens",
+            value: Math.max(50_000, triggerTokens),
+          },
+        },
+      ],
+    },
+  };
+}
+
+/**
+ * G9 — Build a context-editing config block.
+ * Selectively clears tool_use / tool_result / thinking blocks from older turns
+ * to keep the working window fresh on probe-heavy scripts (doctor, IGNIS rescore,
+ * audit sweeps) without losing system prompt or recent messages.
+ *
+ * Pairs with the `context-management-2025-06-27` beta header (set via
+ * `buildHeaders({ contextEditing: true })`).
+ *
+ * @param {object} [opts]
+ * @param {boolean} [opts.clearToolUses=true]  - clear_tool_uses_20250919
+ * @param {boolean} [opts.clearThinking=true]  - clear_thinking_20251015
+ * @param {number}  [opts.keepLast=4]          - preserve N most-recent turns intact
+ * @returns {{ context_management: object }} request-body fragment to spread into the call body
+ */
+export function buildContextEditingConfig({
+  clearToolUses = true,
+  clearThinking = true,
+  keepLast = 4,
+} = {}) {
+  const edits = [];
+  if (clearToolUses)
+    edits.push({
+      type: "clear_tool_uses_20250919",
+      keep: { type: "turns", value: keepLast },
+    });
+  if (clearThinking)
+    edits.push({
+      type: "clear_thinking_20251015",
+      keep: { type: "turns", value: keepLast },
+    });
+  return { context_management: { edits } };
+}
+
+/**
+ * G1 — Build a Managed-Agents Outcome rubric for a unit of work.
+ *
+ * The Outcomes API (public beta May 6 2026, managed-agents-2026-04-01) runs a
+ * separate Claude grader against the agent's final output, with the rubric as
+ * its evaluation prompt. On failure the grader's feedback loops back to the
+ * agent for another attempt.
+ *
+ * This is the canonical Anthropic surface for "success criteria" / "goals" on
+ * agent work. We use it to wrap each genius-list item with a measurable rubric
+ * that /go can pass when invoking an Outcomes-aware managed-agent session.
+ *
+ * @param {object} args
+ * @param {string} args.title            - short identifier (e.g. genius-list item title)
+ * @param {string} args.intent           - one-line description of what success looks like
+ * @param {string[]} [args.successCriteria=[]] - bullet criteria the grader must verify
+ * @param {string[]} [args.disallow=[]]  - explicit anti-patterns the grader must reject
+ * @param {number} [args.maxAttempts=2]  - retry budget before giving up
+ * @param {string} [args.graderModel]    - override grader model (defaults to Sonnet 4.6)
+ * @returns {{ outcome: object }} request-body fragment for managed-agents session.create
+ */
+export function buildOutcome({
+  title,
+  intent,
+  successCriteria = [],
+  disallow = [],
+  maxAttempts = 2,
+  graderModel,
+} = {}) {
+  const rubricLines = [];
+  rubricLines.push(`# Success rubric — ${title}`);
+  rubricLines.push("");
+  rubricLines.push(`## Intent`);
+  rubricLines.push(intent || "(unspecified)");
+  if (successCriteria.length) {
+    rubricLines.push("");
+    rubricLines.push(`## Must satisfy ALL`);
+    for (const c of successCriteria) rubricLines.push(`- ${c}`);
+  }
+  if (disallow.length) {
+    rubricLines.push("");
+    rubricLines.push(`## Must NOT do`);
+    for (const d of disallow) rubricLines.push(`- ${d}`);
+  }
+  rubricLines.push("");
+  rubricLines.push(`## Verdict`);
+  rubricLines.push(
+    `Emit exactly one of: PASS, FAIL, NEEDS_REVISION — followed by 1-3 sentences of evidence.`,
+  );
+  return {
+    outcome: {
+      name: title,
+      max_attempts: maxAttempts,
+      evaluator: {
+        model: graderModel || MODELS.sonnet,
+        rubric: rubricLines.join("\n"),
+      },
+    },
+  };
+}
+
+/**
+ * G2 — Build the `mcp_servers` API param for remote MCP without a local client.
+ * Anthropic forwards tool calls to the remote MCP server with OAuth token
+ * refresh handled server-side; credentials live in the Anthropic vault.
+ *
+ * Pairs with the `mcp-client-2025-11-20` beta header (set via
+ * `buildHeaders({ mcpServers: true })`).
+ *
+ * @param {Array<{name:string,url:string,vaultId?:string,authToken?:string,toolAllowlist?:string[]}>} servers
+ * @returns {{ mcp_servers: object[] }} request-body fragment
+ */
+// ─────────────────────────────────────────────────────────────────────────────
+// S114 — Anthropic capability builders (Files API · Memory tool · Citations · Web Search · Code Execution)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * S114 G11 — Build a content block referencing an uploaded file by ID.
+ * Use with Files API beta. Upload via `uploadFile()` (separate helper)
+ * or pre-upload manually; pass file_id here.
+ *
+ * @param {string} fileId - id returned by Files API upload (file_*)
+ * @param {string} [type='document'] - 'document' | 'image' | 'container_upload'
+ * @returns {object} content block to push into messages[].content[]
+ */
+export function fileBlock(fileId, type = "document") {
+  return { type, source: { type: "file", file_id: fileId } };
+}
+
+/**
+ * S114 G12 — Build a memory tool definition for the request body.
+ * Beta `context-management-2025-06-27`. The model can call `memory_*` tools
+ * to persist between turns. Storage is per-agent; agent supplies a memory
+ * backend via tool-result.
+ *
+ * @returns {object} tool definition to push into body.tools[]
+ */
+export function memoryTool() {
+  return {
+    type: "memory_20250818",
+    name: "memory",
+  };
+}
+
+/**
+ * S114 G13 — Build a citations request fragment. When enabled, document
+ * blocks gain `citations: { enabled: true }` and the model's text output
+ * contains citation references back to the source documents.
+ *
+ * @param {Array} documents - array of {fileId|source, title?}
+ * @returns {object[]} content blocks ready to push into messages[0].content[]
+ */
+export function citedDocuments(documents) {
+  if (!Array.isArray(documents) || documents.length === 0) return [];
+  return documents.map((d) => ({
+    type: "document",
+    source: d.fileId
+      ? { type: "file", file_id: d.fileId }
+      : d.source || {
+          type: "text",
+          media_type: "text/plain",
+          data: d.text || "",
+        },
+    title: d.title,
+    citations: { enabled: true },
+  }));
+}
+
+/**
+ * S114 G14 — Build a web_search server-side tool block.
+ * Beta `web-search-2025-03-13`. Model can issue queries; results are
+ * fetched server-side and returned as tool_result content blocks.
+ *
+ * @param {object} [opts]
+ * @param {number} [opts.maxUses=5] - max number of search queries per turn
+ * @param {Array<string>} [opts.allowedDomains] - allowlist; if set, only these domains return results
+ * @param {Array<string>} [opts.blockedDomains] - denylist
+ * @returns {object} tool definition for body.tools[]
+ */
+export function webSearchTool({
+  maxUses = 5,
+  allowedDomains,
+  blockedDomains,
+} = {}) {
+  const tool = {
+    type: "web_search_20250305",
+    name: "web_search",
+    max_uses: maxUses,
+  };
+  if (allowedDomains) tool.allowed_domains = allowedDomains;
+  if (blockedDomains) tool.blocked_domains = blockedDomains;
+  return tool;
+}
+
+/**
+ * S114 G15 — Build a code_execution server-side tool block.
+ * Beta `code-execution-2025-05-22`. Python sandbox attached to a container.
+ * Returns tool_result with stdout/stderr/file outputs.
+ *
+ * @returns {object} tool definition for body.tools[]
+ */
+export function codeExecutionTool() {
+  return {
+    type: "code_execution_20250825",
+    name: "code_execution",
+  };
+}
+
+export function buildMcpServers(servers) {
+  if (!Array.isArray(servers) || servers.length === 0) return {};
+  return {
+    mcp_servers: servers.map((s) => {
+      const entry = { type: "url", url: s.url, name: s.name };
+      if (s.vaultId) entry.authorization_token = { vault_id: s.vaultId };
+      else if (s.authToken)
+        entry.authorization_token = { type: "bearer", token: s.authToken };
+      if (Array.isArray(s.toolAllowlist) && s.toolAllowlist.length) {
+        entry.tool_configuration = { allowed_tools: s.toolAllowlist };
+      }
+      return entry;
+    }),
+  };
 }
 
 /**
@@ -217,6 +510,9 @@ export function buildHeaders(
  * @param {string|Array} opts.system
  * @param {Array} opts.messages
  * @param {object} [opts.thinking] - extended thinking config
+ * @param {boolean|object} [opts.compaction]   - true → defaults, or buildCompactionConfig() result (G5)
+ * @param {boolean|object} [opts.contextEditing] - true → defaults, or buildContextEditingConfig() result (G9)
+ * @param {Array} [opts.mcpServers] - array of {name,url,vaultId|authToken,toolAllowlist} (G2)
  * @returns {Promise<object>} parsed API response
  */
 export function callClaude(
@@ -229,12 +525,81 @@ export function callClaude(
     thinking,
     longCache = false,
     logAs = null,
+    compaction = false,
+    contextEditing = false,
+    mcpServers = null,
+    tools = null,
+    memory = false,
+    citations = false,
+    webSearch = false,
+    codeExecution = false,
+    files = false,
+    turnClassify = true,
   },
   httpsModule,
 ) {
-  const body = { model, max_tokens: maxTokens, messages };
+  // S120 #3 — turn-classifier wire (SIL #612). Auto-route haiku-able turns
+  // to haiku when classifier confidently identifies pure transform/short
+  // transactional work. Caller can disable with turnClassify:false.
+  let routedModel = model;
+  let classifyTag = null;
+  if (turnClassify && process.env.TURN_CLASSIFY_DISABLED !== "1") {
+    try {
+      const lastUserMsg = Array.isArray(messages)
+        ? messages.filter((m) => m.role === "user").slice(-1)[0]
+        : null;
+      const prompt = lastUserMsg
+        ? typeof lastUserMsg.content === "string"
+          ? lastUserMsg.content
+          : JSON.stringify(lastUserMsg.content)
+        : system || "";
+      const verdict = _classifyTurn({ prompt });
+      if (verdict.model === "haiku" && /opus|sonnet/i.test(model)) {
+        routedModel = "claude-haiku-4-5-20251001";
+        classifyTag = `routing:turn-classifier-v1:${verdict.reason}`;
+      } else if (verdict.model === "opus" && /haiku|sonnet/i.test(model)) {
+        routedModel = "claude-opus-4-7";
+        classifyTag = `routing:turn-classifier-v1:${verdict.reason}`;
+      }
+    } catch {
+      /* classifier optional — never break callers */
+    }
+  }
+  const body = { model: routedModel, max_tokens: maxTokens, messages };
   if (system) body.system = system;
   if (thinking) body.thinking = thinking;
+
+  // G5/G9 — merge context_management edits (compaction + clear_tool_uses + clear_thinking)
+  const cm = { edits: [] };
+  if (compaction) {
+    const c = compaction === true ? buildCompactionConfig() : compaction;
+    if (c?.context_management?.edits)
+      cm.edits.push(...c.context_management.edits);
+  }
+  if (contextEditing) {
+    const e =
+      contextEditing === true ? buildContextEditingConfig() : contextEditing;
+    if (e?.context_management?.edits)
+      cm.edits.push(...e.context_management.edits);
+  }
+  if (cm.edits.length) body.context_management = cm;
+
+  // G2 — mcp_servers param
+  if (Array.isArray(mcpServers) && mcpServers.length) {
+    Object.assign(body, buildMcpServers(mcpServers));
+  }
+
+  // S114 G11-G15 — auto-assemble tools array from opt-in flags
+  const toolsList = Array.isArray(tools) ? [...tools] : [];
+  if (memory) toolsList.push(memoryTool());
+  if (webSearch)
+    toolsList.push(
+      typeof webSearch === "object"
+        ? webSearchTool(webSearch)
+        : webSearchTool(),
+    );
+  if (codeExecution) toolsList.push(codeExecutionTool());
+  if (toolsList.length) body.tools = toolsList;
 
   // Auto-detect 1h cache usage in system/messages to flip the beta header on
   const detectLong = (blocks) =>
@@ -245,7 +610,18 @@ export function callClaude(
     detectLong(messages?.flatMap?.((m) => m?.content || []) || []);
 
   const useThinking = !!thinking;
-  const headers = buildHeaders(apiKey, { useThinking, longCache: autoLong });
+  const headers = buildHeaders(apiKey, {
+    useThinking,
+    longCache: autoLong,
+    files,
+    compaction: !!compaction,
+    contextEditing: !!contextEditing,
+    mcpServers: Array.isArray(mcpServers) && mcpServers.length > 0,
+    memory: !!memory,
+    citations: !!citations,
+    webSearch: !!webSearch,
+    codeExecution: !!codeExecution,
+  });
   const payload = JSON.stringify(body);
 
   return new Promise((resolve, reject) => {
@@ -271,9 +647,10 @@ export function callClaude(
               try {
                 logMetrics({
                   script: logAs || process.env.OPS_SCRIPT_NAME || "unknown",
-                  model,
+                  model: routedModel,
                   usage: parsed.usage,
                   mode: useThinking ? "think" : autoLong ? "long-cache" : null,
+                  routing: classifyTag || undefined,
                 });
               } catch {
                 /* metrics must never break callers */
@@ -507,6 +884,11 @@ export function logMetrics({
     output: usage.output_tokens ?? 0,
     cache_read: usage.cache_read_input_tokens ?? 0,
     cache_create: usage.cache_creation_input_tokens ?? 0,
+    // S117 + S121 G3: per-skill attribution. STUDIO_SKILL env first; falls back
+    // to .cache/active-skill.json (set by `node scripts/set-active-skill.mjs <slug>`
+    // at skill entry — file-based to survive across PowerShell subprocesses where
+    // env vars don't propagate).
+    skill: process.env.STUDIO_SKILL || readActiveSkillFile(),
   };
   try {
     fs.mkdirSync(path.dirname(target), { recursive: true });

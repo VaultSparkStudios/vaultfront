@@ -29,6 +29,24 @@ const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const SECRETS_DIR =
   process.env.VAULTSPARK_SECRETS_DIR_OVERRIDE ||
   path.join(REPO_ROOT, "secrets");
+// Sibling Studio Ops secrets dir — per AGENTS.md, all Studio credentials live here.
+// Walk parents (up to 6 levels) so this script works whether it's running in
+// studio-ops itself, a sibling project repo, or a worktree.
+// Local `<repo>/secrets/` still wins when both define the same key (project override).
+function findStudioOpsSecretsDir() {
+  if (process.env.STUDIO_OPS_SECRETS_DIR)
+    return process.env.STUDIO_OPS_SECRETS_DIR;
+  let dir = REPO_ROOT;
+  for (let i = 0; i < 6; i++) {
+    const candidate = path.join(dir, "vaultspark-studio-ops", "secrets");
+    if (fs.existsSync(candidate)) return candidate;
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return null;
+}
+const STUDIO_OPS_SECRETS_DIR = findStudioOpsSecretsDir();
 const CAP_MAP_PATH = path.join(SECRETS_DIR, "CAPABILITY_MAP.json");
 const ACCESS_LOG = path.join(SECRETS_DIR, ".access.log");
 
@@ -46,34 +64,43 @@ function loadEnv() {
   if (_cache && now - _cacheStamp < 60_000) return _cache;
 
   const merged = {};
-  if (!fs.existsSync(SECRETS_DIR)) {
+
+  // Read in low → high precedence so later dirs override.
+  // Studio Ops sibling secrets dir → local repo secrets dir.
+  // De-dupe so studio-ops doesn't read itself twice when run from its own repo.
+  const dirSet = new Set();
+  for (const d of [STUDIO_OPS_SECRETS_DIR, SECRETS_DIR]) {
+    if (d && fs.existsSync(d)) dirSet.add(path.resolve(d));
+  }
+  if (dirSet.size === 0) {
     _cache = merged;
     _cacheStamp = now;
     return merged;
   }
 
-  const files = fs
-    .readdirSync(SECRETS_DIR)
-    .filter((f) => f.endsWith(".env") && !f.startsWith("."));
-
-  for (const f of files) {
-    const text = fs.readFileSync(path.join(SECRETS_DIR, f), "utf8");
-    for (const rawLine of text.split(/\r?\n/)) {
-      const line = rawLine.trim();
-      if (!line || line.startsWith("#")) continue;
-      const eq = line.indexOf("=");
-      if (eq < 1) continue;
-      const key = line.slice(0, eq).trim();
-      let val = line.slice(eq + 1).trim();
-      if (
-        (val.startsWith('"') && val.endsWith('"')) ||
-        (val.startsWith("'") && val.endsWith("'"))
-      ) {
-        val = val.slice(1, -1);
-      }
-      if (val && val !== "REPLACE_ME" && !val.startsWith("REPLACE_ME")) {
-        merged[key] = val;
-        if (val.length >= 8) _redactList.add(val);
+  for (const dir of dirSet) {
+    const files = fs
+      .readdirSync(dir)
+      .filter((f) => f.endsWith(".env") && !f.startsWith("."));
+    for (const f of files) {
+      const text = fs.readFileSync(path.join(dir, f), "utf8");
+      for (const rawLine of text.split(/\r?\n/)) {
+        const line = rawLine.trim();
+        if (!line || line.startsWith("#")) continue;
+        const eq = line.indexOf("=");
+        if (eq < 1) continue;
+        const key = line.slice(0, eq).trim();
+        let val = line.slice(eq + 1).trim();
+        if (
+          (val.startsWith('"') && val.endsWith('"')) ||
+          (val.startsWith("'") && val.endsWith("'"))
+        ) {
+          val = val.slice(1, -1);
+        }
+        if (val && val !== "REPLACE_ME" && !val.startsWith("REPLACE_ME")) {
+          merged[key] = val;
+          if (val.length >= 8) _redactList.add(val);
+        }
       }
     }
   }

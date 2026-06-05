@@ -124,10 +124,7 @@ for (const item of items) {
     }
   }
   lines.push("- **Attempt order:**");
-  const attemptOrder = Array.isArray(item.attemptOrder)
-    ? item.attemptOrder
-    : [item.attemptOrder];
-  for (const step of attemptOrder) {
+  for (const step of item.attemptOrder) {
     lines.push(`  - ${step}`);
   }
   lines.push("");

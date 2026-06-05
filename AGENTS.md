@@ -393,7 +393,92 @@ Full canon: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-029.
 
 ---
 
-## Unified Skill Brief (CANON-031 candidate · S141)
+## Acronym Expansion in Public Content (CANON-030 · CDR-S144.3, MANDATORY)
+
+In any **user-facing or content-facing** surface, an acronym MUST NOT appear alone on first use. Spell the term out with the acronym in parentheses — **Full Term (ACRONYM)** — then the bare acronym is fine for the rest of that surface. Acronym-only naming of a content item or feature is **forbidden unless explicitly approved** by the Studio Owner.
+
+- ✓ "Bring Your Own Key (BYOK)" → "BYOK" thereafter · "Post-Quantum Cryptography (PQC)" · "Self-Improvement Loop (SIL)".
+- ✗ A button/heading/pricing-card/tooltip whose only label is an unexpanded acronym.
+
+**Applies to:** website copy, marketing pages, pricing cards, headings, buttons, tooltips, empty/error states, feature & content-item names, public README feature/pricing sections, announcements, store listings, in-app help & onboarding.
+
+**Exempt:** internal engineering artifacts (code identifiers, commit messages, `context/`+`docs/` internal Markdown, agent prompts, tests, logs); `audience: internal` projects' internal surfaces; Studio-Owner-approved brand terms (log the approval).
+
+**Why.** Acronym-only labels make content opaque to anyone who doesn't already hold the jargon, raising the comprehension cost of every surface. Expanding on first use costs almost nothing and makes pages self-explaining.
+
+**Gate.** New user-facing copy follows the rule by default; `app-release-gate` flags acronym-only labels (unapproved acronym-only content/feature names block the public-facing review item until expanded or approved). Approved exceptions logged per-project in `DECISIONS.md` / `CREATIVE_DIRECTION_RECORD.md`.
+
+Full canon: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-030.
+
+---
+
+## Observability Honesty (CANON-031 · D-S144.5, MANDATORY)
+
+Every metric, probe, dashboard, score, and status surface MUST tell the truth:
+
+1. **Derive from source-of-truth** — compute from authoritative data, never a cached/derived copy that can silently lag.
+2. **Self-validate** — assert coherence and fail loud when incoherent; never render a plausible-looking lie.
+3. **Exempt self-reference** — a scanner/probe must not flag its own report/source.
+4. **Separate sender-controllable from external** — a cross-repo SLO must not report critical for what the measured party can't fix in its own session (dormant recipient ≠ sender failure → directed nudge, not red).
+5. **No phantom green, no phantom red** — never fake compliance to clear a blocker; never leave a structurally-unclearable false blocker. Genuine-but-foreign blockers stay honest-red and are queued to the owner.
+6. **Validate exit codes directly** — shell pipes mask exit codes; check the producing command's status.
+
+Full canon: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-031.
+
+**Write-time SIL invariant (S154 · extends CANON-031.2):** whenever any agent writes `context/PROJECT_STATUS.json`, it MUST hold `silScore := sum(silCategoriesV3)` with every category in 0..100. Write through the shared helper when present:
+
+```bash
+node scripts/lib/write-project-status.mjs --check # validate (exit 1 on violation)
+node scripts/lib/write-project-status.mjs --fix   # recompute silScore + clamp categories
+```
+
+At closeout, run `--check` after the status write-back; a violation is a closeout blocker. This root-fixes the silScore/sum drift class (S143: sparkfunnel drift, website categories >100).
+
+---
+
+## Build-Optimal for Flagships (CANON-032 · D-S144.6 / CDR-S144.4)
+
+For **flagship / sophisticated products** (Studio-Owner-designated), the default is **build-optimal**: examine the full option space (all stacks, alternatives, combined elements) and choose for long-term scalability, maximum UI/UX, and maximum fulfillment of the product's potential — don't inherit a ceiling-limiting constraint without a documented, product-justified reason.
+
+- Any constraint that materially limits a flagship's ceiling (interactivity, scale, personalization, UX) needs an explicit rationale (security/privacy/cost/legal) in that project's `DECISIONS.md` + a **revisit trigger**.
+- Prefer constraints compatible with sophistication (strict nonce-based CSP + modern interactive frontend) over blanket restrictions (no-JavaScript) that cap the ceiling.
+- **No contradiction with CANON-029/013:** cost discipline gates the _free tier's variable cost_; build-optimal governs the _product's architecture ceiling_ (core + paid). CANON-013 low-cost defaults remain for ordinary projects; flagships are the override lane.
+
+Full canon: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-032.
+
+---
+
+## Launch Announcement Discipline (CANON-033 · D-S144.7)
+
+A flip to **SPARKED** requires an **executed announcement plan** — silent launches waste the cheapest growth lever. Not "done" until the product is told to the world.
+
+- ≥1 public channel identified + executed (community/subreddit, social, Studio Hub feature, changelog, directory listing).
+- One-line value prop + link, consistent with CANON-006 (branding) + CANON-030 (spell out acronyms).
+- Recorded in `DECISIONS.md` / `LAUNCH_*.md` with date + channels.
+- `app-release-gate` checks for an announcement plan; the deployed-unannounced detector surfaces SPARKED/deployed projects with none as a growth task.
+- Exceptions (log per-project): `audience: internal` · intentional stealth window with named reveal date · dependency-gated (announce on unblock).
+
+Full canon: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-033.
+
+---
+
+## Browser Experience Excellence (CANON-034 · D-S149.4, MANDATORY)
+
+Any VaultSpark project with a browser or website surface treats the browser experience as first-class. The browser/website version must never be below a native/mobile app version; it should usually be the most expansive, feature-rich, immersive version of the product, while native apps adapt the same ambition to mobile-native ergonomics.
+
+Rules:
+
+- Desktop browser, tablet/mobile browser, and any native/mobile app surface must be reviewed for feature parity, responsiveness, polish, accessibility, and interaction depth.
+- Mobile browser is not a fallback. Public websites/apps must be extremely mobile-friendly and mobile-responsive; core workflows, dashboards, games/tools, auth, payments, and navigation must work cleanly at common mobile widths.
+- If a mobile/native app has capabilities the browser lacks, document the rationale in `DECISIONS.md` and add a catch-up plan or explicit approved exception.
+- A browser surface that is less capable than the mobile app blocks SPARKED/release approval unless the Studio Owner approves and records the exception.
+- CANON-029 still applies: advanced browser features with variable studio cost must be BYOK, trial-ceiling, paid-only, cached/static, or otherwise cost-neutral.
+
+Full canon: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-034.
+
+---
+
+## Unified Skill Brief (CANON-035 candidate · S141)
 
 Every founder-facing skill — `/start`, `/audit`, `/implement`, `/closeout`, `/go` — produces its output through ONE shared library. Same 95-col frame, same voice rules, same schema. Different `kind` flips score labels; nothing else moves.
 

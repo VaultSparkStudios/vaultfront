@@ -21,16 +21,31 @@
 
 import { spawnSync } from "child_process";
 import fs from "fs";
+import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
-const STATUS_PATH = path.join(ROOT, "context", "PROJECT_STATUS.json");
-const HANDOFF_PATH = path.join(ROOT, "context", "LATEST_HANDOFF.md");
-const REGISTRY_PATH = path.join(ROOT, "portfolio", "PROJECT_REGISTRY.json");
-const GENIUS_CACHE = path.join(ROOT, ".cache", "genius-list.json");
-const OUT_PATH = path.join(ROOT, "docs", "CLOSEOUT_STATUS_BOARD.md");
+const STUDIO_ROOT = path.resolve(__dirname, "..");
+
+// S114 — accept --project <path> to render for a project repo other than studio-ops.
+// Without --project, renders for studio-ops itself (backward-compatible).
+const projectArgIdx = process.argv.indexOf("--project");
+const PROJECT_ROOT =
+  projectArgIdx >= 0 && process.argv[projectArgIdx + 1]
+    ? path.resolve(process.cwd(), process.argv[projectArgIdx + 1])
+    : STUDIO_ROOT;
+
+const ROOT = PROJECT_ROOT; // back-compat alias
+const STATUS_PATH = path.join(PROJECT_ROOT, "context", "PROJECT_STATUS.json");
+const HANDOFF_PATH = path.join(PROJECT_ROOT, "context", "LATEST_HANDOFF.md");
+const REGISTRY_PATH = path.join(
+  STUDIO_ROOT,
+  "portfolio",
+  "PROJECT_REGISTRY.json",
+); // always read from studio-ops
+const GENIUS_CACHE = path.join(PROJECT_ROOT, ".cache", "genius-list.json");
+const OUT_PATH = path.join(PROJECT_ROOT, "docs", "CLOSEOUT_STATUS_BOARD.md");
 
 const STDOUT_MODE = process.argv.includes("--stdout");
 
@@ -79,6 +94,42 @@ function projectName() {
   return entry?.name || "Studio Ops";
 }
 
+/**
+ * Canonical live URL surface — picks the most authoritative URL from registry.
+ * Order: runtimeUrl → liveUrl → deployedUrl → stagingUrl (with badge).
+ * Returns null for FORGE projects without any URL (suppress empty line).
+ * Used by SESSION CLOSEOUT block per founder directive S114: one-click jump
+ * to live project from the closeout brief.
+ */
+function canonicalLiveUrl() {
+  const status = readJson(STATUS_PATH);
+  const reg = readJson(REGISTRY_PATH);
+  const slug = path.basename(ROOT).toLowerCase();
+  const entry = reg?.projects?.find(
+    (p) =>
+      p.slug?.toLowerCase() === slug ||
+      p.localPath?.toLowerCase()?.endsWith(slug) ||
+      p.folderName?.toLowerCase() === slug,
+  );
+  // Prefer status.runtimeUrl if set (per-project authoritative); fall back to registry.
+  const candidates = [
+    status?.runtimeUrl,
+    entry?.runtimeUrl,
+    entry?.liveUrl,
+    entry?.deployedUrl,
+  ].filter(Boolean);
+  if (candidates.length > 0) {
+    const url = candidates[0];
+    const vs = (entry?.vaultStatus || "").toUpperCase();
+    const isLive = vs === "SPARKED";
+    return { url, badge: isLive ? "🌐 LIVE" : "preview", type: "production" };
+  }
+  // Fallback to staging if SPARKED is in-flight
+  if (entry?.stagingUrl)
+    return { url: entry.stagingUrl, badge: "staging", type: "staging" };
+  return null;
+}
+
 function parseShippedFromHandoff() {
   const body = readText(HANDOFF_PATH);
   if (!body) return [];
@@ -93,6 +144,35 @@ function parseShippedFromHandoff() {
     .filter((l) => l.length > 4)
     .slice(0, 5);
   return bullets;
+}
+
+function parseShippedFromGitLog() {
+  // Fallback when LATEST_HANDOFF lacks parseable bullets: surface the last
+  // meaningful commits on the current branch so the closeout board never
+  // shows the placeholder. Skip auto-generated noise (genius cache refreshes,
+  // protocol-sync bots, merge commits) so the surface stays signal-dense.
+  const r = sh('git log -n 30 --pretty=format:"%s"');
+  if (r.code !== 0 || !r.out.trim()) return [];
+  const NOISE_PATTERNS = [
+    /^Merge\b/i,
+    /^chore\(genius\): refresh cache/i,
+    /^chore\(protocol-sync\)/i,
+    /^chore\(propagation\)/i,
+    /^chore\(rotation\)/i,
+    /studio-ops-bot/i,
+  ];
+  const seen = new Set();
+  const out = [];
+  for (const raw of r.out.split("\n")) {
+    const subject = raw.trim();
+    if (!subject) continue;
+    if (NOISE_PATTERNS.some((re) => re.test(subject))) continue;
+    if (seen.has(subject)) continue;
+    seen.add(subject);
+    out.push(subject);
+    if (out.length >= 5) break;
+  }
+  return out;
 }
 
 function silCategoryRows(status) {
@@ -133,6 +213,33 @@ function gitChangeSummary() {
   return { lines, counts, total: lines.length };
 }
 
+function agentMemoryRecentlyTouched() {
+  // Check whether agent memory (~/.claude/projects/<slug>/memory) has files
+  // modified within the last 24h. Best-effort — cross-platform path resolution
+  // varies; absence is reported as "·" rather than failing.
+  const home = os?.homedir?.() || process.env.HOME || process.env.USERPROFILE;
+  if (!home) return false;
+  const slug = path.basename(ROOT);
+  // Project memory dirs use a prefix-encoded form; fall back to a glob scan.
+  const projectsDir = path.join(home, ".claude", "projects");
+  if (!fs.existsSync(projectsDir)) return false;
+  try {
+    const cutoff = Date.now() - 24 * 3600_000;
+    for (const entry of fs.readdirSync(projectsDir)) {
+      if (!entry.includes(slug)) continue;
+      const memDir = path.join(projectsDir, entry, "memory");
+      if (!fs.existsSync(memDir)) continue;
+      for (const f of fs.readdirSync(memDir)) {
+        const stat = fs.statSync(path.join(memDir, f));
+        if (stat.mtimeMs > cutoff) return true;
+      }
+    }
+  } catch {
+    /* best-effort */
+  }
+  return false;
+}
+
 function writeBackCoverage() {
   const TARGETS = [
     "context/CURRENT_STATE.md",
@@ -155,7 +262,13 @@ function writeBackCoverage() {
       if (file.endsWith(t)) touched.add(t);
     }
   }
-  return TARGETS.map((t) => ({ file: t, touched: touched.has(t) }));
+  const result = TARGETS.map((t) => ({ file: t, touched: touched.has(t) }));
+  // 10th item (per closeout spec): agent memory at ~/.claude/projects/<slug>/memory/
+  result.push({
+    file: "agent memory (~/.claude/projects/<slug>/memory/)",
+    touched: agentMemoryRecentlyTouched(),
+  });
+  return result;
 }
 
 function daysSinceISO(iso) {
@@ -213,7 +326,12 @@ function render() {
   const date = new Date().toISOString().slice(0, 10);
   const name = projectName();
 
-  const shipped = parseShippedFromHandoff();
+  let shipped = parseShippedFromHandoff();
+  let shippedSource = "handoff";
+  if (shipped.length === 0) {
+    shipped = parseShippedFromGitLog();
+    shippedSource = "git-log";
+  }
   const silRows = silCategoryRows(status);
   const wb = writeBackCoverage();
   const git = gitChangeSummary();
@@ -222,7 +340,7 @@ function render() {
 
   const lines = [];
 
-  // 1. SESSION CLOSEOUT header
+  // 1. SESSION CLOSEOUT header (S114 — adds live URL one-click line per founder directive)
   lines.push(top(`SESSION CLOSEOUT · ${name} · S${session}`));
   const vel = status.silVelocity ?? status.velocity;
   const velLabel =
@@ -235,14 +353,20 @@ function render() {
       `Mode: ${(status.sessionMode || "FOUNDER").toUpperCase()}  ·  Agent: ${status.lastAgent || "claude-code"}`,
     ),
   );
+  const live = canonicalLiveUrl();
+  if (live) {
+    lines.push(row(`Live:  ${live.badge}  →  ${live.url}`));
+  }
   lines.push(bottom());
 
   // 2. WHAT SHIPPED
-  lines.push(top("WHAT SHIPPED"));
+  const shippedHeader =
+    shippedSource === "git-log"
+      ? "WHAT SHIPPED · last 5 commits"
+      : "WHAT SHIPPED";
+  lines.push(top(shippedHeader));
   if (shipped.length === 0) {
-    lines.push(
-      row("(no shipped bullets parsed from LATEST_HANDOFF — see git log)"),
-    );
+    lines.push(row("(no parseable handoff bullets and no recent commits)"));
   } else {
     for (const b of shipped) lines.push(row(`✓ ${b.slice(0, W - 2)}`));
   }

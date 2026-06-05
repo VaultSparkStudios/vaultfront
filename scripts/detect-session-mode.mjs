@@ -278,6 +278,17 @@ if (
 }
 const intentModel = intentClassification?.intentModel || null;
 
+// Sonnet down-routing discipline (S142 — usage-split training). The Max plan is
+// flat-rate, so the lever for Opus-heavy usage is NOT dollars — it is shared
+// rate-limit headroom (Opus burns the weekly limit ~5× faster per token) +
+// latency. Recommend Sonnet for routine execution work in builder mode even when
+// plan-mode was never toggled — generalizes autoDeescalate to the common case.
+const downRouteSuggested =
+  recommended === "builder" &&
+  currentTierModel === "opus" &&
+  effectiveIntent === "execution" &&
+  !autoDeescalateSuggested; // avoid double-printing with the plan-mode path
+
 const result = {
   currentMode,
   recommended,
@@ -305,6 +316,7 @@ const result = {
   effectiveIntent,
   intentModel,
   autoDeescalateSuggested,
+  downRouteSuggested,
 };
 
 if (jsonMode) {
@@ -375,6 +387,21 @@ if (autoDeescalateSuggested) {
   );
   console.log(
     `   Consider /model sonnet for the remaining implementation work (hint: ${hintSlug}).`,
+  );
+}
+
+if (downRouteSuggested) {
+  console.log(
+    `⚡ Down-route opportunity: builder-mode execution work on Opus.`,
+  );
+  console.log(
+    `   Consider /model sonnet — on the flat Max plan this costs $0 but reclaims`,
+  );
+  console.log(
+    `   shared rate-limit headroom (Opus burns the weekly limit ~5× faster).`,
+  );
+  console.log(
+    `   Keep Opus only for genuine deep reasoning / cross-file architecture.`,
   );
 }
 

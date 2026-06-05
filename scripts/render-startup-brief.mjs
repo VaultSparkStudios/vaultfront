@@ -26,18 +26,68 @@ import {
 import { loadPortfolioTaskBoards } from "./lib/cross-repo-tasks.mjs";
 import { loadIgnisInsight } from "./lib/ignis-insight.mjs";
 import { contextWindowForAgent } from "./lib/model-router.mjs";
+import { forecastNext, parseSilHistory } from "./lib/sil-forecaster.mjs";
 import { parseUnifiedItems } from "./lib/task-board.mjs";
+import { sparkline as _sparkline } from "./lib/visual-blocks.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 const outputPath = path.join(root, "docs", "STARTUP_BRIEF.md");
 const node = process.execPath;
 
+// S120 #1 — brief-v5 promote opt-in. Set BRIEF_V5=1 or pass --v5 to delegate
+// to render-startup-brief-v5.mjs (71% token reduction, validated S117). Default
+// remains v3.1 until 3-session hash-stability monitoring completes.
+if (process.argv.includes("--v5") || process.env.BRIEF_V5 === "1") {
+  const { spawnSync } = await import("node:child_process");
+  const r = spawnSync(
+    node,
+    [
+      path.join(__dirname, "render-startup-brief-v5.mjs"),
+      ...process.argv.slice(2).filter((a) => a !== "--v5"),
+    ],
+    { stdio: "inherit", cwd: root },
+  );
+  process.exit(r.status ?? 0);
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 const W = 62; // inner box width (content between ║  and  ║)
 const BW = W + 4; // total line width including ║  prefix/suffix
 
+// ── Preflight: doctor --fix (S120 audit #2 — clear stable warns before render) ─
+if (!process.env.STUDIO_BRIEF_NO_DOCTOR_FIX) {
+  try {
+    spawnSync(
+      process.execPath,
+      [path.join(__dirname, "ops.mjs"), "doctor", "--fix", "--quiet"],
+      {
+        stdio: "ignore",
+        timeout: 30000,
+      },
+    );
+  } catch {
+    /* non-fatal */
+  }
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
+// S126 audit #28: PROJECT_PROFILE lens — one-line header above SCORE
+function renderProfileLensHeader() {
+  try {
+    const p = readJson(path.join(root, ".cache", "project-profile.json"), null);
+    if (!p) return "";
+    const m = p.medium || "—";
+    const stage = p.stage || "—";
+    const arch = p.archetype || "—";
+    const ax = (p.ignisTopAxes || [])[0] || "—";
+    const line = `Profile · ${m} · ${stage} · arch=${arch} · top-axis=${ax}`;
+    return [top("PROJECT PROFILE"), row(line), bot()].join("\n");
+  } catch {
+    return "";
+  }
+}
+
 function readText(p) {
   try {
     return fs.readFileSync(p, "utf8");
@@ -252,22 +302,80 @@ const humanPressure = readJson(
 
 const meterAgent = lockValue("agent") || "unknown";
 const meterLimit = contextWindowForAgent(meterAgent);
-const meterBytes = [
-  "AGENTS.md",
-  "CLAUDE.md",
-  "context/PROJECT_BRIEF.md",
-  "context/SOUL.md",
-  "context/BRAIN.md",
-  "context/CURRENT_STATE.md",
-  "context/DECISIONS.md",
-  "context/TASK_BOARD.md",
-  "context/LATEST_HANDOFF.md",
-  "context/SELF_IMPROVEMENT_LOOP.md",
-  "context/TRUTH_AUDIT.md",
-].reduce((sum, file) => sum + bytesOf(file), 0);
-const meterUsed = Math.round(meterBytes / 4);
-const meterRemaining = Math.max(0, meterLimit - meterUsed);
-const meterRemainingPct = Math.round((meterRemaining / meterLimit) * 100);
+
+// ── S119 founder directive: live context meter (replaces static byte-count) ─
+// Calls scripts/context-meter.mjs for real ledger-backed measurements instead
+// of a stale on-disk byte estimate that didn't reflect actual session burn.
+function loadLiveContextMeter() {
+  try {
+    const res = spawnSync(
+      node,
+      [path.join(__dirname, "context-meter.mjs"), "--json"],
+      {
+        cwd: root,
+        encoding: "utf8",
+        timeout: 5000,
+      },
+    );
+    if (res.status === 0 && res.stdout) {
+      const meter = JSON.parse(res.stdout);
+      return {
+        live: true,
+        usedTokens: meter.usedTokens,
+        limit: meter.limit,
+        pctUsed: meter.pctUsed,
+        turnsToCompact: meter.turnsToCompact,
+        continueCostPerTurn: meter.continueCostPerTurn,
+        cacheHitRate: meter.cacheHitRate,
+        recommendation: meter.recommendation,
+        confidence: meter.confidence,
+        agent: meter.agent || meterAgent,
+        model: meter.model || "",
+      };
+    }
+  } catch {
+    /* fall through */
+  }
+  // Heuristic fallback — old behavior
+  const bytes = [
+    "AGENTS.md",
+    "CLAUDE.md",
+    "context/PROJECT_BRIEF.md",
+    "context/SOUL.md",
+    "context/BRAIN.md",
+    "context/CURRENT_STATE.md",
+    "context/DECISIONS.md",
+    "context/TASK_BOARD.md",
+    "context/LATEST_HANDOFF.md",
+    "context/SELF_IMPROVEMENT_LOOP.md",
+    "context/TRUTH_AUDIT.md",
+  ].reduce((sum, file) => sum + bytesOf(file), 0);
+  const usedTokens = Math.round(bytes / 4);
+  return {
+    live: false,
+    usedTokens,
+    limit: meterLimit,
+    pctUsed: usedTokens / meterLimit,
+    turnsToCompact: null,
+    continueCostPerTurn: null,
+    cacheHitRate: null,
+    recommendation:
+      usedTokens / meterLimit > 0.75 ? "CONSIDER_CLOSEOUT" : "CONTINUE",
+    confidence: "heuristic-stale",
+    agent: meterAgent,
+    model: "",
+  };
+}
+
+const meter = loadLiveContextMeter();
+const meterUsed = meter.usedTokens;
+const meterRemaining = Math.max(0, meter.limit - meterUsed);
+const meterRemainingPct = Math.round((meterRemaining / meter.limit) * 100);
+// context-meter returns pctUsed in percentage form (0-100), not 0-1. Normalize.
+const meterUsedPctRaw = meter.pctUsed > 1 ? meter.pctUsed : meter.pctUsed * 100;
+const meterUsedPct = Math.max(0, Math.min(100, Math.round(meterUsedPctRaw)));
+// pctUsedFraction is 0-1 for bar rendering math
+const meterUsedFrac = meterUsedPctRaw / 100;
 const estimatedItemsFit = Math.max(0, Math.floor(meterRemaining / 100000));
 
 // ── Parse Rolling Status ──────────────────────────────────────────────────────
@@ -278,9 +386,11 @@ const silHeader = extractBetween(
 );
 
 const silTotalMatch = silHeader.match(/Total:\s*(\d+)\/(\d+)/);
-const silTotal = parseInt(silTotalMatch?.[1] ?? "") || 0;
-const silMax = parseInt(silTotalMatch?.[2] ?? "") || status.silMax || 1000;
-const velocity = parseInt(silHeader.match(/Velocity:\s*(\d+)/)?.[1] ?? "") || 0;
+// Headline metrics: prefer the latest scored SIL entry (set below, after the
+// robust session parser) over the rolling-status block, which can lag closeouts.
+let silTotal = parseInt(silTotalMatch?.[1] ?? "") || 0;
+let silMax = parseInt(silTotalMatch?.[2] ?? "") || status.silMax || 1000;
+let velocity = parseInt(silHeader.match(/Velocity:\s*(\d+)/)?.[1] ?? "") || 0;
 const sparkline =
   silHeader.match(/Sparkline[^:]*:\s*([▁▂▃▄▅▆▇█ ]+)/)?.[1]?.trim() ?? "";
 const avg3Raw =
@@ -309,16 +419,70 @@ if (cat3Match) {
   cat3.process = parseFloat(cat3Match[5]);
 }
 
-// Last session scores (from most recent SIL entry — use last match)
+// ── Robust SIL session parsing (S142 audit item 1) ───────────────────────────
+// SELF_IMPROVEMENT_LOOP.md carries TWO header formats and they are NOT in a
+// reliable document order:
+//   A) `## DATE — Session N | Total: X/Y | Velocity: V`   (inline metrics)
+//   B) `## Session N — DATE`                              (Total in a later **Total: X/Y** line)
+// The old parser only matched format A and assumed first-document-order =
+// most-recent, so it locked onto a stale block (brief rendered S135/928 while
+// real state was S141/996). We now scan EVERY `## …Session N…` header in either
+// format, capture each body, and select the latest by session NUMBER.
 const allSilEntries = [
   ...sil.matchAll(
-    /## \d{4}-\d{2}-\d{2} — Session \d+[^\n]*\n([\s\S]*?)(?=\n## \d{4}-\d{2}-\d{2}|$)/g,
+    /##[^\n]*?\bSession\s+(\d+)\b[^\n]*\n([\s\S]*?)(?=\n##\s|$)/g,
   ),
-];
-const lastEntry = allSilEntries.length > 0 ? (allSilEntries[0][1] ?? "") : "";
+]
+  .map((m) => ({
+    session: parseInt(m[1], 10),
+    header: m[0].split("\n")[0],
+    body: m[2] ?? "",
+  }))
+  .sort((a, b) => b.session - a.session);
+
+// Highest session number present in the SIL log (source of truth for "what session are we on").
+const silMaxSession = allSilEntries.length ? allSilEntries[0].session : null;
+
+// Latest entry that actually carries category scores (for the per-category bars).
+const lastEntry =
+  allSilEntries.find((e) => /\|\s*Dev Health\s*\|/i.test(e.body))?.body ??
+  allSilEntries[0]?.body ??
+  "";
+
+// Latest entry that carries a Total — header-inline (format A) OR a **Total: X/Y** body line (format B).
+function entryTotal(e) {
+  const inline = e.header.match(/Total:\s*(\d+)\/(\d+)/);
+  const body = e.body.match(/Total:\s*(\d+)\/(\d+)/);
+  const mt = inline ?? body;
+  return mt ? { total: parseInt(mt[1], 10), max: parseInt(mt[2], 10) } : null;
+}
+function entryVelocity(e) {
+  const m = (e.header + "\n" + e.body).match(/Velocity:\s*(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+const latestScored = allSilEntries.find((e) => entryTotal(e) !== null) ?? null;
+
+// Override headline metrics from the latest scored entry when it is fresher than
+// the rolling-status block (compared by session number). Falls back to the
+// rolling-status values, then PROJECT_STATUS.json.
+if (latestScored) {
+  const t = entryTotal(latestScored);
+  if (t) {
+    silTotal = t.total;
+    silMax = t.max;
+  }
+  const v = entryVelocity(latestScored);
+  if (v != null) velocity = v;
+}
+if (!silTotal && status.silScore) {
+  silTotal = status.silScore;
+  silMax = status.silMax || 1000;
+}
 function parseScore(label) {
+  // Tolerate suffixes like "Engagement (infra)" — match label followed by optional
+  // whitespace + parenthesized note before the column separator.
   const m = lastEntry.match(
-    new RegExp(`\\|\\s*${label}\\s*\\|\\s*(\\d+)`, "i"),
+    new RegExp(`\\|\\s*${label}(?:\\s*\\([^)]*\\))?\\s*\\|\\s*(\\d+)`, "i"),
   );
   return m ? parseInt(m[1]) : null;
 }
@@ -340,23 +504,19 @@ function trend(last, avg) {
 // PROJECT_STATUS.json silCategoriesV3 (single snapshot) + any future append-only history.
 function parseCategoryHistory(label) {
   const series = [];
-  for (const match of allSilEntries) {
-    const body = match[1] ?? "";
-    const m = body.match(new RegExp(`\\|\\s*${label}\\s*\\|\\s*(\\d+)`, "i"));
+  // allSilEntries is sorted newest→oldest by session number; reverse at the end
+  // to render oldest→newest sparklines.
+  for (const entry of allSilEntries) {
+    const m = entry.body.match(
+      new RegExp(`\\|\\s*${label}(?:\\s*\\([^)]*\\))?\\s*\\|\\s*(\\d+)`, "i"),
+    );
     if (m) series.push(parseInt(m[1], 10));
   }
   return series.reverse().slice(-8); // oldest → newest, last 8
 }
-function spark(values, max = 100) {
-  if (!values || values.length === 0) return "—";
-  const chars = "▁▂▃▄▅▆▇█";
-  return values
-    .map((v) => {
-      const n = Math.min(7, Math.max(0, Math.floor((v / max) * 7)));
-      return chars[n];
-    })
-    .join("");
-}
+// Migrated to scripts/lib/visual-blocks.mjs (S114 compound refinement).
+// Library uses min=0,max=100 by default → mathematically identical output.
+const spark = (values, max = 100) => _sparkline(values, { max, min: 0 });
 const catHistory = {
   dev: parseCategoryHistory("Dev Health"),
   align: parseCategoryHistory("Creative Alignment"),
@@ -487,7 +647,10 @@ function taskLabel(item, maxLen = 54) {
 
 // ── Derived values ─────────────────────────────────────────────────────────────
 const today = new Date().toISOString().slice(0, 10);
-const currentSession = (status.currentSession || 62) + 1;
+// Next session = (latest session in the SIL log) + 1. The SIL log is the source
+// of truth; PROJECT_STATUS.currentSession is only a fallback when the log can't
+// be parsed (it has lagged real state before — see S142 audit item 1).
+const currentSession = (silMaxSession ?? status.currentSession ?? 62) + 1;
 const ctxUpdated =
   csmd.match(/^Last updated:\s*(\d{4}-\d{2}-\d{2})/m)?.[1] ?? null;
 const ctxAge = ctxUpdated ? daysBetween(ctxUpdated, today) : "?";
@@ -577,11 +740,6 @@ const versionDrift =
 const revGenDate =
   revSig.match(/Generated:\s*(\d{4}-\d{2}-\d{2})/)?.[1] ?? null;
 const revAge = revGenDate ? daysBetween(revGenDate, today) : 999;
-const revenueSignalStatus = String(status.revenueSignalStatus || "");
-const revenueSignalObserved =
-  /\b(observed|verified|live-revenue-observed|live-revenue-verified)\b/.test(
-    revenueSignalStatus,
-  ) && !revenueSignalStatus.includes("unverified");
 
 // ── Truth status ──────────────────────────────────────────────────────────────
 const truthStatus =
@@ -744,10 +902,9 @@ const entropyLabel =
     : "not computed";
 
 // ── Velocity history (last 5 session velocities from SIL entries) ──────────
+// Velocity history from inline-metric session headers (format A), newest→oldest → reverse to chronological.
 const velEntries = [
-  ...sil.matchAll(
-    /## \d{4}-\d{2}-\d{2} — Session \d+[^\n]* Velocity:\s*(\d+)/g,
-  ),
+  ...sil.matchAll(/##[^\n]*?\bSession\s+\d+\b[^\n]*Velocity:\s*(\d+)/g),
 ]
   .map((m) => parseInt(m[1]))
   .reverse();
@@ -795,6 +952,20 @@ const runwayNum = runwayNumMatch
     : runwayWeak
       ? 1
       : 5;
+// G1 S121 — prefer fresh .cache/test-count.json (from refresh-test-count.mjs) over PROJECT_STATUS values.
+try {
+  const tcPath = path.join(root, ".cache", "test-count.json");
+  if (fs.existsSync(tcPath)) {
+    const tc = JSON.parse(fs.readFileSync(tcPath, "utf8"));
+    if (typeof tc.total === "number" && typeof tc.passed === "number") {
+      status.testsTotal = tc.total;
+      status.testsPassing = tc.passed;
+      if (tc.generatedAt) status.testsLastRun = tc.generatedAt.slice(0, 10);
+    }
+  }
+} catch {
+  /* non-fatal — fall through to PROJECT_STATUS values */
+}
 // Prefer explicit pass/total from run-tests; fall back to testsTotal only; then exempt; else warn.
 const testsExempt =
   !status.testsTotal &&
@@ -843,13 +1014,7 @@ const sigIgnis = sig(
 );
 const sigCdr = cdrGap ? "⚠" : "✓";
 const sigVer = versionDrift ? "⚠" : "✓";
-const sigRev = revenueSignalObserved
-  ? "✓"
-  : revAge <= 7
-    ? "✓"
-    : revAge <= 14
-      ? "⚠"
-      : "⛔";
+const sigRev = revAge <= 7 ? "✓" : revAge <= 14 ? "⚠" : "⛔";
 const sigTruth =
   truthStatus === "green" ? "✓" : truthStatus === "yellow" ? "⚠" : "⛔";
 const complianceSnapshots = Array.isArray(complianceHistory.snapshots)
@@ -942,22 +1107,135 @@ function buildPortfolioBoxLines() {
     ),
   );
   out.push(blank());
-  const active = portfolioTasks.byProject
-    .filter((p) => p.present && p.remaining > 0)
-    .slice(0, 8);
+  // Top-2 pattern keeps the founder-mode brief under the 15KB hard cap even
+  // when the orchestrator and human-pressure tiles are present. The long tail
+  // is one ops command away via cross-repo-tasks.mjs.
+  const allActive = portfolioTasks.byProject.filter(
+    (p) => p.present && p.remaining > 0,
+  );
+  const active = allActive.slice(0, 1);
   for (const p of active) {
     const marker = p.isCurrent ? ">" : " ";
     const nm = (p.name || p.slug || "").slice(0, 24).padEnd(24);
     const line = `${marker} ${nm} ${String(p.remaining).padStart(3)} open · ${String(p.unblocked).padStart(2)} unblk · C${String(p.critical).padStart(2)} H${String(p.high).padStart(2)}`;
     out.push(row(line.slice(0, W)));
   }
-  const hidden =
-    portfolioTasks.byProject.filter((p) => p.present && p.remaining > 0)
-      .length - active.length;
+  const hidden = allActive.length - active.length;
   if (hidden > 0)
     out.push(
       row(`  … +${hidden} more — run: node scripts/lib/cross-repo-tasks.mjs`),
     );
+  out.push(bot());
+  return out.join("\n");
+}
+
+function buildOrchestratorBox() {
+  const active = readJson(
+    path.join(root, "portfolio", "ACTIVE_SESSIONS.json"),
+    null,
+  );
+  const pending = readJson(
+    path.join(root, "portfolio", "PENDING_PROPAGATION.json"),
+    null,
+  );
+  const activeSessions = Array.isArray(active?.activeSessions)
+    ? active.activeSessions
+    : [];
+  const staleLocks = Array.isArray(active?.staleLocks) ? active.staleLocks : [];
+  const conflicts = Array.isArray(active?.conflicts) ? active.conflicts : [];
+  const generatedAt = active?._generatedAt
+    ? new Date(active._generatedAt).getTime()
+    : null;
+  const snapshotAgeMin = generatedAt
+    ? Math.max(0, Math.round((Date.now() - generatedAt) / 60000))
+    : null;
+  const snapshotLabel =
+    snapshotAgeMin == null
+      ? "snapshot unknown"
+      : snapshotAgeMin < 60
+        ? `${snapshotAgeMin}m old`
+        : `${Math.round(snapshotAgeMin / 60)}h old`;
+
+  const pendingItems = (() => {
+    if (!pending) return [];
+    const raw = Array.isArray(pending)
+      ? pending
+      : pending.pending || pending.queue || Object.values(pending);
+    return Array.isArray(raw) ? raw.filter(Boolean) : [];
+  })();
+  const locked = new Set(activeSessions.map((s) => s.slug));
+  const lockedPending = pendingItems.filter((item) =>
+    locked.has(item.slug),
+  ).length;
+
+  const arkCount = (() => {
+    const cutoff = Date.now() - 24 * 3600 * 1000;
+    const dir = path.join(root, "portfolio", "ark", "log");
+    try {
+      return fs
+        .readdirSync(dir)
+        .filter((f) => f.endsWith(".ndjson"))
+        .flatMap((f) =>
+          readText(path.join(dir, f)).split(/\r?\n/).filter(Boolean),
+        )
+        .reduce((count, line) => {
+          try {
+            const item = JSON.parse(line);
+            const ts = new Date(
+              item.ts || item.timestamp || item.shippedAt || 0,
+            ).getTime();
+            return ts >= cutoff ? count + 1 : count;
+          } catch {
+            return count;
+          }
+        }, 0);
+    } catch {
+      return 0;
+    }
+  })();
+
+  const untracked = (() => {
+    const detector = path.join(root, "scripts", "detect-new-dev-folders.mjs");
+    if (!fs.existsSync(detector)) return null;
+    try {
+      const res = spawnSync(node, [detector, "--json"], {
+        cwd: root,
+        encoding: "utf8",
+        timeout: 5000,
+      });
+      return res.status === 0 && res.stdout ? JSON.parse(res.stdout) : null;
+    } catch {
+      return null;
+    }
+  })();
+  const projectLike = untracked?.categories?.projectLike?.length ?? 0;
+  const scratch = untracked?.categories?.scratch?.length ?? 0;
+
+  const out = [top("ORCHESTRATOR")];
+  out.push(
+    row(
+      `Workers: ${activeSessions.length}/${active?.portfolio?.totalProjects ?? "?"} active · ${staleLocks.length} stale · ${conflicts.length} conflicts`,
+    ),
+  );
+  out.push(
+    row(
+      `Snapshot: ${snapshotLabel} · next ${active?.recommendedNextRepo?.slug || "n/a"}`.slice(
+        0,
+        W,
+      ),
+    ),
+  );
+  out.push(
+    row(
+      `Propagation: ${pendingItems.length} queued · ${lockedPending} lock-blocked`,
+    ),
+  );
+  out.push(
+    row(
+      `Ark: ${arkCount} cargo in 24h · full view: node scripts/orchestrate.mjs`,
+    ),
+  );
+  out.push(row(`Untracked: ${projectLike} project-like · ${scratch} scratch`));
   out.push(bot());
   return out.join("\n");
 }
@@ -975,13 +1253,12 @@ function buildFounderUnlocksBox() {
   const items = humanSection
     .split(/\r?\n/)
     .filter((l) => /^- \[ \]/.test(l))
-    .slice(0, 6);
+    .slice(0, 2);
   if (items.length === 0) return null;
   // Backfill first-seen dates so items without ~N sessions notation still age.
   const ledger = ensureAges(taskBoard, { root });
   const out = [top("FOUNDER UNLOCKS")];
   out.push(row("Single founder actions that reopen sprint surface:"));
-  out.push(blank());
   for (const line of items) {
     const clean = line.replace(/^- \[ \]\s*/, "").replace(/\*\*/g, "");
     const ageMatch = clean.match(/~?(\d+)\s*sessions/);
@@ -1064,9 +1341,16 @@ function buildExternalSignalsBox() {
 // ── Genius list: call generate-genius-list.mjs --brief ────────────────────────
 let geniusBlock = "";
 try {
+  // --top 8: the brief is a fast-boot surface and must stay under the 15KB hard
+  // budget (validate-brief-format). Full ranked list lives in docs/GENIUS_LIST.md.
   const res = spawnSync(
     node,
-    [path.join(root, "scripts", "generate-genius-list.mjs"), "--brief"],
+    [
+      path.join(root, "scripts", "generate-genius-list.mjs"),
+      "--brief",
+      "--top",
+      "8",
+    ],
     {
       cwd: root,
       encoding: "utf8",
@@ -1092,6 +1376,54 @@ if (!geniusBlock) {
   ].join("\n");
 }
 
+// ── Brief integrity self-assertion (S142 audit item 2) ──────────────────────
+// The brief is the SOLE context source for every session. A three-way coherence
+// check makes silent staleness impossible: the SIL log, PROJECT_STATUS.json, and
+// the rendered headline must agree on the latest session. On divergence we either
+// self-heal (PROJECT_STATUS lag) or render a ⛔ STALE BRIEF banner that the
+// validator turns into a hard /start stop.
+const statusLatest =
+  typeof status.currentSession === "number" ? status.currentSession : null;
+let briefCoherent = true;
+let staleReason = "";
+if (silMaxSession == null) {
+  briefCoherent = false;
+  staleReason =
+    "SIL log unparseable — no session headers matched. Brief cannot establish current state.";
+} else if (!silTotal) {
+  briefCoherent = false;
+  staleReason = `SIL session S${silMaxSession} has no parseable Total — headline score is untrustworthy.`;
+} else if (statusLatest != null && statusLatest !== silMaxSession) {
+  // PROJECT_STATUS.json lagged the SIL log (the historical failure mode). Self-heal it.
+  try {
+    const statusPath = path.join(root, "context", "PROJECT_STATUS.json");
+    const live = JSON.parse(fs.readFileSync(statusPath, "utf8"));
+    // Sync ONLY the session number. silScore/silCategoriesV3 are owned by the
+    // closeout SIL scorer — writing silScore here would desync it from the
+    // category breakdown (tier1-sil-migration invariant: score == sum(categories)).
+    live.currentSession = silMaxSession;
+    fs.writeFileSync(statusPath, JSON.stringify(live, null, 2) + "\n", "utf8");
+    console.log(
+      `  ↻ self-heal: PROJECT_STATUS.currentSession ${statusLatest} → ${silMaxSession} (synced from SIL log)`,
+    );
+  } catch (e) {
+    console.warn(`  ⚠ could not self-heal PROJECT_STATUS.json: ${e.message}`);
+  }
+}
+const staleBanner = briefCoherent
+  ? null
+  : [
+      top("⛔ STALE BRIEF — DO NOT TRUST"),
+      row(staleReason.slice(0, W)),
+      row(
+        "Repair: node scripts/render-startup-brief.mjs  (then re-run /start)".slice(
+          0,
+          W,
+        ),
+      ),
+      bot(),
+    ].join("\n");
+
 // ── Build the brief ───────────────────────────────────────────────────────────
 const pct = silTotal > 0 ? `${Math.round((silTotal / silMax) * 100)}%` : "?%";
 
@@ -1099,6 +1431,7 @@ const lines = [
   `<!-- generated-by: scripts/render-startup-brief.mjs v3.1 -->`,
   `<!-- generated-at: ${today} (Session ${currentSession - 1} closeout) -->`,
   `<!-- fast-boot-valid-until: next session if within 24h -->`,
+  `<!-- brief-coherent: ${briefCoherent} -->`,
   ``,
   `# Startup Brief — ${status.name || "Studio Ops"}`,
   ``,
@@ -1108,6 +1441,7 @@ const lines = [
   `---`,
   ``,
   `\`\`\``,
+  ...(staleBanner ? [staleBanner, ``] : []),
   renderTitleHeader({
     name: status.name || "Studio Ops",
     type: status.type,
@@ -1122,10 +1456,17 @@ const lines = [
   ``,
   renderLastCompleted(status.lastSessionSummary),
   ``,
-  renderTestItNow({
-    name: status.name || "Studio Ops",
-    testingSurfaces: status.testingSurfaces || [],
-  }),
+  ...(Array.isArray(status.testingSurfaces) && status.testingSurfaces.length
+    ? [
+        renderTestItNow({
+          name: status.name || "Studio Ops",
+          testingSurfaces: status.testingSurfaces,
+        }),
+        ``,
+      ]
+    : []),
+  // S126 audit #28: PROJECT_PROFILE lens header
+  renderProfileLensHeader(),
   ``,
   // ── SCORE box (v4.0 — 10-category breakdown + sparklines) ──────────────────
   top("SCORE"),
@@ -1186,14 +1527,57 @@ const lines = [
   ),
   bot(),
   ``,
+  // ── CONTEXT METER (S119 founder directive — was buried, now first-class) ──
+  top("CONTEXT METER"),
+  ...(() => {
+    // Progress bar — 24 chars filled per used%.
+    const fillN = Math.min(24, Math.max(0, Math.round(meterUsedFrac * 24)));
+    const bar = "█".repeat(fillN) + "░".repeat(24 - fillN);
+    const tagIcon =
+      meter.recommendation === "CLOSEOUT"
+        ? "⛔"
+        : meter.recommendation === "CONSIDER_CLOSEOUT"
+          ? "⚠"
+          : "✓";
+    const liveTag = meter.confidence || (meter.live ? "live" : "heuristic");
+    const usedStr = meterUsed.toLocaleString();
+    const limitStr = meter.limit.toLocaleString();
+    const lines = [
+      row(`${tagIcon}  ${bar}  ${String(meterUsedPct).padStart(3)}% used`),
+      row(
+        `   ${usedStr} / ${limitStr} tok  ·  ${meter.agent}${meter.model ? "/" + meter.model : ""}  ·  ${liveTag}`,
+      ),
+    ];
+    if (meter.continueCostPerTurn != null) {
+      const cacheLabel =
+        meter.cacheHitRate != null
+          ? `cache ${Math.round(meter.cacheHitRate * 100)}%`
+          : "cache n/a";
+      const turnsLabel =
+        meter.turnsToCompact != null && meter.turnsToCompact < 999
+          ? `${meter.turnsToCompact} turns to compact`
+          : "compact distant";
+      lines.push(
+        row(
+          `   ~${meter.continueCostPerTurn.toLocaleString()} tok/turn  ·  ${cacheLabel}  ·  ${turnsLabel}`,
+        ),
+      );
+    }
+    lines.push(
+      row(
+        `   Verdict: ${meter.recommendation}${meter.recommendation === "CONTINUE" ? "" : "  ← act now"}`,
+      ),
+    );
+    return lines;
+  })(),
+  bot(),
+  ``,
   // ── SIGNALS ────────────────────────────────────────────────────────────────
   top("SIGNALS"),
   row(`${sigTests}  Tests         ${testsLabel}`),
   row(`${sigVel}  Velocity      ${velocity} ${velTrend}  ·  Debt: ${debtRaw}`),
   row(`${sigRun}  Runway        ${runwayRaw}`),
-  row(
-    `✓  Headroom      ${meterRemainingPct}% remaining · ~${estimatedItemsFit} large item(s) fit`,
-  ),
+  // Headroom moved to dedicated CONTEXT METER block above (S119).
   row(`${sigCtx}  Context age   ${ctxAge}d`),
   row(
     `${sigIgnis}  IGNIS         ${status.ignisScore ?? "?"} ${status.ignisGrade || ""}  ·  ${ignisAge}d old`,
@@ -1212,7 +1596,7 @@ const lines = [
     `${sigVer}  Templates     ${versionDrift ? `version drift (start: ${startVer} vs tpl: ${startTplVer})` : `v${startVer || "?"} aligned`}`,
   ),
   row(
-    `${sigRev}  Revenue sig.  ${revenueSignalObserved ? revenueSignalStatus : revGenDate ? `${revAge}d old (${revGenDate})` : revenueSignalStatus || "not found"}${!revenueSignalObserved && revAge > 7 ? "  ⚠ stale" : ""}`,
+    `${sigRev}  Revenue sig.  ${revGenDate ? `${revAge}d old (${revGenDate})` : "not found"}${revAge > 7 ? "  ⚠ stale" : ""}`,
   ),
   row(`${sigDeploy}  Deploy gaps   ${deployLabel}`),
   row(`${sigDoctor}  Doctor        ${doctorDetail}`),
@@ -1226,6 +1610,9 @@ const lines = [
   ...(buildFounderUnlocksBox() ? [buildFounderUnlocksBox(), ``] : []),
   // ── PORTFOLIO TASK BOARDS ──────────────────────────────────────────────────
   ...(buildPortfolioBoxLines() ? [buildPortfolioBoxLines(), ``] : []),
+  // ── ORCHESTRATOR ───────────────────────────────────────────────────────────
+  buildOrchestratorBox(),
+  ``,
   // ── PREDICTION ─────────────────────────────────────────────────────────────
   ...(planFresh && planPredSIL
     ? [
@@ -1267,15 +1654,10 @@ const lines = [
       ]
     : []),
   // ── v4.0: SESSION VOICE (personable cue) ────────────────────────────────────
-  ...(sessionVoice
-    ? [
-        top("SESSION VOICE"),
-        row(`"${sessionVoice.text.slice(0, W - 6)}"`),
-        row(`  — from ${sessionVoice.source}`),
-        bot(),
-        ``,
-      ]
-    : []),
+  // Suppressed S116 #623 — low-signal flavor block was pushing brief over the
+  // 15KB brief-golden cap. v4.1 spec already drops this. Re-enable behind a
+  // flag if needed, but keep brief lean for token-cost reasons.
+  ...[],
   // ── v4.0: MOMENTUM METER (velocity + intent + streak + cost) ────────────────
   top("MOMENTUM METER"),
   row(
@@ -1297,6 +1679,63 @@ const lines = [
     : []),
   bot(),
   ``,
+  // ── SIL FORECAST (S114 audit #3) ──────────────────────────────────────────
+  ...(() => {
+    try {
+      const silTxt = fs.readFileSync(
+        path.join(root, "context", "SELF_IMPROVEMENT_LOOP.md"),
+        "utf8",
+      );
+      const sessions = parseSilHistory(silTxt);
+      if (!sessions.length) return [];
+      const f = forecastNext(sessions, {
+        velocity,
+        blockerPressure: 87,
+        contextAge: 0,
+      });
+      if (!f) return [];
+      const diff = f.totalPredicted - sessions[0].total;
+      const arrow = diff > 0 ? "↑" : diff < 0 ? "↓" : "→";
+      const risky = Object.entries(f.categories)
+        .filter(([, x]) => x.delta != null && x.delta <= -3)
+        .sort((a, b) => a[1].delta - b[1].delta)
+        .slice(0, 3);
+      // S124 #10 — actionable mitigations from portfolio/SIL_MITIGATIONS.json
+      let mitigationRow = null;
+      if (risky.length) {
+        try {
+          const mit = JSON.parse(
+            fs.readFileSync(
+              path.join(root, "portfolio", "SIL_MITIGATIONS.json"),
+              "utf8",
+            ),
+          );
+          const [topRiskCat] = risky[0];
+          const m = mit.mitigations?.[topRiskCat];
+          if (m?.hint)
+            mitigationRow = row(`Mitigation: ${m.hint.slice(0, 56)}`);
+        } catch {}
+      }
+      return [
+        top("SIL FORECAST (next session)"),
+        row(
+          `Projected:  ${f.totalPredicted}/1000  (${arrow}${Math.abs(diff)} vs current ${sessions[0].total})`,
+        ),
+        ...(risky.length
+          ? [
+              row(
+                `At-risk:    ${risky.map(([c, x]) => `${c} Δ${x.delta}`).join(" · ")}`,
+              ),
+            ]
+          : [row(`All categories forecast stable or rising.`)]),
+        ...(mitigationRow ? [mitigationRow] : []),
+        bot(),
+        ``,
+      ];
+    } catch {
+      return [];
+    }
+  })(),
   // ── GENIUS HIT LIST ────────────────────────────────────────────────────────
   geniusBlock,
   ``,
@@ -1316,3 +1755,60 @@ console.log(
 console.log(
   `  Signals: tests ${sigTests}  velocity ${sigVel}  runway ${sigRun}  genome ${sigGenome}  entropy ${sigEntropy}  cdr ${sigCdr}  patterns ${sigPatterns}  templates ${sigVer}  revenue ${sigRev}`,
 );
+
+// ── R-H15 (S118 G4): record skill cost telemetry on every /start render ──────
+try {
+  const { recordSkillCost } = await import("./lib/skill-cost-ledger.mjs");
+  const briefBytes = Buffer.byteLength(lines.join("\n"), "utf8");
+  const actualTokens = Math.ceil(briefBytes / 4);
+  recordSkillCost(root, {
+    skill: "start",
+    sessionId: `S${currentSession}`,
+    actualTokens,
+    status: "completed",
+  });
+} catch (err) {
+  // non-fatal — telemetry is advisory
+  process.stderr.write(
+    `  ⚠ skill-cost-ledger record skipped: ${err.message}\n`,
+  );
+}
+
+// ── Audit S119 #11: dual-render mode for measured v5 savings ────────────────
+// Set STUDIO_BRIEF_V5=compare to also emit v5 and log size delta. Use
+// STUDIO_BRIEF_V5=1 (or --v5) to promote v5 as the source of /start. Default
+// (no flag) keeps v3.1 — full cutover blocked on measured-comparable session.
+// S120 audit #12 — v5 now default when `.cache/brief-v5-canonical` flag file
+// exists (set once at promotion). Env override still honored.
+const v5FlagFile = path.join(root, ".cache", "brief-v5-canonical");
+const v5Mode =
+  process.env.STUDIO_BRIEF_V5 ||
+  (process.argv.includes("--v5") ? "1" : null) ||
+  (fs.existsSync(v5FlagFile) ? "1" : "off");
+if (v5Mode !== "off") {
+  try {
+    const v5Path = path.resolve(__dirname, "render-startup-brief-v5.mjs");
+    if (fs.existsSync(v5Path)) {
+      const res = spawnSync(node, [v5Path], { cwd: root, stdio: "inherit" });
+      if (res.status === 0) {
+        const v3Bytes = Buffer.byteLength(lines.join("\n"), "utf8");
+        const v5File = path.join(root, "docs", "STARTUP_BRIEF_V5.md");
+        if (fs.existsSync(v5File)) {
+          const v5Bytes = fs.statSync(v5File).size;
+          const reductionPct = Math.round(
+            ((v3Bytes - v5Bytes) / v3Bytes) * 100,
+          );
+          console.log(
+            `  ◆ brief-v5 compare: v3=${v3Bytes}b v5=${v5Bytes}b  (${reductionPct}% reduction)`,
+          );
+          if (v5Mode === "1" || v5Mode === "promote") {
+            fs.copyFileSync(v5File, outputPath);
+            console.log(`  ◆ brief-v5 promoted → docs/STARTUP_BRIEF.md`);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    process.stderr.write(`  ⚠ v5 dual-render skipped: ${err.message}\n`);
+  }
+}
