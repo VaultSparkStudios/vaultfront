@@ -27,7 +27,9 @@ generated/WorldMapData.json.compressed
 .claude/
 
 # Runtime context-meter ledger (generated per-session, not source)
+.cache/
 docs/cache-ledger.ndjson
+ignis/output/
 
 # Playwright test artifacts
 test-results/

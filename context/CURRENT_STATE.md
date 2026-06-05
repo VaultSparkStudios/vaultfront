@@ -22,6 +22,8 @@ Shipped all 4 items from `docs/AUDIT_2026-06-05_S65.md`.
 
 **Closeout verification rerun:** Codex reran the S65 audit verification on 2026-06-05: `node --check scripts/blocker-preflight.mjs`, `node --check scripts/lib/blocker-rules.mjs`, `node scripts/ops.mjs blocker-preflight`, `npx vitest run tests/server/VaultFrontReadiness.test.ts`, `npm run build-prod`, and broad `npm test` all passed. Residual warnings remain non-blocking: Vite public URL placeholders, mixed JSON import attributes, large chunks, and expected test stderr.
 
+**Closeout hygiene continuation:** Added `.cache/` and `ignis/output/` to `.gitignore` so generated session/IGNIS artifacts no longer leave the public repo dirty after `/start` and closeout probes.
+
 ## 2026-05-17 — Full Audit+Implement Pass Complete
 
 All 19 items from `docs/AUDIT_2026-05-17.md` shipped across two sessions.

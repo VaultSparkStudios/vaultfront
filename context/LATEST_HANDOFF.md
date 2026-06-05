@@ -12,6 +12,8 @@ This repo now keeps only a public-safe handoff summary. Detailed handoff history
 
 **Verification:** Codex reran closeout proof on 2026-06-05: `node --check scripts/blocker-preflight.mjs`; `node --check scripts/lib/blocker-rules.mjs`; `node scripts/ops.mjs blocker-preflight`; `npx vitest run tests/server/VaultFrontReadiness.test.ts` (4 passing); `npm run build-prod` green; `npm test` green (90 files / 638 tests, plus 9 server files / 23 tests). Startup validation remains structurally conformant with only the pre-existing recommended `HUMAN PRESSURE` block warning.
 
+**Continuation hygiene:** `.cache/` and generated `ignis/output/` files are now ignored, keeping post-start/post-closeout git status focused on source changes.
+
 **Known residuals:** Revenue signal is still unverified until a real checkout/supporter event lands. Startup brief session numbering still renders as Session 63 despite newer public handoff entries. Larger deferred engagement features remain: rival-system, narrator-shared-broadcast, season-pass-mission-injection, post-match-route-replay-ai, and adversarial-spectator-vote.
 
 **Suggested next focus:** Run a mobile tutorial smoke in browser, then ship `rival-system` or `narrator-shared-broadcast` depending on whether engagement depth or token-cost reduction matters more next session.

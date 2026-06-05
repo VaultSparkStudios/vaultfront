@@ -14,6 +14,16 @@ Append-only. Each session appends one entry. Never edit prior entries.
 
 ---
 
+## 2026-06-05 — Session 65 closeout hygiene continuation
+
+- Goal: Finish `/closeout` hygiene after the S65 verification rerun.
+- What changed: Added `.cache/` and `ignis/output/` to `.gitignore` so generated session and IGNIS artifacts no longer leave the public repo dirty after protocol runs.
+- Files or systems touched: `.gitignore`, public-safe closeout context notes.
+- Risks created or removed: Removes false dirty-worktree pressure without changing runtime behavior.
+- Recommended next move: Browser-smoke the mobile tutorial strip, then ship `rival-system` or `narrator-shared-broadcast`.
+
+---
+
 ## 2026-06-05 — Session 65 protocol + mobile onboarding pass
 
 - Goal: `/start → /audit → /implement → /closeout` with a fresh, VaultFront-specific audit around current flags and blockers.

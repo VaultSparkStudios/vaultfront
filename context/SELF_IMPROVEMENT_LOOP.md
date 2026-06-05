@@ -11,6 +11,10 @@ Last session: 2026-06-05 Session 65 protocol + mobile onboarding pass
 
 <!-- rolling-status-end -->
 
+## Sprint: 2026-06-05 — Session 65 Closeout Hygiene Continuation (SIL held: 997/1000)
+
+Generated `.cache/` and `ignis/output/` artifacts are now ignored, reducing false dirty-worktree pressure during future start/closeout protocol runs without changing product behavior. SIL holds at 997/1000; this is process hygiene and does not move the product-score categories.
+
 ## Sprint: 2026-06-05 — Session 65 Closeout Verification Rerun (SIL held: 997/1000)
 
 Codex reran the S65 implementation gates before closeout: blocker script syntax, blocker-preflight rendering, readiness focused Vitest, production build, and broad `npm test` all passed. SIL holds at 997/1000 because this pass proves the shipped state rather than adding new product scope; the remaining point gaps are still live revenue evidence, production smoke breadth, and residual bundle/public-env warnings.
