@@ -108,7 +108,7 @@
     {
       "slug": "project-status-truth-sync",
       "status": "shipped",
-      "summary": "PROJECT_STATUS now reflects Session 65 focus, next milestone, Session 64 637-test evidence, and SIL 996.",
+      "summary": "PROJECT_STATUS now reflects Session 65 focus, next milestone, 638-test evidence, and SIL 997.",
       "verification": ["npm run build-prod"]
     },
     {
