@@ -4,6 +4,8 @@
   "name": "VaultFront",
   "status": "active",
   "health": "green",
+  "currentSession": 65,
+  "lastAgent": "codex",
   "currentFocus": "Session 65 closeout complete: protocol preflight clarity, mobile tutorial strip, readiness revenue signal contract, and status truth-sync shipped.",
   "nextMilestone": "Run a mobile tutorial smoke, observe real checkout/supporter telemetry, ship rival-system, and promote tournament playtest.",
   "blockers": [],
@@ -49,12 +51,14 @@
   "revenueSignalStatus": "checkout-api-present-live-revenue-unverified",
   "readinessEndpoint": "/api/vaultfront/readiness",
   "playtestPulseEndpoint": "/api/vaultfront/playtest-pulse/summary",
-  "truthAuditStatus": "amber-green",
-  "truthAuditLastRun": "2026-06-03",
+  "truthAuditStatus": "green",
+  "truthAuditLastRun": "2026-06-05",
   "silRubricVersion": "3.0",
   "silMax": 1000,
   "silScoreLegacy500": null,
   "silScore": 997,
+  "testsPassing": 638,
+  "testsTotal": 638,
   "silCategoriesV3": {
     "devHealth": 99,
     "creativeAlignment": 100,
@@ -76,6 +80,6 @@
   "ignisScore": 42978,
   "ignisGrade": "FORGE",
   "ignisLastComputed": "2026-06-03",
-  "sessionMode": "founder",
-  "sessionModeAutoShiftedAt": "2026-06-04T00:17:25.080Z"
+  "sessionMode": "builder",
+  "sessionModeAutoShiftedAt": "2026-06-05T02:31:46.738Z"
 }

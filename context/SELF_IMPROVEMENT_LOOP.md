@@ -11,6 +11,10 @@ Last session: 2026-06-05 Session 65 protocol + mobile onboarding pass
 
 <!-- rolling-status-end -->
 
+## Sprint: 2026-06-05 — Session 65 Closeout Verification Rerun (SIL held: 997/1000)
+
+Codex reran the S65 implementation gates before closeout: blocker script syntax, blocker-preflight rendering, readiness focused Vitest, production build, and broad `npm test` all passed. SIL holds at 997/1000 because this pass proves the shipped state rather than adding new product scope; the remaining point gaps are still live revenue evidence, production smoke breadth, and residual bundle/public-env warnings.
+
 ## Sprint: 2026-06-05 — Session 65 Protocol + Mobile Onboarding Pass (SIL estimate: 997/1000)
 
 Shipped all 4 Session-65 audit items from `docs/AUDIT_2026-06-05_S65.md` (Priority sum: 92.4). Highlights: mobile first-run tutorial strip, revenue readiness observer contract, blocker-preflight attempt-order repair, startup revenue false-pass fix, and PROJECT_STATUS truth sync to 997 / 638 tests.

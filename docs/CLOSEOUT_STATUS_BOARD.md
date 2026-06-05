@@ -1,12 +1,12 @@
 <!-- generated-by: scripts/render-closeout-board.mjs v1.0 -->
-<!-- generated-at: 2026-06-05 (Session ? closeout) -->
+<!-- generated-at: 2026-06-05 (Session 65 closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
-╔══ SESSION CLOSEOUT · VaultFront · S? ══════════════════════════╗
+╔══ SESSION CLOSEOUT · VaultFront · S65 ═════════════════════════╗
 ║  Date: 2026-06-05  ·  SIL: 997/1000  ·  Velocity: —              ║
-║  Mode: FOUNDER  ·  Agent: claude-code                            ║
+║  Mode: BUILDER  ·  Agent: codex                                  ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WHAT SHIPPED ════════════════════════════════════════════════╗
 ║  (no shipped bullets parsed from LATEST_HANDOFF — see git log)   ║
@@ -35,16 +35,16 @@
 ║  ✓ context/PROJECT_STATUS.json                                   ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 23 files  ·  M:19 A:0 D:0 ?:4                          ║
+║  Changes: 10 files  ·  M:7 A:0 D:0 ?:3                           ║
 ║  Ahead: 0  ·  Behind: 0                                          ║
 ║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
 ║  Doctor:        —                                                ║
 ║  Compliance:    —                                                ║
-║  Tests:         —                                                ║
+║  Tests:         638/638                                          ║
 ║  IGNIS:         2d ago                                           ║
-║  Truth:         amber-green                                      ║
+║  Truth:         green                                            ║
 ║  Sanitization:  —                                                ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ NEXT SESSION ════════════════════════════════════════════════╗

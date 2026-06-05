@@ -3,8 +3,16 @@
 # Truth Audit
 
 Overall status: green
-Last reviewed: 2026-06-04
+Last reviewed: 2026-06-05
 Public-safe summary only. Sensitive verification notes are maintained privately.
+
+## 2026-06-05
+
+- `docs/AUDIT_2026-06-05_S65.md` and JSON sidecar match shipped code/test changes and mark all 4 items shipped.
+- Fresh Codex closeout verification passed: blocker script syntax checks, blocker-preflight rendering, readiness focused Vitest (4 tests), production build, and broad `npm test`.
+- Broad test evidence is now 90 main test files / 638 tests plus 9 server test files / 23 tests.
+- Known non-blocking warnings remain: Vite public URL placeholders, mixed JSON import attributes, large chunks, and expected test stderr paths.
+- Revenue signal remains unverified until live checkout/supporter telemetry is observed.
 
 ## 2026-06-04
 

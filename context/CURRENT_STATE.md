@@ -20,6 +20,8 @@ Shipped all 4 items from `docs/AUDIT_2026-06-05_S65.md`.
 
 **Verification:** blocker scripts pass `node --check`; `node scripts/ops.mjs blocker-preflight` renders correctly; `tests/server/VaultFrontReadiness.test.ts` passes 4 tests; `npm test` is green (90 files / 638 tests, plus 9 server files / 23 tests); `npm run build-prod` is green; startup brief render and validation pass with only the existing recommended `HUMAN PRESSURE` warning.
 
+**Closeout verification rerun:** Codex reran the S65 audit verification on 2026-06-05: `node --check scripts/blocker-preflight.mjs`, `node --check scripts/lib/blocker-rules.mjs`, `node scripts/ops.mjs blocker-preflight`, `npx vitest run tests/server/VaultFrontReadiness.test.ts`, `npm run build-prod`, and broad `npm test` all passed. Residual warnings remain non-blocking: Vite public URL placeholders, mixed JSON import attributes, large chunks, and expected test stderr.
+
 ## 2026-05-17 — Full Audit+Implement Pass Complete
 
 All 19 items from `docs/AUDIT_2026-05-17.md` shipped across two sessions.

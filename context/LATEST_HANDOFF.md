@@ -10,7 +10,7 @@ This repo now keeps only a public-safe handoff summary. Detailed handoff history
 
 **Impact:** VaultFront's mobile onboarding is measurable again without covering the play grid, and the Studio protocol signal path is cleaner: blockers render correctly, startup status reads the current project truth, and revenue remains warning-level until real checkout/supporter telemetry exists.
 
-**Verification:** `node --check scripts/blocker-preflight.mjs`; `node --check scripts/lib/blocker-rules.mjs`; `node --check scripts/render-startup-brief.mjs`; `node scripts/ops.mjs blocker-preflight`; `npx vitest run tests/server/VaultFrontReadiness.test.ts` (4 passing); `npm test` green (90 files / 638 tests, plus 9 server files / 23 tests); `npm run build-prod` green; startup brief render + validation green with only the pre-existing recommended `HUMAN PRESSURE` block warning.
+**Verification:** Codex reran closeout proof on 2026-06-05: `node --check scripts/blocker-preflight.mjs`; `node --check scripts/lib/blocker-rules.mjs`; `node scripts/ops.mjs blocker-preflight`; `npx vitest run tests/server/VaultFrontReadiness.test.ts` (4 passing); `npm run build-prod` green; `npm test` green (90 files / 638 tests, plus 9 server files / 23 tests). Startup validation remains structurally conformant with only the pre-existing recommended `HUMAN PRESSURE` block warning.
 
 **Known residuals:** Revenue signal is still unverified until a real checkout/supporter event lands. Startup brief session numbering still renders as Session 63 despite newer public handoff entries. Larger deferred engagement features remain: rival-system, narrator-shared-broadcast, season-pass-mission-injection, post-match-route-replay-ai, and adversarial-spectator-vote.
 
