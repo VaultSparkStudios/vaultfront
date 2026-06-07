@@ -454,15 +454,23 @@ const VaultFrontPlaytestPulseSummarySchema = z.object({
   totals: z.object({
     events: z.number(),
     tutorialShown: z.number(),
+    tutorialAdvanced: z.number(),
     tutorialCompleted: z.number(),
     tutorialSkipped: z.number(),
     matchFeedback: z.number(),
     tournamentActions: z.number(),
     retentionSignals: z.number(),
+    retentionChallengeShown: z.number(),
+    retentionGoalSaved: z.number(),
+    retentionRequeued: z.number(),
+    retentionRematchRequested: z.number(),
   }),
   rates: z.object({
+    tutorialAdvance: z.number(),
     tutorialCompletion: z.number(),
     tutorialSkip: z.number(),
+    matchFeedback: z.number(),
+    retentionAction: z.number(),
   }),
   freshness: z.object({
     firstEventAt: z.string().nullable(),
@@ -473,6 +481,7 @@ const VaultFrontPlaytestPulseSummarySchema = z.object({
     VaultFrontPlaytestPulseEventSchema.extend({ at: z.number() }),
   ),
   insights: z.array(z.string()),
+  actionInsights: z.array(z.string()),
 });
 
 export type VaultFrontDockAssignment = z.infer<

@@ -3,6 +3,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WinModal } from "../../../../src/client/graphics/layers/WinModal";
 import { RankedType } from "../../../../src/core/game/Game";
 
+const apiMock = vi.hoisted(() => ({
+  createRematch: vi.fn(async () => true),
+  fetchVaultFrontRecapAssignment: vi.fn(async () => false),
+  getUserMe: vi.fn(async () => null),
+  recordVaultFrontFunnelTelemetry: vi.fn(async () => true),
+  recordVaultFrontOutcomeTelemetry: vi.fn(async () => true),
+  recordVaultFrontPlaytestPulse: vi.fn(async () => true),
+  recordVaultFrontRecapEvent: vi.fn(async () => true),
+  updateVaultFrontSeasonContracts: vi.fn(async () => false),
+}));
+
 vi.mock("../../../../src/client/Utils", () => ({
   translateText: vi.fn((key: string) => {
     const translations: Record<string, string> = {
@@ -19,13 +30,14 @@ vi.mock("../../../../src/client/Utils", () => ({
 }));
 
 vi.mock("../../../../src/client/Api", () => ({
-  fetchVaultFrontRecapAssignment: vi.fn(async () => false),
-  getUserMe: vi.fn(async () => null),
-  recordVaultFrontFunnelTelemetry: vi.fn(async () => true),
-  recordVaultFrontOutcomeTelemetry: vi.fn(async () => true),
-  recordVaultFrontPlaytestPulse: vi.fn(async () => true),
-  recordVaultFrontRecapEvent: vi.fn(async () => true),
-  updateVaultFrontSeasonContracts: vi.fn(async () => false),
+  createRematch: apiMock.createRematch,
+  fetchVaultFrontRecapAssignment: apiMock.fetchVaultFrontRecapAssignment,
+  getUserMe: apiMock.getUserMe,
+  recordVaultFrontFunnelTelemetry: apiMock.recordVaultFrontFunnelTelemetry,
+  recordVaultFrontOutcomeTelemetry: apiMock.recordVaultFrontOutcomeTelemetry,
+  recordVaultFrontPlaytestPulse: apiMock.recordVaultFrontPlaytestPulse,
+  recordVaultFrontRecapEvent: apiMock.recordVaultFrontRecapEvent,
+  updateVaultFrontSeasonContracts: apiMock.updateVaultFrontSeasonContracts,
 }));
 
 vi.mock("../../../../src/client/Cosmetics", () => ({
@@ -65,6 +77,8 @@ describe("WinModal Requeue", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    apiMock.recordVaultFrontPlaytestPulse.mockClear();
+    apiMock.createRematch.mockClear();
   });
 
   describe("isRankedGame detection", () => {
@@ -161,5 +175,35 @@ describe("VaultFront recap coaching", () => {
       "2 revenge counters banked",
     );
     expect(container.textContent).toContain("counter-intercept");
+  });
+
+  it("records Rival Challenge retention pulse when saving the next goal", () => {
+    const modal = new WinModal() as any;
+    modal.rivalryRevengeDelta = 2;
+    modal.actionableHint = "Intercept the first rival convoy.";
+    modal.actionableGoalKey = "convoy_impact";
+
+    modal.saveNextMatchGoal();
+
+    expect(apiMock.recordVaultFrontPlaytestPulse).toHaveBeenCalledWith({
+      surface: "retention",
+      event: "rival_goal_saved",
+      value: 2,
+    });
+  });
+
+  it("records Rival Challenge retention pulse when requesting a rematch", async () => {
+    const modal = new WinModal() as any;
+    modal.rivalryRevengeDelta = 1;
+    modal.game = { gameID: () => "game-1" };
+
+    await modal._handleRematch();
+
+    expect(apiMock.createRematch).toHaveBeenCalledWith("game-1", "anon");
+    expect(apiMock.recordVaultFrontPlaytestPulse).toHaveBeenCalledWith({
+      surface: "retention",
+      event: "rival_rematch_requested",
+      value: 1,
+    });
   });
 });

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "1.3",
+  "project": "vaultfront",
+  "date": "2026-06-07",
+  "session": 67,
+  "agent": "codex",
+  "kind": "closeout",
+  "sil": {
+    "score": 998,
+    "max": 1000,
+    "delta": 0,
+    "note": "Session 67 deepened alpha playtest evidence and Rival Challenge conversion telemetry while preserving cost-neutral posture."
+  },
+  "shipped": [
+    "playtest-pulse-funnel-breakdown",
+    "rival-challenge-retention-telemetry",
+    "readiness-pulse-action-insights",
+    "s67-truth-sync"
+  ],
+  "verification": [
+    {
+      "command": "node --check src/server/VaultFrontPlaytestPulse.ts",
+      "status": "pass"
+    },
+    {
+      "command": "node --check src/server/VaultFrontReadiness.ts",
+      "status": "pass"
+    },
+    {
+      "command": "node --check src/client/Api.ts",
+      "status": "pass"
+    },
+    {
+      "command": "node --check src/client/graphics/layers/WinModal.ts",
+      "status": "pass"
+    },
+    {
+      "command": "npx vitest run tests/server/VaultFrontPlaytestPulse.test.ts tests/server/VaultFrontReadiness.test.ts tests/client/graphics/layers/WinModal.test.ts",
+      "status": "pass",
+      "evidence": "3 files / 17 tests passed."
+    },
+    {
+      "command": "npm run build-prod",
+      "status": "pass",
+      "evidence": "TypeScript no-emit and production Vite build passed."
+    },
+    {
+      "command": "npm test",
+      "status": "pass",
+      "evidence": "91 main test files / 643 tests passed; server pass repeated 9 files / 24 tests."
+    },
+    {
+      "command": "node scripts/lib/write-project-status.mjs --check",
+      "status": "warning",
+      "evidence": "Intermittent Windows sandbox CryptUnprotectData error; direct JSON check confirms silScore 998 equals category sum 998."
+    }
+  ],
+  "residualRisks": [
+    "Revenue signal remains unverified until a real checkout/supporter event is observed.",
+    "Production build has non-blocking warnings for public URL placeholders, JSON import attributes, and large chunks.",
+    "New Rival Challenge telemetry needs a focused internal playtest to collect real conversion data."
+  ],
+  "next": [
+    "Run a focused internal rivalry/rematch playtest.",
+    "Inspect readiness playtest-pulse action insights after that playtest.",
+    "Observe real revenue telemetry before setting VAULTFRONT_REVENUE_OBSERVED=1."
+  ]
+}

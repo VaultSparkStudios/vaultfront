@@ -43,6 +43,9 @@ describe("buildVaultFrontReadiness", () => {
           lastEventAt: "2026-06-03T20:00:00.000Z",
           ageMinutes: 2,
         },
+        actionInsights: [
+          "Pulse is broad enough for this alpha gate; continue with a focused rivalry/rematch playtest.",
+        ],
       },
     });
 
@@ -51,7 +54,7 @@ describe("buildVaultFrontReadiness", () => {
     expect(
       payload.launchGates.find((gate) => gate.gate === "playtest-pulse")
         ?.evidence,
-    ).toContain("score 64");
+    ).toContain("focused rivalry/rematch playtest");
   });
 
   it("passes the revenue signal gate when live supporter evidence is supplied", () => {

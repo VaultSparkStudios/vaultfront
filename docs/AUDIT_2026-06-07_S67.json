@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "/audit skill v1.0",
+  "generatedAt": "2026-06-07",
+  "project": "vaultfront",
+  "type": "game",
+  "session": "S67",
+  "axisWeights": {
+    "gamification": 3,
+    "ux": 2,
+    "ai": 1.5,
+    "feature_depth": 1.5,
+    "new_features": 1,
+    "feedback_loop": 1,
+    "security": 1,
+    "speed": 1,
+    "token_cost": 1
+  },
+  "summary": {
+    "totalItems": 4,
+    "combinedPriority": 101.2,
+    "top3": [
+      "playtest-pulse-funnel-breakdown",
+      "rival-challenge-retention-telemetry",
+      "readiness-pulse-action-insights"
+    ]
+  },
+  "items": [
+    {
+      "slug": "playtest-pulse-funnel-breakdown",
+      "tier": "fire",
+      "axis": "feedback_loop/ux/gamification",
+      "effort": "1h",
+      "impact": 9,
+      "innovation": 6,
+      "priority": 35.9,
+      "item": "The playtest pulse endpoint proves activity exists, but it still collapses onboarding and post-match behavior into coarse totals. Split pulse into concrete funnel counters and rates so the next internal playtest can identify exactly where new players drop or requeue.",
+      "recipe": "Extend VaultFrontPlaytestPulseSummary with tutorial advance rate, tutorial completion from starts, match feedback rate, and retention requeue/challenge counters; update client schema and focused server tests.",
+      "why": "VaultFront is packed with systems, so the launch question is not feature volume, it is conversion clarity. A small schema upgrade turns the existing no-cost in-memory pulse into a decision surface for tutorial, match feedback, and retention loops."
+    },
+    {
+      "slug": "rival-challenge-retention-telemetry",
+      "tier": "fire",
+      "axis": "gamification/engagement/feedback_loop",
+      "effort": "30m",
+      "impact": 8,
+      "innovation": 7,
+      "priority": 38.5,
+      "item": "The Rival Challenge card is now visible, but the pulse does not distinguish seeing the challenge from acting on it. Record challenge exposure and action events when players save goals, requeue, or request a rematch after revenge progress.",
+      "recipe": "Add a small WinModal helper that records retention pulse events only when rivalryRevengeDelta is positive, wire it into the existing goal/requeue/rematch handlers, and add focused tests for the emitted events.",
+      "why": "This makes the new grudge loop measurable without adding any backend persistence or paid AI calls. The product can now tell whether rivalry is just decorative or actually creates the 'one more match' behavior it was built for."
+    },
+    {
+      "slug": "readiness-pulse-action-insights",
+      "tier": "high",
+      "axis": "speed/organization/feedback_loop",
+      "effort": "30m",
+      "impact": 7,
+      "innovation": 4,
+      "priority": 20.1,
+      "item": "Readiness already embeds playtest pulse status, but the evidence sentence is too thin for release decisions. Surface the next action implied by pulse data: no signal, tutorial friction, weak feedback, or retention action deficit.",
+      "recipe": "Add an actionInsights field to the pulse summary, include it in readiness evidence, and validate the generated readiness payload in tests.",
+      "why": "A launch gate should tell the operator what to do next, not only show a score. This keeps the internal alpha honest while making the next playtest sharper."
+    },
+    {
+      "slug": "s67-truth-sync",
+      "tier": "high",
+      "axis": "process/automation",
+      "effort": "30m",
+      "impact": 6,
+      "innovation": 3,
+      "priority": 6.7,
+      "item": "After implementing the pulse and retention telemetry pass, public-safe truth files must move from Session 66 to Session 67. Keep PROJECT_STATUS, CURRENT_STATE, TASK_BOARD, SELF_IMPROVEMENT_LOOP, and IMPLEMENT_PLAN synchronized so the next /start does not audit stale flags.",
+      "recipe": "Update the public-safe context files with S67 shipped items and verification evidence, then validate silScore equals the sum of silCategoriesV3.",
+      "why": "VaultFront's startup brief is only useful if the machine-readable truth matches the shipped game. This prevents future agents from rediscovering already-shipped conversion instrumentation."
+    }
+  ],
+  "innovationReserve": [
+    "rival-challenge-retention-telemetry",
+    "playtest-pulse-funnel-breakdown"
+  ],
+  "skipped": [
+    {
+      "slug": "studio-paid-ai-free-tier-expansion",
+      "reason": "Deferred because CANON-029 says pre-revenue free tier must remain cost-neutral; current pass avoids new AI calls."
+    },
+    {
+      "slug": "manual-live-revenue-clear",
+      "reason": "Requires real checkout/supporter evidence; readiness should keep warning until that exists."
+    },
+    {
+      "slug": "full-browser-playtest-run",
+      "reason": "Useful before SPARKED, but this pass prioritizes automated instrumentation that will make that playtest measurable."
+    }
+  ],
+  "executionLog": [
+    {
+      "slug": "playtest-pulse-funnel-breakdown",
+      "status": "shipped",
+      "summary": "Expanded the playtest pulse contract with tutorial advance, match feedback, and Rival Challenge retention counters plus conversion rates and action insights.",
+      "verification": [
+        "node --check src/server/VaultFrontPlaytestPulse.ts",
+        "node --check src/client/Api.ts",
+        "npx vitest run tests/server/VaultFrontPlaytestPulse.test.ts tests/server/VaultFrontReadiness.test.ts tests/client/graphics/layers/WinModal.test.ts",
+        "npm test"
+      ]
+    },
+    {
+      "slug": "rival-challenge-retention-telemetry",
+      "status": "shipped",
+      "summary": "WinModal now records Rival Challenge exposure, saved-goal, requeue, and rematch pulse events only when rivalry revenge progress exists.",
+      "verification": [
+        "node --check src/client/graphics/layers/WinModal.ts",
+        "npx vitest run tests/server/VaultFrontPlaytestPulse.test.ts tests/server/VaultFrontReadiness.test.ts tests/client/graphics/layers/WinModal.test.ts",
+        "npm test"
+      ]
+    },
+    {
+      "slug": "readiness-pulse-action-insights",
+      "status": "shipped",
+      "summary": "Readiness playtest-pulse evidence now includes the first pulse action insight, so warnings point to the next playtest action.",
+      "verification": [
+        "node --check src/server/VaultFrontReadiness.ts",
+        "npx vitest run tests/server/VaultFrontPlaytestPulse.test.ts tests/server/VaultFrontReadiness.test.ts tests/client/graphics/layers/WinModal.test.ts",
+        "npm run build-prod"
+      ]
+    },
+    {
+      "slug": "s67-truth-sync",
+      "status": "shipped",
+      "summary": "Public-safe audit, implementation plan, status, current state, task board, work log, and self-improvement records were updated for S67 evidence with 643 passing broad tests plus 24 server tests.",
+      "verification": ["npm run build-prod", "npm test"]
+    }
+  ]
+}

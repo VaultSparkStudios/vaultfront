@@ -4,6 +4,16 @@ Append-only. Each session appends one entry. Never edit prior entries.
 
 ---
 
+## 2026-06-07 — Session 67 playtest funnel + rival telemetry pass
+
+- Goal: Run `/start → /audit → /implement → /closeout` with a fresh VaultFront-specific audit focused on alpha playtest evidence, Rival Challenge conversion, and readiness actionability.
+- What changed: Added `docs/AUDIT_2026-06-07_S67.*`; expanded playtest pulse totals/rates/action insights; instrumented Rival Challenge exposure, goal-save, requeue, and rematch events in `WinModal`; surfaced pulse action insights in readiness evidence; synced public-safe truth files.
+- Files or systems touched: `VaultFrontPlaytestPulse`, `VaultFrontReadiness`, `Api`, `WinModal`, focused tests, audit docs, implementation plan, startup brief, and public-safe context files.
+- Risks created or removed: Removes the measurement blind spot between showing a Rival Challenge and proving it drives requeue/rematch behavior. No new paid AI usage or variable-cost free-tier surface was added. Remaining risks are live revenue evidence and manual rivalry/rematch playtest validation.
+- Recommended next move: Run a focused internal rivalry/rematch playtest and inspect the new readiness pulse action insights before any SPARKED flip.
+
+---
+
 ## 2026-06-05 — Session 66 protocol + mobile evidence + rival loop pass
 
 - Goal: Continue the active `/start → /audit → /implement → /closeout` goal with a fresh VaultFront-specific audit and full implementation.

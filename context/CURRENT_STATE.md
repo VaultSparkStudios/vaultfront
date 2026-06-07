@@ -6,6 +6,19 @@ Public-safe summary:
 - internal operational records were sanitized for public-repo safety on 2026-04-03
 - detailed internal state now lives in the private Studio OS / ops repository
 
+## 2026-06-07 — Session 67 Playtest Funnel + Rival Telemetry Pass Complete
+
+Shipped all 4 items from `docs/AUDIT_2026-06-07_S67.md`.
+
+**New fixes added:**
+
+- Playtest pulse summaries now report tutorial advance/completion/skip rates, match feedback rate, Rival Challenge exposure/action counters, retention action rate, and operator-facing action insights.
+- `WinModal` now records Rival Challenge retention pulse events when players see the challenge, save the next-match goal, requeue, or request a rematch after rivalry revenge progress.
+- Readiness playtest-pulse evidence now includes the first action insight, turning the launch gate into a concrete next-playtest prompt.
+- `PROJECT_STATUS` now reflects Session 67 focus, 643 broad passing tests plus 24 server tests, and SIL 998 held.
+
+**Verification:** syntax checks passed for `VaultFrontPlaytestPulse`, `VaultFrontReadiness`, `Api`, and `WinModal`; focused Vitest passed 17 tests across pulse/readiness/WinModal; `npm run build-prod` is green; broad `npm test` is green (91 files / 643 tests, plus 9 server files / 24 tests). Existing non-blocking warnings remain: Vite public URL placeholders, mixed JSON import attributes, large chunks, Lit dev-mode stderr, and expected test stderr.
+
 ## 2026-06-05 — Session 66 Protocol + Mobile Evidence + Rival Loop Pass Complete
 
 Shipped all 4 items from `docs/AUDIT_2026-06-05_S66.md`.

@@ -18,15 +18,23 @@ export interface VaultFrontPlaytestPulseSummary {
   totals: {
     events: number;
     tutorialShown: number;
+    tutorialAdvanced: number;
     tutorialCompleted: number;
     tutorialSkipped: number;
     matchFeedback: number;
     tournamentActions: number;
     retentionSignals: number;
+    retentionChallengeShown: number;
+    retentionGoalSaved: number;
+    retentionRequeued: number;
+    retentionRematchRequested: number;
   };
   rates: {
+    tutorialAdvance: number;
     tutorialCompletion: number;
     tutorialSkip: number;
+    matchFeedback: number;
+    retentionAction: number;
   };
   freshness: {
     firstEventAt: string | null;
@@ -35,6 +43,7 @@ export interface VaultFrontPlaytestPulseSummary {
   };
   recent: VaultFrontPlaytestPulseEvent[];
   insights: string[];
+  actionInsights: string[];
 }
 
 const MAX_RECENT = 40;
@@ -42,15 +51,38 @@ const MAX_RECENT = 40;
 const pulse = {
   events: 0,
   tutorialShown: 0,
+  tutorialAdvanced: 0,
   tutorialCompleted: 0,
   tutorialSkipped: 0,
   matchFeedback: 0,
   tournamentActions: 0,
   retentionSignals: 0,
+  retentionChallengeShown: 0,
+  retentionGoalSaved: 0,
+  retentionRequeued: 0,
+  retentionRematchRequested: 0,
   firstEventAt: null as number | null,
   lastEventAt: null as number | null,
   recent: [] as VaultFrontPlaytestPulseEvent[],
 };
+
+export function resetVaultFrontPlaytestPulseForTests(): void {
+  pulse.events = 0;
+  pulse.tutorialShown = 0;
+  pulse.tutorialAdvanced = 0;
+  pulse.tutorialCompleted = 0;
+  pulse.tutorialSkipped = 0;
+  pulse.matchFeedback = 0;
+  pulse.tournamentActions = 0;
+  pulse.retentionSignals = 0;
+  pulse.retentionChallengeShown = 0;
+  pulse.retentionGoalSaved = 0;
+  pulse.retentionRequeued = 0;
+  pulse.retentionRematchRequested = 0;
+  pulse.firstEventAt = null;
+  pulse.lastEventAt = null;
+  pulse.recent = [];
+}
 
 export function recordVaultFrontPlaytestPulse(
   input: VaultFrontPlaytestPulseEvent,
@@ -65,6 +97,7 @@ export function recordVaultFrontPlaytestPulse(
 
   if (event.surface === "tutorial") {
     if (event.event === "shown") pulse.tutorialShown += value;
+    if (event.event === "advance") pulse.tutorialAdvanced += value;
     if (event.event === "complete") pulse.tutorialCompleted += value;
     if (event.event === "skip") pulse.tutorialSkipped += value;
   } else if (event.surface === "match") {
@@ -73,6 +106,18 @@ export function recordVaultFrontPlaytestPulse(
     pulse.tournamentActions += value;
   } else if (event.surface === "retention") {
     pulse.retentionSignals += value;
+    if (event.event === "rival_challenge_shown") {
+      pulse.retentionChallengeShown += value;
+    }
+    if (event.event === "rival_goal_saved") {
+      pulse.retentionGoalSaved += value;
+    }
+    if (event.event === "rival_requeue_clicked") {
+      pulse.retentionRequeued += value;
+    }
+    if (event.event === "rival_rematch_requested") {
+      pulse.retentionRematchRequested += value;
+    }
   }
 
   pulse.recent.unshift(event);
@@ -87,9 +132,25 @@ export function buildVaultFrontPlaytestPulseSummary(
     pulse.tutorialShown > 0
       ? Number((pulse.tutorialCompleted / pulse.tutorialShown).toFixed(4))
       : 0;
+  const tutorialAdvance =
+    pulse.tutorialShown > 0
+      ? Number((pulse.tutorialAdvanced / pulse.tutorialShown).toFixed(4))
+      : 0;
   const tutorialSkip =
     pulse.tutorialShown > 0
       ? Number((pulse.tutorialSkipped / pulse.tutorialShown).toFixed(4))
+      : 0;
+  const matchFeedback =
+    pulse.events > 0
+      ? Number((pulse.matchFeedback / pulse.events).toFixed(4))
+      : 0;
+  const retentionActions =
+    pulse.retentionGoalSaved +
+    pulse.retentionRequeued +
+    pulse.retentionRematchRequested;
+  const retentionAction =
+    pulse.retentionChallengeShown > 0
+      ? Number((retentionActions / pulse.retentionChallengeShown).toFixed(4))
       : 0;
   const ageMinutes =
     pulse.lastEventAt === null
@@ -114,15 +175,23 @@ export function buildVaultFrontPlaytestPulseSummary(
     totals: {
       events: pulse.events,
       tutorialShown: pulse.tutorialShown,
+      tutorialAdvanced: pulse.tutorialAdvanced,
       tutorialCompleted: pulse.tutorialCompleted,
       tutorialSkipped: pulse.tutorialSkipped,
       matchFeedback: pulse.matchFeedback,
       tournamentActions: pulse.tournamentActions,
       retentionSignals: pulse.retentionSignals,
+      retentionChallengeShown: pulse.retentionChallengeShown,
+      retentionGoalSaved: pulse.retentionGoalSaved,
+      retentionRequeued: pulse.retentionRequeued,
+      retentionRematchRequested: pulse.retentionRematchRequested,
     },
     rates: {
+      tutorialAdvance,
       tutorialCompletion,
       tutorialSkip,
+      matchFeedback,
+      retentionAction,
     },
     freshness: {
       firstEventAt:
@@ -137,6 +206,14 @@ export function buildVaultFrontPlaytestPulseSummary(
     },
     recent: pulse.recent.slice(0, 10),
     insights: buildPulseInsights(tutorialCompletion, tutorialSkip, ageMinutes),
+    actionInsights: buildActionInsights({
+      tutorialAdvance,
+      tutorialCompletion,
+      tutorialSkip,
+      matchFeedback,
+      retentionAction,
+      ageMinutes,
+    }),
   };
 }
 
@@ -168,4 +245,57 @@ function buildPulseInsights(
     insights.push("Latest playtest signal is older than 24 hours.");
   }
   return insights;
+}
+
+function buildActionInsights(input: {
+  tutorialAdvance: number;
+  tutorialCompletion: number;
+  tutorialSkip: number;
+  matchFeedback: number;
+  retentionAction: number;
+  ageMinutes: number | null;
+}): string[] {
+  if (pulse.events === 0) {
+    return [
+      "Run one guided internal match and confirm tutorial, match feedback, and post-match retention events land.",
+    ];
+  }
+
+  const actions: string[] = [];
+  if (pulse.tutorialShown > 0 && input.tutorialAdvance < 0.5) {
+    actions.push(
+      "Tutorial advances are weak; tighten the first strip copy or make the next action more obvious.",
+    );
+  }
+  if (pulse.tutorialShown > 0 && input.tutorialCompletion < 0.35) {
+    actions.push(
+      "Tutorial completion is below launch confidence; shorten or split the onboarding flow before public traffic.",
+    );
+  }
+  if (pulse.matchFeedback === 0) {
+    actions.push(
+      "No post-match feedback has landed; verify the win modal is reached during the next playtest.",
+    );
+  }
+  if (pulse.retentionChallengeShown > 0 && input.retentionAction < 0.25) {
+    actions.push(
+      "Rival Challenge is visible but not converting; make rematch/requeue the primary rival action.",
+    );
+  }
+  if (pulse.retentionChallengeShown === 0 && pulse.events >= 10) {
+    actions.push(
+      "Pulse has activity but no rivalry challenge exposure; seed a rivalry scenario in the next internal match.",
+    );
+  }
+  if (input.ageMinutes !== null && input.ageMinutes > 1440) {
+    actions.push(
+      "Refresh playtest evidence; latest pulse is older than 24 hours.",
+    );
+  }
+  if (actions.length === 0) {
+    actions.push(
+      "Pulse is broad enough for this alpha gate; continue with a focused rivalry/rematch playtest.",
+    );
+  }
+  return actions.slice(0, 3);
 }

@@ -142,6 +142,7 @@ export class WinModal extends LitElement implements Layer {
   private recapExposureTracked = false;
   private recapGoalClicked = false;
   private recapRequeueClicked = false;
+  private rivalChallengeExposureTracked = false;
   private outcomePosted = false;
   private behindAtMinute8 = false;
   private matchLengthSeconds = 0;
@@ -1283,6 +1284,7 @@ export class WinModal extends LitElement implements Layer {
     localStorage.setItem("vaultfront.nextMatchGoalKey", this.actionableGoalKey);
     this.nextGoalSaved = true;
     this.recapGoalClicked = true;
+    this.recordRivalChallengePulse("rival_goal_saved");
     void recordVaultFrontRecapEvent({
       event: "recap_goal_saved",
       variant: this.recapCtaVariant,
@@ -1299,6 +1301,7 @@ export class WinModal extends LitElement implements Layer {
 
   private _handleRequeue() {
     this.recapRequeueClicked = true;
+    this.recordRivalChallengePulse("rival_requeue_clicked");
     void recordVaultFrontRecapEvent({
       event: "recap_requeue_click",
       variant: this.recapCtaVariant,
@@ -1390,6 +1393,7 @@ export class WinModal extends LitElement implements Layer {
     const playerId = me ? (me.player?.publicId ?? "anon") : "anon";
     await createRematch(gameId, playerId);
     this.rematchPending = true;
+    this.recordRivalChallengePulse("rival_rematch_requested");
   };
 
   private _handleShareHighlight = async () => {
@@ -1477,6 +1481,21 @@ export class WinModal extends LitElement implements Layer {
     });
     this._handleRequeue();
   };
+
+  private recordRivalChallengePulse(
+    event:
+      | "rival_challenge_shown"
+      | "rival_goal_saved"
+      | "rival_requeue_clicked"
+      | "rival_rematch_requested",
+  ): void {
+    if (this.rivalryRevengeDelta <= 0) return;
+    void recordVaultFrontPlaytestPulse({
+      surface: "retention",
+      event,
+      value: Math.max(1, this.rivalryRevengeDelta),
+    });
+  }
 
   init() {}
 
@@ -1851,6 +1870,7 @@ export class WinModal extends LitElement implements Layer {
     this.recapExposureTracked = false;
     this.recapGoalClicked = false;
     this.recapRequeueClicked = false;
+    this.rivalChallengeExposureTracked = false;
     this.outcomePosted = false;
 
     const allStats = wu.allPlayersStats;
@@ -2002,6 +2022,10 @@ export class WinModal extends LitElement implements Layer {
       ),
     };
     this.rivalryRevengeDelta = Math.max(0, seasonalMatch.rivalryRevengeDelta);
+    if (this.rivalryRevengeDelta > 0 && !this.rivalChallengeExposureTracked) {
+      this.rivalChallengeExposureTracked = true;
+      this.recordRivalChallengePulse("rival_challenge_shown");
+    }
     this.seasonalContracts = this.updateSeasonalContractsLocal(seasonalMatch);
     void this.syncSeasonalContracts(seasonalMatch);
 

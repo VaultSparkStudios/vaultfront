@@ -2,6 +2,22 @@
 
 This repo now keeps only a public-safe handoff summary. Detailed handoff history is maintained privately.
 
+## Where We Left Off — 2026-06-07
+
+**Session goal:** `/start → /audit → /implement → /closeout` with a fresh S67 audit personalized to VaultFront's current flags: playtest evidence depth, Rival Challenge conversion, readiness actionability, and revenue-signal honesty.
+
+**Shipped:** All 4 items from `docs/AUDIT_2026-06-07_S67.md` (Priority sum: 101.2). Playtest pulse now reports tutorial advance/completion/skip rates, match feedback rate, Rival Challenge exposure/action counters, retention action rate, and action insights. `WinModal` records Rival Challenge exposure, goal-save, requeue, and rematch events only when rivalry revenge progress exists. Readiness evidence now includes the first pulse action insight. `PROJECT_STATUS` now matches Session 67 and 643-test evidence.
+
+**Impact:** VaultFront can now tell whether the visible Rival Challenge loop actually drives rematch/requeue behavior instead of only counting that the card appeared. The readiness gate is more operational: it names the next playtest action instead of leaving the operator to infer it from a score.
+
+**Verification:** syntax checks passed for `VaultFrontPlaytestPulse`, `VaultFrontReadiness`, `Api`, and `WinModal`; focused pulse/readiness/WinModal Vitest passed 17 tests; `npm run build-prod` passed; `npm test` passed (91 files / 643 tests, plus 9 server files / 24 tests). `node scripts/lib/write-project-status.mjs --check` hit an intermittent Windows sandbox `CryptUnprotectData` error during this session, but `PROJECT_STATUS.silScore=998` still equals the sum of `silCategoriesV3`.
+
+**Known residuals:** Revenue signal remains unverified until a real checkout/supporter event is observed. Production build warnings remain non-blocking: public URL placeholders, mixed JSON import attributes, and large chunks. The new retention telemetry still needs a focused internal rivalry/rematch playtest to collect real conversion data.
+
+**Suggested next focus:** Run a focused internal rivalry/rematch playtest and inspect readiness `playtest-pulse` action insights, then observe real revenue telemetry before setting `VAULTFRONT_REVENUE_OBSERVED=1`.
+
+---
+
 ## Where We Left Off — 2026-06-05
 
 **Session goal:** `/start → /audit → /implement → /closeout` with a fresh S66 audit personalized to VaultFront's live flags: startup helper drift, mobile tutorial proof gap, rivalry/rematch engagement depth, and revenue-signal honesty.

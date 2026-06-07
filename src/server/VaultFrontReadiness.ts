@@ -13,6 +13,7 @@ export interface VaultFrontReadinessInput {
       lastEventAt: string | null;
       ageMinutes: number | null;
     };
+    actionInsights?: string[];
   };
 }
 
@@ -119,7 +120,7 @@ export function buildVaultFrontReadiness(
         gate: "playtest-pulse",
         status: pulseReady ? "pass" : "warn",
         evidence: input.playtestPulse
-          ? `Pulse ${input.playtestPulse.status} at score ${input.playtestPulse.score}; latest event ${input.playtestPulse.freshness.lastEventAt ?? "not recorded"}.`
+          ? `Pulse ${input.playtestPulse.status} at score ${input.playtestPulse.score}; latest event ${input.playtestPulse.freshness.lastEventAt ?? "not recorded"}. Next: ${input.playtestPulse.actionInsights?.[0] ?? "Run a focused internal playtest and inspect tutorial, feedback, and retention events."}`
           : "No live playtest pulse attached to this process.",
       },
     ],

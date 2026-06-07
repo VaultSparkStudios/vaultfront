@@ -3,8 +3,18 @@
 # Truth Audit
 
 Overall status: green
-Last reviewed: 2026-06-05
+Last reviewed: 2026-06-07
 Public-safe summary only. Sensitive verification notes are maintained privately.
+
+## 2026-06-07
+
+- `docs/AUDIT_2026-06-07_S67.md` and JSON sidecar match shipped code/test changes and mark all 4 items shipped.
+- Playtest pulse truth: summary totals/rates now include tutorial advancement, match feedback, and Rival Challenge retention conversion counters.
+- Readiness truth: playtest-pulse evidence includes the first action insight, so launch-gate warnings name the next playtest action.
+- Broad test evidence is now 91 main test files / 643 tests plus 9 server test files / 24 tests.
+- `npm run build-prod` passes; known non-blocking warnings remain for public URL placeholders, mixed JSON import attributes, and large chunks.
+- `PROJECT_STATUS.silScore` is 998 and matches the sum of `silCategoriesV3`; the helper validation command hit an intermittent Windows sandbox `CryptUnprotectData` error during closeout, so this invariant was verified from the JSON fields directly.
+- Revenue signal remains unverified until live checkout/supporter telemetry is observed.
 
 ## 2026-06-05
 
