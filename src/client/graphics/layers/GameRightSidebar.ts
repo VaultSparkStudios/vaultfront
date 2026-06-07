@@ -764,6 +764,21 @@ export class GameRightSidebar extends LitElement implements Layer {
         ? `${Math.round((p.totals.tutorialCompleted / p.totals.tutorialShown) * 100)}%`
         : "0%"
       : "—";
+    const retentionAction = p
+      ? p.totals.retentionChallengeShown > 0
+        ? `${Math.round(p.rates.retentionAction * 100)}%`
+        : "—"
+      : "—";
+    const nextAction =
+      p?.operatorNext.headline ??
+      p?.actionInsights[0] ??
+      "Open KPI after one internal playtest.";
+    const latestAge =
+      p?.freshness.ageMinutes === null || p?.freshness.ageMinutes === undefined
+        ? "—"
+        : p.freshness.ageMinutes < 1
+          ? "<1m"
+          : `${Math.round(p.freshness.ageMinutes)}m`;
     return html`
       <div class="mt-1 border-t border-cyan-300/20 pt-1">
         <div class="flex justify-between items-center">
@@ -780,8 +795,17 @@ export class GameRightSidebar extends LitElement implements Layer {
           ><span>${p ? p.totals.matchFeedback : "—"}</span>
         </div>
         <div class="flex justify-between">
+          <span>Rival action</span><span>${retentionAction}</span>
+        </div>
+        <div class="flex justify-between">
+          <span>Latest signal</span><span>${latestAge}</span>
+        </div>
+        <div class="flex justify-between">
           <span>Tournament actions</span
           ><span>${p ? p.totals.tournamentActions : "—"}</span>
+        </div>
+        <div class="mt-1 text-[10px] leading-snug text-cyan-100/85">
+          ${nextAction}
         </div>
       </div>
     `;

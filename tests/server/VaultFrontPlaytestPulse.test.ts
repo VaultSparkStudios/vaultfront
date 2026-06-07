@@ -19,6 +19,8 @@ describe("VaultFront playtest pulse", () => {
     expect(summary.actionInsights[0]).toContain(
       "Run one guided internal match",
     );
+    expect(summary.operatorNext.headline).toContain("guided first-match");
+    expect(summary.operatorNext.steps.join(" ")).toContain("tutorial strip");
   });
 
   it("aggregates tutorial, match, tournament, and retention signals", () => {
@@ -65,6 +67,9 @@ describe("VaultFront playtest pulse", () => {
     expect(summary.rates.tutorialCompletion).toBe(1);
     expect(summary.insights.join(" ")).toContain("post-match feedback");
     expect(summary.actionInsights.join(" ")).toContain("not converting");
+    expect(summary.operatorNext.successMetric).toContain(
+      "Rival Challenge action rate",
+    );
   });
 
   it("calculates Rival Challenge action conversion", () => {
@@ -91,5 +96,21 @@ describe("VaultFront playtest pulse", () => {
     expect(summary.actionInsights.join(" ")).toContain(
       "focused rivalry/rematch",
     );
+    expect(summary.operatorNext.steps.join(" ")).toContain(
+      "guided rivalry scenario",
+    );
+  });
+
+  it("turns stale activity into an operator refresh script", () => {
+    recordVaultFrontPlaytestPulse({
+      surface: "tutorial",
+      event: "shown",
+      at: 1_000,
+    });
+
+    const summary = buildVaultFrontPlaytestPulseSummary(25 * 60 * 60 * 1000);
+
+    expect(summary.actionInsights.join(" ")).toContain("older than 24 hours");
+    expect(summary.operatorNext.steps.length).toBeGreaterThanOrEqual(3);
   });
 });

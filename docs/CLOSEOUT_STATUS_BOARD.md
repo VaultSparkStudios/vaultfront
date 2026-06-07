@@ -1,19 +1,19 @@
 <!-- generated-by: scripts/render-closeout-board.mjs v1.0 -->
-<!-- generated-at: 2026-06-07 (Session 67 closeout) -->
+<!-- generated-at: 2026-06-07 (Session 68 closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
-╔══ SESSION CLOSEOUT · VaultFront · S67 ═════════════════════════╗
+╔══ SESSION CLOSEOUT · VaultFront · S68 ═════════════════════════╗
 ║  Date: 2026-06-07  ·  SIL: 998/1000  ·  Velocity: —              ║
-║  Mode: BUILDER  ·  Agent: codex                                  ║
+║  Mode: FOUNDER  ·  Agent: codex                                  ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WHAT SHIPPED · last 5 commits ═══════════════════════════════╗
+║  ✓ feat(vaultfront): ship session 67 playtest funnel             ║
 ║  ✓ chore(closeout): refresh session 66 board                     ║
 ║  ✓ feat(vaultfront): ship session 66 audit pass                  ║
 ║  ✓ chore(closeout): ignore generated session artifacts           ║
 ║  ✓ chore(protocol): apply studio script updates                  ║
-║  ✓ chore(closeout): verify session 65                            ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ SCORES · SIL 998/1000 ═══════════════════════════════════════╗
 ║    Dev Health         100  ██████████                            ║
@@ -40,14 +40,14 @@
 ║  · agent memory (~/.claude/projects/<slug>/memory/)              ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 19 files  ·  M:16 A:0 D:0 ?:3                          ║
+║  Changes: 17 files  ·  M:15 A:0 D:0 ?:2                          ║
 ║  Ahead: 0  ·  Behind: 0                                          ║
 ║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
 ║  Doctor:        —                                                ║
 ║  Compliance:    —                                                ║
-║  Tests:         643/643                                          ║
+║  Tests:         645/645                                          ║
 ║  IGNIS:         5d ago                                           ║
 ║  Truth:         green                                            ║
 ║  Sanitization:  —                                                ║

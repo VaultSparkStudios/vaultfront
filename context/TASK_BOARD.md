@@ -52,7 +52,7 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 
 ## Follow-ups
 
-- Run a focused internal rivalry/rematch playtest and inspect the new pulse fields: `retentionChallengeShown`, `retentionRequeued`, `retentionRematchRequested`, and `rates.retentionAction`.
+- ~~Run a focused internal rivalry/rematch playtest and inspect the new pulse fields: `retentionChallengeShown`, `retentionRequeued`, `retentionRematchRequested`, and `rates.retentionAction`.~~ ✅ Instrumented for the next playtest (Session 68 adds `operatorNext`, KPI Rival action %, and latest signal age).
 - ~~Fix unrelated global lint blockers in e2e/project-service config and Studio script lint debt.~~ ✅ Done
 - ~~Fix pre-existing `src/server/Master.ts(166,30)` type error~~ ✅ Done
 - ~~Run `npm run build-prod` and `npm run e2e` after this readiness pass to promote tournament playtest confidence.~~ ✅ Done (`build-prod` green; CI-style serial E2E green with one flaky retry)
@@ -60,8 +60,9 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 - ~~Repair broad `npm test` residuals: `VaultFrontExecution` mock/BigInt failures and `CoachHintEngine` trigger-field assertion.~~ ✅ Done (Session 64 — all 90 test files / 637 tests green)
 - ~~Consider a compact/mobile tutorial pattern that teaches VaultFront mechanics without a modal overlay.~~ ✅ Done (Session 65 — first-run mobile strip with tutorial pulse telemetry)
 - ~~Run a mobile tutorial smoke in browser to verify strip placement against the live control panel.~~ ✅ Automated compact-width component smoke added in Session 66; manual browser playtest still useful before a public flip.
-- Use the new post-match Rival Challenge card in the next internal playtest and watch whether rematch/requeue clicks increase after rivalry revenge events.
-- Use readiness `playtest-pulse` action insights as the next alpha gate; warnings should name tutorial, feedback, or retention action gaps directly.
+- Use the `operatorNext` script in `/api/vaultfront/playtest-pulse/summary` during the next internal rivalry/rematch alpha gate.
+- Use the KPI Playtest Pulse tile to inspect Rival action %, latest signal age, and the next operator action after the next internal playtest.
+- Use readiness `playtest-pulse` action insights as the next alpha gate; stale evidence, tutorial, feedback, and retention warnings should name the next action directly.
 - Keep startup helper-chain drift on the next closeout radar; compact handoff and startup render are green after S66 helper restores.
 - Observe a real checkout/supporter event and set `VAULTFRONT_REVENUE_OBSERVED=1` only after evidence exists.
 

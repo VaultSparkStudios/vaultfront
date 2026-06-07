@@ -6,6 +6,19 @@ Public-safe summary:
 - internal operational records were sanitized for public-repo safety on 2026-04-03
 - detailed internal state now lives in the private Studio OS / ops repository
 
+## 2026-06-07 — Session 68 Operator Playtest Script + KPI Conversion Pass Complete
+
+Shipped 2 product items plus truth sync from `docs/AUDIT_2026-06-07_S68.md`.
+
+**New fixes added:**
+
+- Playtest pulse summaries now include an `operatorNext` contract with a headline, concrete playtest steps, and a success metric derived from the same pulse truth used by readiness.
+- Stale playtest evidence is now prioritized in pulse action insights so old launch evidence cannot be hidden behind tutorial or feedback warnings.
+- The in-game KPI Playtest Pulse tile now shows Rival Challenge action conversion, latest signal age, and the next operator action, making the internal rivalry/rematch alpha gate inspectable without a curl command.
+- `PROJECT_STATUS` now reflects Session 68 focus and 645 broad passing tests plus 25 server tests.
+
+**Verification:** syntax checks passed for `VaultFrontPlaytestPulse`, `Api`, and `GameRightSidebar`; focused Vitest passed 8 tests across pulse/sidebar coverage; `npm run build-prod` is green; broad `npm test` is green (91 files / 645 tests, plus 9 server files / 25 tests). Existing non-blocking warnings remain: Vite public URL placeholders, mixed JSON import attributes, large chunks, Lit dev-mode stderr, expected test stderr, and a Node tooling deprecation warning.
+
 ## 2026-06-07 — Session 67 Playtest Funnel + Rival Telemetry Pass Complete
 
 Shipped all 4 items from `docs/AUDIT_2026-06-07_S67.md`.

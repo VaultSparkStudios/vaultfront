@@ -44,6 +44,11 @@ export interface VaultFrontPlaytestPulseSummary {
   recent: VaultFrontPlaytestPulseEvent[];
   insights: string[];
   actionInsights: string[];
+  operatorNext: {
+    headline: string;
+    steps: string[];
+    successMetric: string;
+  };
 }
 
 const MAX_RECENT = 40;
@@ -168,6 +173,15 @@ export function buildVaultFrontPlaytestPulseSummary(
   const status =
     pulse.events === 0 ? "no-signal" : score >= 35 ? "ready" : "warming";
 
+  const actionInsights = buildActionInsights({
+    tutorialAdvance,
+    tutorialCompletion,
+    tutorialSkip,
+    matchFeedback,
+    retentionAction,
+    ageMinutes,
+  });
+
   return {
     generatedAt: new Date(now).toISOString(),
     status,
@@ -206,13 +220,15 @@ export function buildVaultFrontPlaytestPulseSummary(
     },
     recent: pulse.recent.slice(0, 10),
     insights: buildPulseInsights(tutorialCompletion, tutorialSkip, ageMinutes),
-    actionInsights: buildActionInsights({
+    actionInsights,
+    operatorNext: buildOperatorNext({
       tutorialAdvance,
       tutorialCompletion,
       tutorialSkip,
       matchFeedback,
       retentionAction,
       ageMinutes,
+      actionInsights,
     }),
   };
 }
@@ -262,6 +278,11 @@ function buildActionInsights(input: {
   }
 
   const actions: string[] = [];
+  if (input.ageMinutes !== null && input.ageMinutes > 1440) {
+    actions.push(
+      "Refresh playtest evidence; latest pulse is older than 24 hours.",
+    );
+  }
   if (pulse.tutorialShown > 0 && input.tutorialAdvance < 0.5) {
     actions.push(
       "Tutorial advances are weak; tighten the first strip copy or make the next action more obvious.",
@@ -287,15 +308,97 @@ function buildActionInsights(input: {
       "Pulse has activity but no rivalry challenge exposure; seed a rivalry scenario in the next internal match.",
     );
   }
-  if (input.ageMinutes !== null && input.ageMinutes > 1440) {
-    actions.push(
-      "Refresh playtest evidence; latest pulse is older than 24 hours.",
-    );
-  }
   if (actions.length === 0) {
     actions.push(
       "Pulse is broad enough for this alpha gate; continue with a focused rivalry/rematch playtest.",
     );
   }
   return actions.slice(0, 3);
+}
+
+function buildOperatorNext(input: {
+  tutorialAdvance: number;
+  tutorialCompletion: number;
+  tutorialSkip: number;
+  matchFeedback: number;
+  retentionAction: number;
+  ageMinutes: number | null;
+  actionInsights: string[];
+}): VaultFrontPlaytestPulseSummary["operatorNext"] {
+  if (pulse.events === 0) {
+    return {
+      headline: "Run a guided first-match alpha pass.",
+      steps: [
+        "Start one fresh-player match on a compact viewport and confirm the tutorial strip appears.",
+        "Finish the match, submit one post-match feedback choice, and open the KPI panel.",
+        "Check readiness again and confirm pulse status moved away from no-signal.",
+      ],
+      successMetric:
+        "Pulse records tutorialShown, tutorialAdvanced, tutorialCompleted, and matchFeedback above zero.",
+    };
+  }
+
+  if (pulse.tutorialShown > 0 && input.tutorialCompletion < 0.35) {
+    return {
+      headline: "Replay onboarding until the first action is obvious.",
+      steps: [
+        "Run two first-time matches and ask each tester to advance the tutorial without coaching.",
+        "Stop when a tester hesitates on the first strip and rewrite that step in-place.",
+        "Recheck pulse action insights before moving to rivalry validation.",
+      ],
+      successMetric:
+        "Tutorial completion reaches 35%+ with tutorialAdvance at 50%+ in the next pulse sample.",
+    };
+  }
+
+  if (pulse.matchFeedback === 0) {
+    return {
+      headline: "Force a post-match feedback check.",
+      steps: [
+        "Play or spectate through a full win modal and click one feedback option.",
+        "Verify the KPI panel shows at least one match feedback signal.",
+        "Only then judge Rival Challenge behavior, because the post-match surface is proven reachable.",
+      ],
+      successMetric:
+        "matchFeedback is greater than zero and readiness no longer names feedback as the next action.",
+    };
+  }
+
+  if (pulse.retentionChallengeShown > 0 && input.retentionAction < 0.25) {
+    return {
+      headline: "Make the Rival Challenge action unmissable.",
+      steps: [
+        "Seed rivalry revenge progress, reach the win modal, and observe the first action testers choose.",
+        "Run one pass with goal-save as the primary ask and one pass with requeue/rematch as the primary ask.",
+        "Keep the variant that raises Rival Challenge action rate without reducing match feedback.",
+      ],
+      successMetric:
+        "Rival Challenge action rate reaches 25%+ across goal-save, requeue, and rematch events.",
+    };
+  }
+
+  if (pulse.retentionChallengeShown === 0 && pulse.events >= 10) {
+    return {
+      headline: "Seed a rivalry rematch scenario.",
+      steps: [
+        "Create a match where the same opponent blocks or defeats the player twice.",
+        "Earn rivalry revenge progress and confirm the win modal shows Rival Challenge.",
+        "Click requeue or rematch from that card, then inspect retention counters.",
+      ],
+      successMetric:
+        "retentionChallengeShown and at least one Rival Challenge action counter are both above zero.",
+    };
+  }
+
+  return {
+    headline: "Run the focused rivalry/rematch alpha gate.",
+    steps: [
+      "Run one guided rivalry scenario from first tutorial touch through win modal.",
+      "Confirm tutorial, feedback, and Rival Challenge counters all move in the same process.",
+      "Use readiness action insight as the pass/fail note for the next launch checkpoint.",
+    ],
+    successMetric:
+      input.actionInsights[0] ??
+      "Pulse stays ready with tutorial, feedback, and retention signals present.",
+  };
 }

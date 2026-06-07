@@ -160,3 +160,54 @@ test("beacon pulse enters the short vault feed with a pulse badge", () => {
   expect(container.textContent).toContain("Pulse");
   expect(container.textContent).toContain("Enemy pulse active");
 });
+
+test("playtest pulse tile surfaces rival conversion and next operator action", () => {
+  const sidebar = new GameRightSidebar() as any;
+  sidebar.playtestPulse = {
+    generatedAt: "2026-06-07T18:00:00.000Z",
+    status: "warming",
+    score: 28,
+    totals: {
+      events: 6,
+      tutorialShown: 2,
+      tutorialAdvanced: 2,
+      tutorialCompleted: 1,
+      tutorialSkipped: 0,
+      matchFeedback: 1,
+      tournamentActions: 0,
+      retentionSignals: 2,
+      retentionChallengeShown: 2,
+      retentionGoalSaved: 0,
+      retentionRequeued: 1,
+      retentionRematchRequested: 0,
+    },
+    rates: {
+      tutorialAdvance: 1,
+      tutorialCompletion: 0.5,
+      tutorialSkip: 0,
+      matchFeedback: 0.1667,
+      retentionAction: 0.5,
+    },
+    freshness: {
+      firstEventAt: "2026-06-07T17:55:00.000Z",
+      lastEventAt: "2026-06-07T18:00:00.000Z",
+      ageMinutes: 3.2,
+    },
+    recent: [],
+    insights: [],
+    actionInsights: ["Continue with a focused rivalry/rematch playtest."],
+    operatorNext: {
+      headline: "Run the focused rivalry/rematch alpha gate.",
+      steps: ["Seed a rivalry scenario."],
+      successMetric: "Rival Challenge action rate reaches 25%+.",
+    },
+  };
+
+  const container = document.createElement("div");
+  render(sidebar.renderPlaytestPulseTile(), container);
+  const text = container.textContent?.replace(/\s+/g, " ") ?? "";
+
+  expect(text).toContain("Rival action50%");
+  expect(text).toContain("Latest signal3m");
+  expect(text).toContain("Run the focused rivalry/rematch alpha gate.");
+});

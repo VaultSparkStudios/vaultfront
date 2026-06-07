@@ -4,6 +4,16 @@ Append-only. Each session appends one entry. Never edit prior entries.
 
 ---
 
+## 2026-06-07 — Session 68 operator playtest script + KPI conversion pass
+
+- Goal: Continue `/start → /audit → /implement → /closeout` with a fresh VaultFront-specific audit after S67, focused on turning pulse telemetry into an executable internal playtest and visible Rival Challenge conversion evidence.
+- What changed: Added `docs/AUDIT_2026-06-07_S68.*`; added `operatorNext` playtest scripts to `VaultFrontPlaytestPulse`; prioritized stale pulse evidence in action insights; extended the client schema; updated the KPI Playtest Pulse tile with Rival action %, latest signal age, and the next operator action; synced public-safe truth files.
+- Files or systems touched: `VaultFrontPlaytestPulse`, `Api`, `GameRightSidebar`, focused pulse/sidebar tests, audit docs, implementation plan, status, current state, task board, and SIL/work-log handoff files.
+- Risks created or removed: Removes the operator translation gap between telemetry and the next internal rivalry/rematch alpha gate. No new paid AI usage, no new SaaS, and no variable-cost free-tier surface were added. Remaining risks are still live playtest execution and revenue/supporter observation.
+- Recommended next move: Run the `operatorNext`-guided rivalry/rematch alpha gate, then inspect KPI Rival action % and readiness pulse evidence before touching the revenue observed flag.
+
+---
+
 ## 2026-06-07 — Session 67 playtest funnel + rival telemetry pass
 
 - Goal: Run `/start → /audit → /implement → /closeout` with a fresh VaultFront-specific audit focused on alpha playtest evidence, Rival Challenge conversion, and readiness actionability.

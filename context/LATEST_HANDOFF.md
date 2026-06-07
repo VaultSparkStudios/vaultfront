@@ -4,6 +4,22 @@ This repo now keeps only a public-safe handoff summary. Detailed handoff history
 
 ## Where We Left Off — 2026-06-07
 
+**Session goal:** `/start → /audit → /implement → /closeout` with a fresh S68 audit personalized to VaultFront's live flags: internal rivalry/rematch playtest execution, Rival Challenge conversion visibility, stale playtest evidence, and revenue-signal honesty.
+
+**Shipped:** 2 product items plus truth sync from `docs/AUDIT_2026-06-07_S68.md` (Priority sum: 75.4). Playtest pulse now emits `operatorNext` with concrete next-playtest steps and a success metric. Stale pulse evidence is prioritized in action insights. The KPI Playtest Pulse tile now shows Rival action %, latest signal age, and the next operator action.
+
+**Impact:** VaultFront no longer asks the operator to infer a playtest plan from raw telemetry. The next rivalry/rematch alpha gate is scripted from live pulse truth, and testers can inspect whether Rival Challenge is converting inside the same KPI panel they already use.
+
+**Verification:** syntax checks passed for `VaultFrontPlaytestPulse`, `Api`, and `GameRightSidebar`; focused pulse/sidebar Vitest passed 8 tests; `npm run build-prod` passed; `npm test` passed (91 files / 645 tests, plus 9 server files / 25 tests).
+
+**Known residuals:** Revenue signal remains unverified until a real checkout/supporter event is observed. Production build warnings remain non-blocking: public URL placeholders, mixed JSON import attributes, large chunks, and a Node tooling deprecation warning. The live rivalry/rematch alpha gate still needs an actual internal playtest run.
+
+**Suggested next focus:** Run the `operatorNext`-guided rivalry/rematch alpha gate, inspect KPI Rival action % and readiness pulse evidence, then observe real revenue telemetry before setting `VAULTFRONT_REVENUE_OBSERVED=1`.
+
+---
+
+## Where We Left Off — 2026-06-07
+
 **Session goal:** `/start → /audit → /implement → /closeout` with a fresh S67 audit personalized to VaultFront's current flags: playtest evidence depth, Rival Challenge conversion, readiness actionability, and revenue-signal honesty.
 
 **Shipped:** All 4 items from `docs/AUDIT_2026-06-07_S67.md` (Priority sum: 101.2). Playtest pulse now reports tutorial advance/completion/skip rates, match feedback rate, Rival Challenge exposure/action counters, retention action rate, and action insights. `WinModal` records Rival Challenge exposure, goal-save, requeue, and rematch events only when rivalry revenge progress exists. Readiness evidence now includes the first pulse action insight. `PROJECT_STATUS` now matches Session 67 and 643-test evidence.

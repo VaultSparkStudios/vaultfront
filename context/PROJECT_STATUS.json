@@ -4,10 +4,10 @@
   "name": "VaultFront",
   "status": "active",
   "health": "green",
-  "currentSession": 67,
+  "currentSession": 68,
   "lastAgent": "codex",
-  "currentFocus": "Session 67 complete: playtest pulse funnel breakdown, Rival Challenge retention telemetry, readiness action insights, and status truth-sync shipped.",
-  "nextMilestone": "Run a focused internal rivalry/rematch playtest, inspect pulse action insights, observe real checkout/supporter telemetry, and promote tournament playtest confidence.",
+  "currentFocus": "Session 68 complete: operatorNext playtest scripts, Rival Challenge conversion visibility in the KPI tile, and S68 audit/implementation truth-sync shipped.",
+  "nextMilestone": "Run the operatorNext-guided rivalry/rematch alpha gate, inspect Rival Challenge action rate in the KPI tile, and observe real checkout/supporter telemetry before clearing the revenue warning.",
   "blockers": [],
   "lastUpdated": "2026-06-07",
   "lifecycle": "alpha",
@@ -23,7 +23,7 @@
       "status": "green",
       "label": "Unit and server regression",
       "command": "npm test",
-      "purpose": "Vitest core/client suite plus focused server tests. All 91 client/core test files (643 tests) plus 9 server files (24 tests) pass as of Session 67."
+      "purpose": "Vitest core/client suite plus focused server tests. All 91 client/core test files (645 tests) plus 9 server files (25 tests) pass as of Session 68."
     },
     {
       "type": "tests",
@@ -57,8 +57,8 @@
   "silMax": 1000,
   "silScoreLegacy500": null,
   "silScore": 998,
-  "testsPassing": 643,
-  "testsTotal": 643,
+  "testsPassing": 645,
+  "testsTotal": 645,
   "silCategoriesV3": {
     "devHealth": 100,
     "creativeAlignment": 100,
@@ -80,6 +80,6 @@
   "ignisScore": 42978,
   "ignisGrade": "FORGE",
   "ignisLastComputed": "2026-06-03",
-  "sessionMode": "builder",
-  "sessionModeAutoShiftedAt": "2026-06-05T02:31:46.738Z"
+  "sessionMode": "founder",
+  "sessionModeAutoShiftedAt": "2026-06-07T18:14:59.755Z"
 }

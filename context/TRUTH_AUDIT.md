@@ -8,6 +8,13 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 
 ## 2026-06-07
 
+- `docs/AUDIT_2026-06-07_S68.md` and JSON sidecar match shipped code/test changes and mark the 2 product items shipped.
+- Playtest pulse truth: summary payloads now include `operatorNext` with headline, steps, and successMetric derived from the same pulse counters used by readiness.
+- KPI tile truth: the Playtest Pulse tile now renders Rival Challenge action conversion, latest signal age, and `operatorNext.headline`.
+- Broad test evidence is now 91 main test files / 645 tests plus 9 server test files / 25 tests.
+- `npm run build-prod` passes; known non-blocking warnings remain for public URL placeholders, mixed JSON import attributes, large chunks, and Node tooling deprecation.
+- `PROJECT_STATUS.silScore` is 998 and matches the sum of `silCategoriesV3`.
+- Revenue signal remains unverified until live checkout/supporter telemetry is observed.
 - `docs/AUDIT_2026-06-07_S67.md` and JSON sidecar match shipped code/test changes and mark all 4 items shipped.
 - Playtest pulse truth: summary totals/rates now include tutorial advancement, match feedback, and Rival Challenge retention conversion counters.
 - Readiness truth: playtest-pulse evidence includes the first action insight, so launch-gate warnings name the next playtest action.

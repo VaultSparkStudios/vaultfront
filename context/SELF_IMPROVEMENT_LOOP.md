@@ -7,9 +7,15 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 Total: 998/1000 | Velocity: 96↑ | Debt: → | Velocity trend: ↑
 Avgs — 3: 88.7 | Momentum runway: strong | Intent rate: 100%
 3-session: Dev 10 | Align 30 | Momentum 13 | Engage 28 | Process 10
-Last session: 2026-06-07 Session 67 playtest funnel + rival telemetry pass
+Last session: 2026-06-07 Session 68 operator playtest script + KPI conversion pass
 
 <!-- rolling-status-end -->
+
+## Sprint: 2026-06-07 — Session 68 Operator Playtest Script + KPI Conversion Pass (SIL held: 998/1000)
+
+Shipped 2 product items plus truth sync from `docs/AUDIT_2026-06-07_S68.md` (Priority sum: 75.4). Highlights: playtest pulse now emits an `operatorNext` script with concrete alpha-gate steps and success metrics, stale evidence is prioritized in action insights, and the KPI Playtest Pulse tile shows Rival Challenge action rate, latest signal age, and the next operator action.
+
+**Delta: 998 → 998.** process and engagement evidence improved, but the score holds because the remaining gaps are still external revenue/supporter observation and public-launch proof. Capital efficiency stays intact: no paid AI calls, no new SaaS, and no variable-cost free-tier surface.
 
 ## Sprint: 2026-06-07 — Session 67 Playtest Funnel + Rival Telemetry Pass (SIL held: 998/1000)
 

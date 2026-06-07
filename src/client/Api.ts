@@ -482,6 +482,11 @@ const VaultFrontPlaytestPulseSummarySchema = z.object({
   ),
   insights: z.array(z.string()),
   actionInsights: z.array(z.string()),
+  operatorNext: z.object({
+    headline: z.string(),
+    steps: z.array(z.string()),
+    successMetric: z.string(),
+  }),
 });
 
 export type VaultFrontDockAssignment = z.infer<

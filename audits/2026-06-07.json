@@ -2,20 +2,19 @@
   "schemaVersion": "1.3",
   "project": "vaultfront",
   "date": "2026-06-07",
-  "session": 67,
+  "session": 68,
   "agent": "codex",
   "kind": "closeout",
   "sil": {
     "score": 998,
     "max": 1000,
     "delta": 0,
-    "note": "Session 67 deepened alpha playtest evidence and Rival Challenge conversion telemetry while preserving cost-neutral posture."
+    "note": "Session 68 turned S67 playtest telemetry into an operator-ready alpha-gate script and made Rival Challenge conversion visible in the in-game KPI panel while preserving cost-neutral posture."
   },
   "shipped": [
-    "playtest-pulse-funnel-breakdown",
-    "rival-challenge-retention-telemetry",
-    "readiness-pulse-action-insights",
-    "s67-truth-sync"
+    "operator-next-playtest-script",
+    "kpi-rival-conversion-tile",
+    "s68-truth-sync"
   ],
   "verification": [
     {
@@ -23,21 +22,17 @@
       "status": "pass"
     },
     {
-      "command": "node --check src/server/VaultFrontReadiness.ts",
-      "status": "pass"
-    },
-    {
       "command": "node --check src/client/Api.ts",
       "status": "pass"
     },
     {
-      "command": "node --check src/client/graphics/layers/WinModal.ts",
+      "command": "node --check src/client/graphics/layers/GameRightSidebar.ts",
       "status": "pass"
     },
     {
-      "command": "npx vitest run tests/server/VaultFrontPlaytestPulse.test.ts tests/server/VaultFrontReadiness.test.ts tests/client/graphics/layers/WinModal.test.ts",
+      "command": "npx vitest run tests/server/VaultFrontPlaytestPulse.test.ts tests/client/graphics/layers/GameRightSidebarVaultFeed.test.ts",
       "status": "pass",
-      "evidence": "3 files / 17 tests passed."
+      "evidence": "2 files / 8 tests passed."
     },
     {
       "command": "npm run build-prod",
@@ -47,22 +42,28 @@
     {
       "command": "npm test",
       "status": "pass",
-      "evidence": "91 main test files / 643 tests passed; server pass repeated 9 files / 24 tests."
+      "evidence": "91 main test files / 645 tests passed; server pass repeated 9 files / 25 tests."
     },
     {
       "command": "node scripts/lib/write-project-status.mjs --check",
-      "status": "warning",
-      "evidence": "Intermittent Windows sandbox CryptUnprotectData error; direct JSON check confirms silScore 998 equals category sum 998."
+      "status": "pass",
+      "evidence": "SIL invariant clean (silScore=998)."
+    },
+    {
+      "command": "git diff -U0 | rg added-line secret patterns",
+      "status": "pass",
+      "evidence": "No added diff lines matched common secret material patterns; local scripts/scan-secrets.mjs is missing."
     }
   ],
   "residualRisks": [
     "Revenue signal remains unverified until a real checkout/supporter event is observed.",
-    "Production build has non-blocking warnings for public URL placeholders, JSON import attributes, and large chunks.",
-    "New Rival Challenge telemetry needs a focused internal playtest to collect real conversion data."
+    "Live rivalry/rematch alpha gate still needs actual playtest data.",
+    "Production build has non-blocking warnings for public URL placeholders, JSON import attributes, large chunks, and Node tooling deprecation.",
+    "Local closeout secret scanner script is missing; this session used a diff-only grep fallback."
   ],
   "next": [
-    "Run a focused internal rivalry/rematch playtest.",
-    "Inspect readiness playtest-pulse action insights after that playtest.",
+    "Run the operatorNext-guided internal rivalry/rematch alpha gate.",
+    "Inspect KPI Rival action %, latest signal age, and readiness pulse evidence after that playtest.",
     "Observe real revenue telemetry before setting VAULTFRONT_REVENUE_OBSERVED=1."
   ]
 }

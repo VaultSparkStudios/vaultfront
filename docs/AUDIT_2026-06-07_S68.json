@@ -1,0 +1,115 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "/audit skill v1.0",
+  "generatedAt": "2026-06-07",
+  "project": "vaultfront",
+  "type": "game",
+  "session": "S68",
+  "axisWeights": {
+    "gamification": 3,
+    "ux": 2,
+    "ai": 1.5,
+    "feature_depth": 1.5,
+    "new_features": 1,
+    "feedback_loop": 1,
+    "security": 1,
+    "speed": 1,
+    "token_cost": 1
+  },
+  "summary": {
+    "totalItems": 3,
+    "combinedPriority": 75.4,
+    "top3": [
+      "operator-next-playtest-script",
+      "kpi-rival-conversion-tile",
+      "s68-truth-sync"
+    ]
+  },
+  "items": [
+    {
+      "slug": "operator-next-playtest-script",
+      "tier": "fire",
+      "axis": "feedback_loop/ux/gamification",
+      "effort": "1h",
+      "impact": 9,
+      "innovation": 7,
+      "priority": 42.0,
+      "item": "S67 made pulse data measurable, but the next internal playtest still required a human to translate rates into a script. Add an operatorNext contract that turns no-signal, stale evidence, tutorial friction, feedback gaps, and Rival Challenge conversion gaps into concrete playtest steps.",
+      "recipe": "Extend VaultFrontPlaytestPulseSummary with operatorNext.headline, steps, and successMetric; prioritize stale evidence in action insights; cover no-signal, weak tutorial, missing feedback, weak rival action, no rival exposure, and ready-state branches in focused tests.",
+      "why": "VaultFront's current blocker is not feature count, it is evidence quality. A playtest script generated from the same pulse truth keeps the next alpha gate executable without adding paid AI calls or another operator-only document."
+    },
+    {
+      "slug": "kpi-rival-conversion-tile",
+      "tier": "fire",
+      "axis": "gamification/engagement/ux",
+      "effort": "30m",
+      "impact": 8,
+      "innovation": 6,
+      "priority": 33.2,
+      "item": "The in-game KPI panel still showed pulse score and raw totals, but hid the S67 retention action rate that tells whether Rival Challenge drives one-more-match behavior. Show Rival Challenge action conversion, latest signal age, and the next operator action directly in the Playtest Pulse tile.",
+      "recipe": "Update GameRightSidebar.renderPlaytestPulseTile to display rates.retentionAction, freshness.ageMinutes, and operatorNext.headline; add a component test proving the tile renders those signals.",
+      "why": "This puts the launch-readiness question in the place an internal tester already opens during a match. It also keeps revenue-signal honesty intact: the UI improves observability without pretending revenue has been observed."
+    },
+    {
+      "slug": "s68-truth-sync",
+      "tier": "high",
+      "axis": "process/automation",
+      "effort": "30m",
+      "impact": 6,
+      "innovation": 3,
+      "priority": 6.7,
+      "item": "After shipping the S68 pulse script and KPI tile, the public-safe status files need to move past the S67 baseline. Keep PROJECT_STATUS, CURRENT_STATE, TASK_BOARD, SELF_IMPROVEMENT_LOOP, IMPLEMENT_PLAN, and closeout artifacts aligned with the new verification evidence.",
+      "recipe": "Update public-safe truth records with the S68 shipped items, verification commands, remaining playtest/revenue flags, and closeout impact summary.",
+      "why": "VaultFront's startup brief is machine-read from these files. Truth drift would cause the next agent to re-audit an already-shipped operator visibility gap."
+    }
+  ],
+  "innovationReserve": [
+    "operator-next-playtest-script",
+    "kpi-rival-conversion-tile"
+  ],
+  "skipped": [
+    {
+      "slug": "manual-rivalry-playtest-execution",
+      "reason": "Still requires live browser play, but the new operatorNext script makes that playtest concrete and measurable."
+    },
+    {
+      "slug": "manual-live-revenue-clear",
+      "reason": "Requires real checkout/supporter evidence; readiness and startup should keep warning until the signal exists."
+    },
+    {
+      "slug": "paid-ai-playtest-coach",
+      "reason": "Blocked by CANON-029 for pre-revenue free-tier cost discipline; this pass uses deterministic no-cost scripts."
+    }
+  ],
+  "executionLog": [
+    {
+      "slug": "operator-next-playtest-script",
+      "status": "shipped",
+      "summary": "Playtest pulse summaries now include operatorNext headline, steps, and successMetric with stale evidence prioritized in action insights.",
+      "verification": [
+        "node --check src/server/VaultFrontPlaytestPulse.ts",
+        "node --check src/client/Api.ts",
+        "npx vitest run tests/server/VaultFrontPlaytestPulse.test.ts tests/client/graphics/layers/GameRightSidebarVaultFeed.test.ts"
+      ]
+    },
+    {
+      "slug": "kpi-rival-conversion-tile",
+      "status": "shipped",
+      "summary": "The Playtest Pulse KPI tile now shows Rival Challenge action conversion, latest signal age, and the next operator action from operatorNext.",
+      "verification": [
+        "node --check src/client/graphics/layers/GameRightSidebar.ts",
+        "npx vitest run tests/server/VaultFrontPlaytestPulse.test.ts tests/client/graphics/layers/GameRightSidebarVaultFeed.test.ts"
+      ]
+    },
+    {
+      "slug": "s68-truth-sync",
+      "status": "shipped",
+      "summary": "Public-safe status, current state, task board, work log, SIL, handoff, truth audit, implementation plan, and closeout audit JSON were updated for S68 evidence.",
+      "verification": [
+        "npm run build-prod",
+        "npm test",
+        "node scripts/lib/write-project-status.mjs --check"
+      ]
+    }
+  ]
+}
