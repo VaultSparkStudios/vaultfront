@@ -21,6 +21,8 @@ describe("VaultFront playtest pulse", () => {
     );
     expect(summary.operatorNext.headline).toContain("guided first-match");
     expect(summary.operatorNext.steps.join(" ")).toContain("tutorial strip");
+    expect(summary.alphaGate.status).toBe("not-started");
+    expect(summary.alphaGate.nextCheck).toContain("Refresh playtest evidence");
   });
 
   it("aggregates tutorial, match, tournament, and retention signals", () => {
@@ -49,11 +51,12 @@ describe("VaultFront playtest pulse", () => {
       event: "seed_bracket",
       at: 13_000,
     });
-    const summary = recordVaultFrontPlaytestPulse({
+    recordVaultFrontPlaytestPulse({
       surface: "retention",
       event: "rival_challenge_shown",
       at: 14_000,
     });
+    const summary = buildVaultFrontPlaytestPulseSummary(15_000);
 
     expect(summary.status).toBe("ready");
     expect(summary.totals.tutorialShown).toBe(1);
@@ -70,6 +73,10 @@ describe("VaultFront playtest pulse", () => {
     expect(summary.operatorNext.successMetric).toContain(
       "Rival Challenge action rate",
     );
+    expect(summary.alphaGate.status).toBe("warming");
+    expect(summary.alphaGate.checks.rivalExposure).toBe(true);
+    expect(summary.alphaGate.checks.rivalAction).toBe(false);
+    expect(summary.alphaGate.nextCheck).toContain("Rival Challenge action");
   });
 
   it("calculates Rival Challenge action conversion", () => {
@@ -99,6 +106,9 @@ describe("VaultFront playtest pulse", () => {
     expect(summary.operatorNext.steps.join(" ")).toContain(
       "guided rivalry scenario",
     );
+    expect(summary.alphaGate.status).toBe("warming");
+    expect(summary.alphaGate.checks.rivalAction).toBe(true);
+    expect(summary.alphaGate.nextCheck).toContain("Prove onboarding");
   });
 
   it("turns stale activity into an operator refresh script", () => {
@@ -112,5 +122,60 @@ describe("VaultFront playtest pulse", () => {
 
     expect(summary.actionInsights.join(" ")).toContain("older than 24 hours");
     expect(summary.operatorNext.steps.length).toBeGreaterThanOrEqual(3);
+    expect(summary.alphaGate.status).toBe("blocked");
+    expect(summary.alphaGate.checks.fresh).toBe(false);
+    expect(summary.alphaGate.nextCheck).toContain("older than 24 hours");
+  });
+
+  it("marks the alpha gate ready when the full rivalry/rematch sample is fresh", () => {
+    recordVaultFrontPlaytestPulse({
+      surface: "tutorial",
+      event: "shown",
+      at: 10_000,
+    });
+    recordVaultFrontPlaytestPulse({
+      surface: "tutorial",
+      event: "advance",
+      at: 11_000,
+    });
+    recordVaultFrontPlaytestPulse({
+      surface: "tutorial",
+      event: "complete",
+      at: 12_000,
+    });
+    recordVaultFrontPlaytestPulse({
+      surface: "match",
+      event: "feedback_epic",
+      at: 13_000,
+      value: 2,
+    });
+    recordVaultFrontPlaytestPulse({
+      surface: "tournament",
+      event: "seed_bracket",
+      at: 13_500,
+    });
+    recordVaultFrontPlaytestPulse({
+      surface: "retention",
+      event: "rival_challenge_shown",
+      at: 14_000,
+    });
+    recordVaultFrontPlaytestPulse({
+      surface: "retention",
+      event: "rival_rematch_requested",
+      at: 15_000,
+    });
+
+    const summary = buildVaultFrontPlaytestPulseSummary(16_000);
+
+    expect(summary.status).toBe("ready");
+    expect(summary.alphaGate.status).toBe("ready");
+    expect(summary.alphaGate.checks).toEqual({
+      fresh: true,
+      tutorial: true,
+      feedback: true,
+      rivalExposure: true,
+      rivalAction: true,
+    });
+    expect(summary.alphaGate.passLabel).toContain("Alpha gate passed");
   });
 });

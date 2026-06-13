@@ -487,6 +487,18 @@ const VaultFrontPlaytestPulseSummarySchema = z.object({
     steps: z.array(z.string()),
     successMetric: z.string(),
   }),
+  alphaGate: z.object({
+    status: z.enum(["not-started", "warming", "blocked", "ready"]),
+    checks: z.object({
+      fresh: z.boolean(),
+      tutorial: z.boolean(),
+      feedback: z.boolean(),
+      rivalExposure: z.boolean(),
+      rivalAction: z.boolean(),
+    }),
+    passLabel: z.string(),
+    nextCheck: z.string(),
+  }),
 });
 
 export type VaultFrontDockAssignment = z.infer<

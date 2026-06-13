@@ -49,6 +49,18 @@ export interface VaultFrontPlaytestPulseSummary {
     steps: string[];
     successMetric: string;
   };
+  alphaGate: {
+    status: "not-started" | "warming" | "blocked" | "ready";
+    checks: {
+      fresh: boolean;
+      tutorial: boolean;
+      feedback: boolean;
+      rivalExposure: boolean;
+      rivalAction: boolean;
+    };
+    passLabel: string;
+    nextCheck: string;
+  };
 }
 
 const MAX_RECENT = 40;
@@ -181,6 +193,13 @@ export function buildVaultFrontPlaytestPulseSummary(
     retentionAction,
     ageMinutes,
   });
+  const alphaGate = buildAlphaGate({
+    tutorialAdvance,
+    tutorialCompletion,
+    matchFeedback,
+    retentionAction,
+    ageMinutes,
+  });
 
   return {
     generatedAt: new Date(now).toISOString(),
@@ -230,6 +249,68 @@ export function buildVaultFrontPlaytestPulseSummary(
       ageMinutes,
       actionInsights,
     }),
+    alphaGate,
+  };
+}
+
+function buildAlphaGate(input: {
+  tutorialAdvance: number;
+  tutorialCompletion: number;
+  matchFeedback: number;
+  retentionAction: number;
+  ageMinutes: number | null;
+}): VaultFrontPlaytestPulseSummary["alphaGate"] {
+  const checks = {
+    fresh: input.ageMinutes !== null && input.ageMinutes <= 1440,
+    tutorial:
+      pulse.tutorialShown > 0 &&
+      input.tutorialAdvance >= 0.5 &&
+      input.tutorialCompletion >= 0.35,
+    feedback: pulse.matchFeedback > 0 && input.matchFeedback > 0,
+    rivalExposure: pulse.retentionChallengeShown > 0,
+    rivalAction:
+      pulse.retentionChallengeShown > 0 && input.retentionAction >= 0.25,
+  };
+  const orderedFailures: Array<[keyof typeof checks, string]> = [
+    [
+      "fresh",
+      "Refresh playtest evidence; the latest signal is older than 24 hours.",
+    ],
+    [
+      "tutorial",
+      "Prove onboarding: tutorial advance 50%+ and completion 35%+.",
+    ],
+    [
+      "feedback",
+      "Prove the post-match surface: record at least one feedback signal.",
+    ],
+    [
+      "rivalExposure",
+      "Seed rivalry revenge and show the Rival Challenge card.",
+    ],
+    ["rivalAction", "Drive Rival Challenge action rate to 25%+."],
+  ];
+  const passed = Object.values(checks).filter(Boolean).length;
+  const total = Object.keys(checks).length;
+  const nextCheck =
+    orderedFailures.find(([key]) => !checks[key])?.[1] ??
+    "Alpha gate evidence is complete; run one more rivalry/rematch pass only if freshness expires.";
+  const status =
+    pulse.events === 0
+      ? "not-started"
+      : !checks.fresh
+        ? "blocked"
+        : passed === total
+          ? "ready"
+          : "warming";
+  return {
+    status,
+    checks,
+    passLabel:
+      status === "ready"
+        ? "Alpha gate passed: tutorial, feedback, rivalry exposure, Rival action, and freshness are all green."
+        : `${passed}/${total} alpha gate checks passing.`,
+    nextCheck,
   };
 }
 

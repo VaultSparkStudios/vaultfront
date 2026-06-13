@@ -52,6 +52,8 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 
 ## Follow-ups
 
+- Use the KPI Alpha Gate strip during the next rivalry/rematch alpha gate; do not mark the live playtest complete until all five `alphaGate.checks` are green from real tester evidence.
+
 - ~~Run a focused internal rivalry/rematch playtest and inspect the new pulse fields: `retentionChallengeShown`, `retentionRequeued`, `retentionRematchRequested`, and `rates.retentionAction`.~~ ✅ Instrumented for the next playtest (Session 68 adds `operatorNext`, KPI Rival action %, and latest signal age).
 - ~~Fix unrelated global lint blockers in e2e/project-service config and Studio script lint debt.~~ ✅ Done
 - ~~Fix pre-existing `src/server/Master.ts(166,30)` type error~~ ✅ Done

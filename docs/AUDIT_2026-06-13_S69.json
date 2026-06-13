@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "/audit skill v1.0",
+  "generatedAt": "2026-06-13",
+  "project": "vaultfront",
+  "type": "game",
+  "session": "S69",
+  "axisWeights": {
+    "gamification": 3,
+    "ux": 2,
+    "ai": 1.5,
+    "feature_depth": 1.5,
+    "new_features": 1,
+    "feedback_loop": 1,
+    "security": 1,
+    "speed": 1,
+    "token_cost": 1
+  },
+  "summary": {
+    "totalItems": 3,
+    "combinedPriority": 83.7,
+    "top3": ["alpha-gate-passport", "kpi-alpha-gate-strip", "s69-truth-sync"]
+  },
+  "items": [
+    {
+      "slug": "alpha-gate-passport",
+      "tier": "fire",
+      "axis": "feedback_loop/ux/gamification",
+      "effort": "1h",
+      "impact": 9,
+      "innovation": 8,
+      "priority": 48.0,
+      "item": "S68 made the next playtest executable, but the pulse still leaves the operator to infer whether the alpha gate has actually passed. Add an explicit Alpha Gate Passport derived from tutorial, post-match feedback, Rival Challenge exposure, Rival action conversion, and signal freshness.",
+      "recipe": "Extend VaultFrontPlaytestPulseSummary with alphaGate.status, checks, passLabel, and nextCheck; make freshness a first-class failing check; update focused tests for no-signal, stale, weak rival conversion, and fully passing rivalry/rematch samples.",
+      "why": "This converts raw telemetry into a launch-grade truth contract without fabricating live evidence. The manual gate remains manual, but the product now says exactly what evidence is missing and what pass state means.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Add alphaGate to the server summary and cover the passing sample in server tests."
+        },
+        "L2": {
+          "effortHours": 1,
+          "recipe": "Add alphaGate to server summary, schema, readiness evidence, and tests for passing/stale/weak-rival states."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Add alphaGate plus a deterministic local rehearsal script that can seed a disposable process and print the gate result without touching live evidence."
+        }
+      }
+    },
+    {
+      "slug": "kpi-alpha-gate-strip",
+      "tier": "fire",
+      "axis": "gamification/engagement/ux",
+      "effort": "30m",
+      "impact": 8,
+      "innovation": 7,
+      "priority": 31.7,
+      "item": "The KPI Playtest Pulse tile shows score and Rival action rate, but it still lacks one scanline that says whether the internal alpha gate is blocked, warming, or passed. Surface the Alpha Gate Passport directly in the in-game KPI tile.",
+      "recipe": "Update GameRightSidebar.renderPlaytestPulseTile to show alphaGate.status, passLabel, and nextCheck; add a component test proving a failing gate and a passing gate render distinct copy.",
+      "why": "The operator should not need curl output while watching a match. Putting the gate in the HUD keeps the pass/fail standard visible at the moment testers create the evidence.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Render alphaGate.status and nextCheck in the existing Playtest Pulse tile."
+        },
+        "L2": {
+          "effortHours": 1,
+          "recipe": "Render alphaGate.status, passLabel, nextCheck, and component coverage for blocked versus ready states."
+        },
+        "L3": {
+          "effortHours": 2,
+          "recipe": "Add the strip plus compact visual treatment for mobile KPI scans and a focused narrow-width render assertion."
+        }
+      }
+    },
+    {
+      "slug": "s69-truth-sync",
+      "tier": "high",
+      "axis": "process/automation",
+      "effort": "30m",
+      "impact": 6,
+      "innovation": 3,
+      "priority": 4.0,
+      "item": "After shipping the Alpha Gate Passport, public-safe context files must distinguish real playtest evidence from deterministic readiness instrumentation. Keep PROJECT_STATUS, CURRENT_STATE, TASK_BOARD, IMPLEMENT_PLAN, and the audit execution log aligned.",
+      "recipe": "Update public-safe status records with the S69 shipped item, verification commands, and remaining live-playtest/revenue residuals; do not claim real revenue or real tester evidence.",
+      "why": "CANON-031 matters here: the new gate improves honesty only if the repo truth layer does not overstate it as a completed live playtest.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Update IMPLEMENT_PLAN and audit execution log."
+        },
+        "L2": {
+          "effortHours": 1,
+          "recipe": "Update IMPLEMENT_PLAN, PROJECT_STATUS, CURRENT_STATE, TASK_BOARD, and audit execution log."
+        },
+        "L3": {
+          "effortHours": 2,
+          "recipe": "Update all public-safe truth files plus closeout impact artifacts after full verification."
+        }
+      }
+    }
+  ],
+  "innovationReserve": ["alpha-gate-passport", "kpi-alpha-gate-strip"],
+  "skipped": [
+    {
+      "slug": "manual-rivalry-playtest-execution",
+      "reason": "Still requires real testers or a live manual browser pass. The Alpha Gate Passport makes that pass auditable but does not replace it."
+    },
+    {
+      "slug": "manual-live-revenue-clear",
+      "reason": "Requires a real checkout/supporter event; readiness and startup must keep warning until that evidence exists."
+    },
+    {
+      "slug": "paid-ai-playtest-coach",
+      "reason": "Deferred under CANON-029 while live revenue remains unverified; this pass stays deterministic and no-cost."
+    }
+  ],
+  "executionLog": [
+    {
+      "slug": "alpha-gate-passport",
+      "status": "shipped",
+      "summary": "Playtest pulse summaries now include alphaGate status, five checks, passLabel, and nextCheck; readiness treats ready scores as warning-level unless alphaGate is ready.",
+      "verification": [
+        "node --check src/server/VaultFrontPlaytestPulse.ts",
+        "node --check src/server/VaultFrontReadiness.ts",
+        "node --check src/client/Api.ts",
+        "npx vitest run tests/server/VaultFrontPlaytestPulse.test.ts tests/server/VaultFrontReadiness.test.ts tests/client/graphics/layers/GameRightSidebarVaultFeed.test.ts",
+        "npm run build-prod",
+        "npm test"
+      ]
+    },
+    {
+      "slug": "kpi-alpha-gate-strip",
+      "status": "shipped",
+      "summary": "The Playtest Pulse KPI tile now shows Alpha Gate status and the next missing alpha-gate check alongside score, Rival action, and operatorNext.",
+      "verification": [
+        "node --check src/client/graphics/layers/GameRightSidebar.ts",
+        "npx vitest run tests/server/VaultFrontPlaytestPulse.test.ts tests/server/VaultFrontReadiness.test.ts tests/client/graphics/layers/GameRightSidebarVaultFeed.test.ts",
+        "npm run build-prod",
+        "npm test"
+      ]
+    },
+    {
+      "slug": "s69-truth-sync",
+      "status": "shipped",
+      "summary": "Public-safe status, current state, task board, work log, SIL, truth audit, implementation plan, and audit execution log now reflect S69 evidence without claiming live tester or revenue proof.",
+      "verification": ["npm run build-prod", "npm test"]
+    }
+  ]
+}

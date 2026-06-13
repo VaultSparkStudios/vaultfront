@@ -201,6 +201,18 @@ test("playtest pulse tile surfaces rival conversion and next operator action", (
       steps: ["Seed a rivalry scenario."],
       successMetric: "Rival Challenge action rate reaches 25%+.",
     },
+    alphaGate: {
+      status: "warming",
+      checks: {
+        fresh: true,
+        tutorial: true,
+        feedback: true,
+        rivalExposure: false,
+        rivalAction: false,
+      },
+      passLabel: "3/5 alpha gate checks passing.",
+      nextCheck: "Seed a rivalry rematch scenario.",
+    },
   };
 
   const container = document.createElement("div");
@@ -209,5 +221,7 @@ test("playtest pulse tile surfaces rival conversion and next operator action", (
 
   expect(text).toContain("Rival action50%");
   expect(text).toContain("Latest signal3m");
+  expect(text).toContain("Alpha gatewarming");
+  expect(text).toContain("Seed a rivalry rematch scenario.");
   expect(text).toContain("Run the focused rivalry/rematch alpha gate.");
 });

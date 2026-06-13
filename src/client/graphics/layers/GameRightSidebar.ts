@@ -779,6 +779,19 @@ export class GameRightSidebar extends LitElement implements Layer {
         : p.freshness.ageMinutes < 1
           ? "<1m"
           : `${Math.round(p.freshness.ageMinutes)}m`;
+    const alphaGate = p?.alphaGate;
+    const alphaGateLabel =
+      alphaGate?.status === "ready"
+        ? "ready"
+        : alphaGate?.status === "blocked"
+          ? "blocked"
+          : alphaGate?.status === "warming"
+            ? "warming"
+            : "not-started";
+    const alphaGateCopy =
+      alphaGate?.status === "ready"
+        ? alphaGate.passLabel
+        : (alphaGate?.nextCheck ?? "Run one guided internal playtest.");
     return html`
       <div class="mt-1 border-t border-cyan-300/20 pt-1">
         <div class="flex justify-between items-center">
@@ -801,11 +814,17 @@ export class GameRightSidebar extends LitElement implements Layer {
           <span>Latest signal</span><span>${latestAge}</span>
         </div>
         <div class="flex justify-between">
+          <span>Alpha gate</span><span>${alphaGateLabel}</span>
+        </div>
+        <div class="flex justify-between">
           <span>Tournament actions</span
           ><span>${p ? p.totals.tournamentActions : "—"}</span>
         </div>
         <div class="mt-1 text-[10px] leading-snug text-cyan-100/85">
           ${nextAction}
+        </div>
+        <div class="mt-1 text-[10px] leading-snug text-amber-100/85">
+          ${alphaGateCopy}
         </div>
       </div>
     `;

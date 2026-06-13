@@ -1,38 +1,58 @@
-<!-- generated-by: codex closeout fallback -->
-<!-- source: context/LATEST_HANDOFF.md -->
-<!-- generated-at: 2026-06-07T18:32:00.000Z -->
+<!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
+<!-- source-hash: 400695894fe6 -->
+<!-- generated-at: 2026-06-13T23:44:29.818Z -->
 
 # LATEST_HANDOFF (compact)
 
-# HANDOFF SUMMARY — Session 68
+Handoff Summary (cold-start ready)
 
-**Session:** 68 | **Goal:** S68 audit (operator playtest script, Rival Challenge KPI conversion, stale evidence, revenue honesty) → implement → verify
+Session: S69 (2026-06-13)
 
-**Shipped:**
+Shipped (S69):
 
-- Playtest pulse: `operatorNext` headline, concrete steps, and successMetric from live pulse truth
-- Pulse action insights: stale evidence prioritized before weaker tutorial/feedback notes
-- KPI Playtest Pulse tile: Rival action %, latest signal age, and next operator action
-- PROJECT_STATUS: synced to S68, silScore=998 ✓
+- Playtest pulse emits alphaGate: status, freshness/tutorial/feedback/Rival exposure/Rival action checks, passLabel, nextCheck.
+- Readiness keeps playtest-pulse warning-level unless attached alphaGate is ready.
+- KPI Playtest Pulse tile shows Alpha Gate status + next missing check.
+- Truth sync from docs/AUDIT_2026-06-13_S69.md (Priority sum 83.7).
 
-**Intent:** Run the `operatorNext`-guided internal rivalry/rematch alpha gate, inspect KPI Rival action %, and observe real revenue telemetry before `VAULTFRONT_REVENUE_OBSERVED=1`.
+Verification:
 
-**Now (Top 3):**
+- Syntax checks: VaultFrontPlaytestPulse, VaultFrontReadiness, Api, GameRightSidebar.
+- Focused Vitest: 14 passed (pulse/readiness/sidebar).
+- npm run build-prod: green.
+- npm test: 91 files / 647 tests + 9 server files / 27 tests, all green.
 
-- Internal rivalry/rematch alpha gate using `operatorNext`
-- Inspect KPI Rival action %, latest signal age, and readiness pulse evidence
-- Observe real checkout/supporter telemetry before clearing revenue warning
+Current intent:
 
-**Blockers (Top 3):**
+- Convert the new alpha-gate contract into real green checks via an actual internal rivalry/rematch playtest, then validate revenue telemetry before flipping VAULTFRONT_REVENUE_OBSERVED=1.
 
-- Revenue signal unverified (launch readiness warning remains correct)
-- Live rivalry/rematch alpha gate still needs actual playtest data
-- Production build warnings non-blocking (public URL placeholders, mixed JSON imports, large chunks)
+Now-bucket (top 3):
 
-**Human-blocked:** Existing cross-repo item owned by another repo agent remains outside this repo's local scope.
+1. Run operatorNext-guided internal rivalry/rematch alpha gate; drive all 5 alphaGate.checks green from real tester evidence.
+2. Observe real checkout/supporter revenue event; only then set VAULTFRONT_REVENUE_OBSERVED=1.
+3. Inspect KPI Rival action % and readiness pulse evidence during/after that playtest.
 
-**Tests:** 91 files / 645 tests + 9 server / 25 tests all pass ✓ | build-prod ✓ | focused pulse/sidebar 8 tests ✓
+Blockers (top 3):
 
-**Residuals:** No new paid AI calls or variable-cost free-tier surface. Secret scan fallback on added diff lines returned no matches; local `scripts/scan-secrets.mjs` is missing.
+1. No live internal playtest run yet — alphaGate contract exists but lacks real tester evidence.
+2. Revenue signal unverified — no real checkout/supporter telemetry observed; stays warning-level.
+3. Production build warnings (non-blocking): public URL placeholders, mixed JSON import attributes, large chunks, Node tooling deprecation.
 
-Next session: run the operatorNext-guided playtest, inspect Rival action conversion, then handle revenue evidence only after a real supporter/checkout event exists.
+Human-blocked (with age):
+
+- Internal rivalry/rematch alpha playtest execution: open since S67 (2026-06-07), ~6 days.
+- Live revenue/supporter telemetry observation: open since at least S63 (2026-06-03), ~10 days.
+- Mobile tutorial browser smoke: open since S65 (2026-06-05), ~8 days.
+
+Deferred features (still on shelf):
+
+- rival-system, narrator-shared-broadcast (2h token-cost win), season-pass-mission-injection (8h), post-match-route-replay-ai, adversarial-spectator-vote, mobile-tutorial-compact-strip follow-ups.
+
+Key recent surfaces:
+
+- /api/vaultfront/readiness — launch contract.
+- VaultFrontPlaytestPulse (alphaGate, operatorNext, action insights).
+- GameRightSidebar KPI tile (Alpha Gate status, Rival action %, next check).
+- WinModal Rival Challenge telemetry (exposure/goal-save/requeue/rematch).
+
+Next-session pointer: Run /start → execute the operatorNext rivalry/rematch alpha gate playtest and drive alphaGate.checks green before any new feature work.

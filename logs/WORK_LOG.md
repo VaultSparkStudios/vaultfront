@@ -4,6 +4,16 @@ Append-only. Each session appends one entry. Never edit prior entries.
 
 ---
 
+## 2026-06-13 — Session 69 Alpha Gate Passport
+
+- Goal: `/start → /audit → /implement → /closeout` with a fresh alpha-gate evidence pass.
+- What changed: Added `alphaGate` pass/fail contract to playtest pulse summaries, readiness evidence, client schema validation, and the KPI Playtest Pulse tile.
+- Files or systems touched: `VaultFrontPlaytestPulse.ts`, `VaultFrontReadiness.ts`, `Api.ts`, `GameRightSidebar.ts`, focused pulse/readiness/sidebar tests, S69 audit docs, and public-safe context/status files.
+- Risks created or removed: Removed — a ready pulse score can no longer silently pass readiness when Rival Challenge or freshness evidence is incomplete. Remaining — live tester and revenue evidence are still not observed.
+- Recommended next move: Run the operatorNext-guided rivalry/rematch alpha gate and require all five `alphaGate.checks` to turn green from real playtest evidence.
+
+---
+
 ## 2026-06-07 — Session 68 operator playtest script + KPI conversion pass
 
 - Goal: Continue `/start → /audit → /implement → /closeout` with a fresh VaultFront-specific audit after S67, focused on turning pulse telemetry into an executable internal playtest and visible Rival Challenge conversion evidence.

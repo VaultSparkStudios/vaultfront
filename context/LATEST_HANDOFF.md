@@ -2,6 +2,22 @@
 
 This repo now keeps only a public-safe handoff summary. Detailed handoff history is maintained privately.
 
+## Where We Left Off — 2026-06-13
+
+**Session goal:** `/start → /audit → /implement → /closeout` with a fresh S69 audit focused on making the rivalry/rematch alpha gate explicit without claiming live tester or revenue evidence.
+
+**Shipped:** 2 product items plus truth sync from `docs/AUDIT_2026-06-13_S69.md` (Priority sum: 83.7). Playtest pulse now emits `alphaGate` with status, freshness/tutorial/feedback/Rival exposure/Rival action checks, `passLabel`, and `nextCheck`. Readiness keeps playtest-pulse warning-level unless the attached alpha gate is ready. The KPI Playtest Pulse tile now shows Alpha Gate status and the next missing check.
+
+**Impact:** VaultFront now has a launch-grade evidence contract for the next internal rivalry/rematch alpha gate. A high pulse score can no longer hide stale evidence or weak Rival Challenge conversion, and operators can see the gate directly in the in-game KPI panel.
+
+**Verification:** syntax checks passed for `VaultFrontPlaytestPulse`, `VaultFrontReadiness`, `Api`, and `GameRightSidebar`; focused pulse/readiness/sidebar Vitest passed 14 tests; `npm run build-prod` passed; `npm test` passed (91 files / 647 tests, plus 9 server files / 27 tests).
+
+**Known residuals:** Revenue signal remains unverified until a real checkout/supporter event is observed. The live rivalry/rematch alpha gate still needs an actual internal playtest run; S69 added the pass/fail contract, not real tester evidence. Production build warnings remain non-blocking: public URL placeholders, mixed JSON import attributes, large chunks, and a Node tooling deprecation warning.
+
+**Suggested next focus:** Run the `operatorNext`-guided rivalry/rematch alpha gate and require all five `alphaGate.checks` to turn green from real playtest evidence, then observe real revenue telemetry before setting `VAULTFRONT_REVENUE_OBSERVED=1`.
+
+---
+
 ## Where We Left Off — 2026-06-07
 
 **Session goal:** `/start → /audit → /implement → /closeout` with a fresh S68 audit personalized to VaultFront's live flags: internal rivalry/rematch playtest execution, Rival Challenge conversion visibility, stale playtest evidence, and revenue-signal honesty.

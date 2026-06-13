@@ -14,6 +14,11 @@ export interface VaultFrontReadinessInput {
       ageMinutes: number | null;
     };
     actionInsights?: string[];
+    alphaGate?: {
+      status: "not-started" | "warming" | "blocked" | "ready";
+      passLabel: string;
+      nextCheck: string;
+    };
   };
 }
 
@@ -72,7 +77,10 @@ export function buildVaultFrontReadiness(
   input: VaultFrontReadinessInput,
 ): VaultFrontReadinessPayload {
   const status = input.healthy ? "ready" : "degraded";
-  const pulseReady = input.playtestPulse?.status === "ready";
+  const pulseReady =
+    input.playtestPulse?.status === "ready" &&
+    (input.playtestPulse.alphaGate === undefined ||
+      input.playtestPulse.alphaGate.status === "ready");
   const revenueObserved = input.revenueSignal?.status === "observed";
 
   return {
@@ -120,7 +128,7 @@ export function buildVaultFrontReadiness(
         gate: "playtest-pulse",
         status: pulseReady ? "pass" : "warn",
         evidence: input.playtestPulse
-          ? `Pulse ${input.playtestPulse.status} at score ${input.playtestPulse.score}; latest event ${input.playtestPulse.freshness.lastEventAt ?? "not recorded"}. Next: ${input.playtestPulse.actionInsights?.[0] ?? "Run a focused internal playtest and inspect tutorial, feedback, and retention events."}`
+          ? `Pulse ${input.playtestPulse.status} at score ${input.playtestPulse.score}; alpha gate ${input.playtestPulse.alphaGate?.status ?? "not attached"}; latest event ${input.playtestPulse.freshness.lastEventAt ?? "not recorded"}. Next: ${input.playtestPulse.alphaGate?.nextCheck ?? input.playtestPulse.actionInsights?.[0] ?? "Run a focused internal playtest and inspect tutorial, feedback, and retention events."}`
           : "No live playtest pulse attached to this process.",
       },
     ],

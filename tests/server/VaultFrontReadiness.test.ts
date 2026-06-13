@@ -46,6 +46,11 @@ describe("buildVaultFrontReadiness", () => {
         actionInsights: [
           "Pulse is broad enough for this alpha gate; continue with a focused rivalry/rematch playtest.",
         ],
+        alphaGate: {
+          status: "ready",
+          passLabel: "Alpha gate passed.",
+          nextCheck: "Alpha gate evidence is complete.",
+        },
       },
     });
 
@@ -54,7 +59,34 @@ describe("buildVaultFrontReadiness", () => {
     expect(
       payload.launchGates.find((gate) => gate.gate === "playtest-pulse")
         ?.evidence,
-    ).toContain("focused rivalry/rematch playtest");
+    ).toContain("alpha gate ready");
+  });
+
+  it("warns when pulse score is ready but alpha gate evidence is incomplete", () => {
+    const payload = buildVaultFrontReadiness({
+      healthy: true,
+      processRole: "worker",
+      workerId: 1,
+      playtestPulse: {
+        status: "ready",
+        score: 64,
+        freshness: {
+          lastEventAt: "2026-06-13T20:00:00.000Z",
+          ageMinutes: 2,
+        },
+        alphaGate: {
+          status: "warming",
+          passLabel: "4/5 alpha gate checks passing.",
+          nextCheck: "Drive Rival Challenge action rate to 25%+.",
+        },
+      },
+    });
+
+    expect(payload.checks.playtestPulse).toBe("warn");
+    expect(
+      payload.launchGates.find((gate) => gate.gate === "playtest-pulse")
+        ?.evidence,
+    ).toContain("Drive Rival Challenge action rate");
   });
 
   it("passes the revenue signal gate when live supporter evidence is supplied", () => {

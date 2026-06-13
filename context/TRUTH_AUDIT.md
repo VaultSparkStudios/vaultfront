@@ -3,8 +3,18 @@
 # Truth Audit
 
 Overall status: green
-Last reviewed: 2026-06-07
+Last reviewed: 2026-06-13
 Public-safe summary only. Sensitive verification notes are maintained privately.
+
+## 2026-06-13
+
+- `docs/AUDIT_2026-06-13_S69.md` and JSON sidecar match shipped code/test changes and mark the 2 product items plus truth sync shipped.
+- Playtest pulse truth: summary payloads now include `alphaGate` with freshness, tutorial, feedback, Rival exposure, and Rival action checks.
+- Readiness truth: a ready pulse score now remains warning-level unless the attached alpha gate is also ready.
+- KPI tile truth: the Playtest Pulse tile now renders Alpha Gate status and the next missing check.
+- Broad test evidence is now 91 main test files / 647 tests plus 9 server test files / 27 tests.
+- `npm run build-prod` passes; known non-blocking warnings remain for public URL placeholders, mixed JSON import attributes, large chunks, and Node tooling deprecation.
+- Revenue signal remains unverified until live checkout/supporter telemetry is observed.
 
 ## 2026-06-07
 

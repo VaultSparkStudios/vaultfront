@@ -6,6 +6,19 @@ Public-safe summary:
 - internal operational records were sanitized for public-repo safety on 2026-04-03
 - detailed internal state now lives in the private Studio OS / ops repository
 
+## 2026-06-13 — Session 69 Alpha Gate Passport Pass Complete
+
+Shipped 2 product items plus truth sync from `docs/AUDIT_2026-06-13_S69.md`.
+
+**New fixes added:**
+
+- Playtest pulse summaries now include an `alphaGate` contract with pass/fail status, five concrete checks, a pass label, and the next missing check.
+- Readiness now treats a ready pulse score as warning-level when the attached alpha gate is still warming or blocked.
+- The in-game KPI Playtest Pulse tile now shows Alpha Gate status and the next missing check, keeping the live alpha standard visible during playtests.
+- `PROJECT_STATUS` now reflects Session 69 focus and 647 broad passing tests plus 27 server tests.
+
+**Verification:** syntax checks passed for `VaultFrontPlaytestPulse`, `VaultFrontReadiness`, `Api`, and `GameRightSidebar`; focused Vitest passed 14 tests across pulse/readiness/sidebar coverage; `npm run build-prod` is green; broad `npm test` is green (91 files / 647 tests, plus 9 server files / 27 tests). Existing non-blocking warnings remain: Vite public URL placeholders, mixed JSON import attributes, large chunks, Lit dev-mode stderr, expected test stderr, and a Node tooling deprecation warning.
+
 ## 2026-06-07 — Session 68 Operator Playtest Script + KPI Conversion Pass Complete
 
 Shipped 2 product items plus truth sync from `docs/AUDIT_2026-06-07_S68.md`.
