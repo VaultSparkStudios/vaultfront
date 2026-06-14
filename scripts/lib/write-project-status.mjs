@@ -23,18 +23,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const CATS = [
-  "devHealth",
-  "creativeAlignment",
-  "momentum",
-  "engagement",
-  "processQuality",
-  "crossRepoCoherence",
-  "securityPosture",
-  "ecosystemIntegration",
-  "capitalEfficiency",
-  "automationCoverage",
-];
+// S156 #21: canonical list lives in lib/sil-categories.mjs (policy-drift extraction)
+import { V3_CATS as CATS } from "./sil-categories.mjs";
 
 /**
  * Pure invariant pass. Returns { status, violations } — status is a new object

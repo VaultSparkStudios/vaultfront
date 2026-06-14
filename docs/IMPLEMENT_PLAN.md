@@ -1,18 +1,21 @@
-# Implement Plan — 2026-06-14 S70
+# Implement Plan — 2026-06-14 S71
 
-Source: `docs/AUDIT_2026-06-14.json`
+Source audit: `docs/AUDIT_2026-06-14_S71.json`
 
-## Optimal Sequence
+## Wave Plan
 
-1. `alpha-gate-operator-runbook` — creates the structured operator artifact consumed by real playtest execution and future UI/readiness surfaces.
-2. `readiness-alpha-evidence-copy` — tightens the readiness evidence sentence while the runbook context is loaded.
-3. `go-helper-regression-smoke` — locks the repaired `/go` helper behavior so future startup sessions cannot regress to an empty or dishonest Genius Hit List.
+| Order | Slug                                 | Rung | Why first                                                                                          |
+| ----: | ------------------------------------ | ---- | -------------------------------------------------------------------------------------------------- |
+|     1 | `obelisk-passport-quarantine`        | L2   | Lowest-risk security/process fix; prevents generated auth cargo from being accidentally committed. |
+|     2 | `protocol-helper-regression-harness` | L2   | Locks the broad protocol helper refresh behind focused tests before broader verification.          |
+|     3 | `s71-truth-sync`                     | L2   | Must happen after verification so public-safe context files describe evidence rather than intent.  |
 
 ## Verification Plan
 
-- `node --check src/server/VaultFrontReadiness.ts`
-- `node --check scripts/generate-genius-list.mjs`
-- `npx tsc --noEmit`
-- `npx vitest run tests/server/VaultFrontAlphaGateRunbook.test.ts tests/server/VaultFrontReadiness.test.ts tests/scripts/StudioGoHelpers.test.ts`
-- `npm run build-prod`
-- `npm test`
+- `node --check` on changed Studio helper scripts.
+- `npx vitest run tests/scripts/StudioProtocolHelpers.test.ts tests/scripts/StudioGoHelpers.test.ts`
+- `node scripts/render-startup-brief.mjs`
+- `node scripts/validate-brief-format.mjs docs/STARTUP_BRIEF.md`
+- `node scripts/compact-handoff.mjs`
+- `node scripts/check-secrets.mjs --audit --json`
+- `node scripts/lib/write-project-status.mjs --check`

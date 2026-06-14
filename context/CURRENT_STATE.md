@@ -6,6 +6,20 @@ Public-safe summary:
 - internal operational records were sanitized for public-repo safety on 2026-04-03
 - detailed internal state now lives in the private Studio OS / ops repository
 
+## 2026-06-14 — Session 71 Protocol Helper Guard Pass Complete
+
+Shipped all 3 items from `docs/AUDIT_2026-06-14_S71.md`.
+
+**New fixes added:**
+
+- Added `tests/scripts/StudioProtocolHelpers.test.ts`, covering stale startup brief rejection, per-tile brief budget attribution/trimming, and secrets-gateway capability readiness through an isolated temporary secrets directory.
+- Restored `scripts/lib/sil-categories.mjs`, the shared SIL v3 category list required by `scripts/lib/write-project-status.mjs --check`.
+- Quarantined generated `obelisk-passport/` relying-party stubs in `.gitignore` until production origin registration and deliberate login/callback/server verification wiring exist.
+- Regenerated the startup brief and compact handoff after the protocol helper refresh; startup validation remains conformant with only the known recommended HUMAN PRESSURE warning.
+- `PROJECT_STATUS` now reflects the S71 focus and 655 broad passing tests plus 30 server tests.
+
+**Verification:** changed Studio helper scripts passed `node --check`; focused Vitest passed 5 tests across Studio protocol and `/go` helper coverage; `node scripts/render-startup-brief.mjs`, `node scripts/validate-brief-format.mjs docs/STARTUP_BRIEF.md`, `node scripts/compact-handoff.mjs`, `node scripts/check-secrets.mjs --audit --json`, `node scripts/blocker-preflight.mjs --json`, and `node scripts/lib/write-project-status.mjs --check` passed; `npm test` is green (94 files / 655 tests, plus 10 server files / 30 tests); `npm run build-prod` is green. Remaining evidence warnings are intentional: real rivalry/rematch playtest evidence and real checkout/supporter telemetry are still not observed.
+
 ## 2026-06-14 — Session 70 Audit + Implement Pass Complete
 
 Shipped all 3 items from `docs/AUDIT_2026-06-14.md`.

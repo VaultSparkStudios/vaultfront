@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "/audit skill v1.0",
+  "generatedAt": "2026-06-14",
+  "project": "vaultfront",
+  "type": "game",
+  "summary": "One ranked improvement plan focused on making the refreshed Studio protocol helper surface shippable without accidentally promoting an unfinished Obelisk passport stub.",
+  "topLine": {
+    "totalItems": 3,
+    "combinedPriority": 91.7,
+    "top3": [
+      "protocol-helper-regression-harness",
+      "obelisk-passport-quarantine",
+      "s71-truth-sync"
+    ]
+  },
+  "items": [
+    {
+      "slug": "protocol-helper-regression-harness",
+      "tier": "🔥",
+      "axis": "process / automation / dev_health",
+      "effort": "1h",
+      "impact": 8,
+      "innovation": 6,
+      "priority": 32,
+      "item": "The current worktree refreshes many Studio helper scripts, including startup brief rendering, context metering, secrets discovery, blocker preflight, and model routing. Add focused regression coverage around the exported protocol primitives so a future propagation cannot silently make startup briefs stale, unbounded, or dishonest.",
+      "why": "VaultFront now relies on the Studio brief as the first five-second operating surface. A small regression suite is cheaper than discovering during `/start` that a brief was coherent-looking but stale, over budget, or backed by broken capability discovery.",
+      "recipe": "Add focused Vitest coverage for stale brief detection, per-tile budget attribution/trimming, and secrets-gateway capability readiness using a temporary secrets directory override.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Test stale brief detection and check-secrets JSON readiness."
+        },
+        "L2": {
+          "effortHours": 1,
+          "recipe": "Also test tile-budget attribution and explicit trim markers."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Add CLI smoke coverage for render-startup-brief, compact-handoff, context-meter, and blocker-preflight in one controlled harness."
+        }
+      }
+    },
+    {
+      "slug": "obelisk-passport-quarantine",
+      "tier": "⚡",
+      "axis": "security / process / ecosystem",
+      "effort": "20m",
+      "impact": 7,
+      "innovation": 5,
+      "priority": 30.2,
+      "item": "The generated `obelisk-passport/` stub is useful integration cargo, but it explicitly says the production origin is unknown and it is not wired into VaultFront. Keep it out of source control until the relying-party origin is registered and the login/callback/server verify path is deliberately integrated.",
+      "why": "This preserves Obelisk momentum without creating a public-facing false promise or half-auth surface. The safest state is to treat the stub as generated local cargo, not deployable VaultFront code.",
+      "recipe": "Add `obelisk-passport/` to `.gitignore` with a comment explaining the registration/wiring gate; leave the local files untouched for the operator to reuse after origin registration.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.25,
+          "recipe": "Ignore the generated directory."
+        },
+        "L2": {
+          "effortHours": 0.33,
+          "recipe": "Ignore it with an explicit comment naming the origin-registration gate."
+        },
+        "L3": {
+          "effortHours": 1,
+          "recipe": "Add a documented future integration task once production origin metadata exists."
+        }
+      }
+    },
+    {
+      "slug": "s71-truth-sync",
+      "tier": "⚡",
+      "axis": "truth / process / token_cost",
+      "effort": "30m",
+      "impact": 6,
+      "innovation": 4,
+      "priority": 29.5,
+      "item": "After the protocol helper guard pass, public-safe status files must reflect the Session 71 focus without claiming live playtest or revenue evidence. Keep the audit sidecar, implementation plan, task board, handoff, and self-improvement loop aligned with the actual verification surface.",
+      "why": "Truth sync is the cheapest token reducer in the next session: `/start` can trust the brief instead of rereading raw context to reconstruct what happened. It also prevents a protocol-only pass from masquerading as live launch evidence.",
+      "recipe": "Write `docs/IMPLEMENT_PLAN.md`, append execution outcomes to the S71 audit, and update public-safe context files with verification commands and remaining external evidence gaps.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.25,
+          "recipe": "Write implementation plan and execution log."
+        },
+        "L2": {
+          "effortHours": 0.5,
+          "recipe": "Also update TASK_BOARD, CURRENT_STATE, LATEST_HANDOFF, SELF_IMPROVEMENT_LOOP, and PROJECT_STATUS."
+        },
+        "L3": {
+          "effortHours": 1.5,
+          "recipe": "Also regenerate startup brief and closeout board after all write-backs."
+        }
+      }
+    }
+  ],
+  "innovationReserve": [],
+  "skipped": [
+    {
+      "slug": "manual-rivalry-playtest-execution",
+      "reason": "Still requires real tester/manual browser evidence; protocol helper regression work must not clear this launch evidence gate."
+    },
+    {
+      "slug": "manual-live-revenue-clear",
+      "reason": "Requires a real checkout/supporter event; startup and readiness must keep warning until evidence exists."
+    }
+  ],
+  "executionLog": [
+    {
+      "slug": "obelisk-passport-quarantine",
+      "status": "SHIPPED",
+      "summary": "Added an explicit `.gitignore` gate for generated `obelisk-passport/` cargo so the unfinished relying-party stub stays local until production origin registration and deliberate wiring."
+    },
+    {
+      "slug": "protocol-helper-regression-harness",
+      "status": "SHIPPED",
+      "summary": "Added `tests/scripts/StudioProtocolHelpers.test.ts` covering stale brief rejection, per-tile budget attribution/trimming, and secrets-gateway capability readiness through a temporary secrets override; also restored the missing shared SIL category module required by PROJECT_STATUS invariant checks."
+    },
+    {
+      "slug": "s71-truth-sync",
+      "status": "SHIPPED",
+      "summary": "Synced the S71 audit, implementation plan, startup brief, and public-safe context with green focused tests, broad `npm test`, and production build evidence while preserving live playtest/revenue residuals."
+    }
+  ]
+}

@@ -7,9 +7,15 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 Total: 999/1000 | Velocity: 98↑ | Debt: → | Velocity trend: ↑
 Avgs — 3: 88.7 | Momentum runway: strong | Intent rate: 100%
 3-session: Dev 10 | Align 30 | Momentum 13 | Engage 28 | Process 10
-Last session: 2026-06-14 Session 70 Alpha Gate runbook pass
+Last session: 2026-06-14 Session 71 Protocol helper guard pass
 
 <!-- rolling-status-end -->
+
+## Sprint: 2026-06-14 — Session 71 Protocol Helper Guard Pass (SIL held: 999/1000)
+
+Shipped all 3 Session-71 audit items from `docs/AUDIT_2026-06-14_S71.md` (Priority sum: 91.7). Highlights: focused Studio protocol helper regression coverage, restored PROJECT_STATUS SIL invariant helper, generated Obelisk passport quarantine, startup/compact handoff verification, and public-safe truth sync to 655 broad passing tests plus 30 server tests.
+
+**Delta: 999 → 999.** devHealth and processQuality evidence improved because helper propagation now has targeted tests, but the score holds one point shy of perfect because live revenue/supporter evidence remains unobserved and the real rivalry/rematch alpha gate still needs a live run. Capital efficiency remains clean: no new paid runtime surface and no accidental auth integration.
 
 ## Sprint: 2026-06-14 — Session 70 Alpha Gate Runbook + Protocol Guard Pass (SIL estimate: 999/1000)
 

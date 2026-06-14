@@ -8,6 +8,14 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 
 ## 2026-06-14
 
+- `docs/AUDIT_2026-06-14_S71.md` and JSON sidecar match shipped protocol helper guard changes and mark all 3 items shipped.
+- Studio protocol truth: `tests/scripts/StudioProtocolHelpers.test.ts` covers stale startup brief rejection, per-tile budget attribution/trimming, and secrets-gateway capability readiness.
+- PROJECT_STATUS invariant truth: `scripts/lib/write-project-status.mjs --check` passes after restoring the shared SIL v3 category list in `scripts/lib/sil-categories.mjs`.
+- Obelisk truth: generated `obelisk-passport/` stubs remain local/ignored until production relying-party origin registration and deliberate auth wiring.
+- Broad test evidence is now 94 main test files / 655 tests plus 10 server test files / 30 tests.
+- `npm run build-prod` passes; known non-blocking warnings remain for public URL placeholders, mixed JSON import attributes, large chunks, and Node tooling deprecation.
+- Revenue signal remains unverified until live checkout/supporter telemetry is observed.
+
 - `docs/AUDIT_2026-06-14.md` and JSON sidecar match shipped code/test changes and mark all 3 items shipped.
 - Alpha Gate runbook truth: `VaultFrontAlphaGateRunbook` turns pulse/readiness payloads into checklist, success criteria, evidence fields, and warnings without clearing revenue evidence.
 - Readiness truth: playtest-pulse evidence now includes the alpha gate pass label in warning and pass branches.

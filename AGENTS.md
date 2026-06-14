@@ -39,36 +39,28 @@ Full decision: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-008
 <!-- Source: vaultspark-studio-ops/docs/templates/project-system/AGENTS_universal_sections.md -->
 <!-- DO NOT EDIT — re-run `node scripts/propagate-agents-sections.mjs --apply` from studio-ops to refresh -->
 
-<!-- Universal AGENTS.md sections — propagate to every Studio repo via scripts/run-template-propagation.mjs -->
+<!-- Universal AGENTS.md sections — propagated to every Studio repo via scripts/propagate-agents-sections.mjs -->
 <!-- Owner: Studio Ops · Source: docs/templates/project-system/AGENTS_universal_sections.md -->
-<!-- Last revised: 2026-05-20 (Session 134 — adds broad approval + non-malicious verification protocol) -->
+<!-- Last revised: 2026-06-07 (S158 — lean rewrite: canon prose → generated index + pointers; ~32KB→~10KB) -->
 
-## Skill & Capability Discovery (CANON-012)
+> **This block is the studio-wide operational layer, shared by every VaultSpark repo.** It carries the gates and pointers you need resident every session. Full canon prose lives once, in `vaultspark-studio-ops/docs/STUDIO_CANON.md` — the index below points into it. Don't expand canon text back into this file; keep it lean.
 
-If you (Claude / Codex / subagent / managed agent) need to do something and don't know the right command, **check the Studio capabilities index first** before declaring the task blocked or unknown.
+## The hard gates (run before you label anything blocked)
 
-- **Master index:** `vaultspark-studio-ops/docs/AGENT_CAPABILITIES.md` — every skill, script, agent role, MCP tool, and credential capability available studio-wide. Auto-regenerated nightly + on closeout.
-- **Natural-language lookup:** `node ../vaultspark-studio-ops/scripts/ops.mjs cap "<intent>"` — describe what you need ("send an email", "deploy to Cloudflare", "check uptime") and it returns the matching capability.
-- **Slash-command list (Claude):** `~/.claude/skills/`. **Codex:** `~/.agents/skills/`.
-- **Cheatsheet:** `vaultspark-studio-ops/docs/SKILL_MAP.md`.
-
-If nothing matches, **file an innovation candidate** (it goes into the next genius list) — do not surface as a human-blocker until you've checked the index and run the elevated-probe step.
-
----
-
-## Secrets Discovery (CANON-012)
-
-All Studio credentials live in **`vaultspark-studio-ops/secrets/`**. Every project, every agent, every script reads from here. Never read `.env` directly in subprocesses; never assume `process.env.X` is set.
-
-**Before declaring any task "Human Action Required":**
+**CANON-019 — Founder-Action Discipline. Default: try first; label blocked only with evidence.** Before any `Human Action Required` / `[BLOCKER]` / `FOUNDER ACTION` / `human-blocked` label, you MUST run + log:
 
 ```bash
-node ../vaultspark-studio-ops/scripts/check-secrets.mjs --for <capability>
+node ../vaultspark-studio-ops/scripts/check-secrets.mjs --for <capability>   # 1. secrets discovery (phantom-blocker = forbidden)
+node ../vaultspark-studio-ops/scripts/ops.mjs blocker-preflight              # 2. elevated/admin probe
+# 3. credential READY → execute it yourself via the secrets gateway
+# 4. admin probe reveals an agent-path → execute it
 ```
 
-If the capability returns READY → proceed autonomously. If MISSING → check `vaultspark-studio-ops/secrets/CAPABILITY_MAP.json` for the canonical env var names, then run `/intake-credentials` if the founder needs to supply them. The "phantom blocker" pattern (labeling something human-blocked when the credential is already present) is forbidden by canon.
+Reserve human-blocked **only** for: hardware-key enrollment · provider dashboard signup · billing/payment confirmation · CANON-gated destructive ops (force-push to main, npm publish, prod DB drop). **Everything else is agent work** — apply scripted migrations/deploys/secret-puts yourself (`wrangler deploy`, `wrangler secret put`, `gh secret set`, `gcloud …`, `node scripts/migrate-*.mjs --apply`). The founder-twin auto-approves safe patterns; deny patterns still gate at the founder.
 
-**Resolving a secret in code:**
+## Secrets gateway (CANON-012)
+
+All Studio credentials live in **`vaultspark-studio-ops/secrets/`** — every project, every agent reads from there. Never read `.env` directly in subprocesses; never assume `process.env.X` is set.
 
 ```js
 import {
@@ -80,459 +72,94 @@ const key = await getSecret("STRIPE_SECRET_KEY", "stripe.checkout");
 console.log(redact(`Using ${key}`));
 ```
 
-**Stripe Agent Payments** (autonomous spend on behalf of agents — ad spend, domain renewal, infra top-up): use capability `stripe.agent-payments` with built-in spend-cap. Reference: https://stripe.com/blog/giving-agents-the-ability-to-pay · Audit log: `secrets/.payments.log`.
+Capability → env-var names: `vaultspark-studio-ops/secrets/CAPABILITY_MAP.json`. MISSING credential → `/intake-credentials`. Never print raw secrets (`redact()` everything). Stripe Agent Payments (autonomous spend w/ cap): capability `stripe.agent-payments`. Full: `vaultspark-studio-ops/docs/SECRETS_PROTOCOL.md`.
 
-Full protocol: `vaultspark-studio-ops/docs/SECRETS_PROTOCOL.md`.
+## Founder-Twin — shared cross-agent approval brain (CANON-024)
 
----
+One shared auto-approval model across Claude Code, Codex, and managed agents — patterns learned by one benefit all. **Claude Code:** wired via `~/.claude/settings.json` PreToolUse hook. **Codex/other:** call before risky commands — `node ../vaultspark-studio-ops/scripts/twin-ask.mjs Bash "<command>"` (exit 0=approve · 1=ask · 2=deny). Prefer one bounded command-family approval over piecemeal asks; never request broad approval for destructive/arbitrary-interpreter/`curl|sh`/heredoc/secret/force-push/publish/prod-destructive/billing/legal actions. Before any side-effecting/networked/privileged/cross-repo/payment/secret action verify: intent · scope (recursive ops resolve inside the intended dir) · trust (package-trust) · secrets-gateway-only · blast-radius+rollback · twin-verdict. Disable per-session: `export TWIN_DISABLED=1`. Spec: `vaultspark-studio-ops/docs/TWIN_PROTOCOL.md`.
 
-## Sitemap Standard (CANON-011 · public-facing projects only)
+## Package trust (CANON-023)
 
-If this project's `audience` is `public-*`, every page in `docs/PROJECT_SITEMAP_STANDARD.md` must exist and pass the quality bars (LCP <1.8s · CWV green · CSP strict · `/agents.json` · `/.well-known/llms.txt` · sitemap.xml). Reference exemplars: vaultsparkstudios.com · vorn.app · mindframe.app.
-
-Audit: `node ../vaultspark-studio-ops/scripts/check-sitemap-compliance.mjs --project <slug>`.
-
-Project must score ≥8/10 before flipping to SPARKED. `app-release-gate` enforces.
-
----
-
-## CANON-019 — Founder-Action Discipline (CDR-S126.1, MANDATORY)
-
-**Problem this canon fixes:** agents repeatedly label tasks as "Founder Action Required" or "Human Blocker" when the work is actually agent-attemptable. Pattern observed across multiple repos and sessions. **Default behavior MUST flip: try first, label blocked only after evidence of attempt.**
-
-**Hard gate — before any task is labeled `Human Action Required`, `[BLOCKER]`, `FOUNDER ACTION`, or `human-blocked`, you MUST have run AND logged:**
-
-```bash
-# 1. Secrets discovery (always)
-node ../vaultspark-studio-ops/scripts/check-secrets.mjs --for <capability>
-
-# 2. Elevated/admin probe (always)
-node ../vaultspark-studio-ops/scripts/ops.mjs blocker-preflight
-
-# 3. If credential is READY → execute the action yourself using the secrets gateway
-# 4. If admin probe reveals agent-attemptable path → execute it
-```
-
-**Reserve `Human Action Required` ONLY for:** hardware key enrollment · provider dashboard signup · billing/payment confirmation · destructive ops explicitly gated by CANON (force-push to main, npm publish, prod DB drop).
-
-**Everything else is agent work.** This includes: applying migrations · running deploys (`wrangler deploy`, `vercel deploy`, `gcloud run deploy`) · setting secrets in providers (`wrangler secret put`, `gh secret set`, `gcloud secrets versions add`) · creating workflows · scaffolding files · running `--apply` flags on scripted migrations · enrolling in API allowlists via API calls.
-
-**Closeout enforcement (CANON-019):** every `/closeout` runs:
-
-```bash
-node ../vaultspark-studio-ops/scripts/enforce-blocker-discipline.mjs
-```
-
-Verdict `discipline-gap` → warns founder + lists violating items. With `--strict` flag → blocks closeout. Log persisted to `portfolio/BLOCKER_DISCIPLINE_LOG.ndjson`.
-
-**The phantom-blocker pattern is forbidden.** If you find yourself typing `FOUNDER ACTION` or `human-blocked` without two commits showing `check-secrets` + `blocker-preflight` evidence in the last hour, **STOP and try the action yourself.**
-
----
-
-## Elevated-access protocol (S113 — apply migrations yourself)
-
-When a sprint deliverable lists "Founder action needed" steps that are **scripted** (`wrangler deploy`, `wrangler secret put`, `gh workflow run`, `node scripts/migrate-*.mjs --apply`, `hcloud …`, `gcloud …`, etc.), the agent **must execute them itself** using the relevant gateway capability — not leave them for the founder.
-
-**Reserve "Human Action Required" only for:**
-
-- Hardware key enrollment (FIDO2, Yubikey)
-- Provider dashboard signup / account creation
-- Billing / payment confirmation
-- Destructive operations explicitly gated by CANON (force-push to main, npm publish, etc.)
-
-Safe scripted migrations are agent work, not founder work. The founder-twin auto-approves the safe patterns; deny patterns still gate at the founder. Use `node scripts/twin-ask.mjs <Tool> <input>` for cross-agent verdict (Codex) or rely on the PreToolUse hook (Claude Code).
-
----
-
-## Founder-Twin auto-approval (S113 — cross-agent)
-
-Both Claude Code, Codex, ChatGPT-style CLI agents, subagents, and managed agents consult one shared auto-approval model. Same brain, same history, same audit trail — patterns learned by one agent benefit every agent. Founder-Twin is not optional ceremony; it is the Studio's approval memory and safety filter.
-
-**Codex usage** (no native PreToolUse hook — call explicitly before risky commands):
-
-```bash
-node ../vaultspark-studio-ops/scripts/twin-ask.mjs Bash "<command>"
-# exit 0 = approve · exit 1 = ask · exit 2 = deny
-```
-
-**Claude Code:** wired automatically via `~/.claude/settings.json` → `hooks.PreToolUse`.
-
-Disable per-session: `export TWIN_DISABLED=1`. Full spec: `vaultspark-studio-ops/docs/TWIN_PROTOCOL.md`.
-
----
-
-## Broad Approval + Non-Malicious Verification (CANON-024, MANDATORY)
-
-Founder direction: agents should not ask for repeated piecemeal approvals when one bounded command-family approval can safely cover the work. Agents must request broader approvals when escalation is necessary, and must verify more aggressively that proposed actions are non-malicious before running them.
-
-**Approval-scope rule.**
-
-- Prefer one persistent approval for a safe command family over repeated one-off prompts.
-- Codex: when requesting escalation, include a reasonable `prefix_rule` for the command family whenever the command is repeatable and bounded (for example `["git", "push"]`, `["npm", "test"]`, `["node", "scripts/run-doctor.mjs"]`).
-- Claude Code / hook-driven agents: let Founder-Twin auto-approve learned safe patterns, and record asks/denies so future agents inherit the learning.
-- Never request broad approval for destructive commands, arbitrary interpreters, `curl | sh`, heredocs, commands with secret material, force-pushes, package publishes, production DB destructive SQL, billing/payment execution, or legal/public-promise changes. Ask narrowly for those.
-
-**Non-malicious action preflight.** Before any side-effecting, networked, privileged, cross-repo, production, dependency, payment, or secret-touching action, verify:
-
-1. **Intent:** the action directly serves the current user/studio objective.
-2. **Scope:** target repo/path/host/account is explicit; recursive writes/deletes resolve inside the intended directory.
-3. **Trust:** dependencies/downloads pass Obelisk Package Trust (CANON-023); external endpoints and remotes are expected.
-4. **Secrets:** credentials are resolved only through the secrets gateway; no raw secrets are printed, pasted, or logged.
-5. **Blast radius:** expected writes/mutations are named; rollback or recovery path is known for risky changes.
-6. **Twin verdict:** run Founder-Twin (`twin-ask` for Codex/ChatGPT agents, PreToolUse hook for Claude) unless the tool is purely read-only and already safe-listed.
-
-If Founder-Twin returns `deny`, stop. If it returns `ask`, request one bounded approval for the action class, not a stream of individual repeats. If the twin is unavailable, log the gap in the session handoff and fall back to the narrowest safe founder confirmation.
-
----
-
-## Universal `/audit` + `/implement` (S113)
-
-Two project-agnostic skills for both agents:
-
-- `/audit` — genius-level 9-axis project audit → writes `docs/AUDIT_<date>.md`
-- `/implement` — read latest `AUDIT_*.md` and ship every item in optimal-efficiency order
-
-Project-type aware via `portfolio/PROJECT_REGISTRY.json` → `type`. Personal-scope canonical at `~/.claude/skills/` (Claude) and `~/.agents/skills/` (Codex mirror, auto-synced).
-
----
-
-## Studio Website Reference Scaffold (D-S119.3)
-
-Before scaffolding any public-facing website page (home, auth, dashboard, marketing, legal, etc), agent MUST consult the canonical catalog at:
-
-- `vaultspark-studio-ops/portfolio/STUDIO_WEBSITE_SCAFFOLD/catalog.json` — live catalog (auto-refreshed nightly)
-- `vaultspark-studio-ops/portfolio/STUDIO_WEBSITE_SCAFFOLD/patterns.json` — derived consensus patterns
-- `vaultspark-studio-ops/docs/STUDIO_WEBSITE_SCAFFOLD_PLAN.md` — architecture + rationale
-
-**Workflow.** (1) Read `catalog.json` — see how vaultsparkstudios.com, joinvorn.com, usemindframe.com (and others) handle menu, auth, footer, page list. (2) Read `patterns.json` — use the consensus pattern unless this project's `context/SOUL.md` justifies a deviation. (3) If deviating, log it in `context/DECISIONS.md` with rationale. (4) For ANY public signup flow, wire the **Vault SSO contract** (see `docs/VAULT_SSO_CONTRACT.md`). Free Studio membership is auto-granted on signup unless user opts out.
-
-**Enforcements (non-negotiable for public projects):** branding line per type (CANON-006), footer copyright `© 2026 VaultSpark Studios LLC. All rights reserved.`, required legal pages `/privacy` + `/terms`, Vault SSO call on signup-success when `vault.sso` capability is provisioned.
-
-Refresh manually: `node vaultspark-studio-ops/scripts/scrape-studio-websites.mjs`.
-
----
-
-## Max Plan First (CANON-015 · CDR-S120.1)
-
-Default to **Claude Max Plan** for every new Claude-using feature. Direct Anthropic **API** calls require:
-
-1. **Feasibility check** — confirm Max Plan can't deliver this (e.g. true rate-limit, automation-only context).
-2. **Cost estimate** — projected monthly $ with usage assumptions.
-3. **Founder approval** logged in `context/DECISIONS.md` with `[API]` tag.
-
-**Enforcement.** Every script making direct Anthropic HTTP calls (`api.anthropic.com`, `@anthropic-ai/sdk`, or model-router bypass) must appear in `portfolio/APPROVED_API_SCRIPTS.json`. Doctor probe `api-allowlist` greps `scripts/` for direct usage and fails on unregistered callers.
-
-**Existing API code is grandfathered** — only new adoption requires approval.
-
----
-
-## Free-Build Bias (CANON-017 · CDR-S120.1)
-
-Default integration choices live in `docs/INTEGRATION_PREFERENCES.md`. Before adopting any **new** SaaS that isn't the canonical free choice, fill `docs/templates/BUILD_VS_BUY.md` and get founder sign-off. Lock-in score ≥6 requires explicit founder override.
-
-**Doctor probe `build-vs-buy-discipline`** fails when a `[INTEGRATION]` decision in `DECISIONS.md` doesn't link a `BUILD_VS_BUY` record.
-
----
-
-## Studio Ark — Cross-Repo Transport (CANON-018)
-
-Every Studio repo's `/start` automatically drains the Studio Ark inbox (step 1.8). Cargo addressed to this repo's `slug` (or `*` broadcast) appears in `.cache/ark-inbox.json`; the `╔══ ARK STATUS ══╗` tile in the startup brief surfaces depth + sig health.
-
-**Sending cargo:**
-
-```bash
-# Share a learned pattern with the fleet
-node scripts/ark.mjs ship --type pattern-share --to '*' \
-  --payload '{"pattern":"win-spawn-quirk","context":"node child_process on Windows","solution":"use absolute paths","tags":["windows","node"]}'
-
-# Ask another repo a question
-node scripts/ark.mjs ship --type repo-question --to mindframe \
-  --payload '{"question":"how do you handle X","context":"working on similar feature","replyTo":"my-slug"}'
-
-# Hand off intent + context to another repo's agent
-node scripts/ark.mjs ship --type agent-handoff --to vorn \
-  --payload '{"intent":"finish auth refactor","openFiles":["src/auth.ts"],"recentDecisions":["use vault-sso"]}'
-```
-
-**Rules:**
-
-- Never write directly to another repo's files. Ship cargo instead (CANON-018).
-- Receipts are auto-emitted on drain — don't ship them manually.
-- Producer allowlist enforced in `portfolio/ark/MANIFEST.json`. Most types are open; `canon-update` + `phantom-blocker-fix` are studio-ops only.
-- Full design: `vaultspark-studio-ops/docs/STUDIO_ARK.md`.
-
----
-
-## Obelisk (CANON-021) — Studio-wide trust + capability protocol
-
-**Canonical name:** `Obelisk`. Never use `VaultKey`, `VaultPass`, `Vaultify`, `iVault`, `myVault`, or bare `Vault`.
-
-**What Obelisk is.** A Studio-wide trust layer above existing standards (TLS, WebAuthn, TOTP, OAuth). Passkey-first identity + TOTP fallback + device trust + signed intent receipts + short-lived capability grants + MCP firewall + prompt firewall + secret/OAuth broker + Sigstore-style supply-chain signing + post-quantum readiness via standards.
-
-**What Obelisk is NOT.** Not a password manager. Not a TLS replacement. Not custom cryptography. Never market as "unhackable" or "quantum-proof" — approved language is "post-quantum migration-ready."
-
-**Per-project requirement.** Every project must declare its Obelisk posture in `context/OBELISK_ADOPTION.md`. Posture values: `not-applicable` · `pending` · `phase-0-declared` · `phase-1-pilot` · `phase-2-mcp` · `phase-3-ops-integrated` · `phase-4-public-app-migrated`.
-
-**Mandatory rules for agents.**
-
-- Never bring raw secrets into agent prompts — use capability grants via `scripts/lib/secrets.mjs::getSecret(cap)` (CANON-012 wrap)
-- Never register an unsigned MCP server for privileged actions
-- Never make a production mutation without an intent receipt
-- Cross-repo Obelisk rollout MUST flow through Studio Ark (CANON-018) — never directly edit sibling repos
-- For founder/internal tools: passkey-first after Hub Phase 1; password-primary auth is deprecated
-
-**Capability surface (declared in studio-ops `secrets/CAPABILITY_MAP.json`).**
-
-- `obelisk.identity.verify` — WebAuthn relying-party credentials
-- `obelisk.grant.issue` — TOTP seed storage
-- `obelisk.receipt.write` — intent-receipt signing key
-- `obelisk.mcp.register` — MCP registry signature key
-
-**References.**
-
-- Full spec (Hub source-of-truth): `vaultspark-studio-hub/docs/OBELISK_PROTOCOL_PLAN.md`
-- Studio-ops execution mirror + appendix: `vaultspark-studio-ops/docs/OBELISK_PROTOCOL_PLAN.md`
-- Canon entry: `docs/STUDIO_CANON.md` → CANON-021
-- Inventory script: `node scripts/check-obelisk-posture.mjs` (run from any repo)
-
----
-
-## Obelisk Package Trust (CANON-023) — verify before install/download
-
-Before adding a dependency, choosing between package options, downloading an archive/binary/model file, or following an agent-suggested install command, run the package trust gate first:
+Before any `npm/pnpm/yarn/pip/cargo install`, `curl | sh`, archive/binary/model-weight download, or agent-suggested install command:
 
 ```bash
 node ../vaultspark-studio-ops/scripts/package-trust.mjs --package <name>@<version>
 ```
 
-From Studio Ops:
+`BLOCK` = hard stop, pick another option. Treat raw GitHub zips, shortened URLs, installers, shell scripts, model weights, and browser extensions as quarantined until verified. After lockfile changes / before push: `node ../vaultspark-studio-ops/scripts/scan-npm-supply-chain.mjs --json`. Protocol: `vaultspark-studio-ops/docs/OBELISK_PACKAGE_TRUST_PROTOCOL.md`.
+
+## Cross-repo transport — Studio Ark (CANON-018)
+
+**Never write directly to another repo's files. Ship cargo instead.** `/start` auto-drains your inbox (the `╔══ ARK STATUS ══╗` brief tile shows depth + sig health); receipts auto-emit on drain.
 
 ```bash
-node scripts/ops.mjs package-trust --package <name>@<version>
+node scripts/ark.mjs ship --type pattern-share --to '*' --payload '{"pattern":"...","solution":"...","tags":["..."]}'
+node scripts/ark.mjs ship --type repo-question --to '{"question":"...","replyTo":"my-slug"}' < slug > --payload
+node scripts/ark.mjs ship --type agent-handoff --to '{"intent":"...","openFiles":["..."]}' < slug > --payload
 ```
 
-**Mandatory rules for agents.**
+Producer allowlist: `vaultspark-studio-ops/portfolio/ark/MANIFEST.json` (`canon-update` + `phantom-blocker-fix` are studio-ops only). Co-authoring roles (CANON-022): Designer owns source-of-truth · Mechanizer owns canon/probes/templates · Propagator owns cross-repo rollout (both studio-ops) · Implementer owns code. Design: `vaultspark-studio-ops/docs/STUDIO_ARK.md`.
 
-- Do not run `npm install`, `pnpm add`, `yarn add`, `pip install`, `cargo install`, `curl | sh`, `Invoke-WebRequest`, or browser downloads until the package/artifact has an `APPROVE` or explicitly resolved `REVIEW` decision.
-- Treat `BLOCK` as a hard stop. Pick another option.
-- Treat raw GitHub zips, shortened URLs, executable installers, shell scripts, model weights, browser extensions, and archives as quarantined until checksum/signature/source are verified.
-- Run `node ../vaultspark-studio-ops/scripts/scan-npm-supply-chain.mjs --json` after lockfile changes and before push/closeout.
-- Existing valid provenance is not enough by itself; compromised publisher workflows can still produce signed malicious packages.
+## Skill & capability discovery (CANON-012)
 
-**References.**
+Don't know the command? Check capabilities before declaring anything unknown or blocked: master index `vaultspark-studio-ops/docs/AGENT_CAPABILITIES.md` · NL lookup `node ../vaultspark-studio-ops/scripts/ops.mjs cap "<intent>"` · skills `~/.claude/skills/` (Claude) / `~/.agents/skills/` (Codex) · cheatsheet `vaultspark-studio-ops/docs/SKILL_MAP.md`. Universal skills: `/audit` (9-axis audit → `docs/AUDIT_<date>.md`) + `/implement` (ship the audit). No match → file an innovation candidate.
 
-- Protocol: `vaultspark-studio-ops/docs/OBELISK_PACKAGE_TRUST_PROTOCOL.md`
-- Gate: `node ../vaultspark-studio-ops/scripts/package-trust.mjs`
-- IOC scanner: `node ../vaultspark-studio-ops/scripts/scan-npm-supply-chain.mjs`
+## Public-facing project requirements
 
----
+For `audience: public-*` projects:
 
-## Agent Co-Authoring Protocol (CANON-022)
-
-When two or more agents work on a shared concern (canon, protocol, schema, ecosystem-wide change), responsibilities split into four roles:
-
-- **Designer** — owns the source-of-truth document + architecture decisions (e.g. Hub for Obelisk · founder for SOUL · IGNIS for scoring rubric)
-- **Mechanizer** — owns canon elevation · capability declarations · doctor probes · templates (studio-ops for every canon)
-- **Propagator** — owns cross-repo rollout via CANON-016 + CANON-018 (studio-ops exclusively)
-- **Implementer** — owns code that uses the protocol primitives (each project per its medium)
-
-**Coordination primitives (Ark cargo).**
-
-- **`working-on`** (TTL 6h) — advertises "I'm actively editing this surface; coordinate before conflicting." Other agents drain + defer.
-- **`content-acked`** (TTL 168h) — explicit acknowledgment that received content was READ + APPLIED, not just drained. Closes the diagnose→apply loop that `cargo-receipt` leaves open.
-- **`registry-change`** (TTL 168h) — broadcasts PROJECT_REGISTRY mutations (new-repo, status-flip, medium-change, field-update, repo-archived) so all agents stay in sync without polling.
-- **`security-protocol-update`** (no TTL) — Obelisk security/auth/capability protocol decision broadcast. Studio-ops + Hub only as producers.
-
-**Mandatory rules for agents.**
-
-- Mechanizer NEVER modifies Designer's source-of-truth file directly; ship Ark suggestion cargo instead
-- Designer NEVER writes propagation logic — ship cargo and trust the Propagator
-- For any cross-agent shared surface, subscribe to `working-on` + `content-acked` cargo for that surface
-- Every adoption file declares `coAuthoringRole: designer|mechanizer|propagator|implementer`
-- Doctor probe `cross-repo-sync-health` warns on Ark RTT > 24h between active sibling agents
-
-**Worked example.** Obelisk Phase 0 (S119): Hub designed + broadcast (Designer) → studio-ops elevated CANON-021 + 6 capabilities + doctor probe + inventory script + brief tile (Mechanizer) → studio-ops broadcast canon-update to 27 repos via CANON-016 (Propagator) → future `VaultSparkStudios/obelisk` repo will own implementation (Implementer).
-
-**References.**
-
-- Canon entry: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-022
-- Cargo manifest: `vaultspark-studio-ops/portfolio/ark/MANIFEST.json`
-- Doctor probe: `cross-repo-sync-health` (in `scripts/run-doctor.mjs`)
-- Registry watcher: `node scripts/watch-registry-changes.mjs`
+- **Sitemap (CANON-011):** every page in `vaultspark-studio-ops/docs/PROJECT_SITEMAP_STANDARD.md` exists + passes bars (LCP <1.8s · CWV green · strict CSP · `/agents.json` · `/.well-known/llms.txt` · sitemap.xml). Score ≥8/10 before SPARKED. Audit: `node ../vaultspark-studio-ops/scripts/check-sitemap-compliance.mjs --project <slug>`.
+- **Website scaffold (D-S119.3):** before scaffolding any page, consult `vaultspark-studio-ops/portfolio/STUDIO_WEBSITE_SCAFFOLD/catalog.json` + `patterns.json`; use the consensus pattern unless SOUL justifies deviation (log in DECISIONS). Public signup → wire the Vault SSO contract (`vaultspark-studio-ops/docs/VAULT_SSO_CONTRACT.md`).
+- **Enforce:** branding line per type (CANON-006), footer `© 2026 VaultSpark Studios LLC. All rights reserved.`, `/privacy` + `/terms`, acronyms spelled out on first use (CANON-030), free tier cost-neutral (CANON-029), staging before prod (CANON-007). `/app-release-gate` checks these before any SPARKED flip.
 
 ---
 
-## Free-Tier Cost Discipline (CANON-029 · CDR-S138.3, MANDATORY pre-revenue)
+<!-- canon-index:start -->
+<!-- GENERATED from STUDIO_CANON.md by scripts/gen-agents-canon-index.mjs — DO NOT EDIT BY HAND. -->
+<!-- Refresh: `node scripts/gen-agents-canon-index.mjs --apply` from studio-ops. -->
 
-Every Studio project's free tier MUST be **per-user cost-neutral to the studio at 1000+ users**. Features that consume per-user variable studio cost (LLM API calls without BYOK, image/audio/video gen, transcription, transactional email beyond hard ceiling, vector DB writes, per-user paid compute, per-user paid monitoring, metered third-party APIs) MUST be gated to paid tiers OR served via no-cost-to-studio patterns.
+**Studio Canon — index.** Full text + rationale for every entry: **vaultspark-studio-ops/docs/STUDIO_CANON.md** (jump to the matching `## CANON-NNN` heading). These are studio-wide defaults; you are expected to follow them. Read the full entry before acting on anything you're unsure about, and before changing canon, public promises, rights, licenses, launch dates, or security/data handling.
 
-**Approved free-tier patterns:**
+- **CANON-001** · Rolling Status headers use HTML comment markers for programmatic identification — The SIL Rolling Status header block is delimited by <!-- rolling-status-start --> and <!-- rolling-status-end --> HTML comment markers
+- **CANON-002** · Sessions 1–3 are a Calibration Window, excluded from studio-level averaging — The first 3 sessions of any project are labeled "Calibration" and excluded from studio-level SIL averaging in portfolio/STUDIO_SIL.md until Session 4
+- **CANON-003** · prompts/initiate.md is separate from prompts/start.md for token efficiency — Initiation protocol lives in prompts/initiate.md
+- **CANON-004** · studioOsApplied: true requires Layer 1 SIL format, not just a context/ folder — A project is only considered studioOsApplied: true when it has the Layer 1 SIL format: Rolling Status header with HTML comment markers + closeout/start prompts with…
+- **CANON-005** · CDR gap recovery check is mandatory at startup and closeout for compacted sessions — Both prompts/start.md and prompts/closeout.md include explicit instructions to check for and recover CDR entries from prior sessions that were never formally closed out…
+- **CANON-006** · Every public-facing product must display VaultSpark Studios branding with a link-back — Every VaultSpark Studios product with audience: public-unlaunched, public-live, or public-traction must include a visible VaultSpark Studios branding element with a…
+- **CANON-007** · Every project must have a staging environment before deploying to production — Every VaultSpark project must have a staging environment — local or Hetzner-hosted — where changes are tested before reaching production
+- **CANON-008** · All VaultSpark IP is proprietary by default; open-source licenses are explicit exceptions only — All code, content, assets, and designs created by VaultSpark Studios are proprietary and all rights are reserved by VaultSpark Studios LLC unless an open-source license is…
+- **CANON-009** · SIL rubric is 10 × 100 = 1000 — v3.0
+- **CANON-010** · Claude Code and Codex must have strict skills + hooks + MCP parity — Every Studio OS command/skill/hook/MCP tool is available identically in Claude Code and OpenAI Codex
+- **CANON-011** · Every public-facing project must follow the universal sitemap standard — Every VaultSpark project with audience: public-\* must implement the page set, quality bars (UX/speed/security/intelligence/SEO), /agents.json, and /.well-known/llms.txt…
+- **CANON-012** · Every studio agent resolves credentials via the secrets gateway — Every Claude / Codex / subagent / managed-agent in every Studio repo MUST resolve credentials via getSecret(key, capability) from vaultspark-studio-ops/scripts/lib/secrets.mjs
+- **CANON-013** · Every project picks one of 3 canonical low-cost archetypes at `/initiate` — Every new VaultSpark project picks ONE of three archetypes — A (Static SaaS/Marketing — Cloudflare Pages + Workers + D1), B (Real-time/multiplayer — adds Durable Objects),…
+- **CANON-015** · Claude Max Plan first; API requires founder approval + cost estimate — When building features that invoke Claude, the default execution surface is the Claude Max Plan the studio already pays for
+- **CANON-016** · Studio OS protocol/process/enforcement propagates ecosystem-wide — Studio OS protocol, process, and enforcement rules are not local to vaultspark-studio-ops — they ship to every project's agent-facing surfaces
+- **CANON-017** · Free, long-term, scaleable integrations preferred; build-vs-buy bias toward build — When choosing project integrations on top of canonical infra (CANON-013 stack archetypes A/B/C + CANON-012 secrets gateway), agents must:
+- **CANON-018** · All cross-repo agent communication MUST flow through Studio Ark — Studio Ark adopted as canon. All cross-repo intelligence rides the Ark. See docs/STUDIO_ARK.md
+- **CANON-019** · Founder-Action Discipline — try first, label blocked only with evidence
+- **CANON-020** · Analytica is the canonical Studio analytics + insight plane — Analytica elevated to canonical analytics + insight plane for the studio
+- **CANON-021** · Obelisk is the Studio-wide trust + capability protocol — Obelisk adopted as Studio-wide trust + capability protocol; supersedes D-S119.2 (VaultRoot naming)
+- **CANON-022** · Agent Co-Authoring Protocol — Agent Co-Authoring Protocol formalized. The Hub↔studio-ops Obelisk collaboration is now canonical pattern for all future cross-agent protocol work
+- **CANON-023** · Obelisk Package Trust gates every agent install/download — Obelisk Package Trust adopted as the Studio-wide agent supply-chain decision gate
+- **CANON-024** · Broad approvals require non-malicious action verification — Broad approval + non-malicious action verification adopted as the Studio-wide approval discipline
+- **CANON-025** · Trinity role separation: VEILOS · IGNIS · Obelisk — Trinity role separation locked. See docs/PROPOSAL_2026-05-21_HIVEMIND.md for full 7-phase build plan (P1–P7, ~98h across 4–6 months)
+- **CANON-026** · IGNIS visibility scope — private-by-default
+- **CANON-027** · PQC migration-ready language discipline — PQC migration-ready language is canon. Override requires explicit founder direction logged in CDR
+- **CANON-028** · Founder Identity Privacy — no personal name, no personal email
+- **CANON-029** · Free-Tier Cost Discipline — no variable cost on free plans
+- **CANON-030** · Acronym Expansion in Public Content — spell it out, acronym in parentheses
+- **CANON-031** · Observability Honesty — no lying surfaces
+- **CANON-032** · Build-Optimal for Flagships — no premature constraint
+- **CANON-033** · Launch Announcement Discipline — no silent launches
+- **CANON-034** · Browser Experience Excellence — browser is never second-class
+- **CANON-035** · Project Brand Identity — every project designs its own professional logo, favicon, and brand kit
+- **CANON-036** · Deploy Currency Discipline — production must not silently lag main
 
-- **BYOK (Bring Your Own Key)** — user supplies provider API key; we orchestrate. Default for LLM features on free plans. Reference: Velaxis.
-- **Local-only compute** — browser-side, localStorage / IndexedDB.
-- **Cached / static** — pre-computed at build, served from CDN / edge KV.
-- **Trial-ceiling** — N free uses lifetime, hard 429 with upgrade prompt (NOT degraded experience).
-- **Stay-in-free-band** — Cloudflare Workers free 100K/day, Supabase free 500MB, Hetzner CX22 $5/mo flat.
-
-**Forbidden on free tier (always paid):** studio-paid LLM API · image/audio/video gen · transcription · transactional email beyond hard ceiling · vector DB writes beyond free band · per-user paid compute · per-user paid monitoring · per-call metered third-party APIs.
-
-**Implementation gate (MANDATORY every project):**
-
-- `context/PROJECT_STATUS.json` declares `freeTierCostStatus`: `cost-neutral | BYOK | trial-ceiling | paid-only | exempt-internal | AUDIT-PENDING` (default).
-- `app-release-gate` blocks SPARKED flip if `AUDIT-PENDING`.
-- Free-tier feature flags enforce gate **server-side** (never trust client).
-- Audit doc: `docs/FREE_TIER_AUDIT_<date>.md` (template: `vaultspark-studio-ops/docs/FREE_TIER_AUDIT_2026-05-22_PORTFOLIO.md`).
-
-**Approved exceptions (narrow, log in DECISIONS.md):** time-boxed acquisition burn with named $-cap + kill date · `audience: internal` projects · copyleft fork obligations.
-
-**Reference good patterns:** Seamline `lib/tiers.ts` (per-feature cost comments + server-side enforcement) · Velaxis (BYOK + no backend) · Vorn `llm-gateway.ts` (sophisticated embedding/semantic/prompt caching for paid tier).
-
-**Rationale.** Zero revenue + only costs. 1000 free users × $0.05/user/day LLM × 5 SPARKED projects = $7.5K/mo burn before $1 of revenue. Pre-revenue, no general override.
-
-Full canon: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-029.
-
----
-
-## Acronym Expansion in Public Content (CANON-030 · CDR-S144.3, MANDATORY)
-
-In any **user-facing or content-facing** surface, an acronym MUST NOT appear alone on first use. Spell the term out with the acronym in parentheses — **Full Term (ACRONYM)** — then the bare acronym is fine for the rest of that surface. Acronym-only naming of a content item or feature is **forbidden unless explicitly approved** by the Studio Owner.
-
-- ✓ "Bring Your Own Key (BYOK)" → "BYOK" thereafter · "Post-Quantum Cryptography (PQC)" · "Self-Improvement Loop (SIL)".
-- ✗ A button/heading/pricing-card/tooltip whose only label is an unexpanded acronym.
-
-**Applies to:** website copy, marketing pages, pricing cards, headings, buttons, tooltips, empty/error states, feature & content-item names, public README feature/pricing sections, announcements, store listings, in-app help & onboarding.
-
-**Exempt:** internal engineering artifacts (code identifiers, commit messages, `context/`+`docs/` internal Markdown, agent prompts, tests, logs); `audience: internal` projects' internal surfaces; Studio-Owner-approved brand terms (log the approval).
-
-**Why.** Acronym-only labels make content opaque to anyone who doesn't already hold the jargon, raising the comprehension cost of every surface. Expanding on first use costs almost nothing and makes pages self-explaining.
-
-**Gate.** New user-facing copy follows the rule by default; `app-release-gate` flags acronym-only labels (unapproved acronym-only content/feature names block the public-facing review item until expanded or approved). Approved exceptions logged per-project in `DECISIONS.md` / `CREATIVE_DIRECTION_RECORD.md`.
-
-Full canon: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-030.
+<!-- canon-index:end -->
 
 ---
 
-## Observability Honesty (CANON-031 · D-S144.5, MANDATORY)
-
-Every metric, probe, dashboard, score, and status surface MUST tell the truth:
-
-1. **Derive from source-of-truth** — compute from authoritative data, never a cached/derived copy that can silently lag.
-2. **Self-validate** — assert coherence and fail loud when incoherent; never render a plausible-looking lie.
-3. **Exempt self-reference** — a scanner/probe must not flag its own report/source.
-4. **Separate sender-controllable from external** — a cross-repo SLO must not report critical for what the measured party can't fix in its own session (dormant recipient ≠ sender failure → directed nudge, not red).
-5. **No phantom green, no phantom red** — never fake compliance to clear a blocker; never leave a structurally-unclearable false blocker. Genuine-but-foreign blockers stay honest-red and are queued to the owner.
-6. **Validate exit codes directly** — shell pipes mask exit codes; check the producing command's status.
-
-Full canon: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-031.
-
-**Write-time SIL invariant (S154 · extends CANON-031.2):** whenever any agent writes `context/PROJECT_STATUS.json`, it MUST hold `silScore := sum(silCategoriesV3)` with every category in 0..100. Write through the shared helper when present:
-
-```bash
-node scripts/lib/write-project-status.mjs --check # validate (exit 1 on violation)
-node scripts/lib/write-project-status.mjs --fix   # recompute silScore + clamp categories
-```
-
-At closeout, run `--check` after the status write-back; a violation is a closeout blocker. This root-fixes the silScore/sum drift class (S143: sparkfunnel drift, website categories >100).
-
----
-
-## Build-Optimal for Flagships (CANON-032 · D-S144.6 / CDR-S144.4)
-
-For **flagship / sophisticated products** (Studio-Owner-designated), the default is **build-optimal**: examine the full option space (all stacks, alternatives, combined elements) and choose for long-term scalability, maximum UI/UX, and maximum fulfillment of the product's potential — don't inherit a ceiling-limiting constraint without a documented, product-justified reason.
-
-- Any constraint that materially limits a flagship's ceiling (interactivity, scale, personalization, UX) needs an explicit rationale (security/privacy/cost/legal) in that project's `DECISIONS.md` + a **revisit trigger**.
-- Prefer constraints compatible with sophistication (strict nonce-based CSP + modern interactive frontend) over blanket restrictions (no-JavaScript) that cap the ceiling.
-- **No contradiction with CANON-029/013:** cost discipline gates the _free tier's variable cost_; build-optimal governs the _product's architecture ceiling_ (core + paid). CANON-013 low-cost defaults remain for ordinary projects; flagships are the override lane.
-
-Full canon: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-032.
-
----
-
-## Launch Announcement Discipline (CANON-033 · D-S144.7)
-
-A flip to **SPARKED** requires an **executed announcement plan** — silent launches waste the cheapest growth lever. Not "done" until the product is told to the world.
-
-- ≥1 public channel identified + executed (community/subreddit, social, Studio Hub feature, changelog, directory listing).
-- One-line value prop + link, consistent with CANON-006 (branding) + CANON-030 (spell out acronyms).
-- Recorded in `DECISIONS.md` / `LAUNCH_*.md` with date + channels.
-- `app-release-gate` checks for an announcement plan; the deployed-unannounced detector surfaces SPARKED/deployed projects with none as a growth task.
-- Exceptions (log per-project): `audience: internal` · intentional stealth window with named reveal date · dependency-gated (announce on unblock).
-
-Full canon: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-033.
-
----
-
-## Browser Experience Excellence (CANON-034 · D-S149.4, MANDATORY)
-
-Any VaultSpark project with a browser or website surface treats the browser experience as first-class. The browser/website version must never be below a native/mobile app version; it should usually be the most expansive, feature-rich, immersive version of the product, while native apps adapt the same ambition to mobile-native ergonomics.
-
-Rules:
-
-- Desktop browser, tablet/mobile browser, and any native/mobile app surface must be reviewed for feature parity, responsiveness, polish, accessibility, and interaction depth.
-- Mobile browser is not a fallback. Public websites/apps must be extremely mobile-friendly and mobile-responsive; core workflows, dashboards, games/tools, auth, payments, and navigation must work cleanly at common mobile widths.
-- If a mobile/native app has capabilities the browser lacks, document the rationale in `DECISIONS.md` and add a catch-up plan or explicit approved exception.
-- A browser surface that is less capable than the mobile app blocks SPARKED/release approval unless the Studio Owner approves and records the exception.
-- CANON-029 still applies: advanced browser features with variable studio cost must be BYOK, trial-ceiling, paid-only, cached/static, or otherwise cost-neutral.
-
-Full canon: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-034.
-
----
-
-## Unified Skill Brief (CANON-035 candidate · S141)
-
-Every founder-facing skill — `/start`, `/audit`, `/implement`, `/closeout`, `/go` — produces its output through ONE shared library. Same 95-col frame, same voice rules, same schema. Different `kind` flips score labels; nothing else moves.
-
-**Library:** `vaultspark-studio-ops/scripts/lib/skill-brief.mjs`
-**Spec:** `vaultspark-studio-ops/docs/SKILL_BRIEF_SPEC.md`
-**Closeout-specific:** `vaultspark-studio-ops/docs/CLOSEOUT_BRIEF_SPEC.md`
-**Visual mock:** `vaultspark-studio-ops/docs/CLOSEOUT_BRIEF_MOCK.md`
-
-**Five canonical brief kinds:**
-
-| Kind          | Skill      | Left score          | Right score          |
-| ------------- | ---------- | ------------------- | -------------------- |
-| `orientation` | /start     | Context Readiness   | Cross-Repo Urgency   |
-| `audit`       | /audit     | Combined Priority   | Innovation Density   |
-| `plan`        | /implement | Effort Shippability | Execution Confidence |
-| `closeout`    | /closeout  | Project Impact      | Ecosystem Impact     |
-| `sprint`      | /go        | Round Velocity      | Round Quality        |
-
-**Per-item required fields:** `id`, `slug`, `title`, `axis`, `leftScore` (1–10), `rightScore` (1–10), `insight` (2–3 sentences, voice-driven, no buzzwords), `evidence`.
-
-**Voice rules for `insight`** (apply universally):
-
-- 2–3 sentences max
-- Lead with what changed in plain English; optional second/third = why it matters or what compounds
-- Warm-confident voice, slight wit OK when honest
-- Forbidden words: leveraged · best-in-class · stakeholder · synergies · robust · seamless
-- Forbidden openers: "This implementation/feature/change..."
-- No process narration · no emoji inside `insight`
-
-**Cross-agent invocation:**
-
-- Claude Code: skill bodies import `scripts/lib/skill-brief.mjs` directly
-- Codex: `node -e "import('./scripts/lib/skill-brief.mjs').then(m => console.log(m.render(JSON.parse(process.argv[1]))))" '<json>'`
-- ChatGPT custom GPTs: studio-ops MCP tool `skill_brief_render({ brief })`
-- Managed agents: outcome rubric requires brief JSON; harness invokes renderer
-
-If your project doesn't yet produce briefs at session boundaries, the next `/closeout` will queue propagation. No agent invents its own format.
-
----
-
-## SIL v5.0 (CANON-030 candidate · S141)
-
-Studio Improvement Loop scoring expands from 1000 max (v3) → **2000 max + ×1.15 halo = 2300** (v5). Three tiers:
-
-- **Base** (10 categories × 100 = 1000, always-on) — functional/aligned/healthy
-- **Depth** (5 categories × 100 = 500, unlock at base ≥ 700) — good citizen of the studio
-- **Mastery** (5 categories × 100 = 500, unlock at base+depth ≥ 1200) — doing things only this studio can
-
-Mastery categories: Studio Tooling Adoption · Proprietary Surface + IP Posture · Operational Excellence · Stakeholder Value Loop · Anti-Fragility.
-
-Decay: −2%/week per stale category. Halo: +0.5%/gene · +1%/sidecar · +0.3%/importer · +2%/canon (max ×1.15).
-
-Full proposal: `vaultspark-studio-ops/docs/SIL_V5_PROPOSAL.md`. Dual-render v3+v5 begins after canon approval. Library to build: `scripts/lib/sil-v5.mjs`.
-
----
+> Each canon above is mechanized in studio-ops (doctor probe / capability / template / propagation). To act on one, read its full entry in `vaultspark-studio-ops/docs/STUDIO_CANON.md`. To propose a new canon, ship `canon-update` cargo to studio-ops — never edit a sibling repo's canon directly.
 
 <!-- studio-os:universal-sections-end -->

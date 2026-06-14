@@ -39,3 +39,7 @@ context/.session-lock
 
 # Private surfaces — never commit (sanitization 2026-06-03)
 docs/CREATIVE_DIRECTION_RECORD.md
+
+# Generated Obelisk relying-party passport stubs are public-safe references only.
+# Do not commit until the production origin is registered and the integration is wired.
+obelisk-passport/

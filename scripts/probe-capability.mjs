@@ -234,7 +234,21 @@ function interpret(r) {
 }
 
 // ── Main ────────────────────────────────────────────────────────────────
-const capMap = JSON.parse(fs.readFileSync(CAP_MAP_PATH, "utf8"));
+// S157 #8 — the map is gitignored, so CI checkouts (and fresh machines) lack
+// it. Exit with an explicit honest skip instead of an ENOENT stack trace.
+let capMap;
+try {
+  capMap = JSON.parse(fs.readFileSync(CAP_MAP_PATH, "utf8"));
+} catch (e) {
+  if (e.code === "ENOENT") {
+    if (JSON_MODE) console.log("[]");
+    console.error(
+      "⚠ secrets/CAPABILITY_MAP.json missing — probe skipped (SKIPPED=no-capability-map)",
+    );
+    process.exit(0);
+  }
+  throw e;
+}
 const caps = FILTER ? [FILTER] : Object.keys(capMap.capabilities);
 
 const results = [];

@@ -52,6 +52,13 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 
 ## Follow-ups
 
+## Completed (2026-06-14 — Session 71 /audit + /implement pass)
+
+All 3 items from `docs/AUDIT_2026-06-14_S71.md` shipped: `obelisk-passport-quarantine`, `protocol-helper-regression-harness`, and `s71-truth-sync`. Verification passed with focused Studio helper Vitest, startup brief render/validation, compact handoff, secrets audit, blocker preflight, PROJECT_STATUS invariant check, broad `npm test` (94 files / 655 tests plus 10 server files / 30 tests), and `npm run build-prod`.
+
+- Keep generated `obelisk-passport/` local until the relying-party production origin is registered and the login/callback/server verify path is intentionally wired.
+- Keep the HUMAN PRESSURE startup block as a recommended future renderer improvement; current validation remains conformant without it.
+
 ## Unified Genius List (2026-06-13 — Session 70 /go)
 
 - [done] 🔥 feedback_loop / automation · 20m · Alpha Gate Passport verification smoke — **DONE S70**: focused pulse/readiness/sidebar Vitest passed 14 tests after protocol repair.

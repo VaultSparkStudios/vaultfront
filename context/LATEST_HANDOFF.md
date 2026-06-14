@@ -4,6 +4,22 @@ This repo now keeps only a public-safe handoff summary. Detailed handoff history
 
 ## Where We Left Off — 2026-06-14
 
+**Session goal:** Continue `/start → /audit → /implement → /closeout` with a fresh S71 audit focused on making the refreshed Studio protocol helper surface shippable without accidentally promoting an unfinished Obelisk passport stub.
+
+**Shipped:** All 3 items from `docs/AUDIT_2026-06-14_S71.md` (Priority sum: 91.7). Added focused protocol helper regression coverage, quarantined generated `obelisk-passport/` relying-party stubs behind `.gitignore`, and synced public-safe truth with the new verification evidence.
+
+**Impact:** VaultFront's Studio operating surface is harder to lie with: stale briefs fail, oversized tiles identify and trim themselves explicitly, and capability readiness is tested through the same secrets-gateway path agents rely on. The Obelisk generated cargo stays available locally but cannot accidentally become public deployable auth code before the production relying-party metadata exists.
+
+**Verification:** changed Studio helper scripts passed `node --check`; focused Vitest passed 5 tests across Studio protocol and `/go` helper coverage; startup render, startup validation, compact handoff, secrets audit, blocker preflight, PROJECT_STATUS invariant check, broad `npm test`, and production build all passed. Broad test evidence is 94 files / 655 tests plus the dedicated 10 server files / 30 tests.
+
+**Known residuals:** Revenue signal remains unverified until a real checkout/supporter event is observed. The live rivalry/rematch alpha gate still needs an actual internal playtest run. Startup brief validation still warns that the recommended HUMAN PRESSURE block is absent, but all required canonical blocks pass.
+
+**Suggested next focus:** Register the Obelisk relying-party production origin before wiring login, then run the Alpha Gate operator runbook during a real rivalry/rematch playtest and keep revenue warning-level until live checkout/supporter telemetry exists.
+
+---
+
+## Where We Left Off — 2026-06-14
+
 **Session goal:** `/start → /audit → /implement → /closeout` with a fresh S70 audit focused on making the Alpha Gate Passport actionable for real internal playtest execution and hardening the repaired `/go` helper surface.
 
 **Shipped:** All 3 items from `docs/AUDIT_2026-06-14.md` (Priority sum: 108.9). Added a structured Alpha Gate operator runbook helper, tightened readiness playtest-pulse evidence to include `alphaGate.passLabel`, and added `/go` helper regression coverage proving Genius List JSON status semantics.

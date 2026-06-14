@@ -1747,7 +1747,21 @@ const lines = [
   `*Run \`node scripts/ops.mjs doctor\` for live health check · \`node scripts/ops.mjs genius-list\` to refresh hit list*`,
 ];
 
-fs.writeFileSync(outputPath, lines.join("\n"), "utf8");
+// S154 audit #4 — enforce per-tile byte budgets at the source. Overflowing
+// tiles are trimmed with an explicit marker (never silently — CANON-031).
+let briefBody = lines.join("\n");
+try {
+  const { enforceTileBudgets } = await import("./validate-brief-format.mjs");
+  const r = enforceTileBudgets(briefBody);
+  briefBody = r.body;
+  for (const t of r.trimmed)
+    console.log(
+      `  ✂ tile trimmed to budget: ${t.title} (−${t.dropped} lines, cap ${(t.budget / 1024).toFixed(1)}KB)`,
+    );
+} catch {
+  /* budget enforcement is advisory at render time */
+}
+fs.writeFileSync(outputPath, briefBody, "utf8");
 console.log(`✓ Startup brief → docs/STARTUP_BRIEF.md  (v3.2)`);
 console.log(
   `  Session ${currentSession} · SIL ${silTotal}/${silMax} · ${pct} · Unblocked ${openNow.length} / Blocked ${openBlocked.length}`,

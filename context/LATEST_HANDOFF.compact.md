@@ -1,50 +1,52 @@
 <!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
-<!-- source-hash: 400695894fe6 -->
-<!-- generated-at: 2026-06-14T02:10:19.656Z -->
+<!-- source-hash: a9ffcff26217 -->
+<!-- generated-at: 2026-06-14T02:38:06.192Z -->
 
 # LATEST_HANDOFF (compact)
 
-Session: S69 (2026-06-13)
+Session: S71 (2026-06-14)
 
-Shipped (S69):
+Shipped (S71)
 
-- Playtest pulse emits alphaGate (status, checks, passLabel, nextCheck)
-- Readiness keeps playtest-pulse warning until alphaGate ready
-- KPI Playtest Pulse tile shows Alpha Gate status + next missing check
-- Truth sync from docs/AUDIT_2026-06-13_S69.md (Priority sum 83.7)
+- Studio protocol helper regression coverage added
+- Obelisk passport relying-party stubs quarantined via .gitignore
+- Public-safe truth synced with verification evidence
+- 3/3 audit items (Priority 91.7)
 
-Verification: syntax checks pass (VaultFrontPlaytestPulse, VaultFrontReadiness, Api, GameRightSidebar); 14 focused Vitest pass; build-prod pass; npm test 91 files/647 tests + 9 server/27 tests pass.
+Verification (S71)
 
-Current intent: Use the alphaGate contract to drive a real internal rivalry/rematch playtest and turn all five checks green from live tester evidence.
+- node --check on changed helpers passed
+- Focused Vitest: 5 tests pass (Studio protocol, /go helper)
+- npm test: 94 files / 655 tests; server: 10 files / 30 tests
+- Production build passed; startup/secrets/blocker/PROJECT_STATUS checks passed
 
-Now bucket (top 3):
+Current Intent
 
-1. Run operatorNext-guided rivalry/rematch alpha gate; flip all 5 alphaGate.checks green from real playtest data
-2. Observe real revenue telemetry (checkout/supporter event), then set VAULTFRONT_REVENUE_OBSERVED=1
-3. Ship deferred engagement items: rival-system, narrator-shared-broadcast (2h), season-pass-mission-injection (8h)
+- Register Obelisk relying-party production origin before wiring login
+- Execute Alpha Gate operator runbook during a real rivalry/rematch playtest
+- Keep revenue warning-level until live checkout/supporter telemetry observed
 
-Blockers (top 3):
+Now Bucket (top 3)
 
-1. No live internal playtest run yet — alpha gate contract exists but no real tester evidence
-2. Revenue signal unverified — readiness stays warning until live checkout/supporter event observed
-3. Production build warnings: public URL placeholders, mixed JSON import attributes, large chunks, Node tooling deprecation (non-blocking)
+1. Register Obelisk relying-party production origin (unblocks login wiring)
+2. Run Alpha Gate operator runbook in real internal rivalry/rematch playtest; require all 5 alphaGate.checks green from fresh evidence
+3. Observe live revenue telemetry; set VAULTFRONT_REVENUE_OBSERVED=1 only after real checkout/supporter event
 
-Human-blocked (age):
+Blockers (top 3)
 
-- Internal rivalry/rematch playtest execution — open since S63 (2026-06-03, ~10 days)
-- Live revenue telemetry observation — open since S63 (2026-06-03, ~10 days)
-- Mobile tutorial browser smoke — open since S65 (2026-06-05, ~8 days)
+1. Revenue signal unverified — needs real checkout/supporter event
+2. Live rivalry/rematch alpha gate needs actual internal playtest run (telemetry contract ready, tester evidence missing)
+3. Startup brief validation warns missing recommended HUMAN PRESSURE block (non-blocking; required blocks pass)
 
-Residuals carried:
+Human-Blocked Items (with age)
 
-- Startup brief still renders Session 63 number despite newer entries (S65)
-- Deferred from S64: mobile-tutorial-compact-strip (shipped S65), post-match-route-replay-ai (8h), adversarial-spectator-vote (1w)
-- Larger deferred: season-pass-mission-injection, post-match-route-replay-ai, adversarial-spectator-vote
+- Real internal playtest execution: open since S69 (2026-06-13), ~1 day
+- Live revenue/supporter telemetry observation: open since S64 (2026-06-04), ~10 days
+- Obelisk relying-party production origin registration: new this session (S71)
 
-Key endpoints/contracts:
+Known Residuals
 
-- /api/vaultfront/readiness — single launch/playtest gate
-- playtest-pulse.alphaGate — 5 checks: freshness, tutorial, feedback, Rival exposure, Rival action
-- VAULTFRONT_REVENUE_OBSERVED env flag gates revenue signal
+- Production build warnings non-blocking: public URL placeholders, mixed JSON import attributes, large chunks, Node tooling deprecation
+- Obelisk generated cargo retained locally, excluded from public deploy surface
 
-Next session pointer: /start → /audit, then drive alphaGate.checks green via real rivalry/rematch internal playtest using operatorNext guidance.
+Next session: run /start, then register Obelisk relying-party origin and execute the Alpha Gate runbook against a live rivalry/rematch playtest.

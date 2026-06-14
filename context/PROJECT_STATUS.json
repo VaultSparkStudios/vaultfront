@@ -4,10 +4,10 @@
   "name": "VaultFront",
   "status": "active",
   "health": "green",
-  "currentSession": 70,
+  "currentSession": 71,
   "lastAgent": "codex",
-  "currentFocus": "Session 70 audit/implement complete: Alpha Gate operator runbook added, readiness evidence now quotes the alpha pass label, and /go helper regression coverage shipped.",
-  "nextMilestone": "Run the operatorNext-guided rivalry/rematch alpha gate, use the KPI Alpha Gate strip to inspect missing checks, and observe real checkout/supporter telemetry before clearing the revenue warning.",
+  "currentFocus": "Session 71 audit/implement complete: Studio protocol helper regression coverage shipped, generated Obelisk passport stubs quarantined until origin registration, and startup/compact/secrets probes verified.",
+  "nextMilestone": "Register the Obelisk relying-party production origin before wiring login, then run the operatorNext-guided rivalry/rematch alpha gate and observe real checkout/supporter telemetry before clearing the revenue warning.",
   "blockers": [],
   "lastUpdated": "2026-06-14",
   "lifecycle": "alpha",
@@ -23,7 +23,7 @@
       "status": "green",
       "label": "Unit and server regression",
       "command": "npm test",
-      "purpose": "Vitest core/client suite plus focused server tests. All 93 client/core test files (652 tests) plus 10 server files (30 tests) pass as of Session 70."
+      "purpose": "Vitest core/client suite plus focused server tests. All 94 client/core test files (655 tests) plus 10 server files (30 tests) pass as of Session 71."
     },
     {
       "type": "tests",
@@ -57,8 +57,8 @@
   "silMax": 1000,
   "silScoreLegacy500": null,
   "silScore": 999,
-  "testsPassing": 652,
-  "testsTotal": 652,
+  "testsPassing": 655,
+  "testsTotal": 655,
   "silCategoriesV3": {
     "devHealth": 100,
     "creativeAlignment": 100,

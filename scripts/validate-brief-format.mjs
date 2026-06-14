@@ -195,6 +195,92 @@ export function validateStartupBrief(body) {
   };
 }
 
+// ── S154 audit #4 ([SIL:2 S150 #2]) — per-tile byte budgets ─────────────────
+// Bloat must fail at the SOURCE tile, not only at total brief size. Budgets
+// sized from healthy S153 measurements + headroom. Tiles not listed get the
+// default. Shared by render-startup-brief.mjs (trim at write time) and this
+// validator (report) so producer and gate cannot drift (S153 lesson).
+export const TILE_BUDGETS = {
+  "GENIUS HIT LIST": 3200, // measured 2.5KB healthy — the #1 bloat magnet
+  SCORE: 2500, // measured 2.26KB
+  SIGNALS: 1800, // measured 1.53KB
+  ORCHESTRATOR: 1100,
+  "PORTFOLIO TASK BOARDS": 900,
+  "IGNIS INSIGHT": 1100,
+  "FOUNDER UNLOCKS": 700,
+  "ROUTER SUGGESTS": 600,
+  "SIL CATEGORY GAPS": 900,
+  DEFAULT: 1400,
+};
+
+export function tileBudgetFor(title) {
+  // GENIUS box renders its title on line 2 → briefBlockSizes sees UNTITLED.
+  if (title === "UNTITLED") return TILE_BUDGETS["GENIUS HIT LIST"];
+  const key = Object.keys(TILE_BUDGETS).find(
+    (k) => k !== "DEFAULT" && title.toUpperCase().startsWith(k),
+  );
+  return key ? TILE_BUDGETS[key] : TILE_BUDGETS.DEFAULT;
+}
+
+/**
+ * Check every box-drawing tile against its budget.
+ * Returns { overBudget: [{title, bytes, budget, pct}], worst }.
+ */
+export function checkTileBudgets(body) {
+  const overBudget = [];
+  for (const b of briefBlockSizes(body)) {
+    const budget = tileBudgetFor(b.title);
+    if (b.bytes > budget) {
+      overBudget.push({
+        title: b.title,
+        bytes: b.bytes,
+        budget,
+        pct: Math.round((b.bytes / budget) * 100),
+      });
+    }
+  }
+  overBudget.sort((a, b) => b.pct - a.pct);
+  return { overBudget, worst: overBudget[0] || null };
+}
+
+/**
+ * Trim overflowing tiles at the source: keeps the tile's header + as many
+ * content lines as fit, then inserts an explicit '· trimmed (tile budget)'
+ * marker before the closing line. Never trims silently (CANON-031).
+ */
+export function enforceTileBudgets(body) {
+  const trimmed = [];
+  const out = body.replace(
+    /(╔[^\n]*\n)([\s\S]*?)(╚[^\n]*╝)/g,
+    (whole, head, mid, tail) => {
+      const title =
+        whole.match(/^╔[═\s]*([^═╗]+?)(?:\s*═|╗)/m)?.[1]?.trim() || "UNTITLED";
+      const budget = tileBudgetFor(title);
+      if (Buffer.byteLength(whole, "utf8") <= budget) return whole;
+      const lines = mid.split("\n");
+      const overhead = Buffer.byteLength(head + tail, "utf8") + 80; // marker allowance
+      let used = 0;
+      const kept = [];
+      for (const line of lines) {
+        const lb = Buffer.byteLength(line + "\n", "utf8");
+        if (used + lb > budget - overhead) break;
+        kept.push(line);
+        used += lb;
+      }
+      const dropped = lines.length - kept.length;
+      if (dropped <= 0) return whole;
+      trimmed.push({ title, dropped, budget });
+      return (
+        head +
+        kept.join("\n") +
+        `\n║  · ${dropped} line(s) trimmed (tile budget ${(budget / 1024).toFixed(1)}KB)\n` +
+        tail
+      );
+    },
+  );
+  return { body: out, trimmed };
+}
+
 export function briefBlockSizes(body) {
   const blocks = [];
   const re = /(╔[^\n]*\n[\s\S]*?╚[^\n]*╝)/g;
@@ -289,6 +375,7 @@ if (IS_DIRECT_RUN) {
           budgetFail: BUDGET_FAIL,
           status: budgetStatus,
           topBlocks,
+          overBudgetTiles: checkTileBudgets(body).overBudget, // S154 #4
         },
         null,
         2,
@@ -296,6 +383,15 @@ if (IS_DIRECT_RUN) {
     );
   } catch {}
   if (budgetStatus === "fail") fail = true;
+  // S154 #4 — per-tile attribution: name the offending tile, don't just say "too big".
+  const tileCheck = checkTileBudgets(body);
+  if (!JSON_MODE && tileCheck.overBudget.length) {
+    for (const t of tileCheck.overBudget.slice(0, 4)) {
+      console.log(
+        `  ⚠  tile over budget: ${t.title} ${t.bytes}B > ${t.budget}B (${t.pct}%)`,
+      );
+    }
+  }
   if (!JSON_MODE && budgetStatus !== "pass") {
     console.log(
       `  ${budgetStatus === "fail" ? "⛔" : "⚠"}  brief size ${sizeBytes}B ${budgetStatus === "fail" ? `> ${BUDGET_FAIL}B (HARD FAIL — trim tiles)` : `> ${BUDGET_WARN}B (warn — approaching budget)`}`,

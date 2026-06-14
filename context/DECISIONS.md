@@ -2,6 +2,14 @@
 
 Public-safe decisions only. Detailed internal decision history is maintained privately.
 
+## 2026-06-14 — Generated Obelisk passport stubs stay local until relying-party origin registration
+
+**Decision:** `obelisk-passport/` is ignored in this repo until VaultFront has a registered production relying-party origin and a deliberate login/callback/server verification integration plan. The generated files can remain in the local workspace as reference cargo, but they are not deployable source yet.
+
+**Rationale:** The generated passport itself says production origin is unknown. Committing or wiring it now would create an unfinished auth surface and a public promise before the Obelisk relying-party contract is ready.
+
+---
+
 ## 2026-06-04 — Chain Guardian: threshold 3 consecutive captures, reset on site loss
 
 **Decision:** Chain Guardian badge fires when any player makes 3 consecutive vault captures. The chain resets when the player's `passiveOwnerID` is overwritten by a different player capturing a site they previously owned. This is a session-scoped counter (not persisted); it resets implicitly at match end.

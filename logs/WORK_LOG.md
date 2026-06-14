@@ -4,6 +4,16 @@ Append-only. Each session appends one entry. Never edit prior entries.
 
 ---
 
+## 2026-06-14 — Session 71 protocol helper guard pass
+
+- Goal: Continue `/start → /audit → /implement → /closeout` with a fresh audit around the current Studio protocol helper refresh.
+- What changed: Added `docs/AUDIT_2026-06-14_S71.*`, `tests/scripts/StudioProtocolHelpers.test.ts`, `scripts/lib/sil-categories.mjs`, an explicit `.gitignore` quarantine for generated `obelisk-passport/` stubs, refreshed `docs/IMPLEMENT_PLAN.md`, and synced public-safe context/status surfaces.
+- Files or systems touched: startup/brief/secrets/context helper scripts, protocol helper tests, audit docs, implementation plan, startup brief, closeout board, and public-safe context files.
+- Risks created or removed: Removes silent startup drift risk by testing stale-brief rejection, tile budget attribution, secrets-gateway readiness, and PROJECT_STATUS SIL invariants. Keeps Obelisk login cargo local until relying-party origin registration and deliberate auth wiring.
+- Recommended next move: Register the Obelisk relying-party production origin before wiring login, then run the Alpha Gate operator runbook during a real rivalry/rematch playtest and keep revenue warning-level until live checkout/supporter telemetry exists.
+
+---
+
 ## 2026-06-13 — Session 69 Alpha Gate Passport
 
 - Goal: `/start → /audit → /implement → /closeout` with a fresh alpha-gate evidence pass.
