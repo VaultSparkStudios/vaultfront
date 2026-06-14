@@ -2,6 +2,22 @@
 
 This repo now keeps only a public-safe handoff summary. Detailed handoff history is maintained privately.
 
+## Where We Left Off — 2026-06-14
+
+**Session goal:** `/start → /audit → /implement → /closeout` with a fresh S70 audit focused on making the Alpha Gate Passport actionable for real internal playtest execution and hardening the repaired `/go` helper surface.
+
+**Shipped:** All 3 items from `docs/AUDIT_2026-06-14.md` (Priority sum: 108.9). Added a structured Alpha Gate operator runbook helper, tightened readiness playtest-pulse evidence to include `alphaGate.passLabel`, and added `/go` helper regression coverage proving Genius List JSON status semantics.
+
+**Impact:** VaultFront now has an operator-ready bridge from telemetry to a real rivalry/rematch alpha gate. The readiness contract explains why the gate is passing or warning, and the Studio startup sprint surface has regression coverage so it cannot silently fall back to an empty or dishonest list.
+
+**Verification:** `node --check scripts/generate-genius-list.mjs`; `npx tsc --noEmit`; focused Vitest passed 10 tests across Alpha Gate runbook, readiness, and Studio go helpers; `npm run build-prod` passed; `npm test` passed (93 files / 652 tests, plus 10 server files / 30 tests).
+
+**Known residuals:** Revenue signal remains unverified until a real checkout/supporter event is observed. The live rivalry/rematch alpha gate still needs an actual internal playtest run; S70 added the runbook/evidence bridge, not live tester evidence. Production build warnings remain non-blocking: public URL placeholders, mixed JSON import attributes, large chunks, and a Node tooling deprecation warning.
+
+**Suggested next focus:** Run the generated Alpha Gate operator runbook during a real rivalry/rematch internal playtest, require all five `alphaGate.checks` to remain green from fresh evidence, then observe real revenue telemetry before setting `VAULTFRONT_REVENUE_OBSERVED=1`.
+
+---
+
 ## Where We Left Off — 2026-06-13
 
 **Session goal:** `/start → /audit → /implement → /closeout` with a fresh S69 audit focused on making the rivalry/rematch alpha gate explicit without claiming live tester or revenue evidence.

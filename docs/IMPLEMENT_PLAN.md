@@ -1,19 +1,18 @@
-# Implement Plan — 2026-06-13 S69
+# Implement Plan — 2026-06-14 S70
 
-Source: `docs/AUDIT_2026-06-13_S69.json`
+Source: `docs/AUDIT_2026-06-14.json`
 
 ## Optimal Sequence
 
-1. `alpha-gate-passport` — foundational pulse contract upgrade; readiness and the KPI panel consume the same explicit alpha-gate pass/fail standard.
-2. `kpi-alpha-gate-strip` — same observability surface; show alpha gate status and next missing check where testers already inspect VaultFront KPIs.
-3. `s69-truth-sync` — context/status write-back after verification evidence is known, without claiming live tester or revenue evidence.
+1. `alpha-gate-operator-runbook` — creates the structured operator artifact consumed by real playtest execution and future UI/readiness surfaces.
+2. `readiness-alpha-evidence-copy` — tightens the readiness evidence sentence while the runbook context is loaded.
+3. `go-helper-regression-smoke` — locks the repaired `/go` helper behavior so future startup sessions cannot regress to an empty or dishonest Genius Hit List.
 
 ## Verification Plan
 
-- `node --check src/server/VaultFrontPlaytestPulse.ts`
 - `node --check src/server/VaultFrontReadiness.ts`
-- `node --check src/client/Api.ts`
-- `node --check src/client/graphics/layers/GameRightSidebar.ts`
-- `npx vitest run tests/server/VaultFrontPlaytestPulse.test.ts tests/server/VaultFrontReadiness.test.ts tests/client/graphics/layers/GameRightSidebarVaultFeed.test.ts`
+- `node --check scripts/generate-genius-list.mjs`
+- `npx tsc --noEmit`
+- `npx vitest run tests/server/VaultFrontAlphaGateRunbook.test.ts tests/server/VaultFrontReadiness.test.ts tests/scripts/StudioGoHelpers.test.ts`
 - `npm run build-prod`
 - `npm test`

@@ -60,6 +60,10 @@ describe("buildVaultFrontReadiness", () => {
       payload.launchGates.find((gate) => gate.gate === "playtest-pulse")
         ?.evidence,
     ).toContain("alpha gate ready");
+    expect(
+      payload.launchGates.find((gate) => gate.gate === "playtest-pulse")
+        ?.evidence,
+    ).toContain("Alpha gate passed.");
   });
 
   it("warns when pulse score is ready but alpha gate evidence is incomplete", () => {
@@ -87,6 +91,10 @@ describe("buildVaultFrontReadiness", () => {
       payload.launchGates.find((gate) => gate.gate === "playtest-pulse")
         ?.evidence,
     ).toContain("Drive Rival Challenge action rate");
+    expect(
+      payload.launchGates.find((gate) => gate.gate === "playtest-pulse")
+        ?.evidence,
+    ).toContain("4/5 alpha gate checks passing.");
   });
 
   it("passes the revenue signal gate when live supporter evidence is supplied", () => {

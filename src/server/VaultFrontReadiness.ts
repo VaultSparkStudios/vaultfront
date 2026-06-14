@@ -128,7 +128,7 @@ export function buildVaultFrontReadiness(
         gate: "playtest-pulse",
         status: pulseReady ? "pass" : "warn",
         evidence: input.playtestPulse
-          ? `Pulse ${input.playtestPulse.status} at score ${input.playtestPulse.score}; alpha gate ${input.playtestPulse.alphaGate?.status ?? "not attached"}; latest event ${input.playtestPulse.freshness.lastEventAt ?? "not recorded"}. Next: ${input.playtestPulse.alphaGate?.nextCheck ?? input.playtestPulse.actionInsights?.[0] ?? "Run a focused internal playtest and inspect tutorial, feedback, and retention events."}`
+          ? `Pulse ${input.playtestPulse.status} at score ${input.playtestPulse.score}; alpha gate ${input.playtestPulse.alphaGate?.status ?? "not attached"}${input.playtestPulse.alphaGate?.passLabel ? ` (${input.playtestPulse.alphaGate.passLabel})` : ""}; latest event ${input.playtestPulse.freshness.lastEventAt ?? "not recorded"}. Next: ${input.playtestPulse.alphaGate?.nextCheck ?? input.playtestPulse.actionInsights?.[0] ?? "Run a focused internal playtest and inspect tutorial, feedback, and retention events."}`
           : "No live playtest pulse attached to this process.",
       },
     ],

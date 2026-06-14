@@ -1,11 +1,11 @@
 <!-- generated-by: scripts/render-startup-brief.mjs v3.1 -->
-<!-- generated-at: 2026-06-13 (Session 69 closeout) -->
+<!-- generated-at: 2026-06-14 (Session 70 closeout) -->
 <!-- fast-boot-valid-until: next session if within 24h -->
 <!-- brief-coherent: true -->
 
 # Startup Brief — VaultFront
 
-> **Fast-boot brief** — generated at Session 69 closeout · 2026-06-13.
+> **Fast-boot brief** — generated at Session 70 closeout · 2026-06-14.
 > Valid for next session if started within 24h. For sessions >24h later, load context files fresh (start.md §3).
 
 ---
@@ -14,7 +14,7 @@
 ╔════════════════════════════════════════════════════════════════╗
 ║  🎮 VAULTFRONT                                                   ║
 ║  game · alpha/internal · FORGE                                   ║
-║  Session 70 · 2026-06-13 · FOUNDER MODE                          ║
+║  Session 71 · 2026-06-14 · FOUNDER MODE                          ║
 ║  Owner: VaultSpark Studios                                       ║
 ╚════════════════════════════════════════════════════════════════╝
 
@@ -31,8 +31,8 @@
 
 ╔══ SCORE ═══════════════════════════════════════════════════════╗
 ║                                                                  ║
-║    998/1000   ███████████████████████░   100%                    ║
-║    SIL v3.0  ·  Avg3: 88.7  ·  Velocity 96↑                      ║
+║    999/1000   ███████████████████████░   100%                    ║
+║    SIL v3.0  ·  Avg3: 88.7  ·  Velocity 98↑                      ║
 ║    Last active: 0d  ·  Last closeout: 0d  ·  (active = newest o  ║
 ║    Trend    ↑  (last 5 sessions)                                 ║
 ║                                                                  ║
@@ -44,31 +44,31 @@
 ║    Engagement        28    ███░░░░░░░  —        →                ║
 ║    Process Qual      10    █░░░░░░░░░  —        →                ║
 ║    Coherence        100    ██████████  ········ →                ║
-║    Security          99    ██████████  ········ →                ║
+║    Security         100    ██████████  ········ →                ║
 ║    Ecosystem        100    ██████████  ········ →                ║
 ║    Capital           99    ██████████  ········ →                ║
 ║    Automation       100    ██████████  ········ →                ║
 ║                                                                  ║
 ╚════════════════════════════════════════════════════════════════╝
 
-╔══ WHERE WE LEFT OFF  ·  Session 69 ════════════════════════════╗
+╔══ WHERE WE LEFT OFF  ·  Session 70 ════════════════════════════╗
 ║  Shipped:  see LATEST_HANDOFF.md                                 ║
-║  Tests:    647 passing  ·  Deploy: N/A                           ║
+║  Tests:    652 passing  ·  Deploy: N/A                           ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ CONTEXT METER ═══════════════════════════════════════════════╗
-║  ✓  ░░░░░░░░░░░░░░░░░░░░░░░░    2% used                          ║
-║     15,728 / 1,000,000 tok  ·  codex/codex-1m  ·  measured+heur  ║
-║     ~7,864 tok/turn  ·  cache 50%  ·  114 turns to compact       ║
+║  ✓  ░░░░░░░░░░░░░░░░░░░░░░░░    1% used                          ║
+║     11,292 / 1,000,000 tok  ·  codex/codex-1m  ·  measured+heur  ║
+║     ~5,646 tok/turn  ·  cache 50%  ·  160 turns to compact       ║
 ║     Verdict: CONTINUE                                            ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ SIGNALS ═════════════════════════════════════════════════════╗
-║  ✓  Tests         647/647 passing                                ║
-║  ✓  Velocity      96 ↑  ·  Debt: →                               ║
+║  ✓  Tests         652/652 passing                                ║
+║  ✓  Velocity      98 ↑  ·  Debt: →                               ║
 ║  ✓  Runway        strong                                         ║
 ║  ⛔  Context age   ?d                                             ║
-║  ⚠  IGNIS         42978 FORGE  ·  10d old                        ║
+║  ⚠  IGNIS         42978 FORGE  ·  11d old                        ║
 ║  ✓  Truth         green  ·  Genome: ?                            ║
 ║  ⚠  Compliance   not tracked — run: node scripts/ops.mjs compli  ║
 ║  ✓  Genome dims   all stable  (?/25)                             ║
@@ -82,10 +82,10 @@
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ PORTFOLIO TASK BOARDS ═══════════════════════════════════════╗
-║  Total: 7421 open · 7123 unblocked · 298 blocked                 ║
-║  Crit 254 · High 1257 · 29/36 repos active                       ║
+║  Total: 7464 open · 7166 unblocked · 298 blocked                 ║
+║  Crit 258 · High 1268 · 29/36 repos active                       ║
 ║                                                                  ║
-║                             613 open · 590 unblk · C45 H159      ║
+║                             619 open · 595 unblk · C46 H161      ║
 ║    … +28 more — run: node scripts/lib/cross-repo-tasks.mjs       ║
 ╚════════════════════════════════════════════════════════════════╝
 
@@ -98,18 +98,29 @@
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ MOMENTUM METER ══════════════════════════════════════════════╗
-║  Velocity:   —  96↑  (last 5 sessions)                           ║
+║  Velocity:   —  98↑  (last 5 sessions)                           ║
 ║  Intent:     100% achieved last 5                                ║
 ║  Streak:     — (last intent not achieved)                        ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ GENIUS HIT LIST ═════════════════════════════════════════════╗
-║  Run `node scripts/ops.mjs genius-list` to generate fresh recom  ║
+║  ✓ #1 🔥 Alpha Gate Passport verification smoke                  ║
+║     20m · feedback_loop / automation · sonnet                    ║
+║  ✓ #2 ⚡ Document next alpha-gate operator action                 ║
+║     20m · process / truth · sonnet                               ║
+║  ✓ #3 ⚡ Keep revenue warning honest                              ║
+║     20m · capital_efficiency / truth · sonnet                    ║
+║  ✓ #4 ⚡ Production build regression gate                         ║
+║     20m · dev_health / automation · sonnet                       ║
+║  ⏸ #5 🔥 Manual rivalry/rematch alpha playtest                   ║
+║     1h · feedback_loop / launch · sonnet                         ║
+║  ⏸ #6 ⚠ Observe live checkout/supporter event                    ║
+║     manual · capital_efficiency / revenue · sonnet               ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ```
 
 ---
 
-_Generated by `scripts/render-startup-brief.mjs v3.1` · Session 69 closeout · 2026-06-13_
+_Generated by `scripts/render-startup-brief.mjs v3.1` · Session 70 closeout · 2026-06-14_
 _Run `node scripts/ops.mjs doctor` for live health check · `node scripts/ops.mjs genius-list` to refresh hit list_

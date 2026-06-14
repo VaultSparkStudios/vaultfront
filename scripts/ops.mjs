@@ -12,7 +12,8 @@
  *   blocker-preflight     Run scripts/blocker-preflight.mjs
  *   startup-brief         Run scripts/render-startup-brief.mjs
  *   closeout-board        Run scripts/render-closeout-board.mjs
- *   genius-list           Run scripts/render-startup-brief.mjs (genius section)
+ *   genius-list           Run scripts/generate-genius-list.mjs --write
+ *   innovation-pack       Run scripts/innovation-pack.mjs
  *   write-session-lock    Run scripts/write-session-lock.mjs
  *   check-secrets         Run scripts/check-secrets.mjs
  *   doctor                Print project health summary
@@ -31,7 +32,8 @@ const SUBCOMMAND_MAP = {
   "blocker-preflight": "blocker-preflight.mjs",
   "startup-brief": "render-startup-brief.mjs",
   "closeout-board": "render-closeout-board.mjs",
-  "genius-list": "render-startup-brief.mjs",
+  "genius-list": "generate-genius-list.mjs",
+  "innovation-pack": "innovation-pack.mjs",
   "write-session-lock": "write-session-lock.mjs",
   "check-secrets": "check-secrets.mjs",
 };
@@ -66,7 +68,9 @@ if (!scriptFile) {
 }
 
 const scriptPath = path.join(SCRIPTS, scriptFile);
-const result = spawnSync(process.execPath, [scriptPath, ...rest], {
+const mappedArgs =
+  subcommand === "genius-list" && rest.length === 0 ? ["--write"] : rest;
+const result = spawnSync(process.execPath, [scriptPath, ...mappedArgs], {
   stdio: "inherit",
 });
 process.exit(result.status ?? 0);

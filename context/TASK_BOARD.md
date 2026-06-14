@@ -52,6 +52,19 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 
 ## Follow-ups
 
+## Unified Genius List (2026-06-13 — Session 70 /go)
+
+- [done] 🔥 feedback_loop / automation · 20m · Alpha Gate Passport verification smoke — **DONE S70**: focused pulse/readiness/sidebar Vitest passed 14 tests after protocol repair.
+- [done] ⚡ process / truth · 20m · Document next alpha-gate operator action — **DONE S70**: task board synced append-only, startup brief regenerated, and `validate-task-ids` passed.
+- [done] ⚡ capital_efficiency / truth · 20m · Keep revenue warning honest — **DONE S70**: startup brief still reports revenue signal as blocked/unverified and broad `npm test` passed.
+- [done] ⚡ dev_health / automation · 20m · Production build regression gate — **DONE S70**: `npm run build-prod` passed after `/go` helper repair.
+- [human-blocked] 🔥 feedback_loop / launch · 1h · Manual rivalry/rematch alpha playtest — requires real tester/manual playtest evidence.
+- [human-blocked] ⚠ capital_efficiency / revenue · manual · Observe live checkout/supporter event — requires real checkout/supporter telemetry.
+
+## Completed (2026-06-14 — Session 70 /audit + /implement pass)
+
+All 3 items from `docs/AUDIT_2026-06-14.md` shipped: `alpha-gate-operator-runbook`, `go-helper-regression-smoke`, and `readiness-alpha-evidence-copy`. Verification passed with focused Vitest, `npx tsc --noEmit`, production build, and broad `npm test` (93 files / 652 tests plus 10 server files / 30 tests).
+
 - Use the KPI Alpha Gate strip during the next rivalry/rematch alpha gate; do not mark the live playtest complete until all five `alphaGate.checks` are green from real tester evidence.
 
 - ~~Run a focused internal rivalry/rematch playtest and inspect the new pulse fields: `retentionChallengeShown`, `retentionRequeued`, `retentionRematchRequested`, and `rates.retentionAction`.~~ ✅ Instrumented for the next playtest (Session 68 adds `operatorNext`, KPI Rival action %, and latest signal age).

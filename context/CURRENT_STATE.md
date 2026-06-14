@@ -6,6 +6,32 @@ Public-safe summary:
 - internal operational records were sanitized for public-repo safety on 2026-04-03
 - detailed internal state now lives in the private Studio OS / ops repository
 
+## 2026-06-14 — Session 70 Audit + Implement Pass Complete
+
+Shipped all 3 items from `docs/AUDIT_2026-06-14.md`.
+
+**New fixes added:**
+
+- Added `VaultFrontAlphaGateRunbook`, a structured operator runbook helper that turns playtest pulse + readiness data into a checklist, success criteria, evidence fields, and warnings.
+- Readiness playtest-pulse launch-gate evidence now includes the `alphaGate.passLabel`, so warning/pass branches explain the standard being applied.
+- Added Studio `/go` helper regression coverage for `generate-genius-list.mjs --json`, including done-item semantics and human-blocked live-evidence gates.
+- `PROJECT_STATUS` now reflects the S70 focus and 652 broad passing tests plus 30 server tests.
+
+**Verification:** `node --check scripts/generate-genius-list.mjs`; `npx tsc --noEmit`; focused Vitest passed 10 tests across runbook/readiness/go-helper coverage; `npm run build-prod` is green; broad `npm test` is green (93 files / 652 tests, plus 10 server files / 30 tests). Remaining evidence warnings are intentional: real rivalry/rematch playtest evidence and real checkout/supporter telemetry are still not observed.
+
+## 2026-06-14 — Session 70 /go Protocol Repair + Verification Pass Complete
+
+Shipped the `/go` protocol repair from the approved plan and executed the refreshed unblocked verification list.
+
+**New fixes added:**
+
+- Restored the missing public-repo `/go` helper chain: `generate-genius-list`, `cache-genius-list`, `set-active-skill`, and `innovation-pack`.
+- `scripts/ops.mjs genius-list` now writes `.cache/genius-list.json` and `docs/GENIUS_LIST.md`, allowing startup briefs to embed a real Genius Hit List again.
+- Recreated `context/.session-lock` for the active Codex session and regenerated `docs/STARTUP_BRIEF.md`.
+- Synced the Session 70 Unified Genius List into `TASK_BOARD` append-only and marked the four unblocked verification items done.
+
+**Verification:** helper syntax checks passed; focused Alpha Gate Vitest passed 14 tests; startup brief validation is conformant with only the existing recommended `HUMAN PRESSURE` warning; `npm run build-prod` is green; broad `npm test` is green (91 files / 647 tests, plus 9 server files / 27 tests). Remaining evidence warnings are intentional: real rivalry/rematch playtest evidence and real checkout/supporter telemetry are still not observed.
+
 ## 2026-06-13 — Session 69 Alpha Gate Passport Pass Complete
 
 Shipped 2 product items plus truth sync from `docs/AUDIT_2026-06-13_S69.md`.

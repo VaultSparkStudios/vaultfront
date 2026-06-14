@@ -3,8 +3,18 @@
 # Truth Audit
 
 Overall status: green
-Last reviewed: 2026-06-13
+Last reviewed: 2026-06-14
 Public-safe summary only. Sensitive verification notes are maintained privately.
+
+## 2026-06-14
+
+- `docs/AUDIT_2026-06-14.md` and JSON sidecar match shipped code/test changes and mark all 3 items shipped.
+- Alpha Gate runbook truth: `VaultFrontAlphaGateRunbook` turns pulse/readiness payloads into checklist, success criteria, evidence fields, and warnings without clearing revenue evidence.
+- Readiness truth: playtest-pulse evidence now includes the alpha gate pass label in warning and pass branches.
+- Studio protocol truth: `generate-genius-list.mjs --json` has focused regression coverage for done-item semantics and human-blocked live-evidence gates.
+- Broad test evidence is now 93 main test files / 652 tests plus 10 server test files / 30 tests.
+- `npm run build-prod` passes; known non-blocking warnings remain for public URL placeholders, mixed JSON import attributes, large chunks, and Node tooling deprecation.
+- Revenue signal remains unverified until live checkout/supporter telemetry is observed.
 
 ## 2026-06-13
 

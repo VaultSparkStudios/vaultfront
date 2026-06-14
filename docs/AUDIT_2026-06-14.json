@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "/audit skill v1.0",
+  "generatedAt": "2026-06-14",
+  "project": "vaultfront",
+  "type": "game",
+  "summary": "One ranked improvement plan focused on turning the Alpha Gate Passport into an operator-safe evidence loop and hardening the repaired /go protocol.",
+  "topLine": {
+    "totalItems": 3,
+    "combinedPriority": 108.9,
+    "top3": [
+      "alpha-gate-operator-runbook",
+      "go-helper-regression-smoke",
+      "readiness-alpha-evidence-copy"
+    ]
+  },
+  "items": [
+    {
+      "slug": "alpha-gate-operator-runbook",
+      "tier": "🔥",
+      "axis": "feedback_loop / ux / gamification",
+      "effort": "1h",
+      "impact": 9,
+      "innovation": 8,
+      "priority": 48,
+      "item": "The Alpha Gate Passport now computes the right checks, but the next real playtest still requires an operator to translate that payload into an evidence script. Add a reusable operator runbook builder that turns alphaGate, operatorNext, rates, and readiness status into a concise checklist with success criteria and proof fields.",
+      "why": "This closes the gap between telemetry and live playtest execution without pretending instrumentation is evidence. It makes the next rivalry/rematch alpha gate repeatable by any tester and keeps the final pass/fail standard attached to the payload that readiness already trusts.",
+      "recipe": "Add a server-side Alpha Gate runbook helper that accepts a playtest pulse summary plus readiness status and returns title, status, checklist, success criteria, evidence fields, and warning copy; cover blocked/warming/ready samples in focused tests.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Return a checklist from alphaGate.nextCheck and operatorNext.steps."
+        },
+        "L2": {
+          "effortHours": 1,
+          "recipe": "Return structured title/status/checklist/success/evidence/warnings from pulse + readiness and test blocked/warming/ready branches."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Also expose the runbook via readiness response and a client KPI drawer."
+        }
+      }
+    },
+    {
+      "slug": "go-helper-regression-smoke",
+      "tier": "🔥",
+      "axis": "process / automation / dev_health",
+      "effort": "45m",
+      "impact": 8,
+      "innovation": 6,
+      "priority": 36,
+      "item": "Session 70 repaired missing /go helper scripts, but without tests the repo can silently drift back to an empty Genius Hit List. Add regression coverage that proves the generator emits actionable items, preserves done status, and keeps manual evidence gates human-blocked.",
+      "why": "The startup brief is load-bearing for Codex and Claude handoff. A tiny smoke test prevents a high-cost failure mode where a future /start looks healthy while the sprint surface is empty or dishonest.",
+      "recipe": "Add focused Vitest coverage that spawns `scripts/generate-genius-list.mjs --json`, validates schema fields, confirms at least one done item after S70, and confirms live playtest/revenue items remain blocked.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Test generator JSON parses and has items."
+        },
+        "L2": {
+          "effortHours": 0.75,
+          "recipe": "Test done/human-blocked status semantics plus command presence for actionable items."
+        },
+        "L3": {
+          "effortHours": 2,
+          "recipe": "Add cache writer/readback smoke with temp output injection."
+        }
+      }
+    },
+    {
+      "slug": "readiness-alpha-evidence-copy",
+      "tier": "⚡",
+      "axis": "feedback_loop / truth / ux",
+      "effort": "30m",
+      "impact": 7,
+      "innovation": 5,
+      "priority": 24.9,
+      "item": "Readiness evidence currently includes alpha gate status and next action, but omits the pass label/check state that tells a human why the gate is or is not ready. Tighten the evidence sentence so closeout and launch checks can quote the standard directly.",
+      "why": "This is an honesty improvement, not a cosmetic wording pass. The readiness surface should explain exactly what proof exists and what proof is missing before anyone clears alpha or revenue warnings.",
+      "recipe": "Include alphaGate.passLabel in playtest-pulse launch-gate evidence and add focused readiness assertions for warming and ready states.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.25,
+          "recipe": "Append passLabel to the readiness evidence sentence."
+        },
+        "L2": {
+          "effortHours": 0.5,
+          "recipe": "Append passLabel and test both warning and pass readiness branches."
+        },
+        "L3": {
+          "effortHours": 1.5,
+          "recipe": "Expose individual alpha check booleans in readiness evidence metadata."
+        }
+      }
+    }
+  ],
+  "innovationReserve": ["alpha-gate-operator-runbook"],
+  "skipped": [
+    {
+      "slug": "manual-rivalry-playtest-execution",
+      "reason": "Still requires real tester/manual browser evidence; this audit ships the runbook that makes the pass repeatable."
+    },
+    {
+      "slug": "manual-live-revenue-clear",
+      "reason": "Requires a real checkout/supporter event; readiness and startup must keep warning until evidence exists."
+    }
+  ],
+  "executionLog": [
+    {
+      "slug": "alpha-gate-operator-runbook",
+      "status": "SHIPPED",
+      "summary": "Added a structured Alpha Gate operator runbook helper that turns pulse/readiness data into checklist, success criteria, evidence fields, and warnings without clearing revenue evidence."
+    },
+    {
+      "slug": "readiness-alpha-evidence-copy",
+      "status": "SHIPPED",
+      "summary": "Readiness playtest-pulse evidence now includes the alphaGate pass label in both warning and pass branches."
+    },
+    {
+      "slug": "go-helper-regression-smoke",
+      "status": "SHIPPED",
+      "summary": "Added focused Vitest coverage for the generated Genius List JSON contract, done-item semantics, and human-blocked live-evidence gates."
+    }
+  ]
+}

@@ -4,12 +4,18 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 998/1000 | Velocity: 96↑ | Debt: → | Velocity trend: ↑
+Total: 999/1000 | Velocity: 98↑ | Debt: → | Velocity trend: ↑
 Avgs — 3: 88.7 | Momentum runway: strong | Intent rate: 100%
 3-session: Dev 10 | Align 30 | Momentum 13 | Engage 28 | Process 10
-Last session: 2026-06-13 Session 69 Alpha Gate Passport pass
+Last session: 2026-06-14 Session 70 Alpha Gate runbook pass
 
 <!-- rolling-status-end -->
+
+## Sprint: 2026-06-14 — Session 70 Alpha Gate Runbook + Protocol Guard Pass (SIL estimate: 999/1000)
+
+Shipped all 3 Session-70 audit items from `docs/AUDIT_2026-06-14.md` (Priority sum: 108.9). Highlights: Alpha Gate operator runbook helper, readiness evidence that quotes `alphaGate.passLabel`, and focused `/go` helper regression coverage for honest Genius List status semantics.
+
+**Delta: 998 → 999.** automationCoverage +1 in practical evidence because the repaired startup/go surface now has regression coverage; process and engagement evidence deepen via the operator runbook. Score holds one point shy of perfect because live revenue/supporter evidence remains unobserved and the real rivalry/rematch alpha gate still needs a live run.
 
 ## Sprint: 2026-06-13 — Session 69 Alpha Gate Passport Pass (SIL held: 998/1000)
 

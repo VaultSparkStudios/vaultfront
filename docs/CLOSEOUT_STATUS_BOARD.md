@@ -1,28 +1,28 @@
 <!-- generated-by: scripts/render-closeout-board.mjs v1.0 -->
-<!-- generated-at: 2026-06-13 (Session 69 closeout) -->
+<!-- generated-at: 2026-06-14 (Session 69 closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
 ╔══ SESSION CLOSEOUT · VaultFront · S69 ═════════════════════════╗
-║  Date: 2026-06-13  ·  SIL: 998/1000  ·  Velocity: —              ║
+║  Date: 2026-06-14  ·  SIL: 999/1000  ·  Velocity: —              ║
 ║  Mode: FOUNDER  ·  Agent: codex                                  ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WHAT SHIPPED · last 5 commits ═══════════════════════════════╗
+║  ✓ feat(vaultfront): add alpha gate passport                     ║
 ║  ✓ chore(closeout): ship session 68 operator playtest script     ║
 ║  ✓ feat(vaultfront): ship session 67 playtest funnel             ║
 ║  ✓ chore(closeout): refresh session 66 board                     ║
 ║  ✓ feat(vaultfront): ship session 66 audit pass                  ║
-║  ✓ chore(closeout): ignore generated session artifacts           ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ SCORES · SIL 998/1000 ═══════════════════════════════════════╗
+╔══ SCORES · SIL 999/1000 ═══════════════════════════════════════╗
 ║    Dev Health         100  ██████████                            ║
 ║    Alignment          100  ██████████                            ║
 ║    Momentum           100  ██████████                            ║
 ║    Engagement         100  ██████████                            ║
 ║    Process Qual       100  ██████████                            ║
 ║    Coherence          100  ██████████                            ║
-║    Security           99   ██████████                            ║
+║    Security           100  ██████████                            ║
 ║    Ecosystem          100  ██████████                            ║
 ║    Capital            99   ██████████                            ║
 ║    Automation         100  ██████████                            ║
@@ -31,7 +31,7 @@
 ║  ✓ context/CURRENT_STATE.md                                      ║
 ║  ✓ context/TASK_BOARD.md                                         ║
 ║  ✓ context/LATEST_HANDOFF.md                                     ║
-║  ✓ logs/WORK_LOG.md                                              ║
+║  · logs/WORK_LOG.md                                              ║
 ║  · context/DECISIONS.md                                          ║
 ║  ✓ context/SELF_IMPROVEMENT_LOOP.md                              ║
 ║  · docs/CREATIVE_DIRECTION_RECORD.md                             ║
@@ -40,14 +40,14 @@
 ║  · agent memory (~/.claude/projects/<slug>/memory/)              ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 42 files  ·  M:39 A:0 D:0 ?:3                          ║
+║  Changes: 45 files  ·  M:34 A:0 D:0 ?:11                         ║
 ║  Ahead: 0  ·  Behind: 0                                          ║
 ║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
 ║  Doctor:        —                                                ║
 ║  Compliance:    —                                                ║
-║  Tests:         647/647                                          ║
+║  Tests:         652/652                                          ║
 ║  IGNIS:         11d ago                                          ║
 ║  Truth:         green                                            ║
 ║  Sanitization:  —                                                ║
