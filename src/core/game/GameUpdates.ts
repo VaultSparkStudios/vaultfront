@@ -434,6 +434,19 @@ export interface VaultFrontSquadObjectiveState {
   rewarded: boolean;
 }
 
+export interface VaultFrontPressureState {
+  /** Bounded delivery pressure accumulated toward a Breach Window. */
+  pressure: number;
+  /** Pressure required to open a Breach Window. */
+  threshold: number;
+  /** Tick at which the active window closes, or 0 when no window is open. */
+  breachWindowUntilTick: Tick;
+  /** Deliveries still required during the active window to secure victory. */
+  deliveriesRequired: 0 | 1;
+  /** True once this player/team secured a Vault Breach victory. */
+  victorySecured: boolean;
+}
+
 export interface VaultFrontStatusUpdate {
   type: GameUpdateType.VaultFrontStatus;
   weeklyMutator:
@@ -462,6 +475,8 @@ export interface VaultFrontStatusUpdate {
   surges: Record<number, VaultFrontSurgeState>;
   /** Active squad objective windows (visible to all players) */
   squadObjectives: VaultFrontSquadObjectiveState[];
+  /** Vault Pressure state keyed by player small ID. */
+  pressure: Record<number, VaultFrontPressureState>;
 }
 
 export interface VaultFrontActivityUpdate {
@@ -481,7 +496,9 @@ export interface VaultFrontActivityUpdate {
     | "heist_executed"
     | "bounty_collected"
     | "map_event"
-    | "chain_guardian_earned";
+    | "chain_guardian_earned"
+    | "breach_window_opened"
+    | "vault_breach_victory";
   tile: TileRef;
   sourcePlayerID: number | null;
   targetPlayerID: number | null;

@@ -92,6 +92,44 @@
       content="Lead your nation in VaultFront, a fast multiplayer strategy battle royale focused on timing, objectives, and tactical comebacks."
     />
 
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="VaultFront - Battle Royale" />
+    <meta
+      name="twitter:description"
+      content="Capture objectives, escort convoys, jam routes, and breach the VaultFront."
+    />
+    <link
+      rel="alternate"
+      type="application/json"
+      href="/agents.json"
+      title="VaultFront agent capabilities"
+    />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "VideoGame",
+            "name": "VaultFront",
+            "applicationCategory": "Game",
+            "gamePlatform": "Web browser",
+            "url": "https://vaultfront.vaultsparkstudios.com/",
+            "isBasedOn": "https://github.com/openfrontio/OpenFrontIO",
+            "publisher": {
+              "@type": "Organization",
+              "name": "VaultSpark Studios LLC",
+              "url": "https://vaultsparkstudios.com"
+            }
+          },
+          {
+            "@type": "Organization",
+            "name": "VaultSpark Studios LLC",
+            "url": "https://vaultsparkstudios.com"
+          }
+        ]
+      }
+    </script>
+
     <!-- Open Graph -->
     <meta property="og:url" content="%VITE_CANONICAL_URL%" />
     <meta property="og:title" content="VaultFront - Battle Royale" />
@@ -342,6 +380,7 @@
     <intercept-celebration></intercept-celebration>
     <contract-hud-widget></contract-hud-widget>
     <coach-hint-engine></coach-hint-engine>
+    <progression-debrief></progression-debrief>
     <play-style-chip></play-style-chip>
     <game-starting-modal></game-starting-modal>
     <unit-display></unit-display>

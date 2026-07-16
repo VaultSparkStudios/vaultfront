@@ -19,7 +19,20 @@ export interface MatchResult {
   mapName: string;
   playerCount: number;
   /** All participants in the match (used for Elo calculation). */
-  allPlayers: Array<{ persistentId: string; won: boolean }>;
+  allPlayers: Array<{
+    persistentId: string;
+    displayName?: string;
+    won: boolean;
+  }>;
+  /** Optional authoritative per-player metrics for one-shot match fan-out. */
+  statsByPersistentId?: Record<
+    string,
+    {
+      vaultCaptures: number;
+      convoyDeliveries: number;
+      executionChains: number;
+    }
+  >;
 }
 
 export interface MatchHistoryEntry {
@@ -233,7 +246,8 @@ class PlayerStatsStore {
       const eloMap = new Map<string, number>();
       const matchCountMap = new Map<string, number>();
       for (const p of result.allPlayers) {
-        const name = p.persistentId === persistentId ? displayName : "";
+        const name =
+          p.displayName ?? (p.persistentId === persistentId ? displayName : "");
         const { eloRating, matchesPlayed } = await this.pgEnsurePlayer(
           client,
           p.persistentId,
@@ -274,6 +288,11 @@ class PlayerStatsStore {
         const newElo = Math.max(100, eloResult.newRatingA);
         const eloDelta = newElo - currentElo;
         const isSubject = p.persistentId === persistentId;
+        const playerMetrics = result.statsByPersistentId?.[p.persistentId] ?? {
+          vaultCaptures: isSubject ? result.vaultCaptures : 0,
+          convoyDeliveries: isSubject ? result.convoyDeliveries : 0,
+          executionChains: isSubject ? result.executionChains : 0,
+        };
 
         await client.query(
           `UPDATE player_stats SET
@@ -291,9 +310,9 @@ class PlayerStatsStore {
             newElo,
             isWinner ? 1 : 0,
             isWinner ? 0 : 1,
-            isSubject ? result.vaultCaptures : 0,
-            isSubject ? result.convoyDeliveries : 0,
-            isSubject ? result.executionChains : 0,
+            playerMetrics.vaultCaptures,
+            playerMetrics.convoyDeliveries,
+            playerMetrics.executionChains,
           ],
         );
 
@@ -307,10 +326,10 @@ class PlayerStatsStore {
             p.persistentId,
             gameId,
             isWinner,
-            isSubject ? result.durationSeconds : 0,
-            isSubject ? result.vaultCaptures : 0,
-            isSubject ? result.convoyDeliveries : 0,
-            isSubject ? result.executionChains : 0,
+            result.durationSeconds,
+            playerMetrics.vaultCaptures,
+            playerMetrics.convoyDeliveries,
+            playerMetrics.executionChains,
             currentElo,
             newElo,
             eloDelta,
@@ -346,7 +365,8 @@ class PlayerStatsStore {
     result: MatchResult,
   ): Promise<void> {
     for (const p of result.allPlayers) {
-      const name = p.persistentId === persistentId ? displayName : "";
+      const name =
+        p.displayName ?? (p.persistentId === persistentId ? displayName : "");
       this.memEnsurePlayer(p.persistentId, name);
     }
 
@@ -378,20 +398,23 @@ class PlayerStatsStore {
       else rec.losses += 1;
       rec.updatedAt = now;
       const isSubject = p.persistentId === persistentId;
-      if (isSubject) {
-        rec.vaultCaptures += result.vaultCaptures;
-        rec.convoyDeliveries += result.convoyDeliveries;
-        rec.executionChains += result.executionChains;
-      }
+      const playerMetrics = result.statsByPersistentId?.[p.persistentId] ?? {
+        vaultCaptures: isSubject ? result.vaultCaptures : 0,
+        convoyDeliveries: isSubject ? result.convoyDeliveries : 0,
+        executionChains: isSubject ? result.executionChains : 0,
+      };
+      rec.vaultCaptures += playerMetrics.vaultCaptures;
+      rec.convoyDeliveries += playerMetrics.convoyDeliveries;
+      rec.executionChains += playerMetrics.executionChains;
       this.memHistory.push({
         id: this.nextId++,
         persistentId: p.persistentId,
         gameId,
         won: p.won,
-        durationSeconds: isSubject ? result.durationSeconds : 0,
-        vaultCaptures: isSubject ? result.vaultCaptures : 0,
-        convoyDeliveries: isSubject ? result.convoyDeliveries : 0,
-        executionChains: isSubject ? result.executionChains : 0,
+        durationSeconds: result.durationSeconds,
+        vaultCaptures: playerMetrics.vaultCaptures,
+        convoyDeliveries: playerMetrics.convoyDeliveries,
+        executionChains: playerMetrics.executionChains,
         eloBefore,
         eloAfter: rec.eloRating,
         eloDelta: rec.eloRating - eloBefore,
@@ -780,10 +803,7 @@ export const playerStatsStore = new PlayerStatsStore();
 // ---------------------------------------------------------------------------
 
 export type PlayStyle =
-  | "Iron Fist"
-  | "Convoy Lord"
-  | "Shadow Broker"
-  | "Balanced";
+  "Iron Fist" | "Convoy Lord" | "Shadow Broker" | "Balanced";
 
 export interface StyleEntry {
   matchId: string;

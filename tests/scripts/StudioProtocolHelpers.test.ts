@@ -128,3 +128,71 @@ describe("Studio protocol helper regressions", () => {
     });
   });
 });
+
+describe("public protocol compatibility", () => {
+  it("parses compact public task bullets and human-blocked tasks", async () => {
+    const { parseHumanItems, parseUnifiedItems } =
+      await import("../../scripts/lib/task-board.mjs");
+    const board = [
+      "## Unified Genius List (Session 73)",
+      "",
+      "- [done] 🔥 feedback_loop / automation · 20m · Alpha evidence — verified",
+      "- [human-blocked] ⚠ launch · manual · Real playtest — requires people",
+    ].join("\n");
+
+    expect(parseUnifiedItems(board)).toMatchObject([
+      { status: "done", tier: "🔥", effort: "20m", title: "Alpha evidence" },
+      {
+        status: "human-blocked",
+        tier: "⚠",
+        effort: "manual",
+        title: "Real playtest",
+      },
+    ]);
+    expect(parseHumanItems(board)[0].title).toBe("Real playtest");
+  });
+
+  it("extracts the labeled intent used by current public handoffs", async () => {
+    const { extractCurrentSessionIntent } =
+      await import("../../scripts/lib/task-board.mjs");
+    expect(
+      extractCurrentSessionIntent(
+        "# Handoff\n\n## Where We Left Off — today\n\n**Session Intent:** Ship the recovery arc.\n",
+      ),
+    ).toBe("Ship the recovery arc.");
+  });
+
+  it("classifies lint-staged residue without treating it as committed work", async () => {
+    const { classifyRecovery } =
+      await import("../../scripts/classify-recovery-provenance.mjs");
+    const result = classifyRecovery({
+      status: [
+        { status: " M", path: "prompts/start.md" },
+        { status: "??", path: "src/new.ts" },
+      ],
+      stashes: "stash@{0} On main: lint-staged automatic backup",
+      markerFiles: [],
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.lintStagedBackups).toHaveLength(1);
+    expect(result.counts).toMatchObject({
+      "propagated-protocol": 1,
+      "current-work": 1,
+    });
+  });
+
+  it("treats unresolved merge markers as corruption", async () => {
+    const { classifyRecovery } =
+      await import("../../scripts/classify-recovery-provenance.mjs");
+    const result = classifyRecovery({
+      status: [],
+      markerFiles: ["prompts/start.md"],
+    });
+    expect(result).toMatchObject({
+      ok: false,
+      corrupt: true,
+      unresolvedMergeMarkers: ["prompts/start.md"],
+    });
+  });
+});

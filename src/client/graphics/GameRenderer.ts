@@ -2,6 +2,7 @@ import { EventBus } from "../../core/EventBus";
 import { GameView } from "../../core/game/GameView";
 import { UserSettings } from "../../core/game/UserSettings";
 import { ContractHudWidget } from "../components/ContractHudWidget";
+import { ProgressionDebrief } from "../components/ProgressionDebrief";
 import { GameStartingModal } from "../GameStartingModal";
 import { RefreshGraphicsEvent as RedrawGraphicsEvent } from "../InputHandler";
 import { FrameProfiler } from "./FrameProfiler";
@@ -188,6 +189,12 @@ export function createRenderer(
   if (coachHint instanceof CoachHintEngine) {
     coachHint.game = game;
   }
+  const progressionDebrief = document.querySelector(
+    "progression-debrief",
+  ) as ProgressionDebrief;
+  if (progressionDebrief instanceof ProgressionDebrief) {
+    progressionDebrief.game = game;
+  }
 
   const playStyleChip = document.querySelector(
     "play-style-chip",
@@ -335,6 +342,7 @@ export function createRenderer(
     interceptCelebration,
     contractHud,
     coachHint,
+    progressionDebrief,
     playStyleChip,
     narratorRep,
     eventsDisplay,

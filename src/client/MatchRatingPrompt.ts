@@ -164,26 +164,28 @@ export class MatchRatingPrompt extends LitElement {
         >
           ✕
         </button>
-        ${this.submitted
-          ? html`<div class="thanks">Thanks for the feedback! 🙏</div>`
-          : html`
-              <div class="title">How was that match?</div>
-              <div class="label">Match quality</div>
-              ${this.renderStars(this.matchRating, (n) => {
-                this.matchRating = n;
-              })}
-              <div class="label">Map rating</div>
-              ${this.renderStars(this.mapRating, (n) => {
-                this.mapRating = n;
-              })}
-              <button
-                class="submit"
-                @click=${this._submit}
-                ?disabled=${this.matchRating === 0 && this.mapRating === 0}
-              >
-                Submit Rating
-              </button>
-            `}
+        ${
+          this.submitted
+            ? html`<div class="thanks">Thanks for the feedback! 🙏</div>`
+            : html`
+                <div class="title">How was that match?</div>
+                <div class="label">Match quality</div>
+                ${this.renderStars(this.matchRating, (n) => {
+                  this.matchRating = n;
+                })}
+                <div class="label">Map rating</div>
+                ${this.renderStars(this.mapRating, (n) => {
+                  this.mapRating = n;
+                })}
+                <button
+                  class="submit"
+                  @click=${this._submit}
+                  ?disabled=${this.matchRating === 0 && this.mapRating === 0}
+                >
+                  Submit Rating
+                </button>
+              `
+        }
       </div>
     `;
   }

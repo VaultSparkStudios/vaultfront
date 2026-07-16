@@ -252,17 +252,18 @@ export class SinglePlayerModal extends BaseModal {
           rightContent: hasLinkedAccount(this.userMeResponse)
             ? html`<button
                 @click=${this.toggleAchievements}
-                class="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all shrink-0 ${this
-                  .showAchievements
-                  ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
-                  : "text-white/60"}"
+                class="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all shrink-0 ${
+                  this.showAchievements
+                    ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
+                    : "text-white/60"
+                }"
               >
                 <img
                   src="/images/MedalIconWhite.svg"
                   class="w-4 h-4 opacity-80 shrink-0"
-                  style="${this.showAchievements
-                    ? ""
-                    : "filter: grayscale(1);"}"
+                  style="${
+                    this.showAchievements ? "" : "filter: grayscale(1);"
+                  }"
                 />
                 <span
                   class="text-xs font-bold uppercase tracking-wider whitespace-nowrap"
@@ -354,13 +355,15 @@ export class SinglePlayerModal extends BaseModal {
 
         <!-- Footer Action -->
         <div class="p-6 border-t border-white/10 bg-black/20">
-          ${hasLinkedAccount(this.userMeResponse) && this.hasOptionsChanged()
-            ? html`<div
-                class="mb-4 px-4 py-3 rounded-xl bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold uppercase tracking-wider text-center"
-              >
-                ${translateText("single_modal.options_changed_no_achievements")}
-              </div>`
-            : null}
+          ${
+            hasLinkedAccount(this.userMeResponse) && this.hasOptionsChanged()
+              ? html`<div
+                  class="mb-4 px-4 py-3 rounded-xl bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-bold uppercase tracking-wider text-center"
+                >
+                  ${translateText("single_modal.options_changed_no_achievements")}
+                </div>`
+              : null
+          }
           <button
             @click=${this.startGame}
             class="w-full py-4 text-sm font-bold text-white uppercase tracking-widest bg-blue-600 hover:bg-blue-500 rounded-xl transition-all shadow-lg shadow-blue-900/20 hover:shadow-blue-900/40 hover:-translate-y-0.5 active:translate-y-0"

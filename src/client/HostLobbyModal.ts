@@ -353,9 +353,11 @@ export class HostLobbyModal extends BaseModal {
             @click=${this.startGame}
             ?disabled=${this.clients.length < 2}
           >
-            ${this.clients.length === 1
-              ? translateText("host_modal.waiting")
-              : translateText("host_modal.start")}
+            ${
+              this.clients.length === 1
+                ? translateText("host_modal.waiting")
+                : translateText("host_modal.start")
+            }
           </button>
         </div>
       </div>

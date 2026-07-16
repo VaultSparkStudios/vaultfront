@@ -26,11 +26,13 @@ import {
 import { createPartialGameRecord, getClanTag } from "../core/Util";
 import { archive, finalizeGameRecord } from "./Archive";
 import { Client } from "./Client";
+import { matchProgressionSpine } from "./MatchProgression";
 import { narratorBus } from "./NarratorBus";
 import { replayStore } from "./ReplayStore";
 import { spectatorBus } from "./SpectatorBus";
 import { streamingBus } from "./StreamingBus";
 import { VaultMetrics } from "./VaultMetrics";
+import { vaultSeasonScheduler } from "./VaultSeasonScheduler";
 export enum GamePhase {
   Lobby = "LOBBY",
   Active = "ACTIVE",
@@ -1202,6 +1204,57 @@ export class GameServer {
     }
   }
 
+  private progressionWinnerClientIDs(): Set<string> {
+    const winner = this.winner?.winner;
+    if (!winner || winner[0] === "nation") return new Set();
+    return new Set(winner[0] === "player" ? [winner[1]] : winner.slice(2));
+  }
+
+  private recordProgressionOutcome(): void {
+    if (!this.winner || !this._startTime) return;
+    const winnerIDs = this.progressionWinnerClientIDs();
+    const toCount = (value: bigint | undefined): number => {
+      const numeric = Number(value ?? 0n);
+      return Number.isSafeInteger(numeric) && numeric >= 0 ? numeric : 0;
+    };
+    const players = this.gameStartInfo.players.flatMap((player) => {
+      const persistentId = this.allClients.get(player.clientID)?.persistentID;
+      if (!persistentId) return [];
+      const vault = this.winner?.allPlayersStats[player.clientID]?.vaultfront;
+      return [
+        {
+          persistentId,
+          displayName: player.username,
+          won: winnerIDs.has(player.clientID),
+          vaultCaptures: toCount(vault?.vaultCaptures),
+          convoyDeliveries: toCount(vault?.vaultConvoysDelivered),
+          executionChains: toCount(vault?.cleanExecutionStreaks),
+          surgeActivations: toCount(vault?.surgeActivations),
+        },
+      ];
+    });
+    const season = vaultSeasonScheduler.getStatus();
+    void matchProgressionSpine
+      .record({
+        gameId: this.id,
+        durationSeconds: Math.max(
+          0,
+          Math.floor((Date.now() - this._startTime) / 1000),
+        ),
+        mapName: String(this.gameStartInfo.config.gameMap),
+        seasonId: "week-" + season.weekNumber,
+        onMutator:
+          (this.gameStartInfo.config.vaultWeeklyMutator ?? "none") !== "none",
+        players,
+      })
+      .catch((err) =>
+        this.log.error("Failed to record authoritative progression", {
+          gameID: this.id,
+          err: String(err),
+        }),
+      );
+  }
+
   private handleSynchronization() {
     if (this.activeClients.length <= 1) {
       return;
@@ -1344,6 +1397,7 @@ export class GameServer {
         winnerKey: winnerKey,
       },
     );
+    this.recordProgressionOutcome();
     this.archiveGame();
   }
 }

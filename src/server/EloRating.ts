@@ -8,12 +8,7 @@ export interface EloResult {
 }
 
 export type EloLabel =
-  | "Bronze"
-  | "Silver"
-  | "Gold"
-  | "Platinum"
-  | "Diamond"
-  | "Grandmaster";
+  "Bronze" | "Silver" | "Gold" | "Platinum" | "Diamond" | "Grandmaster";
 
 export const PLACEMENT_MATCH_COUNT = 5;
 

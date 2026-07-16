@@ -27,7 +27,7 @@ const TRIGGER_COOLDOWNS: Record<HintTrigger, number> = {
   economy_stall: 2400, // 4 min — low gold + no convoys in flight
 };
 
-type HintTrigger =
+export type HintTrigger =
   | "idle"
   | "convoy_lost"
   | "bounty_placed"
@@ -35,6 +35,37 @@ type HintTrigger =
   | "chain_broken"
   | "convoy_danger"
   | "economy_stall";
+
+export interface TacticalHintContext {
+  gold: number;
+  sites: number;
+}
+
+export function localTacticalHint(
+  trigger: HintTrigger,
+  context: TacticalHintContext,
+): string {
+  const siteRead =
+    context.sites > 0
+      ? `You hold ${context.sites} vault${context.sites === 1 ? "" : "s"}.`
+      : "You do not hold a vault yet.";
+  switch (trigger) {
+    case "convoy_lost":
+      return "Your route was read. Reroute Safest before launch, then Shield Nearest as the convoy enters contested tiles.";
+    case "bounty_placed":
+      return "A bounty makes direct lanes predictable. Use a safer reroute and keep Jam Breaker for the first coordinated interception.";
+    case "last_stand_nearby":
+      return "Last Stand is active. Deny the nearest controlled vault before committing to the convoy lane.";
+    case "chain_broken":
+      return "The execution chain reset. Recapture one open vault, then protect its delivery instead of splitting pressure.";
+    case "convoy_danger":
+      return "High interception risk: Shield Nearest now, then Reroute Safest only if the lane remains hostile.";
+    case "economy_stall":
+      return `${siteRead} Contest the nearest opening and preserve gold for one decisive escort or jam response.`;
+    case "idle":
+      return `${siteRead} Capture the nearest vault, set a safe convoy lane, and react only when its risk changes.`;
+  }
+}
 
 @customElement("coach-hint-engine")
 export class CoachHintEngine extends LitElement implements Layer {
@@ -70,8 +101,7 @@ export class CoachHintEngine extends LitElement implements Layer {
 
     // Track latest vault-site state
     const statusUpdates = updates[GameUpdateType.VaultFrontStatus] as
-      | VaultFrontStatusUpdate[]
-      | undefined;
+      VaultFrontStatusUpdate[] | undefined;
     if (statusUpdates && statusUpdates.length > 0) {
       this.latestStatus = statusUpdates[statusUpdates.length - 1];
     }
@@ -108,8 +138,7 @@ export class CoachHintEngine extends LitElement implements Layer {
 
     // convoy_lost: one of my convoys was intercepted
     const activities = updates?.[GameUpdateType.VaultFrontActivity] as
-      | VaultFrontActivityUpdate[]
-      | undefined;
+      VaultFrontActivityUpdate[] | undefined;
     if (
       mySmallId !== undefined &&
       activities?.some(
@@ -123,8 +152,7 @@ export class CoachHintEngine extends LitElement implements Layer {
 
     // bounty_placed: a bounty was placed on me
     const bountyUpdates = updates?.[GameUpdateType.BountyBoardActivated] as
-      | BountyBoardActivatedUpdate[]
-      | undefined;
+      BountyBoardActivatedUpdate[] | undefined;
     if (
       mySmallId !== undefined &&
       bountyUpdates?.some((b) => b.targetPlayerID === mySmallId) &&
@@ -135,8 +163,7 @@ export class CoachHintEngine extends LitElement implements Layer {
 
     // last_stand_nearby: last-stand activated near my sites
     const lastStandUpdates = updates?.[GameUpdateType.LastStandActivated] as
-      | LastStandActivatedUpdate[]
-      | undefined;
+      LastStandActivatedUpdate[] | undefined;
     if (
       lastStandUpdates &&
       lastStandUpdates.length > 0 &&
@@ -216,8 +243,31 @@ export class CoachHintEngine extends LitElement implements Layer {
     return `${trigger}_${Math.floor(gold / 50_000)}_${sites}`;
   }
 
+  private incrementTelemetry(key: string): void {
+    try {
+      const storageKey = `vaultfront.kpi.coach.${key}`;
+      const current = Number(localStorage.getItem(storageKey) ?? "0");
+      localStorage.setItem(storageKey, String(current + 1));
+    } catch {
+      // Storage is optional (private mode / embedded hosts may reject writes).
+    }
+  }
+
+  private remoteEnhancementEnabled(): boolean {
+    return localStorage.getItem("coachRemoteEnhancementEnabled") === "true";
+  }
+
+  private showHint(hint: string): void {
+    this.hint = hint;
+    this.visible = true;
+    if (this.hintDismissTimer) clearTimeout(this.hintDismissTimer);
+    this.hintDismissTimer = setTimeout(() => {
+      this.visible = false;
+      this.hint = null;
+    }, 12_000);
+  }
+
   private async fetchAndShow(trigger: HintTrigger): Promise<void> {
-    this.fetching = true;
     this.lastHintTickByTrigger.set(trigger, this.tickCount);
     const state = uiStateManager.get();
     const gold = Number(state.playerGold ?? 0);
@@ -226,35 +276,42 @@ export class CoachHintEngine extends LitElement implements Layer {
     const cacheKey = this.hintCacheKey(trigger, gold, sites);
     const cached = this.hintCache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
-      this.fetching = false;
-      this.hint = cached.hint;
-      this.visible = true;
-      if (this.hintDismissTimer) clearTimeout(this.hintDismissTimer);
-      this.hintDismissTimer = setTimeout(() => {
-        this.visible = false;
-        this.hint = null;
-      }, 12_000);
+      this.showHint(cached.hint);
       return;
     }
 
-    const hint = await fetchMicroHint({ gold, sites, trigger });
-    this.fetching = false;
-    if (!hint) return;
-
+    const localHint = localTacticalHint(trigger, { gold, sites });
     this.hintCache.set(cacheKey, {
-      hint,
+      hint: localHint,
       expiresAt: Date.now() + this.HINT_CACHE_TTL_MS,
     });
-    this.hint = hint;
-    this.visible = true;
+    this.showHint(localHint);
+    this.incrementTelemetry("localHints");
 
-    if (this.hintDismissTimer) clearTimeout(this.hintDismissTimer);
-    this.hintDismissTimer = setTimeout(() => {
-      this.visible = false;
-      this.hint = null;
-    }, 12_000);
+    // Remote prose is an explicit, cost-aware enhancement. The deterministic
+    // policy above is always rendered first and remains authoritative if the
+    // request is slow, unavailable, or returns an oversized response.
+    if (!this.remoteEnhancementEnabled()) {
+      this.incrementTelemetry("remoteCallsAvoided");
+      return;
+    }
+
+    this.fetching = true;
+    const remoteHint = await Promise.race<string | null>([
+      fetchMicroHint({ gold, sites, trigger }),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 1_500)),
+    ]).catch(() => null);
+    this.fetching = false;
+    const boundedHint = remoteHint?.trim();
+    if (!boundedHint || boundedHint.length > 180) return;
+
+    this.hintCache.set(cacheKey, {
+      hint: boundedHint,
+      expiresAt: Date.now() + this.HINT_CACHE_TTL_MS,
+    });
+    this.showHint(boundedHint);
+    this.incrementTelemetry("remoteEnhancements");
   }
-
   private dismiss(): void {
     this.visible = false;
     this.hint = null;

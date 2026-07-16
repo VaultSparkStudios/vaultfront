@@ -19,7 +19,11 @@ function response() {
 describe("NarratorBus", () => {
   test("deduplicates adjacent pending labels and caps queue length", () => {
     const oldKey = process.env.ANTHROPIC_API_KEY;
+    const oldEnabled = process.env.VAULTFRONT_REMOTE_AI_ENABLED;
+    const oldCap = process.env.VAULTFRONT_REMOTE_AI_MAX_CALLS_PER_HOUR;
     process.env.ANTHROPIC_API_KEY = "test-key";
+    process.env.VAULTFRONT_REMOTE_AI_ENABLED = "true";
+    process.env.VAULTFRONT_REMOTE_AI_MAX_CALLS_PER_HOUR = "10";
     const bus = new NarratorBus();
     bus.subscribe("game-1", response());
 
@@ -35,6 +39,16 @@ describe("NarratorBus", () => {
       delete process.env.ANTHROPIC_API_KEY;
     } else {
       process.env.ANTHROPIC_API_KEY = oldKey;
+    }
+    if (oldEnabled === undefined) {
+      delete process.env.VAULTFRONT_REMOTE_AI_ENABLED;
+    } else {
+      process.env.VAULTFRONT_REMOTE_AI_ENABLED = oldEnabled;
+    }
+    if (oldCap === undefined) {
+      delete process.env.VAULTFRONT_REMOTE_AI_MAX_CALLS_PER_HOUR;
+    } else {
+      process.env.VAULTFRONT_REMOTE_AI_MAX_CALLS_PER_HOUR = oldCap;
     }
   });
 });

@@ -136,9 +136,11 @@ export class ReplayPanel extends LitElement implements Layer {
         @contextmenu=${(e: Event) => e.preventDefault()}
       >
         <label class="block mb-2 text-white" translate="no">
-          ${this.game?.config()?.isReplay()
-            ? translateText("replay_panel.replay_speed")
-            : translateText("replay_panel.game_speed")}
+          ${
+            this.game?.config()?.isReplay()
+              ? translateText("replay_panel.replay_speed")
+              : translateText("replay_panel.game_speed")
+          }
         </label>
         <div class="grid grid-cols-4 gap-2">
           ${this.renderSpeedButton(ReplaySpeedMultiplier.slow, "×0.5")}
@@ -149,29 +151,33 @@ export class ReplayPanel extends LitElement implements Layer {
             translateText("replay_panel.fastest_game_speed"),
           )}
         </div>
-        ${this.game?.config()?.isReplay()
-          ? html`
-              <button
-                class="mt-2 w-full py-1 px-2 text-xs text-indigo-200 bg-indigo-600/40 border border-indigo-500/50 rounded-sm cursor-pointer hover:bg-indigo-600/60 transition-colors"
-                @click=${this.handleClipThis}
-                ?disabled=${this._clipState === "copying"}
-              >
-                ${clipLabel}
-              </button>
-              ${this.autoHighlightTick !== null && this.highlightShareUrl
-                ? html`
-                    <a
-                      href=${this.highlightShareUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="mt-1 w-full py-1 px-2 text-xs text-amber-200 bg-amber-600/30 border border-amber-500/40 rounded-sm cursor-pointer hover:bg-amber-600/50 transition-colors no-underline flex items-center justify-center gap-1"
-                    >
-                      ⚡ Best Moment
-                    </a>
-                  `
-                : null}
-            `
-          : null}
+        ${
+          this.game?.config()?.isReplay()
+            ? html`
+                <button
+                  class="mt-2 w-full py-1 px-2 text-xs text-indigo-200 bg-indigo-600/40 border border-indigo-500/50 rounded-sm cursor-pointer hover:bg-indigo-600/60 transition-colors"
+                  @click=${this.handleClipThis}
+                  ?disabled=${this._clipState === "copying"}
+                >
+                  ${clipLabel}
+                </button>
+                ${
+                  this.autoHighlightTick !== null && this.highlightShareUrl
+                    ? html`
+                        <a
+                          href=${this.highlightShareUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="mt-1 w-full py-1 px-2 text-xs text-amber-200 bg-amber-600/30 border border-amber-500/40 rounded-sm cursor-pointer hover:bg-amber-600/50 transition-colors no-underline flex items-center justify-center gap-1"
+                        >
+                          ⚡ Best Moment
+                        </a>
+                      `
+                    : null
+                }
+              `
+            : null
+        }
       </div>
     `;
   }

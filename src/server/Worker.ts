@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import compression from "compression";
 import cors from "cors";
+import { createHash } from "crypto";
 import express, { NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
@@ -49,8 +50,9 @@ import { startPolling } from "./PollingLoop";
 import { predictionLeagueStore } from "./PredictionLeagueStore";
 import { PrivilegeRefresher } from "./PrivilegeRefresher";
 import { rematchStore } from "./RematchStore";
+import { canAttemptRemoteAi, reserveRemoteAiCall } from "./RemoteAiPolicy";
 import { replayHighlightStore } from "./ReplayHighlightStore";
-import { replayStore } from "./ReplayStore";
+import { getReplayIntegrityPosture, replayStore } from "./ReplayStore";
 import { seasonMilestoneStore } from "./SeasonMilestoneStore";
 import { streamingBus } from "./StreamingBus";
 import { tournamentStore } from "./TournamentStore";
@@ -160,7 +162,18 @@ const VaultFrontPlaytestPulseEventSchema = z.object({
     .min(1)
     .max(64)
     .regex(/^[a-zA-Z0-9_.-]+$/),
-  value: z.number().int().min(1).max(10_000).default(1),
+  value: z.literal(1).default(1),
+  evidenceSessionId: z
+    .string()
+    .min(12)
+    .max(128)
+    .regex(/^[a-zA-Z0-9:_-]+$/),
+  eventId: z
+    .string()
+    .min(12)
+    .max(128)
+    .regex(/^[a-zA-Z0-9:_-]+$/),
+  source: z.literal("human"),
 });
 
 interface VaultFrontSeasonContractState {
@@ -295,6 +308,29 @@ function stableHash(input: string): number {
     h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
   }
   return h >>> 0;
+}
+
+function privacySafeActorKey(persistentId: string): string {
+  return createHash("sha256")
+    .update(`vaultfront-alpha-evidence:v1:${persistentId}`)
+    .digest("hex")
+    .slice(0, 24);
+}
+
+async function resolveAuthenticatedActorKey(
+  req: Request,
+): Promise<{ actorKey: string; persistentId: string } | null> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  const verified = await verifyClientToken(
+    authHeader.substring("Bearer ".length),
+    config,
+  );
+  if (verified.type !== "success") return null;
+  return {
+    actorKey: privacySafeActorKey(verified.persistentId),
+    persistentId: verified.persistentId,
+  };
 }
 
 async function resolveVaultFrontIdentity(req: Request): Promise<string | null> {
@@ -637,11 +673,8 @@ function buildDockGuardrailSummary(
       : 1;
 
   let decision:
-    | "hold"
-    | "prefer_top"
-    | "prefer_stack"
-    | "disable_top"
-    | "disable_stack" = "hold";
+    "hold" | "prefer_top" | "prefer_stack" | "disable_top" | "disable_stack" =
+    "hold";
   let reason = "Not enough sample to make a guardrail decision.";
   if (enoughSample) {
     if (worseRateRatio <= 0.7) {
@@ -815,6 +848,11 @@ export async function startWorker() {
               }
             : { status: "unverified" },
         playtestPulse: buildVaultFrontPlaytestPulseSummary(),
+        replayIntegrity: getReplayIntegrityPosture(),
+        rightsEvidence: {
+          status: "declared",
+          path: "LICENSE and LICENSING.md",
+        },
       }),
     );
   });
@@ -1388,14 +1426,29 @@ export async function startWorker() {
     });
   });
 
-  app.post("/api/vaultfront/playtest-pulse", async (req, res) => {
-    const parsed = VaultFrontPlaytestPulseEventSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ error: z.prettifyError(parsed.error) });
-    }
-    const summary = recordVaultFrontPlaytestPulse(parsed.data);
-    return res.json({ ok: true, summary });
-  });
+  const playtestPulseRateLimit = rateLimit({ windowMs: 60_000, max: 120 });
+  app.post(
+    "/api/vaultfront/playtest-pulse",
+    playtestPulseRateLimit,
+    async (req, res) => {
+      const actor = await resolveAuthenticatedActorKey(req);
+      if (!actor) {
+        return res
+          .status(401)
+          .json({ error: "Authenticated play token required" });
+      }
+      const parsed = VaultFrontPlaytestPulseEventSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: z.prettifyError(parsed.error) });
+      }
+      const summary = recordVaultFrontPlaytestPulse({
+        ...parsed.data,
+        actorKey: actor.actorKey,
+        at: Date.now(),
+      });
+      return res.json({ ok: true, summary });
+    },
+  );
 
   app.get("/api/vaultfront/playtest-pulse/summary", async (_req, res) => {
     return res.json(buildVaultFrontPlaytestPulseSummary());
@@ -1537,7 +1590,7 @@ export async function startWorker() {
     "/api/vaultfront/battle-narrative",
     narrativeRateLimit,
     async (req, res) => {
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!reserveRemoteAiCall("debrief").allowed) {
         return res.status(503).json({ error: "Narrative service unavailable" });
       }
       const identity = await resolveVaultFrontIdentity(req);
@@ -1594,7 +1647,7 @@ export async function startWorker() {
     "/api/vaultfront/match-prophecy",
     prophecyRateLimit,
     async (req, res) => {
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!reserveRemoteAiCall("other").allowed) {
         return res.status(503).json({ error: "Prophecy service unavailable" });
       }
       const {
@@ -1645,7 +1698,7 @@ export async function startWorker() {
     "/api/vaultfront/match-commentary",
     commentaryRateLimit,
     async (req, res) => {
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!reserveRemoteAiCall("narrator").allowed) {
         return res
           .status(503)
           .json({ error: "Commentary service unavailable" });
@@ -1711,8 +1764,9 @@ export async function startWorker() {
   ] as const;
 
   async function initBotLore(): Promise<void> {
-    if (!process.env.ANTHROPIC_API_KEY) return;
+    if (!canAttemptRemoteAi()) return;
     for (const personality of BOT_PERSONALITIES) {
+      if (!reserveRemoteAiCall("other").allowed) break;
       try {
         const message = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
@@ -1770,7 +1824,7 @@ export async function startWorker() {
     "/api/vaultfront/match-mission",
     missionRateLimit,
     async (req, res) => {
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!reserveRemoteAiCall("briefing").allowed) {
         return res.status(503).json({ error: "Mission service unavailable" });
       }
       const {
@@ -1833,7 +1887,7 @@ export async function startWorker() {
     "/api/vaultfront/micro-hint",
     microHintRateLimit,
     async (req, res) => {
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!reserveRemoteAiCall("coach").allowed) {
         return res.status(503).json({ error: "Coach unavailable" });
       }
       const gold = Number(req.query["gold"] ?? 0);
@@ -1899,7 +1953,7 @@ export async function startWorker() {
     "You are a VaultFront match predictor. Given player ELO ratings, return ONLY valid JSON with key 'predictions': array of {playerId, deltaIfWin, deltaIfLoss, threat?}. deltaIfWin and deltaIfLoss are integers. threat is the name/id of the most dangerous opponent for that player, or omitted. No prose, no markdown, just JSON.";
 
   app.get("/api/vaultfront/match-oracle", oracleRateLimit, async (req, res) => {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!reserveRemoteAiCall("intel").allowed) {
       return res.status(503).json({ error: "Oracle unavailable" });
     }
     const playerIdsRaw = req.query["players"];
@@ -1969,7 +2023,7 @@ export async function startWorker() {
     "You are a tactical coach for VaultFront, a browser real-time strategy game. Analyze the player's top decisions from a match and provide a 3-paragraph tactical debrief. Paragraph 1: what worked well. Paragraph 2: the costliest mistake. Paragraph 3: one concrete improvement for next match. Be specific, encouraging, and concise (2-3 sentences per paragraph). Reference actual events from the log.";
 
   app.post("/api/vaultfront/match-coach", coachRateLimit, async (req, res) => {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!reserveRemoteAiCall("coach").allowed) {
       return res.status(503).json({ error: "Coach service unavailable" });
     }
     const identity = await resolveVaultFrontIdentity(req);
@@ -2043,7 +2097,7 @@ export async function startWorker() {
     "/api/vaultfront/dynasty-story",
     dynastyRateLimit,
     async (req, res) => {
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!reserveRemoteAiCall("other").allowed) {
         return res.status(503).json({ error: "Dynasty service unavailable" });
       }
       const identity = await resolveVaultFrontIdentity(req);
@@ -2096,7 +2150,7 @@ export async function startWorker() {
     "Generate a VaultFront bot commander persona. Format: 'CODENAME — one sentence origin story (max 100 chars)'. Tone: gritty, tactical, specific to the personality archetype. No quotes around the output.";
 
   app.get("/api/vaultfront/bot-persona", async (req, res) => {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!reserveRemoteAiCall("other").allowed) {
       return res.status(503).json({ error: "Persona service unavailable" });
     }
     const personality = String(req.query["personality"] ?? "").slice(0, 32);
@@ -2337,7 +2391,7 @@ export async function startWorker() {
     "/api/vaultfront/prematch-brief",
     prematchBriefRateLimit,
     async (req, res) => {
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!reserveRemoteAiCall("briefing").allowed) {
         return res.status(503).json({ error: "Brief service unavailable" });
       }
       const persistentId = String(req.query.persistentId ?? "").slice(0, 64);
@@ -2401,7 +2455,7 @@ export async function startWorker() {
     "/api/vaultfront/match-recap/:gameId",
     recapRateLimit,
     async (req, res) => {
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!reserveRemoteAiCall("debrief").allowed) {
         return res.status(503).json({ error: "Recap service unavailable" });
       }
       const gameId = req.params.gameId?.slice(0, 64) ?? "";
@@ -2456,7 +2510,7 @@ export async function startWorker() {
     "/api/vaultfront/coach-debrief",
     coachDebriefRateLimit,
     async (req, res) => {
-      if (!process.env.ANTHROPIC_API_KEY) {
+      if (!reserveRemoteAiCall("debrief").allowed) {
         return res.status(503).json({ error: "Coach debrief unavailable" });
       }
       const parsed = z
@@ -3202,17 +3256,71 @@ export async function startWorker() {
   app.post("/api/rematch/:gameId", rematchRateLimit, async (req, res) => {
     const { gameId } = req.params;
     if (!gameId) return res.status(400).json({ error: "Missing gameId" });
-    const parsed = z
-      .object({ playerId: z.string().min(1).max(128) })
-      .safeParse(req.body);
-    if (!parsed.success)
-      return res.status(400).json({ error: "Missing playerId" });
-    const game = gm.game(gameId as GameID);
-    const mapName = game?.gameConfig.gameMap ?? "";
-    const entry = rematchStore.upsert(gameId, parsed.data.playerId, mapName);
-    return res.json(entry);
-  });
 
+    const actor = await resolveAuthenticatedActorKey(req);
+    if (!actor) {
+      return res
+        .status(401)
+        .json({ error: "Authenticated play token required" });
+    }
+
+    const existing = rematchStore.join(gameId, actor.actorKey);
+    if (existing) return res.json(existing);
+
+    const sourceGame = gm.game(gameId as GameID);
+    let sourceConfig: unknown = sourceGame?.gameConfig;
+    let mapName = sourceGame ? String(sourceGame.gameConfig.gameMap) : "";
+    if (!sourceConfig) {
+      const replay = await replayStore.getReplay(gameId);
+      if (replay) {
+        sourceConfig = {
+          ...playlist.get1v1Config(),
+          ...replay.configSnapshot,
+        };
+        mapName = replay.mapName;
+      }
+    }
+    if (!sourceConfig) {
+      return res
+        .status(404)
+        .json({ error: "Verified source game configuration not found" });
+    }
+
+    const cloned = CreateGameInputSchema.safeParse({
+      ...(sourceConfig as Record<string, unknown>),
+      gameType: GameType.Private,
+      rankedType: undefined,
+    });
+    if (!cloned.success || !cloned.data) {
+      return res.status(409).json({ error: "Source game cannot be rematched" });
+    }
+
+    let lobbyId = generateGameIdForWorker();
+    while (lobbyId && gm.game(lobbyId)) {
+      lobbyId = generateGameIdForWorker();
+    }
+    if (!lobbyId) {
+      return res
+        .status(503)
+        .json({ error: "Unable to allocate rematch lobby" });
+    }
+
+    gm.createGame(lobbyId, cloned.data, actor.persistentId);
+    const playBase = (
+      process.env.PLAY_BASE_URL ??
+      "https://play-vaultfront.vaultsparkstudios.com"
+    ).replace(/\/+$/, "");
+    const workerPath = config.workerPath(lobbyId).replace(/^\/+|\/+$/g, "");
+    const joinUrl = `${playBase}/${workerPath}/game/${encodeURIComponent(lobbyId)}?lobby`;
+    const entry = rematchStore.create({
+      gameId,
+      lobbyId,
+      actorKey: actor.actorKey,
+      mapName,
+      joinUrl,
+    });
+    return res.status(201).json(entry);
+  });
   app.get("/api/rematch/status/:gameId", rematchRateLimit, (req, res) => {
     const { gameId } = req.params;
     if (!gameId) return res.status(400).json({ error: "Missing gameId" });

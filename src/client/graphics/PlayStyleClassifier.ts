@@ -7,11 +7,7 @@
  */
 
 export type PlayStyleLabel =
-  | "Iron Fist"
-  | "Convoy Lord"
-  | "Shadow Broker"
-  | "Fortress"
-  | "Balanced";
+  "Iron Fist" | "Convoy Lord" | "Shadow Broker" | "Fortress" | "Balanced";
 
 export interface PlayStyleBar {
   label: string;

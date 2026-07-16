@@ -275,14 +275,18 @@ export class TournamentBracketView extends LitElement {
       <div class="header">
         <span class="title">${tournament.name}</span>
         <span class="status-chip ${statusClass}">${tournament.status}</span>
-        ${tournament.mapName
-          ? html`<span class="status-chip">${tournament.mapName}</span>`
-          : ""}
+        ${
+          tournament.mapName
+            ? html`<span class="status-chip">${tournament.mapName}</span>`
+            : ""
+        }
       </div>
       <div class="scroll-wrap">
-        ${rounds.length > 0
-          ? this.renderSvg(rounds)
-          : html`<div class="empty">Bracket not yet seeded.</div>`}
+        ${
+          rounds.length > 0
+            ? this.renderSvg(rounds)
+            : html`<div class="empty">Bracket not yet seeded.</div>`
+        }
       </div>
     `;
   }

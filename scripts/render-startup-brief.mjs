@@ -901,9 +901,8 @@ try {
 let sigCost = "✓",
   costDetail = "no ledger data";
 try {
-  const { readEntries, evaluateCostAnomaly } = await import(
-    "./cache-ledger-rollup.mjs"
-  );
+  const { readEntries, evaluateCostAnomaly } =
+    await import("./cache-ledger-rollup.mjs");
   const ledgerPath = path.join(root, "docs", "cache-ledger.ndjson");
   const ledEntries = readEntries(ledgerPath);
   if (ledEntries.length > 0) {

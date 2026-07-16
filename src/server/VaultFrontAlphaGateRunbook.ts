@@ -17,6 +17,7 @@ const CHECK_LABELS: Record<
   string
 > = {
   fresh: "Fresh evidence within 24 hours",
+  sampleSize: "Evidence from at least three authenticated human actors",
   tutorial: "Tutorial advance 50%+ and completion 35%+",
   feedback: "At least one post-match feedback signal",
   rivalExposure: "Rival Challenge card shown",

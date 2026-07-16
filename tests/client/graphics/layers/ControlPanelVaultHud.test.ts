@@ -533,4 +533,56 @@ describe("ControlPanel vault HUD automation", () => {
 
     expect(panel.vaultDebugActive).toBe(true);
   });
+
+  test("vault HUD telegraphs pressure and the active breach deadline", () => {
+    const panel = new ControlPanel() as any;
+    const me = { smallID: () => 1, isFriendly: () => false };
+    panel.game = {
+      ticks: () => 1200,
+      myPlayer: () => me,
+      x: (tile: number) => tile,
+      y: () => 0,
+      width: () => 100,
+      height: () => 20,
+      ref: (x: number, y: number) => x + y,
+      owner: () => ({ isPlayer: () => false }),
+      playerBySmallID: () => ({ isPlayer: () => false }),
+    };
+    panel.latestVaultStatus = {
+      weeklyMutator: "none",
+      captureTicksRequired: 90,
+      cooldownTicksTotal: 650,
+      passiveGoldPerMinute: 75000,
+      jamBreakerGoldCost: 115000,
+      escortDurationTicks: 600,
+      sites: [],
+      convoys: [],
+      beacons: [],
+      executionChains: {},
+      surges: {},
+      squadObjectives: [],
+      pressure: {
+        1: {
+          pressure: 3,
+          threshold: 3,
+          breachWindowUntilTick: 1350,
+          deliveriesRequired: 1,
+          victorySecured: false,
+        },
+      },
+    };
+    vi.spyOn(panel, "buildVaultNotices").mockReturnValue([]);
+    vi.spyOn(panel, "renderRewardExplainPanel").mockReturnValue("");
+    vi.spyOn(panel, "currentCommandHint").mockReturnValue("");
+    vi.spyOn(panel, "adaptiveNudgeText").mockReturnValue(null);
+    vi.spyOn(panel, "nextVaultObjectiveText").mockReturnValue(
+      "Protect the breach window",
+    );
+
+    const container = document.createElement("div");
+    render(panel.renderVaultHud(), container);
+
+    expect(container.textContent).toContain("BREACH WINDOW 15s");
+    expect(container.textContent).toContain("deliver one convoy to win");
+  });
 });

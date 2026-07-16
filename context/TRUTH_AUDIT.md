@@ -6,6 +6,19 @@ Overall status: green
 Last reviewed: 2026-07-16
 Public-safe summary only. Sensitive verification notes are maintained privately.
 
+## 2026-07-16 — Session 73
+
+- Audit truth: all 12 items in `docs/AUDIT_2026-07-16.json` are marked shipped with per-item execution evidence; the Markdown audit is derived from that JSON. All 3 second-order innovation candidates are evidence-detected complete.
+- Test truth: the final coverage run passed 107/107 files and 697/697 tests. The exact single-worker CI Playwright profile passed 22/22 desktop/mobile tests. A faster six-worker local stress run had two cold-start timeouts; both passed immediately in isolation and the canonical CI profile passed without retry.
+- Build truth: TypeScript and Vite 7 production build pass. Every emitted JavaScript chunk is below 500 kB gzip under the dependency-free bundle gate. Remaining warnings are explicit: public URL placeholders are unset before deployment, two JSON import-attribute inconsistencies remain, and the manual chunk layout reports one circular-chunk warning.
+- Security truth: authenticated/deduplicated source-labeled Alpha Gate evidence, fail-closed signed replay consumption, and authenticated sanitized rematch creation are covered. `npm audit` reports zero vulnerabilities after exact trust-gated updates; Studio supply-chain scan reports zero matching incidents.
+- Cost truth: remote AI is default-off and requires an explicit positive hourly cap with feature attribution. Deterministic coaching remains the cost-neutral baseline.
+- Public truth: local sitemap compliance is 10/10 and public/AI-agent/legal/contact surfaces exist, but this does not prove live hosting, email delivery, headers, Core Web Vitals, or theme readability.
+- Canon/doctor truth: conformance reports 49 applicable Canon, zero gaps, and zero absolute gaps. Studio doctor reports `overallPass: true`, 112 passing, 33 advisory warnings, zero failing, and `blockingFailing: 0`.
+- Profile truth: local status is `game/public-unlaunched`; signed Ark cargo `01JTM66B6TEE83C483CEB936FA` requests the registry type correction from `app` to `game`. No direct sibling-repo edit was made.
+- Launch truth: no human Alpha Gate, staging parity, project-domain Brevo delivery, native Obelisk relying-party auth, live CSP/HSTS/Core Web Vitals/theme screenshot evidence, revenue event, or founder approval is claimed.
+- SIL truth: score is recalibrated from an unsupported 999 to evidence-based 943/1000. The decrease is an honesty correction, not a product regression.
+
 ## 2026-07-16
 
 - Recovery provenance: the immediate prior run stopped during `/start`; the inherited dirty layer matched a June 18 `lint-staged` recovery stash plus later Studio protocol propagation. No new audit or implementation had begun.

@@ -238,11 +238,7 @@ export class ControlPanel extends LitElement implements Layer {
 
   @state()
   private adaptiveNudgeKey:
-    | "vault_first"
-    | "convoy_impact"
-    | "pulse_chain"
-    | "focus_stable"
-    | "" = "";
+    "vault_first" | "convoy_impact" | "pulse_chain" | "focus_stable" | "" = "";
 
   @state()
   private vaultDebugActive = false;
@@ -1634,9 +1630,9 @@ export class ControlPanel extends LitElement implements Layer {
     const compact = this.isMobilePriorityMode();
     return html`
       <div
-        class="mt-2 rounded-md border border-amber-300/40 bg-amber-950/25 ${compact
-          ? "p-1.5"
-          : "p-2"}"
+        class="mt-2 rounded-md border border-amber-300/40 bg-amber-950/25 ${
+          compact ? "p-1.5" : "p-2"
+        }"
       >
         <div class="flex items-center justify-between gap-2">
           <div
@@ -1656,9 +1652,9 @@ export class ControlPanel extends LitElement implements Layer {
           ${notices.map(
             (notice) => html`
               <div
-                class="w-full text-left ${compact
-                  ? "px-1.5 py-1.5"
-                  : "px-1.5 py-1"} rounded bg-amber-400/15 hover:bg-amber-400/25 text-amber-50 text-[10px] lg:text-[11px] pointer-events-auto touch-manipulation"
+                class="w-full text-left ${
+                  compact ? "px-1.5 py-1.5" : "px-1.5 py-1"
+                } rounded bg-amber-400/15 hover:bg-amber-400/25 text-amber-50 text-[10px] lg:text-[11px] pointer-events-auto touch-manipulation"
                 title=${`${notice.details} | Click to center camera`}
                 role="button"
                 tabindex="0"
@@ -1672,9 +1668,11 @@ export class ControlPanel extends LitElement implements Layer {
               >
                 <div class="flex items-center justify-between gap-2">
                   <span class="truncate"
-                    >${compact
-                      ? `V${notice.siteID} ${notice.etaSeconds}s`
-                      : notice.label}</span
+                    >${
+                      compact
+                        ? `V${notice.siteID} ${notice.etaSeconds}s`
+                        : notice.label
+                    }</span
                   >
                   <div class="shrink-0 flex items-center gap-1">
                     <span
@@ -1691,13 +1689,15 @@ export class ControlPanel extends LitElement implements Layer {
                     >
                   </div>
                 </div>
-                ${compact
-                  ? ""
-                  : html`<div
-                      class="mt-0.5 text-[10px] text-amber-100/85 truncate"
-                    >
-                      ${notice.details}
-                    </div>`}
+                ${
+                  compact
+                    ? ""
+                    : html`<div
+                        class="mt-0.5 text-[10px] text-amber-100/85 truncate"
+                      >
+                        ${notice.details}
+                      </div>`
+                }
                 <div class="mt-1 flex justify-end">
                   <button
                     class="rounded border border-cyan-300/45 bg-cyan-500/20 px-1.5 py-0.5 text-[10px] text-cyan-50 hover:bg-cyan-500/30"
@@ -2000,9 +2000,9 @@ export class ControlPanel extends LitElement implements Layer {
               : "Safest";
     return html`
       <div
-        class="mt-1 rounded border border-cyan-300/35 bg-cyan-950/20 ${compact
-          ? "p-1"
-          : "p-1.5"}"
+        class="mt-1 rounded border border-cyan-300/35 bg-cyan-950/20 ${
+          compact ? "p-1" : "p-1.5"
+        }"
       >
         <div class="text-[10px] text-cyan-100/90">
           ${compact ? "Reroute Preview" : "Pre-Action Reroute Preview"}
@@ -2013,12 +2013,13 @@ export class ControlPanel extends LitElement implements Layer {
           ${previews.map(
             (preview) => html`
               <button
-                class="rounded border ${compact
-                  ? "px-1 py-1"
-                  : "px-1.5 py-0.5"} text-[10px] ${this
-                  .selectedPreviewCommand === preview.command
-                  ? "border-cyan-200/70 bg-cyan-500/25 text-cyan-50"
-                  : "border-cyan-300/35 bg-cyan-500/10 text-cyan-100 hover:bg-cyan-500/20"}"
+                class="rounded border ${
+                  compact ? "px-1 py-1" : "px-1.5 py-0.5"
+                } text-[10px] ${
+                  this.selectedPreviewCommand === preview.command
+                    ? "border-cyan-200/70 bg-cyan-500/25 text-cyan-50"
+                    : "border-cyan-300/35 bg-cyan-500/10 text-cyan-100 hover:bg-cyan-500/20"
+                }"
                 @mouseenter=${() =>
                   (this.selectedPreviewCommand = preview.command)}
                 @focus=${() => (this.selectedPreviewCommand = preview.command)}
@@ -2031,9 +2032,9 @@ export class ControlPanel extends LitElement implements Layer {
         </div>
         <div class="mt-1 text-[10px] text-cyan-50 tabular-nums">
           ETA ${selected.etaSeconds}s
-          (${selected.deltaEtaSeconds >= 0
-            ? "+"
-            : ""}${selected.deltaEtaSeconds}s)
+          (${
+            selected.deltaEtaSeconds >= 0 ? "+" : ""
+          }${selected.deltaEtaSeconds}s)
           | Risk ${selected.routeRisk.toFixed(2)}
           (${selected.deltaRisk >= 0 ? "+" : ""}${selected.deltaRisk.toFixed(
             2,
@@ -2041,15 +2042,17 @@ export class ControlPanel extends LitElement implements Layer {
         </div>
         <div class="text-[10px] text-cyan-100/90 tabular-nums">
           Est +${selected.goldReward.toLocaleString()}g
-          (${selected.deltaGold >= 0
-            ? "+"
-            : ""}${selected.deltaGold.toLocaleString()}g)
-          ${compact
-            ? ""
-            : html` +${selected.troopsReward.toLocaleString()}t
-              (${selected.deltaTroops >= 0
-                ? "+"
-                : ""}${selected.deltaTroops.toLocaleString()}t)`}
+          (${
+            selected.deltaGold >= 0 ? "+" : ""
+          }${selected.deltaGold.toLocaleString()}g)
+          ${
+            compact
+              ? ""
+              : html` +${selected.troopsReward.toLocaleString()}t
+                (${
+                  selected.deltaTroops >= 0 ? "+" : ""
+                }${selected.deltaTroops.toLocaleString()}t)`
+          }
         </div>
         <button
           class="mt-1 rounded border border-cyan-200/50 bg-cyan-500/25 px-1.5 py-0.5 text-[10px] text-cyan-50 hover:bg-cyan-500/35"
@@ -2075,9 +2078,9 @@ export class ControlPanel extends LitElement implements Layer {
       convoy.rewardScale;
     return html`
       <div
-        class="mt-1 rounded border border-amber-300/35 bg-amber-950/20 ${compact
-          ? "p-1"
-          : "p-1.5"}"
+        class="mt-1 rounded border border-amber-300/35 bg-amber-950/20 ${
+          compact ? "p-1" : "p-1.5"
+        }"
       >
         <button
           class="w-full text-left text-[10px] text-amber-100 hover:text-amber-50"
@@ -2087,36 +2090,44 @@ export class ControlPanel extends LitElement implements Layer {
           ${this.rewardExplainExpanded ? "Hide" : "Show"}
           ${compact ? "Explain" : "Reward Explain"}
         </button>
-        ${compact
-          ? html`<div class="mt-0.5 text-[10px] text-amber-100/90 tabular-nums">
-              x${convoy.rewardMultiplier.toFixed(2)} | risk
-              ${convoy.routeRisk.toFixed(2)} | d${convoy.routeDistance}
-            </div>`
-          : ""}
-        ${this.rewardExplainExpanded
-          ? html`
-              <div class="mt-1 text-[10px] text-amber-50 tabular-nums">
-                Distance: ${convoy.routeDistance} | Route risk:
-                ${convoy.routeRisk.toFixed(2)}
-              </div>
-              <div class="text-[10px] text-amber-100/90 tabular-nums">
-                Strength ${convoy.strengthMultiplier.toFixed(2)} x Phase
-                ${convoy.phaseMultiplier.toFixed(2)} x Risk
-                ${convoy.riskMultiplier.toFixed(2)}
-              </div>
-              <div class="text-[10px] text-amber-100/90 tabular-nums">
-                Penalty scale ${convoy.rewardScale.toFixed(2)} | Raw
-                ${expectedRaw.toFixed(2)} | Applied
-                ${convoy.rewardMultiplier.toFixed(2)}
-              </div>
-              <div class="text-[10px] text-amber-200/90">${penaltyText}</div>
-              ${compact
-                ? ""
-                : html`<div class="mt-0.5 text-[10px] text-amber-100/90">
-                    ${convoy.rewardMath}
-                  </div>`}
-            `
-          : ""}
+        ${
+          compact
+            ? html`<div
+                class="mt-0.5 text-[10px] text-amber-100/90 tabular-nums"
+              >
+                x${convoy.rewardMultiplier.toFixed(2)} | risk
+                ${convoy.routeRisk.toFixed(2)} | d${convoy.routeDistance}
+              </div>`
+            : ""
+        }
+        ${
+          this.rewardExplainExpanded
+            ? html`
+                <div class="mt-1 text-[10px] text-amber-50 tabular-nums">
+                  Distance: ${convoy.routeDistance} | Route risk:
+                  ${convoy.routeRisk.toFixed(2)}
+                </div>
+                <div class="text-[10px] text-amber-100/90 tabular-nums">
+                  Strength ${convoy.strengthMultiplier.toFixed(2)} x Phase
+                  ${convoy.phaseMultiplier.toFixed(2)} x Risk
+                  ${convoy.riskMultiplier.toFixed(2)}
+                </div>
+                <div class="text-[10px] text-amber-100/90 tabular-nums">
+                  Penalty scale ${convoy.rewardScale.toFixed(2)} | Raw
+                  ${expectedRaw.toFixed(2)} | Applied
+                  ${convoy.rewardMultiplier.toFixed(2)}
+                </div>
+                <div class="text-[10px] text-amber-200/90">${penaltyText}</div>
+                ${
+                  compact
+                    ? ""
+                    : html`<div class="mt-0.5 text-[10px] text-amber-100/90">
+                        ${convoy.rewardMath}
+                      </div>`
+                }
+              `
+            : ""
+        }
       </div>
     `;
   }
@@ -2125,6 +2136,18 @@ export class ControlPanel extends LitElement implements Layer {
     const status = this.latestVaultStatus;
     if (!status) return "";
     const compact = this.isMobilePriorityMode();
+    const myPlayer = this.game.myPlayer();
+    const myPressure = myPlayer
+      ? status.pressure?.[myPlayer.smallID()]
+      : undefined;
+    const pressureWindowSeconds = myPressure
+      ? Math.max(
+          0,
+          Math.ceil(
+            (myPressure.breachWindowUntilTick - this.game.ticks()) / 10,
+          ),
+        )
+      : 0;
 
     // Frozen VaultFront interaction model: own convoy > allied convoy > projected next vault.
     const convoyDisplay = this.displayConvoy();
@@ -2245,14 +2268,38 @@ export class ControlPanel extends LitElement implements Layer {
 
     return html`
       <div
-        class="vf-hud-surface mt-1.5 rounded-lg ${compact
-          ? "p-1.5"
-          : "p-2"} text-[10px] lg:text-[11px]"
+        class="vf-hud-surface mt-1.5 rounded-lg ${
+          compact ? "p-1.5" : "p-2"
+        } text-[10px] lg:text-[11px]"
       >
         <div class="vf-hud-title mb-1">VaultFront HUD</div>
         <div class="text-slate-100 tabular-nums">
           ${this.nextVaultObjectiveText()}
         </div>
+        ${
+          myPressure
+            ? html`<div
+                class="mt-1 rounded border px-1.5 py-1 tabular-nums ${
+                  pressureWindowSeconds > 0
+                    ? "border-rose-300/60 bg-rose-950/35 text-rose-100"
+                    : "border-cyan-300/30 bg-cyan-950/20 text-cyan-100"
+                }"
+                role="status"
+                aria-label="Vault Pressure"
+              >
+                ${
+                  pressureWindowSeconds > 0
+                    ? "BREACH WINDOW " +
+                      pressureWindowSeconds +
+                      "s — deliver one convoy to win"
+                    : "Vault Pressure " +
+                      myPressure.pressure +
+                      "/" +
+                      myPressure.threshold
+                }
+              </div>`
+            : ""
+        }
         <div
           class="mt-1 rounded border border-amber-300/35 bg-amber-950/18 p-1.5"
         >
@@ -2270,21 +2317,24 @@ export class ControlPanel extends LitElement implements Layer {
             Recommended: ${recommendedAction}
           </div>
         </div>
-        ${convoyDisplay.source === "ally"
-          ? html`<div class="text-amber-100/70 tabular-nums text-[10px]">
-              Tracking allied convoy. Shield/reroute commands apply only to your
-              convoy.
-            </div>`
-          : ""}
+        ${
+          convoyDisplay.source === "ally"
+            ? html`<div class="text-amber-100/70 tabular-nums text-[10px]">
+                Tracking allied convoy. Shield/reroute commands apply only to
+                your convoy.
+              </div>`
+            : ""
+        }
         <div
-          class="mt-1 rounded border px-1.5 py-1 text-[10px] ${commandCallout.tone ===
-          "amber"
-            ? "border-amber-300/40 bg-amber-900/18 text-amber-100"
-            : commandCallout.tone === "fuchsia"
-              ? "border-fuchsia-300/40 bg-fuchsia-900/18 text-fuchsia-100"
-              : commandCallout.tone === "cyan"
-                ? "border-cyan-300/35 bg-cyan-950/18 text-cyan-100"
-                : "border-emerald-300/35 bg-emerald-950/18 text-emerald-100"}"
+          class="mt-1 rounded border px-1.5 py-1 text-[10px] ${
+            commandCallout.tone === "amber"
+              ? "border-amber-300/40 bg-amber-900/18 text-amber-100"
+              : commandCallout.tone === "fuchsia"
+                ? "border-fuchsia-300/40 bg-fuchsia-900/18 text-fuchsia-100"
+                : commandCallout.tone === "cyan"
+                  ? "border-cyan-300/35 bg-cyan-950/18 text-cyan-100"
+                  : "border-emerald-300/35 bg-emerald-950/18 text-emerald-100"
+          }"
         >
           <div
             class="font-semibold uppercase tracking-wide text-[9px] lg:text-[10px]"
@@ -2305,14 +2355,18 @@ export class ControlPanel extends LitElement implements Layer {
         </div>
         <div class=${primaryRowClass}>
           <button
-            class="relative rounded ${oneTapButtonClass} ${escortDisabled
-              ? "bg-amber-900/35 text-amber-200/65 cursor-not-allowed"
-              : "bg-amber-500/30 text-amber-100 hover:bg-amber-500/40"}"
+            class="relative rounded ${oneTapButtonClass} ${
+              escortDisabled
+                ? "bg-amber-900/35 text-amber-200/65 cursor-not-allowed"
+                : "bg-amber-500/30 text-amber-100 hover:bg-amber-500/40"
+            }"
             aria-label="Shield nearest convoy"
             aria-keyshortcuts="1"
-            title=${escortDisabled
-              ? `Escort lockout active for ${escortLockoutSecs}s.`
-              : "One tap: shield your nearest active Vault Convoy."}
+            title=${
+              escortDisabled
+                ? `Escort lockout active for ${escortLockoutSecs}s.`
+                : "One tap: shield your nearest active Vault Convoy."
+            }
             style=${escortDisabled ? escortRingStyle : ""}
             ?disabled=${escortDisabled}
             @click=${() => this.sendEscortCommand()}
@@ -2324,14 +2378,18 @@ export class ControlPanel extends LitElement implements Layer {
             ${escortLabel}
           </button>
           <button
-            class="relative rounded ${oneTapButtonClass} ${rerouteDisabled
-              ? "bg-cyan-900/30 text-cyan-200/60 cursor-not-allowed"
-              : "bg-cyan-500/30 text-cyan-100 hover:bg-cyan-500/40"}"
+            class="relative rounded ${oneTapButtonClass} ${
+              rerouteDisabled
+                ? "bg-cyan-900/30 text-cyan-200/60 cursor-not-allowed"
+                : "bg-cyan-500/30 text-cyan-100 hover:bg-cyan-500/40"
+            }"
             aria-label="Reroute convoy to safest lane"
             aria-keyshortcuts="2"
-            title=${rerouteDisabled
-              ? "No active convoy to reroute."
-              : "One tap: reroute active convoy to lowest-risk destination."}
+            title=${
+              rerouteDisabled
+                ? "No active convoy to reroute."
+                : "One tap: reroute active convoy to lowest-risk destination."
+            }
             ?disabled=${rerouteDisabled}
             @click=${() => this.sendRerouteSafestCommand()}
           >
@@ -2342,14 +2400,18 @@ export class ControlPanel extends LitElement implements Layer {
             ${rerouteLabel}
           </button>
           <button
-            class="relative rounded ${oneTapButtonClass} ${jamBreakerDisabled
-              ? "bg-fuchsia-900/30 text-fuchsia-200/60 cursor-not-allowed"
-              : "bg-fuchsia-500/30 text-fuchsia-100 hover:bg-fuchsia-500/40"}"
+            class="relative rounded ${oneTapButtonClass} ${
+              jamBreakerDisabled
+                ? "bg-fuchsia-900/30 text-fuchsia-200/60 cursor-not-allowed"
+                : "bg-fuchsia-500/30 text-fuchsia-100 hover:bg-fuchsia-500/40"
+            }"
             aria-label="Trigger Jam Breaker"
             aria-keyshortcuts="3"
-            title=${jamBreakerDisabled
-              ? `Jam Breaker lockout active for ${jamLockoutSecs}s.`
-              : `Counter enemy masking and reopen tactical information. Cost: ${jamCostText}.`}
+            title=${
+              jamBreakerDisabled
+                ? `Jam Breaker lockout active for ${jamLockoutSecs}s.`
+                : `Counter enemy masking and reopen tactical information. Cost: ${jamCostText}.`
+            }
             style=${jamBreakerDisabled ? jamRingStyle : ""}
             ?disabled=${jamBreakerDisabled}
             @click=${() => this.sendJamBreakerCommand()}
@@ -2364,9 +2426,11 @@ export class ControlPanel extends LitElement implements Layer {
         <div class="mt-1">
           <button
             class="w-full rounded bg-slate-500/20 px-1.5 py-1 text-slate-100 hover:bg-slate-500/35"
-            title=${showAdvanced
-              ? "Hide secondary Vault controls"
-              : "Show presets, pings, and advanced Vault controls"}
+            title=${
+              showAdvanced
+                ? "Hide secondary Vault controls"
+                : "Show presets, pings, and advanced Vault controls"
+            }
             aria-label="Toggle secondary Vault controls"
             aria-keyshortcuts="5"
             @click=${() => this.expandAdvancedCommands()}
@@ -2374,127 +2438,141 @@ export class ControlPanel extends LitElement implements Layer {
             ${showAdvanced ? "Hide More" : "More Commands"}
           </button>
         </div>
-        ${showAdvanced
-          ? html`
-              <div
-                class="mt-1.5 rounded border border-cyan-300/25 bg-slate-950/35 p-1.5"
-              >
-                <div class="flex flex-wrap gap-1">
-                  ${(["aggro", "economy", "control"] as const).map(
-                    (preset) => html`
-                      <button
-                        class="rounded border px-1.5 py-0.5 text-[10px] ${this
-                          .quickRolePreset === preset
-                          ? "border-cyan-200/65 bg-cyan-500/25 text-cyan-50"
-                          : "border-slate-300/35 bg-slate-700/25 text-slate-100 hover:bg-slate-700/40"}"
-                        @click=${() => this.setQuickRolePreset(preset)}
-                      >
-                        ${preset === "aggro"
-                          ? "Aggro"
-                          : preset === "economy"
-                            ? "Economy"
-                            : "Control"}
-                      </button>
-                    `,
-                  )}
-                </div>
-                ${trimUnderused
-                  ? html`<div class="mt-1 text-[10px] text-slate-200/80">
-                      Core loop first. Advanced pings and lane rotation live
-                      here once Shield, Reroute, and Jam feel automatic.
-                    </div>`
-                  : ""}
-                <div class="mt-1 grid grid-cols-2 gap-1">
-                  <button
-                    class="${compact
-                      ? "px-2 py-1.5"
-                      : "px-1.5 py-1"} rounded bg-fuchsia-500/20 text-fuchsia-100 hover:bg-fuchsia-500/30 ${jamNextDisabled &&
-                    !this.jamOnNextPulseArmed
-                      ? "opacity-60 cursor-not-allowed"
-                      : ""}"
-                    title=${jamNextDisabled
-                      ? `Jam Breaker lockout active for ${jamLockoutSecs}s.`
-                      : `Arms Jam Breaker and auto-fires when an enemy pulse activates. Cost: ${jamCostText}.`}
-                    style=${jamNextDisabled ? jamNextRingStyle : ""}
-                    ?disabled=${jamNextDisabled}
-                    @click=${() => this.toggleJamOnNextPulse()}
-                  >
-                    ${jamNextLabel}
-                  </button>
-                  <button
-                    class="${compact
-                      ? "px-2 py-1.5"
-                      : "px-1.5 py-1"} rounded bg-cyan-500/20 text-cyan-100 hover:bg-cyan-500/35"
-                    title="Advanced manual reroute: rotate target structure lane."
-                    @click=${() => this.sendRerouteCommand()}
-                  >
-                    Reroute Lane: ${this.convoyRoutePreference}
-                  </button>
-                  <button
-                    class="${compact
-                      ? "px-2 py-1.5"
-                      : "px-1.5 py-1"} rounded bg-sky-500/25 text-sky-100 hover:bg-sky-500/35"
-                    title="Ask team to shield your convoy lane."
-                    @click=${() => this.sendRolePing("escort_convoy")}
-                  >
-                    Ping Shield
-                  </button>
-                  <button
-                    class="${compact
-                      ? "px-2 py-1.5"
-                      : "px-1.5 py-1"} rounded bg-sky-500/25 text-sky-100 hover:bg-sky-500/35"
-                    title="Ask team to cut enemy convoy routes."
-                    @click=${() => this.sendRolePing("intercept_lane")}
-                  >
-                    Ping Intercept
-                  </button>
-                  <button
-                    class="col-span-2 ${compact
-                      ? "px-2 py-1.5"
-                      : "px-1.5 py-1"} rounded bg-sky-500/25 text-sky-100 hover:bg-sky-500/35"
-                    title="Notify team about upcoming Defense Factory pulse timing."
-                    @click=${() => this.sendRolePing("pulse_soon")}
-                  >
-                    Ping Pulse
-                  </button>
-                  <button
-                    class="col-span-2 ${compact
-                      ? "px-2 py-1.5"
-                      : "px-1.5 py-1"} rounded bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30"
-                    title="Broadcast your active intel to all opponents — earn gold per recipient. Requires active Intel purchase."
-                    @click=${() => this.sendSellIntelCommand()}
-                  >
-                    Sell Intel (earn gold)
-                  </button>
-                  <button
-                    class="col-span-2 ${compact
-                      ? "px-2 py-1.5"
-                      : "px-1.5 py-1"} rounded bg-red-500/20 text-red-100 hover:bg-red-500/30"
-                    title="Last-resort: costs 20k gold. Your next convoy will extract 50% of any vault site's gold on delivery (capped 200k). Only available when you hold ≤2 territories."
-                    @click=${() => this.sendVaultHeistCommand()}
-                  >
-                    💀 Vault Heist (20k gold)
-                  </button>
-                </div>
-                ${ownConvoy ? this.renderReroutePreviewPanel(ownConvoy) : ""}
-                ${this.renderRewardExplainPanel(convoy)}
-                ${adaptiveNudge
-                  ? html`<div
-                      class="mt-1 rounded border border-emerald-300/35 bg-emerald-900/20 px-1.5 py-1 text-[10px] text-emerald-100"
+        ${
+          showAdvanced
+            ? html`
+                <div
+                  class="mt-1.5 rounded border border-cyan-300/25 bg-slate-950/35 p-1.5"
+                >
+                  <div class="flex flex-wrap gap-1">
+                    ${(["aggro", "economy", "control"] as const).map(
+                      (preset) => html`
+                        <button
+                          class="rounded border px-1.5 py-0.5 text-[10px] ${
+                            this.quickRolePreset === preset
+                              ? "border-cyan-200/65 bg-cyan-500/25 text-cyan-50"
+                              : "border-slate-300/35 bg-slate-700/25 text-slate-100 hover:bg-slate-700/40"
+                          }"
+                          @click=${() => this.setQuickRolePreset(preset)}
+                        >
+                          ${
+                            preset === "aggro"
+                              ? "Aggro"
+                              : preset === "economy"
+                                ? "Economy"
+                                : "Control"
+                          }
+                        </button>
+                      `,
+                    )}
+                  </div>
+                  ${
+                    trimUnderused
+                      ? html`<div class="mt-1 text-[10px] text-slate-200/80">
+                          Core loop first. Advanced pings and lane rotation live
+                          here once Shield, Reroute, and Jam feel automatic.
+                        </div>`
+                      : ""
+                  }
+                  <div class="mt-1 grid grid-cols-2 gap-1">
+                    <button
+                      class="${
+                        compact ? "px-2 py-1.5" : "px-1.5 py-1"
+                      } rounded bg-fuchsia-500/20 text-fuchsia-100 hover:bg-fuchsia-500/30 ${
+                        jamNextDisabled && !this.jamOnNextPulseArmed
+                          ? "opacity-60 cursor-not-allowed"
+                          : ""
+                      }"
+                      title=${
+                        jamNextDisabled
+                          ? `Jam Breaker lockout active for ${jamLockoutSecs}s.`
+                          : `Arms Jam Breaker and auto-fires when an enemy pulse activates. Cost: ${jamCostText}.`
+                      }
+                      style=${jamNextDisabled ? jamNextRingStyle : ""}
+                      ?disabled=${jamNextDisabled}
+                      @click=${() => this.toggleJamOnNextPulse()}
                     >
-                      ${adaptiveNudge}
-                    </div>`
-                  : ""}
-                ${commandHint
-                  ? html`<div
-                      class="mt-1.5 text-[10px] lg:text-[11px] text-cyan-100/90"
+                      ${jamNextLabel}
+                    </button>
+                    <button
+                      class="${
+                        compact ? "px-2 py-1.5" : "px-1.5 py-1"
+                      } rounded bg-cyan-500/20 text-cyan-100 hover:bg-cyan-500/35"
+                      title="Advanced manual reroute: rotate target structure lane."
+                      @click=${() => this.sendRerouteCommand()}
                     >
-                      Tip: ${commandHint}
-                    </div>`
-                  : ""}
-              </div>
-            `
-          : ""}
+                      Reroute Lane: ${this.convoyRoutePreference}
+                    </button>
+                    <button
+                      class="${
+                        compact ? "px-2 py-1.5" : "px-1.5 py-1"
+                      } rounded bg-sky-500/25 text-sky-100 hover:bg-sky-500/35"
+                      title="Ask team to shield your convoy lane."
+                      @click=${() => this.sendRolePing("escort_convoy")}
+                    >
+                      Ping Shield
+                    </button>
+                    <button
+                      class="${
+                        compact ? "px-2 py-1.5" : "px-1.5 py-1"
+                      } rounded bg-sky-500/25 text-sky-100 hover:bg-sky-500/35"
+                      title="Ask team to cut enemy convoy routes."
+                      @click=${() => this.sendRolePing("intercept_lane")}
+                    >
+                      Ping Intercept
+                    </button>
+                    <button
+                      class="col-span-2 ${
+                        compact ? "px-2 py-1.5" : "px-1.5 py-1"
+                      } rounded bg-sky-500/25 text-sky-100 hover:bg-sky-500/35"
+                      title="Notify team about upcoming Defense Factory pulse timing."
+                      @click=${() => this.sendRolePing("pulse_soon")}
+                    >
+                      Ping Pulse
+                    </button>
+                    <button
+                      class="col-span-2 ${
+                        compact ? "px-2 py-1.5" : "px-1.5 py-1"
+                      } rounded bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30"
+                      title="Broadcast your active intel to all opponents — earn gold per recipient. Requires active Intel purchase."
+                      @click=${() => this.sendSellIntelCommand()}
+                    >
+                      Sell Intel (earn gold)
+                    </button>
+                    <button
+                      class="col-span-2 ${
+                        compact ? "px-2 py-1.5" : "px-1.5 py-1"
+                      } rounded bg-red-500/20 text-red-100 hover:bg-red-500/30"
+                      title="Last-resort: costs 20k gold. Your next convoy will extract 50% of any vault site's gold on delivery (capped 200k). Only available when you hold ≤2 territories."
+                      @click=${() => this.sendVaultHeistCommand()}
+                    >
+                      💀 Vault Heist (20k gold)
+                    </button>
+                  </div>
+                  ${ownConvoy ? this.renderReroutePreviewPanel(ownConvoy) : ""}
+                  ${this.renderRewardExplainPanel(convoy)}
+                  ${
+                    adaptiveNudge
+                      ? html`<div
+                          class="mt-1 rounded border border-emerald-300/35 bg-emerald-900/20 px-1.5 py-1 text-[10px] text-emerald-100"
+                        >
+                          ${adaptiveNudge}
+                        </div>`
+                      : ""
+                  }
+                  ${
+                    commandHint
+                      ? html`<div
+                          class="mt-1.5 text-[10px] lg:text-[11px] text-cyan-100/90"
+                        >
+                          Tip: ${commandHint}
+                        </div>`
+                      : ""
+                  }
+                </div>
+              `
+            : ""
+        }
       </div>
     `;
   }
@@ -2684,9 +2762,9 @@ export class ControlPanel extends LitElement implements Layer {
       >
         <div class="font-semibold text-amber-200">Next Match Goal</div>
         <div
-          class="${this.nextMatchGoalCompleted
-            ? "text-emerald-200"
-            : "text-amber-50"} mt-1"
+          class="${
+            this.nextMatchGoalCompleted ? "text-emerald-200" : "text-amber-50"
+          } mt-1"
         >
           ${this.nextMatchGoalCompleted ? "[x] " : ""}${this.nextMatchGoal}
         </div>
@@ -2729,26 +2807,30 @@ export class ControlPanel extends LitElement implements Layer {
           <div class="font-semibold text-emerald-200">
             First 3 Minutes Objectives
           </div>
-          ${lockRequired
-            ? html`<div class="text-[10px] text-emerald-200/90">
-                Locked until first vault + convoy interaction
-              </div>`
-            : html`<button
-                class="text-emerald-300/80 hover:text-emerald-200 text-[10px]"
-                @click=${() => this.dismissOnboarding()}
-              >
-                Hide
-              </button>`}
+          ${
+            lockRequired
+              ? html`<div class="text-[10px] text-emerald-200/90">
+                  Locked until first vault + convoy interaction
+                </div>`
+              : html`<button
+                  class="text-emerald-300/80 hover:text-emerald-200 text-[10px]"
+                  @click=${() => this.dismissOnboarding()}
+                >
+                  Hide
+                </button>`
+          }
         </div>
         <div class="mt-1.5 space-y-1">
           ${steps.map(
             (step, index) => html`
               <div
-                class="${step.done
-                  ? "text-emerald-300"
-                  : index === activeIndex
-                    ? "text-white"
-                    : "text-slate-300"}"
+                class="${
+                  step.done
+                    ? "text-emerald-300"
+                    : index === activeIndex
+                      ? "text-white"
+                      : "text-slate-300"
+                }"
               >
                 ${step.done ? "[x]" : index === activeIndex ? ">" : "-"}
                 ${step.label}
@@ -2786,22 +2868,26 @@ export class ControlPanel extends LitElement implements Layer {
         class="w-full h-6 lg:h-8 border border-gray-600 rounded-md bg-gray-900/60 overflow-hidden relative"
       >
         <div class="h-full flex">
-          ${greenPercent > 0
-            ? html`<div
-                class="h-full bg-green-500 ${this.reducedMotion
-                  ? ""
-                  : "transition-[width] duration-200"}"
-                style="width: ${greenPercent}%;"
-              ></div>`
-            : ""}
-          ${orangePercent > 0
-            ? html`<div
-                class="h-full bg-orange-400 ${this.reducedMotion
-                  ? ""
-                  : "transition-[width] duration-200"}"
-                style="width: ${orangePercent}%;"
-              ></div>`
-            : ""}
+          ${
+            greenPercent > 0
+              ? html`<div
+                  class="h-full bg-green-500 ${
+                    this.reducedMotion ? "" : "transition-[width] duration-200"
+                  }"
+                  style="width: ${greenPercent}%;"
+                ></div>`
+              : ""
+          }
+          ${
+            orangePercent > 0
+              ? html`<div
+                  class="h-full bg-orange-400 ${
+                    this.reducedMotion ? "" : "transition-[width] duration-200"
+                  }"
+                  style="width: ${orangePercent}%;"
+                ></div>`
+              : ""
+          }
         </div>
         <div
           class="absolute inset-0 flex items-center justify-between px-1.5 lg:px-2 text-xs lg:text-sm font-bold leading-none pointer-events-none"
@@ -2827,10 +2913,9 @@ export class ControlPanel extends LitElement implements Layer {
             class="lg:w-4 lg:h-4 brightness-0 invert drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]"
           />
           <span
-            class="text-[10px] lg:text-xs font-bold drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)] ${this
-              ._troopRateIsIncreasing
-              ? "text-green-400"
-              : "text-orange-400"}"
+            class="text-[10px] lg:text-xs font-bold drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)] ${
+              this._troopRateIsIncreasing ? "text-green-400" : "text-orange-400"
+            }"
             >+${renderTroops(this.troopRate)}/s</span
           >
         </div>
@@ -2958,68 +3043,73 @@ export class ControlPanel extends LitElement implements Layer {
             </button>
           </div>
         </div>
-        ${expanded
-          ? html`
-              <div class="mt-1.5 space-y-1.5">
-                <div class="flex flex-wrap gap-1">
-                  ${(["compact", "competitive", "mobile"] as HudPreset[]).map(
-                    (preset) => html`
-                      <button
-                        class="rounded border px-1.5 py-0.5 ${this.hudPreset ===
-                        preset
-                          ? "border-amber-300/60 bg-amber-400/20 text-amber-100"
-                          : "border-slate-400/40 text-slate-100 hover:bg-slate-600/30"}"
-                        @click=${() => this.applyHudPreset(preset)}
-                      >
-                        ${preset}
-                      </button>
-                    `,
-                  )}
-                </div>
-                <div>
-                  <div class="flex justify-between text-cyan-100/85">
-                    <span>UI Scale</span>
-                    <span>${this.hudScale.toFixed(2)}x</span>
+        ${
+          expanded
+            ? html`
+                <div class="mt-1.5 space-y-1.5">
+                  <div class="flex flex-wrap gap-1">
+                    ${(["compact", "competitive", "mobile"] as HudPreset[]).map(
+                      (preset) => html`
+                        <button
+                          class="rounded border px-1.5 py-0.5 ${
+                            this.hudPreset === preset
+                              ? "border-amber-300/60 bg-amber-400/20 text-amber-100"
+                              : "border-slate-400/40 text-slate-100 hover:bg-slate-600/30"
+                          }"
+                          @click=${() => this.applyHudPreset(preset)}
+                        >
+                          ${preset}
+                        </button>
+                      `,
+                    )}
                   </div>
-                  <input
-                    type="range"
-                    min="0.8"
-                    max="1.2"
-                    step="0.05"
-                    .value=${String(this.hudScale)}
-                    @input=${(e: Event) => this.onHudScaleInput(e)}
-                    class="w-full accent-cyan-400"
-                  />
+                  <div>
+                    <div class="flex justify-between text-cyan-100/85">
+                      <span>UI Scale</span>
+                      <span>${this.hudScale.toFixed(2)}x</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.8"
+                      max="1.2"
+                      step="0.05"
+                      .value=${String(this.hudScale)}
+                      @input=${(e: Event) => this.onHudScaleInput(e)}
+                      class="w-full accent-cyan-400"
+                    />
+                  </div>
+                  <div class="flex gap-1">
+                    <button
+                      class="rounded border border-cyan-300/35 px-1.5 py-0.5 text-cyan-100 hover:bg-cyan-500/20"
+                      @click=${() => this.toggleVaultDebug()}
+                      title="Toggle persistent VaultFront debug logs and in-HUD QA checklist"
+                    >
+                      ${
+                        this.vaultDebugActive
+                          ? "Vault Debug On"
+                          : "Vault Debug Off"
+                      }
+                    </button>
+                    <button
+                      class="rounded border border-cyan-300/35 px-1.5 py-0.5 text-cyan-100 hover:bg-cyan-500/20"
+                      @pointerdown=${this.onPanelDragStart}
+                    >
+                      Drag Panel
+                    </button>
+                    <button
+                      class="rounded border border-slate-300/35 px-1.5 py-0.5 text-slate-100 hover:bg-slate-500/25"
+                      @click=${() => this.resetHudLayout()}
+                    >
+                      Reset Layout
+                    </button>
+                  </div>
                 </div>
-                <div class="flex gap-1">
-                  <button
-                    class="rounded border border-cyan-300/35 px-1.5 py-0.5 text-cyan-100 hover:bg-cyan-500/20"
-                    @click=${() => this.toggleVaultDebug()}
-                    title="Toggle persistent VaultFront debug logs and in-HUD QA checklist"
-                  >
-                    ${this.vaultDebugActive
-                      ? "Vault Debug On"
-                      : "Vault Debug Off"}
-                  </button>
-                  <button
-                    class="rounded border border-cyan-300/35 px-1.5 py-0.5 text-cyan-100 hover:bg-cyan-500/20"
-                    @pointerdown=${this.onPanelDragStart}
-                  >
-                    Drag Panel
-                  </button>
-                  <button
-                    class="rounded border border-slate-300/35 px-1.5 py-0.5 text-slate-100 hover:bg-slate-500/25"
-                    @click=${() => this.resetHudLayout()}
-                  >
-                    Reset Layout
-                  </button>
-                </div>
-              </div>
-            `
-          : html`<div class="mt-1 text-slate-200/70">
-              Layout controls hidden during play. Open when you need to adjust
-              placement.
-            </div>`}
+              `
+            : html`<div class="mt-1 text-slate-200/70">
+                Layout controls hidden during play. Open when you need to adjust
+                placement.
+              </div>`
+        }
       </div>
     `;
   }
@@ -3059,8 +3149,9 @@ export class ControlPanel extends LitElement implements Layer {
       return html`
         <div
           class="fixed right-2 z-[1180] w-[min(92vw,344px)] pointer-events-auto"
-          style="top: ${this.floatingVaultHudTopPx()}px; zoom: ${this
-            .hudScale};"
+          style="top: ${this.floatingVaultHudTopPx()}px; zoom: ${
+            this.hudScale
+          };"
         >
           ${this.renderVaultDebugWaitingCard()} ${this.renderVaultDebugPanel()}
         </div>
@@ -3074,24 +3165,26 @@ export class ControlPanel extends LitElement implements Layer {
         @mouseenter=${() => (this.vaultHudHoverExpanded = true)}
         @mouseleave=${() => (this.vaultHudHoverExpanded = false)}
       >
-        ${collapsed
-          ? html`<button
-              class="vf-hud-surface rounded-lg px-2 py-1 text-[11px] text-cyan-100 hover:bg-slate-800/90"
-              title="Heavy combat detected. Tap to expand Vault HUD."
-              @click=${() => (this.vaultHudPinnedExpanded = true)}
-            >
-              Vault HUD (collapsed)
-            </button>`
-          : html`<div class="relative">
-              <button
-                class="absolute right-1 top-1 z-[1] rounded border border-cyan-300/45 bg-slate-900/75 px-1 py-0.5 text-[10px] text-cyan-100 hover:bg-slate-800/90"
-                @click=${() => this.toggleVaultHudPin()}
-                title="Pin/unpin Vault HUD during combat"
+        ${
+          collapsed
+            ? html`<button
+                class="vf-hud-surface rounded-lg px-2 py-1 text-[11px] text-cyan-100 hover:bg-slate-800/90"
+                title="Heavy combat detected. Tap to expand Vault HUD."
+                @click=${() => (this.vaultHudPinnedExpanded = true)}
               >
-                ${this.vaultHudPinnedExpanded ? "Unpin" : "Pin"}
-              </button>
-              ${this.renderVaultHud()} ${this.renderVaultDebugPanel()}
-            </div>`}
+                Vault HUD (collapsed)
+              </button>`
+            : html`<div class="relative">
+                <button
+                  class="absolute right-1 top-1 z-[1] rounded border border-cyan-300/45 bg-slate-900/75 px-1 py-0.5 text-[10px] text-cyan-100 hover:bg-slate-800/90"
+                  @click=${() => this.toggleVaultHudPin()}
+                  title="Pin/unpin Vault HUD during combat"
+                >
+                  ${this.vaultHudPinnedExpanded ? "Unpin" : "Pin"}
+                </button>
+                ${this.renderVaultHud()} ${this.renderVaultDebugPanel()}
+              </div>`
+        }
       </div>
     `;
   }
@@ -3100,12 +3193,14 @@ export class ControlPanel extends LitElement implements Layer {
     return html`
       ${this.renderFloatingVaultHud()}
       <div
-        class="relative pointer-events-auto ${this._isVisible
-          ? "vf-hud-dock relative z-[60] w-full lg:max-w-[312px] text-xs lg:text-sm p-1.5 pr-1.5 lg:p-2.5 sm:rounded-tr-lg min-[1200px]:rounded-lg"
-          : "hidden"}"
-        style="transform: translate(${this.panelOffsetX}px, ${this
-          .panelOffsetY}px) scale(${this
-          .hudScale}); transform-origin: bottom left;"
+        class="relative pointer-events-auto ${
+          this._isVisible
+            ? "vf-hud-dock relative z-[60] w-full lg:max-w-[312px] text-xs lg:text-sm p-1.5 pr-1.5 lg:p-2.5 sm:rounded-tr-lg min-[1200px]:rounded-lg"
+            : "hidden"
+        }"
+        style="transform: translate(${this.panelOffsetX}px, ${
+          this.panelOffsetY
+        }px) scale(${this.hudScale}); transform-origin: bottom left;"
         @contextmenu=${(e: MouseEvent) => e.preventDefault()}
       >
         <div class="flex gap-2 lg:gap-3 items-center">
@@ -3164,27 +3259,31 @@ export class ControlPanel extends LitElement implements Layer {
             </div>
           </div>
         </div>
-        ${this._touchDragging
-          ? html`
-              <div
-                class="absolute bottom-full right-0 flex flex-col items-center pointer-events-auto z-[10000] bg-gray-800/70 backdrop-blur-xs rounded-tl-lg sm:rounded-lg p-2 w-12"
-                style="height: 50vh;"
-                @touchstart=${(e: TouchEvent) => this.handleBarTouch(e)}
-              >
-                <span class="text-red-400 text-sm font-bold mb-1" translate="no"
-                  >${(this.attackRatio * 100).toFixed(0)}%</span
-                >
+        ${
+          this._touchDragging
+            ? html`
                 <div
-                  class="attack-drag-bar flex-1 w-3 bg-white/20 rounded-full relative overflow-hidden"
+                  class="absolute bottom-full right-0 flex flex-col items-center pointer-events-auto z-[10000] bg-gray-800/70 backdrop-blur-xs rounded-tl-lg sm:rounded-lg p-2 w-12"
+                  style="height: 50vh;"
+                  @touchstart=${(e: TouchEvent) => this.handleBarTouch(e)}
                 >
+                  <span
+                    class="text-red-400 text-sm font-bold mb-1"
+                    translate="no"
+                    >${(this.attackRatio * 100).toFixed(0)}%</span
+                  >
                   <div
-                    class="absolute bottom-0 w-full bg-red-500 rounded-full"
-                    style="height: ${this.attackRatio * 100}%"
-                  ></div>
+                    class="attack-drag-bar flex-1 w-3 bg-white/20 rounded-full relative overflow-hidden"
+                  >
+                    <div
+                      class="absolute bottom-0 w-full bg-red-500 rounded-full"
+                      style="height: ${this.attackRatio * 100}%"
+                    ></div>
+                  </div>
                 </div>
-              </div>
-            `
-          : ""}
+              `
+            : ""
+        }
         <!-- Attack ratio bar (desktop, always visible) -->
         <div class="hidden lg:block mt-2">
           <div

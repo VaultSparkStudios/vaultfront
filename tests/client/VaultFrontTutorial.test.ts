@@ -56,8 +56,7 @@ describe("VaultFrontTutorial", () => {
     const next = Array.from(
       el.shadowRoot?.querySelectorAll("button") ?? [],
     ).find((button) => button.textContent?.includes("Next")) as
-      | HTMLButtonElement
-      | undefined;
+      HTMLButtonElement | undefined;
     next?.click();
     await el.updateComplete;
 

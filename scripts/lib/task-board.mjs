@@ -1,7 +1,6 @@
 /**
- * task-board.mjs
- *
  * Shared TASK_BOARD parsing helpers used by startup, blocker, and queue flows.
+ * Supports both the private table schema and this public repo's compact bullets.
  */
 
 export function extractSection(markdown, heading) {
@@ -12,44 +11,125 @@ export function extractSection(markdown, heading) {
   return nl === -1 ? "" : match.slice(nl + 1);
 }
 
+function cleanTitle(value) {
+  return String(value || "")
+    .replace(/\*\*/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseBulletItem(line, index) {
+  const match = line.match(
+    /^- \[([^\]]+)\]\s+(?:(🔥|⚡|💡|⚠)\s+)?([^·]+?)\s*·\s*([^·]+?)\s*·\s*(.+)$/,
+  );
+  if (!match) return null;
+  const [, status, tier = "", category, effort, item] = match;
+  const titleMatch = item.match(/^(?:\*\*)?(.+?)(?:\*\*)?\s+—\s+/);
+  return {
+    rank: String(index + 1),
+    rankNumber: index + 1,
+    tier,
+    category: category.trim(),
+    status: status.trim(),
+    effort: effort.trim(),
+    item: cleanTitle(item),
+    rawItem: item,
+    title: cleanTitle(titleMatch?.[1] ?? item),
+  };
+}
+
 export function parseUnifiedItems(markdown) {
   const section = extractSection(markdown, "Unified Genius List");
   if (!section) return [];
 
   const items = [];
   for (const line of section.split(/\r?\n/)) {
-    if (!/^\|\s*[\d.]+\s*\|/.test(line)) continue;
-    const cells = line
-      .split("|")
-      .slice(1, -1)
-      .map((cell) => cell.trim());
-    if (cells.length < 6 || cells[0] === "#") continue;
-    const [rank, tier, category, status, effort, item] = cells;
-    const titleMatch = item.match(/\*\*(.+?)\*\*/);
-    items.push({
-      rank,
-      rankNumber: parseFloat(rank),
-      tier,
-      category,
-      status,
-      effort,
-      item: item.replace(/\*\*/g, ""),
-      rawItem: item,
-      title: (titleMatch ? titleMatch[1] : item)
-        .replace(/\*\*/g, "")
-        .replace(/\s+/g, " ")
-        .trim(),
-    });
+    if (/^\|\s*[\d.]+\s*\|/.test(line)) {
+      const cells = line
+        .split("|")
+        .slice(1, -1)
+        .map((cell) => cell.trim());
+      if (cells.length < 6 || cells[0] === "#") continue;
+      const [rank, tier, category, status, effort, item] = cells;
+      const titleMatch = item.match(/\*\*(.+?)\*\*/);
+      items.push({
+        rank,
+        rankNumber: parseFloat(rank),
+        tier,
+        category,
+        status,
+        effort,
+        item: cleanTitle(item),
+        rawItem: item,
+        title: cleanTitle(titleMatch ? titleMatch[1] : item),
+      });
+      continue;
+    }
+
+    const bullet = parseBulletItem(line, items.length);
+    if (bullet) items.push(bullet);
   }
 
   return items;
 }
 
+export function parseTaskRows(markdown) {
+  const rows = [];
+  let section = "(root)";
+  const lines = String(markdown || "").split(/\r?\n/);
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index];
+    const heading = line.match(/^#{2,6}\s+(.+?)\s*$/);
+    if (heading) section = heading[1].trim();
+
+    if (/^\|\s*\d+(?:\.\d+)?\s*\|/.test(line)) {
+      const cells = line
+        .split("|")
+        .slice(1, -1)
+        .map((cell) => cell.trim());
+      if (cells.length < 6) continue;
+      const [id, tier, category, status, effort, ...itemCells] = cells;
+      const rawItem = itemCells.join(" | ").trim();
+      rows.push({
+        id,
+        idNumber: Number(id),
+        tier,
+        category,
+        status,
+        effort,
+        item: cleanTitle(rawItem),
+        rawItem,
+        title: cleanTitle(rawItem.match(/\*\*(.+?)\*\*/)?.[1] ?? rawItem),
+        section,
+        line: index + 1,
+        raw: line,
+      });
+      continue;
+    }
+
+    const bullet = parseBulletItem(line, rows.length);
+    if (bullet) {
+      rows.push({
+        ...bullet,
+        id: `bullet:${index + 1}`,
+        idNumber: null,
+        section,
+        line: index + 1,
+        raw: line,
+      });
+    }
+  }
+  return rows;
+}
+
+export function findTaskRowsById(markdown, id) {
+  const key = String(id ?? "").trim();
+  return parseTaskRows(markdown).filter((row) => row.id === key);
+}
+
 export function parseHumanItems(markdown) {
   const section = extractSection(markdown, "Human Action Required");
-  if (!section) return [];
-
-  return section
+  const explicit = section
     .split(/\r?\n/)
     .map((line) => line.match(/^- \[ \] \*\*(.*?)\*\* — (.*)$/))
     .filter(Boolean)
@@ -59,22 +139,42 @@ export function parseHumanItems(markdown) {
       const ageMatch =
         description.match(/\((~?\d+)\s+sessions?\)/i) ||
         description.match(/\((\d+)\s+sessions?\s+old\)/i);
-      const ageSessions = ageMatch
-        ? parseInt(ageMatch[1].replace("~", ""), 10)
-        : null;
       return {
         title,
         description,
         raw: `**${title}** — ${description}`,
-        ageSessions,
+        ageSessions: ageMatch
+          ? parseInt(ageMatch[1].replace("~", ""), 10)
+          : null,
       };
     });
+
+  if (explicit.length) return explicit;
+
+  return parseTaskRows(markdown)
+    .filter((row) => /human-blocked/i.test(row.status))
+    .map((row) => ({
+      title: row.title,
+      description: row.item,
+      raw: row.raw,
+      ageSessions: null,
+    }));
 }
 
 export function extractCurrentSessionIntent(markdown) {
-  const match = String(markdown || "").match(
-    /## Current Session Intent: Session \d+\n([\s\S]*?)(?=\n## |\n---|$)/,
+  const source = String(markdown || "");
+  const current = source.match(
+    /## Current Session Intent: Session \d+\r?\n([\s\S]*?)(?=\r?\n## |\r?\n---|$)/,
   );
-  if (!match) return "";
-  return match[1].trim().replace(/\r?\n+/g, " ");
+  if (current) return current[1].trim().replace(/\r?\n+/g, " ");
+
+  const labeled = source.match(
+    /(?:^|\r?\n)\*\*Session Intent:\*\*\s*([^\r\n]+)/i,
+  );
+  if (labeled) return labeled[1].trim();
+
+  const heading = source.match(
+    /## Session \d+[^\r\n]*\r?\n([\s\S]*?)(?=\r?\n## |$)/i,
+  );
+  return heading ? heading[1].trim().replace(/\r?\n+/g, " ") : "";
 }

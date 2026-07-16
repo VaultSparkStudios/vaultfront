@@ -4,7 +4,30 @@ import { WinModal } from "../../../../src/client/graphics/layers/WinModal";
 import { RankedType } from "../../../../src/core/game/Game";
 
 const apiMock = vi.hoisted(() => ({
-  createRematch: vi.fn(async () => true),
+  createRematch: vi.fn(
+    async (): Promise<
+      | false
+      | {
+          gameId: string;
+          lobbyId: string;
+          code: string;
+          mapName: string;
+          participantCount: number;
+          expiresAt: number;
+          joinUrl: string;
+          status: "ready";
+        }
+    > => ({
+      gameId: "game-1",
+      lobbyId: "lobby-1",
+      code: "rematch1",
+      mapName: "World",
+      participantCount: 1,
+      expiresAt: Date.now() + 300_000,
+      joinUrl: "https://play.example/w0/game/lobby-1?lobby",
+      status: "ready" as const,
+    }),
+  ),
   fetchVaultFrontRecapAssignment: vi.fn(async () => false),
   getUserMe: vi.fn(async () => null),
   recordVaultFrontFunnelTelemetry: vi.fn(async () => true),
@@ -188,7 +211,7 @@ describe("VaultFront recap coaching", () => {
     expect(apiMock.recordVaultFrontPlaytestPulse).toHaveBeenCalledWith({
       surface: "retention",
       event: "rival_goal_saved",
-      value: 2,
+      value: 1,
     });
   });
 
@@ -199,11 +222,28 @@ describe("VaultFront recap coaching", () => {
 
     await modal._handleRematch();
 
-    expect(apiMock.createRematch).toHaveBeenCalledWith("game-1", "anon");
+    expect(apiMock.createRematch).toHaveBeenCalledWith("game-1");
     expect(apiMock.recordVaultFrontPlaytestPulse).toHaveBeenCalledWith({
       surface: "retention",
       event: "rival_rematch_requested",
       value: 1,
     });
+  });
+
+  it("keeps rematch failure honest and does not count retention", async () => {
+    const pulseCallsBefore =
+      apiMock.recordVaultFrontPlaytestPulse.mock.calls.length;
+    apiMock.createRematch.mockResolvedValueOnce(false);
+    const modal = new WinModal() as any;
+    modal.rivalryRevengeDelta = 1;
+    modal.game = { gameID: () => "game-1" };
+
+    await modal._handleRematch();
+
+    expect(modal.rematchResult).toBeNull();
+    expect(modal.rematchError).toContain("could not be created");
+    expect(apiMock.recordVaultFrontPlaytestPulse).toHaveBeenCalledTimes(
+      pulseCallsBefore,
+    );
   });
 });

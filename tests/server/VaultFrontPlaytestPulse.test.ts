@@ -3,8 +3,26 @@ import {
   buildVaultFrontPlaytestPulseSummary,
   recordVaultFrontPlaytestPulse,
   resetVaultFrontPlaytestPulseForTests,
+  type VaultFrontPlaytestPulseEvent,
 } from "../../src/server/VaultFrontPlaytestPulse";
 
+let humanEventSequence = 0;
+function recordHumanEvidence(
+  input: Omit<
+    VaultFrontPlaytestPulseEvent,
+    "source" | "actorKey" | "evidenceSessionId" | "eventId"
+  >,
+  fixtureId = "default",
+) {
+  return recordVaultFrontPlaytestPulse({
+    ...input,
+    value: 1,
+    source: "human",
+    actorKey: `human-actor-fixture-${fixtureId}`,
+    evidenceSessionId: `human-session-fixture-${fixtureId}`,
+    eventId: `human-event-fixture-${fixtureId}-${humanEventSequence++}`,
+  });
+}
 describe("VaultFront playtest pulse", () => {
   beforeEach(() => {
     resetVaultFrontPlaytestPulseForTests();
@@ -26,32 +44,32 @@ describe("VaultFront playtest pulse", () => {
   });
 
   it("aggregates tutorial, match, tournament, and retention signals", () => {
-    recordVaultFrontPlaytestPulse({
+    recordHumanEvidence({
       surface: "tutorial",
       event: "shown",
       at: 10_000,
     });
-    recordVaultFrontPlaytestPulse({
+    recordHumanEvidence({
       surface: "tutorial",
       event: "advance",
       at: 10_500,
     });
-    recordVaultFrontPlaytestPulse({
+    recordHumanEvidence({
       surface: "tutorial",
       event: "complete",
       at: 11_000,
     });
-    recordVaultFrontPlaytestPulse({
+    recordHumanEvidence({
       surface: "match",
       event: "feedback_epic",
       at: 12_000,
     });
-    recordVaultFrontPlaytestPulse({
+    recordHumanEvidence({
       surface: "tournament",
       event: "seed_bracket",
       at: 13_000,
     });
-    recordVaultFrontPlaytestPulse({
+    recordHumanEvidence({
       surface: "retention",
       event: "rival_challenge_shown",
       at: 14_000,
@@ -80,17 +98,17 @@ describe("VaultFront playtest pulse", () => {
   });
 
   it("calculates Rival Challenge action conversion", () => {
-    recordVaultFrontPlaytestPulse({
+    recordHumanEvidence({
       surface: "retention",
       event: "rival_challenge_shown",
       at: 20_000,
     });
-    recordVaultFrontPlaytestPulse({
+    recordHumanEvidence({
       surface: "retention",
       event: "rival_requeue_clicked",
       at: 21_000,
     });
-    recordVaultFrontPlaytestPulse({
+    recordHumanEvidence({
       surface: "match",
       event: "feedback_epic",
       at: 21_500,
@@ -112,7 +130,7 @@ describe("VaultFront playtest pulse", () => {
   });
 
   it("turns stale activity into an operator refresh script", () => {
-    recordVaultFrontPlaytestPulse({
+    recordHumanEvidence({
       surface: "tutorial",
       event: "shown",
       at: 1_000,
@@ -128,54 +146,108 @@ describe("VaultFront playtest pulse", () => {
   });
 
   it("marks the alpha gate ready when the full rivalry/rematch sample is fresh", () => {
-    recordVaultFrontPlaytestPulse({
-      surface: "tutorial",
-      event: "shown",
-      at: 10_000,
-    });
-    recordVaultFrontPlaytestPulse({
-      surface: "tutorial",
-      event: "advance",
-      at: 11_000,
-    });
-    recordVaultFrontPlaytestPulse({
-      surface: "tutorial",
-      event: "complete",
-      at: 12_000,
-    });
-    recordVaultFrontPlaytestPulse({
-      surface: "match",
-      event: "feedback_epic",
-      at: 13_000,
-      value: 2,
-    });
-    recordVaultFrontPlaytestPulse({
-      surface: "tournament",
-      event: "seed_bracket",
-      at: 13_500,
-    });
-    recordVaultFrontPlaytestPulse({
-      surface: "retention",
-      event: "rival_challenge_shown",
-      at: 14_000,
-    });
-    recordVaultFrontPlaytestPulse({
-      surface: "retention",
-      event: "rival_rematch_requested",
-      at: 15_000,
-    });
-
+    for (let actor = 1; actor <= 3; actor += 1) {
+      const fixtureId = String(actor);
+      recordHumanEvidence(
+        { surface: "tutorial", event: "shown", at: 10_000 },
+        fixtureId,
+      );
+      recordHumanEvidence(
+        { surface: "tutorial", event: "advance", at: 11_000 },
+        fixtureId,
+      );
+      recordHumanEvidence(
+        { surface: "tutorial", event: "complete", at: 12_000 },
+        fixtureId,
+      );
+      recordHumanEvidence(
+        { surface: "match", event: "feedback_epic", at: 13_000 },
+        fixtureId,
+      );
+      recordHumanEvidence(
+        { surface: "tournament", event: "seed_bracket", at: 13_500 },
+        fixtureId,
+      );
+      recordHumanEvidence(
+        { surface: "retention", event: "rival_challenge_shown", at: 14_000 },
+        fixtureId,
+      );
+      recordHumanEvidence(
+        {
+          surface: "retention",
+          event: "rival_rematch_requested",
+          at: 15_000,
+        },
+        fixtureId,
+      );
+    }
     const summary = buildVaultFrontPlaytestPulseSummary(16_000);
 
     expect(summary.status).toBe("ready");
     expect(summary.alphaGate.status).toBe("ready");
     expect(summary.alphaGate.checks).toEqual({
       fresh: true,
+      sampleSize: true,
       tutorial: true,
       feedback: true,
       rivalExposure: true,
       rivalAction: true,
     });
     expect(summary.alphaGate.passLabel).toContain("Alpha gate passed");
+  });
+  it("deduplicates event ids and excludes non-human sources from the gate", () => {
+    const shared = {
+      surface: "tutorial" as const,
+      event: "shown",
+      value: 1 as const,
+      at: 10_000,
+      evidenceSessionId: "human-session-dedupe",
+      eventId: "human-event-dedupe",
+      source: "human" as const,
+      actorKey: "human-evidence-dedupe",
+    };
+    recordVaultFrontPlaytestPulse(shared);
+    recordVaultFrontPlaytestPulse(shared);
+    recordVaultFrontPlaytestPulse({
+      surface: "tutorial",
+      event: "shown",
+      value: 1,
+      at: 11_000,
+      evidenceSessionId: "agent-session",
+      eventId: "agent-event-0001",
+      source: "agent",
+      actorKey: "agent-fixture",
+    });
+
+    const summary = buildVaultFrontPlaytestPulseSummary(12_000);
+    expect(summary.totals.events).toBe(1);
+    expect(summary.evidence.uniqueHumanSessions).toBe(1);
+    expect(summary.evidence.duplicateEvents).toBe(1);
+    expect(summary.evidence.excludedBySource.agent).toBe(1);
+  });
+
+  it("rejects caller-selected weights and unknown event names", () => {
+    recordVaultFrontPlaytestPulse({
+      surface: "match",
+      event: "feedback_epic",
+      value: 50,
+      source: "human",
+      actorKey: "human-evidence-invalid",
+      evidenceSessionId: "human-session-invalid",
+      eventId: "human-event-invalid-1",
+    } as unknown as VaultFrontPlaytestPulseEvent);
+    recordVaultFrontPlaytestPulse({
+      surface: "match",
+      event: "caller_selected_claim",
+      source: "human",
+      actorKey: "human-evidence-invalid",
+      evidenceSessionId: "human-session-invalid",
+      eventId: "human-event-invalid-2",
+    });
+
+    const summary = buildVaultFrontPlaytestPulseSummary();
+    expect(summary.totals.events).toBe(0);
+    expect(summary.evidence.rejectedEvents).toBe(2);
+    expect(summary.alphaGate.status).toBe("not-started");
   });
 });

@@ -191,9 +191,9 @@ export class LeaderboardModal extends BaseModal {
                 event: CustomEvent<{ start: string; end: string }>,
               ) => this.handleClanDateRangeChange(event)}
             ></leaderboard-clan-table>
-            ${this.activeTab === "predictions"
-              ? this.renderPredictionTab()
-              : ""}
+            ${
+              this.activeTab === "predictions" ? this.renderPredictionTab() : ""
+            }
           </div>
         </div>
       </div>

@@ -143,9 +143,7 @@ if (isMain) {
   }
   // default: --check
   if (violations.length) {
-    console.error(
-      `⚠ ${violations.length} SIL invariant violation(s) in ${p}:`,
-    );
+    console.error(`⚠ ${violations.length} SIL invariant violation(s) in ${p}:`);
     for (const v of violations)
       console.error(`  - ${v.field}=${JSON.stringify(v.value)} → ${v.fix}`);
     process.exit(1);

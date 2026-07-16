@@ -2,6 +2,24 @@
 
 Public-safe decisions only. Detailed internal decision history is maintained privately.
 
+## 2026-07-16 — Launch evidence is source-labeled and non-substitutable
+
+**Decision:** Human, agent, and test Alpha Gate evidence are separate classes. Automated or synthetic events may verify behavior but cannot satisfy the distinct-human launch gate; event IDs are deduplicated and actor identifiers remain pseudonymous.
+
+**Why:** A mechanically green path is not evidence that humans understood, completed, or wanted the loop. This preserves CANON-031 observability honesty and prevents test traffic from promoting the product.
+
+## 2026-07-16 — Remote AI is optional, attributed, and hard-capped
+
+**Decision:** Every remote Anthropic enhancement route is default-off, requires an explicit positive hourly cap, reserves budget before use, and records a feature attribution. Deterministic local coaching remains the free-tier baseline.
+
+**Why:** Free gameplay must remain cost-neutral and useful even when remote AI is disabled or exhausted.
+
+## 2026-07-16 — Vault Pressure is a reversible three-delivery breach state
+
+**Decision:** Three successful deliveries open a 90-second breach window; the next delivery wins, while expiry returns pressure to two rather than zero. The state is server-authoritative and surfaced through HUD/telemetry.
+
+**Why:** This creates a legible, high-tension climax without making a single expired opportunity erase all strategic progress.
+
 ## 2026-07-16 — Generated Obelisk helpers remain quarantined until a native integration is ready
 
 **Decision:** Remove all generated Obelisk helpers from deployable `src/` and untrack `obelisk-passport/` while retaining that reference cargo locally behind `.gitignore`.

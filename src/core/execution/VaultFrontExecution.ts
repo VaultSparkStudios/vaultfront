@@ -11,6 +11,7 @@ import {
   GameUpdateType,
   MapEventType,
   VaultFrontExecutionChainState,
+  VaultFrontPressureState,
   VaultFrontSquadObjectiveState,
   VaultFrontStatusUpdate,
   VaultFrontSurgeState,
@@ -104,6 +105,16 @@ export class VaultFrontExecution implements Execution {
   private executionStreakNextConvoyMultiplier = new Map<number, number>();
   private squadObjectiveWindows: SquadObjectiveWindow[] = [];
   private lastPublishedConvoyDebugKey = "";
+
+  // Vault Pressure — three deliveries open a short, telegraphed Breach
+  // Window; one further delivery during that window wins. All state lives in
+  // deterministic simulation memory, so clients and replays derive the same
+  // outcome without a server-side timing oracle.
+  private vaultPressure = new Map<number, number>();
+  private breachWindowUntilTick = new Map<number, number>();
+  private vaultBreachVictorID: number | null = null;
+  private readonly vaultPressureThreshold = 3;
+  private readonly breachWindowDurationTicks = 900;
 
   // Chain Guardian: consecutive vault captures per player (resets on site loss)
   private consecutiveVaultCaptures = new Map<number, number>();
@@ -249,6 +260,8 @@ export class VaultFrontExecution implements Execution {
       this.deepIntelActiveUntilTick.set(player.smallID(), 0);
       this.sabotageCharges.set(player.smallID(), new Map());
       this.dispatchDelayUntilTick.set(player.smallID(), 0);
+      this.vaultPressure.set(player.smallID(), 0);
+      this.breachWindowUntilTick.set(player.smallID(), 0);
     }
 
     this.nextMapEventTick =
@@ -297,6 +310,7 @@ export class VaultFrontExecution implements Execution {
     }
 
     this.handleQueuedCommands(ticks);
+    this.sweepExpiredBreachWindows(ticks);
     this.updateComebackState(ticks);
     this.sweepExpiredSquadObjectives(ticks);
     for (const player of this.game.players()) {
@@ -1558,7 +1572,9 @@ export class VaultFrontExecution implements Execution {
       | "heist_executed"
       | "bounty_collected"
       | "map_event"
-      | "chain_guardian_earned",
+      | "chain_guardian_earned"
+      | "breach_window_opened"
+      | "vault_breach_victory",
   ): boolean {
     return (
       this.weeklyMutator === "lane_fog" &&
@@ -2216,6 +2232,7 @@ export class VaultFrontExecution implements Execution {
       this.game.stats().vaultInteraction(owner);
       this.updateExecutionChainConvoyDelivered(owner, ticks);
       this.contributeToSquadObjective(owner, ticks, convoy.destinationTile);
+      this.advanceVaultPressure(owner, ticks, convoy.destinationTile);
 
       this.game.displayMessage(
         `Vault Convoy delivered (+${convoy.goldReward.toLocaleString()} gold, +${convoy.troopsReward.toLocaleString()} troops).`,
@@ -2394,7 +2411,9 @@ export class VaultFrontExecution implements Execution {
       | "heist_executed"
       | "bounty_collected"
       | "map_event"
-      | "chain_guardian_earned",
+      | "chain_guardian_earned"
+      | "breach_window_opened"
+      | "vault_breach_victory",
     tile: TileRef,
     sourcePlayerID: number | null,
     targetPlayerID: number | null,
@@ -2662,6 +2681,7 @@ export class VaultFrontExecution implements Execution {
       executionChains: this.buildExecutionChainStates(),
       surges: this.buildSurgeStates(),
       squadObjectives: this.buildSquadObjectiveStates(),
+      pressure: this.buildPressureStates(),
     };
     this.game.addUpdate(statusUpdate);
     this.game.setVaultSiteControllerIDs(
@@ -2672,6 +2692,99 @@ export class VaultFrontExecution implements Execution {
       ),
     );
     this.debugPublishedStatus(statusUpdate);
+  }
+
+  private buildPressureStates(): Record<number, VaultFrontPressureState> {
+    const result: Record<number, VaultFrontPressureState> = {};
+    for (const playerID of this.vaultPressure.keys()) {
+      const breachWindowUntilTick =
+        this.breachWindowUntilTick.get(playerID) ?? 0;
+      result[playerID] = {
+        pressure: Math.max(
+          0,
+          Math.min(
+            this.vaultPressureThreshold,
+            this.vaultPressure.get(playerID) ?? 0,
+          ),
+        ),
+        threshold: this.vaultPressureThreshold,
+        breachWindowUntilTick,
+        deliveriesRequired:
+          breachWindowUntilTick > this.game.ticks() &&
+          this.vaultBreachVictorID === null
+            ? 1
+            : 0,
+        victorySecured: this.vaultBreachVictorID === playerID,
+      };
+    }
+    return result;
+  }
+
+  private sweepExpiredBreachWindows(ticks: number): void {
+    if (this.vaultBreachVictorID !== null) return;
+    for (const [playerID, untilTick] of this.breachWindowUntilTick.entries()) {
+      if (untilTick <= 0 || ticks <= untilTick) continue;
+      this.breachWindowUntilTick.set(playerID, 0);
+      // Expiry creates counterplay without erasing the whole arc: the player
+      // must land one delivery to reopen, then another to breach.
+      this.vaultPressure.set(playerID, this.vaultPressureThreshold - 1);
+    }
+  }
+
+  private advanceVaultPressure(
+    owner: Player,
+    ticks: number,
+    tile: TileRef,
+  ): void {
+    if (this.vaultBreachVictorID !== null || this.game.getWinner() !== null) {
+      return;
+    }
+
+    const playerID = owner.smallID();
+    const windowUntil = this.breachWindowUntilTick.get(playerID) ?? 0;
+    if (windowUntil > ticks) {
+      this.vaultBreachVictorID = playerID;
+      this.breachWindowUntilTick.set(playerID, 0);
+      this.emitActivity(
+        "vault_breach_victory",
+        tile,
+        playerID,
+        null,
+        `${owner.displayName()} secured a Vault Breach victory`,
+        240,
+      );
+      this.game.displayMessage(
+        `${owner.displayName()} completed the Vault Breach!`,
+        MessageType.CHAT,
+        null,
+      );
+      this.game.setWinner(owner.team() ?? owner, this.game.stats().stats());
+      this.active = false;
+      return;
+    }
+
+    const nextPressure = Math.min(
+      this.vaultPressureThreshold,
+      (this.vaultPressure.get(playerID) ?? 0) + 1,
+    );
+    this.vaultPressure.set(playerID, nextPressure);
+    if (nextPressure < this.vaultPressureThreshold) return;
+
+    const untilTick = ticks + this.breachWindowDurationTicks;
+    this.breachWindowUntilTick.set(playerID, untilTick);
+    this.emitActivity(
+      "breach_window_opened",
+      tile,
+      playerID,
+      null,
+      `${owner.displayName()} opened a Vault Breach Window`,
+      180,
+    );
+    this.game.displayMessage(
+      `${owner.displayName()} reached maximum Vault Pressure — stop their next delivery!`,
+      MessageType.ATTACK_REQUEST,
+      null,
+    );
   }
 
   private buildExecutionChainStates(): Record<

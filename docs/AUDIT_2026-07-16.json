@@ -1,0 +1,574 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "/audit skill v2 · dual release/game lens",
+  "generatedAt": "2026-07-16T18:35:00Z",
+  "project": {
+    "slug": "vaultfront",
+    "name": "VaultFront",
+    "type": "game",
+    "registryType": "app",
+    "audience": "public-unlaunched",
+    "localAudience": "internal",
+    "stage": "FORGE"
+  },
+  "summary": "Premise-verified recovery audit: make CI truthful, replay/playtest evidence unforgeable, rematch real, the convoy loop decisive, public cost/launch surfaces consistent, and recovery probes deterministic.",
+  "axes": {
+    "featureDepth": 1.5,
+    "innovation": 1.5,
+    "ux": 2,
+    "feedbackLoop": 2,
+    "gamification": 3,
+    "aiIntegration": 1.5,
+    "security": 1.5,
+    "speedOrganization": 1.5,
+    "tokenApiReduction": 1.5
+  },
+  "sample": {
+    "method": "manual capped survey",
+    "picked": 20,
+    "scanned": 1034,
+    "tokens": 29800,
+    "releaseLens": "app-release-gate",
+    "gameLens": "game-loop-review"
+  },
+  "evidenceBoundary": [
+    "Local unit/build green does not override the last five red main CI and E2E runs.",
+    "No human playtest ledger exists; synthetic tests prove paths, not player behavior.",
+    "Registry public-unlaunched posture remains authoritative until Studio Ops accepts correction cargo.",
+    "No staging deployment, launch approval, real revenue event, or native Obelisk relying-party contract is claimed."
+  ],
+  "candidateSurvey": {
+    "featureDepth": [
+      "chosen progression spine",
+      "chosen Vault Pressure",
+      "rejected another isolated reward store"
+    ],
+    "innovation": [
+      "chosen evidence ledger",
+      "chosen Vault Pressure",
+      "chosen deterministic coach"
+    ],
+    "ux": [
+      "chosen rematch corridor",
+      "chosen public surface",
+      "rejected more WinModal cards"
+    ],
+    "feedbackLoop": [
+      "chosen evidence ledger",
+      "chosen readiness contract",
+      "chosen CI ratchet"
+    ],
+    "gamification": [
+      "chosen progression spine",
+      "chosen Vault Pressure",
+      "rejected new unwired badges"
+    ],
+    "aiIntegration": [
+      "chosen deterministic coach",
+      "chosen cost firewall",
+      "rejected fourteenth model endpoint"
+    ],
+    "security": [
+      "chosen replay enforcement",
+      "chosen dependency train",
+      "chosen evidence ledger"
+    ],
+    "speedOrganization": [
+      "chosen CI ratchet",
+      "chosen protocol repair",
+      "rejected wholesale Worker split before seam tests"
+    ],
+    "tokenApiReduction": [
+      "chosen deterministic coach",
+      "chosen cost firewall",
+      "chosen protocol repair"
+    ]
+  },
+  "items": [
+    {
+      "id": 1,
+      "slug": "authenticated-alpha-evidence-ledger",
+      "tier": "🔥",
+      "axis": "feedback_loop / security / innovation",
+      "effortHours": 3,
+      "impact": 10,
+      "innovation": 9,
+      "priority": 38.8,
+      "status": "shipped",
+      "title": "Replace forgeable process-global Alpha Gate counters with session-scoped evidence",
+      "why": "The unauthenticated POST accepts caller-selected weights and synthetic events can turn the gate green.",
+      "recipe": "Allowlist value=1 events; add evidenceSessionId, privacy-safe actor key, source labels, event-id dedupe, unique-session denominators, rate limits, and tests; test/agent samples must never impersonate human launch evidence.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Clamp/allowlist/rate-limit events."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Add sessions, dedupe, source labels, unique-session rates, and tests."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Persist signed evidence batches and render an auditable gate ledger."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-16T22:48:43.448Z",
+          "status": "shipped",
+          "note": "Shipped authenticated, pseudonymous, deduplicated, source-labeled session evidence; only distinct human sessions can satisfy the human gate."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "slug": "signed-replay-consumption",
+      "tier": "🔥",
+      "axis": "security / feature_depth",
+      "effortHours": 2,
+      "impact": 10,
+      "innovation": 7,
+      "priority": 35,
+      "status": "shipped",
+      "title": "Make replay integrity an enforced invariant instead of an unused signature",
+      "why": "All replay/highlight/clip reads bypass verification and production can use a public development HMAC key.",
+      "recipe": "Centralize verified loads, fail closed outside dev/test when the secret is absent, reject tampering at all consumers, add key posture to readiness, and test tamper/missing-secret behavior.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.6666666666666666,
+          "recipe": "Verify all read routes."
+        },
+        "L2": {
+          "effortHours": 2,
+          "recipe": "Centralize verified loads, fail closed, and test tampering."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Add key-version metadata and rotation."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-16T22:48:43.448Z",
+          "status": "shipped",
+          "note": "Shipped fail-closed replay verification across all consumers, with explicit development/test exception behavior and tamper tests."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "slug": "real-rematch-corridor",
+      "tier": "🔥",
+      "axis": "ux / retention / feedback_loop",
+      "effortHours": 4,
+      "impact": 10,
+      "innovation": 9,
+      "priority": 34.8,
+      "status": "shipped",
+      "title": "Turn the false Rematch sent state into a real cloned-config lobby corridor",
+      "why": "The client ignores failure/URL and the server stores intent without creating a lobby; telemetry counts clicks that may do nothing.",
+      "recipe": "Authenticate the caller, clone the ended game's safe config into a worker-local private lobby, return a standard join URL, expose failure/success in WinModal, count retention only after success, and test click→API→lobby→URL.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1.3333333333333333,
+          "recipe": "Make failure honest and use the URL."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Create and test the cloned-config corridor."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Add opponent presence, expiry UX, and party carryover."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-16T22:48:43.448Z",
+          "status": "shipped",
+          "note": "Shipped authenticated rematch creation into a private sanitized lobby; UI retention is recorded only after server success."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "slug": "vault-pressure-breach-window",
+      "tier": "🔥",
+      "axis": "gamification / feature_depth / innovation",
+      "effortHours": 6,
+      "impact": 10,
+      "innovation": 10,
+      "priority": 33.3,
+      "status": "shipped",
+      "title": "Braid the branded convoy loop into a decisive parallel victory path",
+      "why": "Vault mechanics are substantive, but victory still belongs entirely to inherited territory/time rules.",
+      "recipe": "Accumulate bounded Vault Pressure from deliveries, telegraph it, open a short Breach Window at threshold, let one further objective secure a Vault Breach victory, preserve territory victory, and add lifecycle/balance/UI tests.",
+      "ladder": {
+        "L1": {
+          "effortHours": 2,
+          "recipe": "Expose pressure telemetry only."
+        },
+        "L2": {
+          "effortHours": 6,
+          "recipe": "Implement pressure→breach→victory and UI."
+        },
+        "L3": {
+          "effortHours": 12,
+          "recipe": "Add team aggregation, counterplay, replay markers, and simulation."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-16T22:48:43.448Z",
+          "status": "shipped",
+          "note": "Shipped the deterministic three-delivery Vault Pressure breach window, expiry rollback, decisive next-delivery win, HUD, and telemetry."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "slug": "ci-truth-and-coverage-ratchet",
+      "tier": "🔥",
+      "axis": "speed_organization / feedback_loop",
+      "effortHours": 2.5,
+      "impact": 10,
+      "innovation": 7,
+      "priority": 32.3,
+      "status": "shipped",
+      "title": "Restore green CI with an explicit coverage ratchet",
+      "why": "Blank E2E_BASE_URL invalidates every relative navigation; formatting and a disconnected 70% threshold keep main red despite local unit green.",
+      "recipe": "Treat blank URL as absent, start/probe local E2E, format reported files, emit JSON coverage, enforce a checked-in no-regression baseline plus stricter critical-module floors, and test the ratchet.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.8333333333333334,
+          "recipe": "Fix E2E URL and formatting."
+        },
+        "L2": {
+          "effortHours": 2.5,
+          "recipe": "Add measurable global/critical coverage ratchets."
+        },
+        "L3": {
+          "effortHours": 5,
+          "recipe": "Add changed-file coverage and flake telemetry."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-16T22:48:43.448Z",
+          "status": "shipped",
+          "note": "Shipped coverage and formatting shrink-only ratchets, robust local E2E fallback, dependency-free per-chunk bundle budgets, and CI wiring."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "slug": "deterministic-tactical-coach",
+      "tier": "⚡",
+      "axis": "ai_integration / token_api_reduction / ux",
+      "effortHours": 2,
+      "impact": 8,
+      "innovation": 8,
+      "priority": 32,
+      "status": "shipped",
+      "title": "Make the coach instant and cost-neutral by default",
+      "why": "Known tactical triggers currently require an anonymous paid call and disappear without an API key despite sufficient structured game state.",
+      "recipe": "Create a tested local tactical-hint policy for each trigger, render it immediately, optionally request a bounded remote rewrite only when policy enables it, preserve cooldown/cache semantics, and measure avoided calls.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.6666666666666666,
+          "recipe": "Fallback locally on failure."
+        },
+        "L2": {
+          "effortHours": 2,
+          "recipe": "Local-first policy, bounded rewrite, telemetry, tests."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Counterfactual hint evaluation from outcomes."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-16T22:48:43.448Z",
+          "status": "shipped",
+          "note": "Shipped seven deterministic local coaching triggers with bounded, opt-in remote enhancement."
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "slug": "public-profile-cost-firewall",
+      "tier": "🔥",
+      "axis": "security / token_api_reduction / truth",
+      "effortHours": 3,
+      "impact": 9,
+      "innovation": 8,
+      "priority": 31,
+      "status": "shipped",
+      "title": "Reconcile the public-unlaunched profile and make remote AI spend impossible by default",
+      "why": "Registry says public-unlaunched while local status claims internal/exempt; thirteen model call sites lack a unified public cost contract.",
+      "recipe": "Adopt registry audience locally, retain game type and ship Ark correction cargo, centralize remote-AI policy defaulting off, expose policy in readiness, assign only an evidence-backed free-tier status, and test contradictions.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Record conflict and default remote AI off."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Central policy, readiness evidence, metadata, Ark cargo."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Persistent per-identity quotas after Obelisk."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-16T22:48:43.448Z",
+          "status": "shipped",
+          "note": "Corrected local public-unlaunched posture, shipped registry correction cargo, and enforced default-off attributed hourly remote-AI budgets."
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "slug": "readiness-truth-contract",
+      "tier": "⚡",
+      "axis": "feedback_loop / truth / release",
+      "effortHours": 1.5,
+      "impact": 9,
+      "innovation": 6,
+      "priority": 29.8,
+      "status": "shipped",
+      "title": "Separate server health, declared checks, and release readiness",
+      "why": "The API says ready when only the process is healthy, hardcodes passes, and cites a rights document absent from the public index.",
+      "recipe": "Add serverStatus/releaseStatus, distinguish declared from verified evidence, derive warning/block states from live inputs, cite LICENSE/LICENSING, and update tests/UI.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Correct rights and add releaseStatus."
+        },
+        "L2": {
+          "effortHours": 1.5,
+          "recipe": "Model declared/verified evidence and derive states."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Add signed build provenance."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-16T22:48:43.448Z",
+          "status": "shipped",
+          "note": "Shipped declared-versus-verified evidence, server and release statuses, explicit residual gates, and machine-readable warnings/blockers."
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "slug": "protocol-provenance-and-canon-repair",
+      "tier": "⚡",
+      "axis": "speed_organization / token_api_reduction / process",
+      "effortHours": 2.5,
+      "impact": 8,
+      "innovation": 7,
+      "priority": 25.9,
+      "status": "shipped",
+      "title": "Make recovery and Canon wave checks machine-honest",
+      "why": "Startup misses Session N headings, CANON-044 emits '}', task parsing ignores live bullets, and stash provenance required manual reconstruction.",
+      "recipe": "Add recovery-provenance classification; repair CANON-044 diagnostics; support/migrate the public task schema; add prompts/initiate.md; restore audit renderer helpers from the internal registry; cover all probes.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.8333333333333334,
+          "recipe": "Fix CANON-044 and prompt split."
+        },
+        "L2": {
+          "effortHours": 2.5,
+          "recipe": "Add provenance/task compatibility/renderer/tests."
+        },
+        "L3": {
+          "effortHours": 5,
+          "recipe": "Auto-render a non-mutating recovery ledger."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-16T22:48:43.448Z",
+          "status": "shipped",
+          "note": "Repaired prompts, added initiate, enforced recovery provenance and task-board structure, and added audit sidecar rendering/tests."
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "slug": "dependency-security-train",
+      "tier": "🔥",
+      "axis": "security / dev_health",
+      "effortHours": 3,
+      "impact": 10,
+      "innovation": 6,
+      "priority": 25.8,
+      "status": "shipped",
+      "title": "Remove all fix-available critical/high dependency advisories",
+      "why": "The lockfile has 34 advisories including 5 critical and 8 high across direct runtime/tooling packages.",
+      "recipe": "Resolve exact fixed versions, package-trust every direct target, update compatible groups, then supply-chain scan, audit, typecheck, unit, coverage, build, and E2E; stop on BLOCK.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Patch direct non-major fixes."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Clear critical/high with full gates."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Also clear fixable moderates and enforce an advisory budget."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-16T22:48:43.448Z",
+          "status": "shipped",
+          "note": "Trust-gated compatible dependency updates reduced npm audit from 34 findings to zero; Studio supply-chain scan found no incident matches."
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "slug": "server-authoritative-progression-spine",
+      "tier": "🔥",
+      "axis": "gamification / feature_depth",
+      "effortHours": 5,
+      "impact": 9,
+      "innovation": 8,
+      "priority": 24,
+      "status": "shipped",
+      "title": "Replace unwired progression shells with one idempotent match-outcome fan-out",
+      "why": "Achievement/season recorders lack production callers, three components are unmounted, identity is missing in one activity path, and style schemas drift.",
+      "recipe": "Create a server-authoritative final outcome envelope, idempotently fan into existing stores/Elo, fix identity/schema drift, mount one Progression Debrief, and test replay-safe idempotency.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1.6666666666666667,
+          "recipe": "Fix identity/schema and wire one outcome."
+        },
+        "L2": {
+          "effortHours": 5,
+          "recipe": "Fan out stores and mount consolidated UI."
+        },
+        "L3": {
+          "effortHours": 10,
+          "recipe": "Persist an event ledger with rebuild support."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-16T22:48:43.448Z",
+          "status": "shipped",
+          "note": "Shipped idempotent authoritative outcome processing, Elo/history, season and achievement progression, plus the mounted debrief surface."
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "slug": "public-surface-foundation",
+      "tier": "⚡",
+      "axis": "ux / release / dual_audience",
+      "effortHours": 3,
+      "impact": 9,
+      "innovation": 6,
+      "priority": 23.2,
+      "status": "shipped",
+      "title": "Build the local public-launch foundation without pretending staging exists",
+      "why": "Sitemap compliance is 0/10; footer/legal contacts are upstream, and contact/agent/sitemap/footer-manifest surfaces are absent.",
+      "recipe": "Add sitemap, robots, agents.json, llms.txt, JSON-LD, contact/privacy/terms surfaces, exact Studio footer/legal wording while preserving upstream attribution, and footer completeness tests; keep staging/theme/Obelisk/approval gates red.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Correct footer/legal and agent files."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Complete local sitemap/contact/footer foundations/tests."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Add staging screenshots/CWV only after staging exists."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-16T22:48:43.448Z",
+          "status": "shipped",
+          "note": "Shipped public sitemap, legal/contact/docs/AI-agent surfaces, footer/JSON-LD/upstream attribution, and achieved local sitemap 10/10."
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "count": 12,
+    "priority": 366.9,
+    "top3": [
+      "authenticated-alpha-evidence-ledger",
+      "signed-replay-consumption",
+      "real-rematch-corridor"
+    ]
+  },
+  "innovationReserve": [
+    "authenticated-alpha-evidence-ledger",
+    "real-rematch-corridor",
+    "vault-pressure-breach-window",
+    "deterministic-tactical-coach",
+    "public-profile-cost-firewall",
+    "server-authoritative-progression-spine"
+  ],
+  "skipped": [
+    {
+      "slug": "declare-public-launch-ready",
+      "reason": "Rejected on verify: CI/E2E/staging/sitemap/identity gates are red."
+    },
+    {
+      "slug": "clear-human-playtest-gate",
+      "reason": "Automated/synthetic evidence cannot be relabeled as human behavior."
+    },
+    {
+      "slug": "clear-live-revenue-warning",
+      "reason": "No real checkout/supporter event exists."
+    },
+    {
+      "slug": "deploy-staging-or-production",
+      "reason": "Not authorized by this local implementation arc and no staging contract exists."
+    },
+    {
+      "slug": "native-obelisk-login",
+      "reason": "Relying-party origin/callback/server contract is unavailable; preserve quarantine."
+    },
+    {
+      "slug": "add-another-ai-endpoint",
+      "reason": "Internal-first review found thirteen existing call sites; governance/local intelligence are missing."
+    }
+  ],
+  "executionLog": [],
+  "notes": "Public launch remains NO-GO. This sidecar is the sole source for S73 /implement.",
+  "implementationResult": {
+    "completedAt": "2026-07-16T22:48:43.448Z",
+    "shippedItems": 12,
+    "innovationCandidatesImplemented": 3,
+    "verification": [
+      "697 unit/integration tests green",
+      "22/22 Playwright CI-profile tests green",
+      "npm audit: 0 vulnerabilities",
+      "all emitted JavaScript chunks under 500 kB gzip",
+      "local sitemap compliance: 10/10"
+    ],
+    "honestResidualGates": [
+      "authenticated human alpha evidence",
+      "staging deployment and parity",
+      "project-domain Brevo delivery verification",
+      "native Obelisk relying-party integration",
+      "live CSP/HSTS/Core Web Vitals/theme screenshot evidence",
+      "founder launch approval"
+    ]
+  }
+}

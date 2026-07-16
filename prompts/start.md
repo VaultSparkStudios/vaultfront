@@ -1,68 +1,47 @@
 <!-- template-version: 3.3 -->
 <!-- synced-from: studio-ops/docs/SESSION_PROTOCOL.md § 1 @ Session 101 (2026-04-17) -->
 <!-- v3.3 changes: token-lean start — context-meter first, startup brief ONLY (no raw file reads), LATEST_HANDOFF auto-trim at closeout -->
-<<<<<<< HEAD
-=======
 
->>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 # START
 
 Executed when the user says only `start`.
 
 ---
 
-## 1 · Session Lock  *(mandatory first action)*
+## 1 · Session Lock _(mandatory first action)_
 
 Write session lock via Bash (avoids Write tool "file not read" guard on new files):
+
 ```bash
 echo "locked_by: agent-session
 session_start: $(date -u +%Y-%m-%dT%H:%M:%SZ)
 project: <slug>" > context/.session-lock
 ```
+
 Overwrite if a stale lock exists. Lock is auto-cleared by the global Stop hook; also cleared manually at closeout.
 
-**Active Session Beacon** *(runs if `.claude/beacon.env` exists — silently skips otherwise)*
+**Active Session Beacon** _(runs if `.claude/beacon.env` exists — silently skips otherwise)_
 
 ```bash
-[ -f .claude/beacon.env ] && source .claude/beacon.env && \
-  printf '{"active":[{"project":"%s","agent":"claude-code","since":"%s"}]}' \
-    "$BEACON_PROJECT_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" | \
-  gh gist edit "$BEACON_GIST_ID" -f active.json --filename active.json \
-  2>/dev/null || true
+[ -f .claude/beacon.env ] && source .claude/beacon.env \
+  && printf '{"active":[{"project":"%s","agent":"claude-code","since":"%s"}]}' \
+    "$BEACON_PROJECT_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  | gh gist edit "$BEACON_GIST_ID" -f active.json --filename active.json \
+    2> /dev/null || true
 ```
 
 Setup: create `.claude/beacon.env` (gitignored) with:
+
 ```
 BEACON_GIST_ID=<gist-id-from-hub-settings>
 BEACON_PROJECT_ID=<project-id-from-studioRegistry.js>
 ```
+
 Get values from Hub Settings → "Active Session Beacon". The Stop hook clears the beacon on session end.
 
 **Session mode (v3.1 — auto-detected):**
 
 Run the mode detector immediately after the session lock:
-<<<<<<< HEAD
-```bash
-node scripts/detect-session-mode.mjs --explain
-```
-It classifies the session as BUILDER (this-project) or FOUNDER (portfolio-wide) by heuristic on TASK_BOARD scope + LATEST_HANDOFF content + any passed-in user messages. If the classification would flip the current mode, it auto-updates `context/PROJECT_STATUS.json` → `sessionMode`. Re-run mid-session if the user issues a cross-project directive.
-
-| Mode | Trigger | Focus |
-|---|---|---|
-| **BUILDER** | Default / single-project scope | This project only |
-| **FOUNDER** | Detected: portfolio-wide scope, cross-project refs, `portfolio/STUDIO_BRAIN.md` or `STUDIO_PULSE.md` referenced | Cross-project strategy; read `portfolio/STUDIO_BRAIN.md` + `STUDIO_PULSE.md` first |
-
-**v3.1 secrets discovery rule (mandatory):** Before labeling any item "Human Action Required" or "human-blocked", run:
-```bash
-node scripts/check-secrets.mjs --for <capability>
-```
-If the capability is READY, proceed autonomously using `scripts/lib/secrets.mjs` `getSecret(key, capability)`. The phantom-blocker pattern is forbidden.
-
-**v3.2 blocker preflight rule (mandatory):** After secrets discovery, agents must try the blocker with elevated/admin access before leaving it as human-blocked:
-```bash
-node scripts/ops.mjs blocker-preflight
-```
-=======
 
 ```bash
 node scripts/detect-session-mode.mjs --explain
@@ -89,8 +68,21 @@ If the capability is READY, proceed autonomously using `scripts/lib/secrets.mjs`
 node scripts/ops.mjs blocker-preflight
 ```
 
->>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 If the blocker is agent-attemptable, attempt it first. Human escalation is the last step, not the first.
+
+---
+
+## 1.5 · Recovery provenance preflight
+
+Run the non-mutating recovery classifier before trusting an interrupted worktree:
+
+```bash
+node scripts/classify-recovery-provenance.mjs --json
+```
+
+Stop before edits if `corrupt: true` or unresolved merge markers are reported.
+A lint-staged automatic backup is recovery provenance, not proof that its work
+landed; compare every classified path with HEAD and the current intent.
 
 ---
 
@@ -98,48 +90,26 @@ If the blocker is agent-attemptable, attempt it first. Human escalation is the l
 
 Check `context/SELF_IMPROVEMENT_LOOP.md`:
 
-| Condition | Type | Action |
-|---|---|---|
-| File missing or no dated entries | **A — Bootstrap** | Follow `prompts/initiate.md` — stop here |
+| Condition                                                               | Type               | Action                                      |
+| ----------------------------------------------------------------------- | ------------------ | ------------------------------------------- |
+| File missing or no dated entries                                        | **A — Bootstrap**  | Follow `prompts/initiate.md` — stop here    |
 | 1 "Bootstrap/Foundation Baseline" entry; core files still template-only | **B — Foundation** | Follow `prompts/initiate.md` §B — stop here |
-| 2+ dated entries with real scores | **C — Returning** | Continue below |
+| 2+ dated entries with real scores                                       | **C — Returning**  | Continue below                              |
 
 ---
 
-<<<<<<< HEAD
-## 3 · Context-meter preflight  *(v1.3 — runs BEFORE loading any files)*
-=======
 ## 3 · Context-meter preflight _(v1.3 — runs BEFORE loading any files)_
->>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 
 ```bash
 node scripts/context-meter.mjs --json
 ```
 
 - `CONTINUE` → proceed to step 4.
-<<<<<<< HEAD
-- `CONSIDER_CLOSEOUT` → warn: *"Context N% used before /start. Recommend fresh terminal."* Proceed only on explicit founder confirmation.
-=======
 - `CONSIDER_CLOSEOUT` → warn: _"Context N% used before /start. Recommend fresh terminal."_ Proceed only on explicit founder confirmation.
->>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 - `CLOSEOUT` → **stop immediately.** Show cached genius list from `.cache/genius-list.json` if available. Prompt for `/closeout`. This terminal is exhausted — no context files should be loaded.
 
 ---
 
-<<<<<<< HEAD
-## 4 · Initiation type check  *(lightweight)*
-
-Check `context/SELF_IMPROVEMENT_LOOP.md` has ≥2 dated entries — grep only, do NOT read the full file:
-
-| Condition | Action |
-|---|---|
-| File missing or 0–1 dated entries | Follow `prompts/initiate.md` — stop here |
-| 2+ dated entries with real scores | Continue below |
-
----
-
-## 5 · Load startup brief — SOLE CONTEXT SOURCE  *(v1.3)*
-=======
 ## 4 · Initiation type check _(lightweight)_
 
 Check `context/SELF_IMPROVEMENT_LOOP.md` has ≥2 dated entries — grep only, do NOT read the full file:
@@ -152,16 +122,11 @@ Check `context/SELF_IMPROVEMENT_LOOP.md` has ≥2 dated entries — grep only, d
 ---
 
 ## 5 · Load startup brief — SOLE CONTEXT SOURCE _(v1.3)_
->>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 
 **Do NOT read raw context files at session start.** The startup brief synthesizes all of them.
 
 ```bash
-<<<<<<< HEAD
-node scripts/render-startup-brief.mjs   # skip if docs/STARTUP_BRIEF.md < 24h old
-=======
 node scripts/render-startup-brief.mjs # skip if docs/STARTUP_BRIEF.md < 24h old
->>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 node scripts/validate-brief-format.mjs docs/STARTUP_BRIEF.md
 ```
 
@@ -173,11 +138,7 @@ Raw context files are available on-demand during work — they are not loaded at
 
 ---
 
-<<<<<<< HEAD
-## 5.5 · SIL escalation check  *(from the brief — no extra reads)*
-=======
 ## 5.5 · SIL escalation check _(from the brief — no extra reads)_
->>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 
 - Note sparkline trajectory and lowest SCORE block category.
 - List unactioned `[SIL]` items from the brief's GENIUS HIT LIST block.
@@ -196,11 +157,7 @@ Raw context files are available on-demand during work — they are not loaded at
 
 ---
 
-<<<<<<< HEAD
-## 6 · Output — Startup Brief  *(v3.3 visual format — canonical renderer MANDATORY)*
-=======
 ## 6 · Output — Startup Brief _(v3.3 visual format — canonical renderer MANDATORY)_
->>>>>>> 733f39ea (studio-os: sync protocol assets to v3.3)
 
 **MUST use the canonical renderer.** Do not improvise a prose brief. Steps:
 
@@ -271,29 +228,30 @@ The template below documents the canonical shape for reference only. **Do not ha
 ╚════════════════════════════════════════════════════════════════════╝
 ```
 
-*(Followed by IGNIS INSIGHT and CANON CHECK as plain text below the box)*
+_(Followed by IGNIS INSIGHT and CANON CHECK as plain text below the box)_
 
-### Brief sources  *(all from files already loaded — no extra reads)*
+### Brief sources _(all from files already loaded — no extra reads)_
 
-| Field | Source |
-|---|---|
-| Score bar · per-category bars · sparkline · Avgs | `SELF_IMPROVEMENT_LOOP.md` Rolling Status header + last entry scores |
-| Days since | `Last session:` date vs today |
-| IGNIS score | `context/PROJECT_STATUS.json` → `ignisScore`, `ignisGrade`, `ignisLastComputed` |
-| Truth / Genome | `context/TRUTH_AUDIT.md` → `context/PROJECT_STATUS.json` |
-| Context age | `Last updated:` in `context/CURRENT_STATE.md` vs today |
-| CDR Gap | Last `YYYY-MM-DD` entry in `docs/CREATIVE_DIRECTION_RECORD.md` vs `Last updated:` in `context/LATEST_HANDOFF.md` |
-| Templates | Compare `template-version:` in `prompts/start.md` vs `START_PROMPT.template.md` |
-| Revenue signals | `Generated:` date in `portfolio/REVENUE_SIGNALS.md` vs today |
-| Prediction | `docs/SESSION_PLAN.md` `generated-at` comment; include only if < 48h old |
-| Genius Hit List | `docs/GENIUS_LIST.md` if present; else call `scripts/generate-genius-list.mjs --brief` |
+| Field                                            | Source                                                                                                           |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| Score bar · per-category bars · sparkline · Avgs | `SELF_IMPROVEMENT_LOOP.md` Rolling Status header + last entry scores                                             |
+| Days since                                       | `Last session:` date vs today                                                                                    |
+| IGNIS score                                      | `context/PROJECT_STATUS.json` → `ignisScore`, `ignisGrade`, `ignisLastComputed`                                  |
+| Truth / Genome                                   | `context/TRUTH_AUDIT.md` → `context/PROJECT_STATUS.json`                                                         |
+| Context age                                      | `Last updated:` in `context/CURRENT_STATE.md` vs today                                                           |
+| CDR Gap                                          | Last `YYYY-MM-DD` entry in `docs/CREATIVE_DIRECTION_RECORD.md` vs `Last updated:` in `context/LATEST_HANDOFF.md` |
+| Templates                                        | Compare `template-version:` in `prompts/start.md` vs `START_PROMPT.template.md`                                  |
+| Revenue signals                                  | `Generated:` date in `portfolio/REVENUE_SIGNALS.md` vs today                                                     |
+| Prediction                                       | `docs/SESSION_PLAN.md` `generated-at` comment; include only if < 48h old                                         |
+| Genius Hit List                                  | `docs/GENIUS_LIST.md` if present; else call `scripts/generate-genius-list.mjs --brief`                           |
 
 **Signal thresholds:**
+
 - Tests: ✓ passing + delta ≥0 · ⚠ delta <0 · ⛔ failing
 - Velocity: ✓ ≥2 · ⚠ 1 · ⛔ 0
 - Runway: ✓ >4 · ⚠ 2–4 · ⛔ ≤2
 - Context age: ✓ ≤7d · ⚠ 8–14d · ⛔ >14d
-- IGNIS: ✓ <7d · ⚠ 7–14d · ⛔ >14d  ← re-score via `node ../vaultspark-studio-ops/scripts/ops.mjs rescore`
+- IGNIS: ✓ <7d · ⚠ 7–14d · ⛔ >14d ← re-score via `node ../vaultspark-studio-ops/scripts/ops.mjs rescore`
 - Genome dims: ✓ no drops vs prior snapshot · ⚠ any dimension dropped
 - Entropy: ✓ <0.3 (healthy) · ⚠ 0.3–0.6 (elevated) · ⛔ >0.6 (high)
 - CDR Gap: ✓ last CDR date ≥ LATEST_HANDOFF date · ⚠ CDR predates LATEST_HANDOFF
@@ -315,6 +273,7 @@ If the user did not provide a session goal, ask:
 Log the declared intent in `context/LATEST_HANDOFF.md` under `Session Intent:`.
 
 **Scope check** — immediately after logging intent:
+
 - Count open Now items + work implied by the declared intent
 - Compare to avg velocity in Rolling Status header
 - Compute **sessionScopeCap** = `floor(lastVelocity × 1.5)` where `lastVelocity` = `Velocity: N` from Rolling Status header

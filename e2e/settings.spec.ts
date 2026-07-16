@@ -17,7 +17,7 @@ test.describe("Settings / Theme", () => {
   test("persists theme selection across reload", async ({ page }) => {
     // Set theme via localStorage directly (bypasses needing to open settings modal)
     await page.evaluate(() => {
-      localStorage.setItem("vf-theme", "light");
+      localStorage.setItem("settings.brandTheme", "light");
     });
     await page.reload();
     await page.waitForSelector("play-page", { timeout: 10_000 });
@@ -32,7 +32,7 @@ test.describe("Settings / Theme", () => {
     // Simulate dark color scheme preference
     await page.emulateMedia({ colorScheme: "dark" });
     // Clear saved theme to test default resolution
-    await page.evaluate(() => localStorage.removeItem("vf-theme"));
+    await page.evaluate(() => localStorage.removeItem("settings.brandTheme"));
     await page.reload();
     await page.waitForSelector("play-page", { timeout: 10_000 });
 

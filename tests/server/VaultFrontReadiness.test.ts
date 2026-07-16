@@ -2,14 +2,24 @@ import { describe, expect, it } from "vitest";
 import { buildVaultFrontReadiness } from "../../src/server/VaultFrontReadiness";
 
 describe("buildVaultFrontReadiness", () => {
-  it("returns a ready launch contract when the process is healthy", () => {
+  it("keeps healthy server status separate from blocked release evidence", () => {
     const payload = buildVaultFrontReadiness({
       healthy: true,
       processRole: "master",
+      replayIntegrity: {
+        status: "missing",
+        canSignAndVerify: false,
+        evidence: "Replay integrity key is missing.",
+      },
     });
 
     expect(payload.project).toBe("vaultfront");
     expect(payload.status).toBe("ready");
+    expect(payload.serverStatus).toBe("ready");
+    expect(payload.releaseStatus).toBe("blocked");
+    expect(payload.releaseBlockers).toContain(
+      "Replay integrity key is missing.",
+    );
     expect(payload.checks.serverHealth).toBe("pass");
     expect(payload.testSurfaces.length).toBeGreaterThanOrEqual(4);
     expect(
@@ -101,6 +111,7 @@ describe("buildVaultFrontReadiness", () => {
     const payload = buildVaultFrontReadiness({
       healthy: true,
       processRole: "master",
+
       revenueSignal: {
         status: "observed",
         observedAt: "2026-06-05T14:00:00.000Z",
@@ -112,5 +123,70 @@ describe("buildVaultFrontReadiness", () => {
       payload.launchGates.find((gate) => gate.gate === "revenue-signal")
         ?.evidence,
     ).toContain("2026-06-05T14:00:00.000Z");
+  });
+  it("reports release ready only when live verification evidence is attached", () => {
+    const payload = buildVaultFrontReadiness({
+      healthy: true,
+      processRole: "worker",
+      workerId: 0,
+      replayIntegrity: {
+        status: "configured",
+        canSignAndVerify: true,
+        evidence: "Replay HMAC key is configured for this process.",
+      },
+      rightsEvidence: { status: "verified", path: "LICENSE and LICENSING.md" },
+      verification: {
+        tests: { status: "verified", observedAt: "2026-07-16T12:00:00.000Z" },
+        productionBuild: {
+          status: "verified",
+          observedAt: "2026-07-16T12:05:00.000Z",
+        },
+      },
+      revenueSignal: { status: "observed" },
+      playtestPulse: {
+        status: "ready",
+        score: 80,
+        freshness: { lastEventAt: "2026-07-16T12:10:00.000Z", ageMinutes: 1 },
+        alphaGate: {
+          status: "ready",
+          passLabel: "Alpha gate passed.",
+          nextCheck: "Preserve freshness.",
+        },
+      },
+    });
+
+    expect(payload.serverStatus).toBe("ready");
+    expect(payload.releaseStatus).toBe("ready");
+    expect(payload.releaseBlockers).toEqual([]);
+    expect(payload.releaseWarnings).toEqual([]);
+    expect(payload.checks.testSurfacesRegistered).toBe("verified");
+    expect(payload.evidence.verified).toContain(
+      "Fresh production build run attached.",
+    );
+  });
+  it("blocks missing rights and exposes the metered AI hard cap", () => {
+    const payload = buildVaultFrontReadiness({
+      healthy: true,
+      processRole: "worker",
+      rightsEvidence: { status: "missing", path: "LICENSE and LICENSING.md" },
+      remoteAi: {
+        enabled: true,
+        keyConfigured: true,
+        maxCallsPerHour: 10,
+        callsUsed: 2,
+        callsRemaining: 8,
+        costProfile: "metered-hard-cap",
+        reason: "ready",
+      },
+    });
+
+    expect(payload.releaseBlockers).toContain(
+      "Rights provenance evidence is missing.",
+    );
+    expect(payload.remoteAi.costProfile).toBe("metered-hard-cap");
+    expect(
+      payload.launchGates.find((gate) => gate.gate === "free-tier-cost")
+        ?.evidence,
+    ).toContain("hard cap of 10 calls/hour");
   });
 });

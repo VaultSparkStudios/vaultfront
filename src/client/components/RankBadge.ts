@@ -135,23 +135,27 @@ export class RankBadge extends LitElement {
 
     return html`
       <span class="inline-flex items-center gap-1 group">
-        ${hasDynasty
-          ? html`<span
-              class="text-xs"
-              title="Dynasty ${this.dynastyTier} — ${this.dynastyEmblem}"
-              >${this.dynastyEmblem}</span
-            >`
-          : ""}
+        ${
+          hasDynasty
+            ? html`<span
+                class="text-xs"
+                title="Dynasty ${this.dynastyTier} — ${this.dynastyEmblem}"
+                >${this.dynastyEmblem}</span
+              >`
+            : ""
+        }
         <span
           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-xs font-semibold ${colors.bg} ${colors.text} ${colors.border} ${decayClass}"
-          title="${this.label} — ${this.elo} Elo${hasDynasty
-            ? ` · Dynasty ${this.dynastyTier}`
-            : ""}${decayTitle}"
+          title="${this.label} — ${this.elo} Elo${
+            hasDynasty ? ` · Dynasty ${this.dynastyTier}` : ""
+          }${decayTitle}"
         >
           ${icon} ${this.compact ? this.label : `${this.label} · ${this.elo}`}
-          ${this.decaying
-            ? html`<span class="text-orange-300 text-[10px]">↓</span>`
-            : ""}
+          ${
+            this.decaying
+              ? html`<span class="text-orange-300 text-[10px]">↓</span>`
+              : ""
+          }
         </span>
         ${this.renderSparkline()}
       </span>

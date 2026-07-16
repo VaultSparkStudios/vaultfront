@@ -420,23 +420,27 @@ export class HistoryModal extends LitElement {
       <div class="header">
         <div class="header-info">
           <div class="player-name">${s?.displayName ?? "Player"}</div>
-          ${s
-            ? html`
-                <div class="elo-badge">
-                  ${s.eloLabel}
-                  <span class="elo-number">${s.eloRating}</span>
-                </div>
-                <div class="stat-chips">
-                  <div class="stat-chip">Win Rate <span>${winRate}%</span></div>
-                  <div class="stat-chip">
-                    Matches <span>${s.matchesPlayed}</span>
+          ${
+            s
+              ? html`
+                  <div class="elo-badge">
+                    ${s.eloLabel}
+                    <span class="elo-number">${s.eloRating}</span>
                   </div>
-                  <div class="stat-chip">
-                    W/L <span>${s.wins}/${s.losses}</span>
+                  <div class="stat-chips">
+                    <div class="stat-chip">
+                      Win Rate <span>${winRate}%</span>
+                    </div>
+                    <div class="stat-chip">
+                      Matches <span>${s.matchesPlayed}</span>
+                    </div>
+                    <div class="stat-chip">
+                      W/L <span>${s.wins}/${s.losses}</span>
+                    </div>
                   </div>
-                </div>
-              `
-            : ""}
+                `
+              : ""
+          }
         </div>
         <button class="close-btn" @click=${this.closeModal}>&#x2715;</button>
       </div>
@@ -567,9 +571,11 @@ export class HistoryModal extends LitElement {
             </button>
           </div>
           <div class="body">
-            ${this.activeTab === "history"
-              ? this.renderHistoryTab()
-              : this.renderLeaderboardTab()}
+            ${
+              this.activeTab === "history"
+                ? this.renderHistoryTab()
+                : this.renderLeaderboardTab()
+            }
           </div>
         </div>
       </div>

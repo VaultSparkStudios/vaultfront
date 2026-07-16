@@ -1,14 +1,19 @@
 export type VaultFrontPulseSurface =
-  | "tutorial"
-  | "match"
-  | "tournament"
-  | "retention";
+  "tutorial" | "match" | "tournament" | "retention";
+
+export type VaultFrontEvidenceSource = "human" | "agent" | "test" | "system";
 
 export interface VaultFrontPlaytestPulseEvent {
   surface: VaultFrontPulseSurface;
   event: string;
-  value?: number;
+  /** Evidence is always unit-weighted. Caller-selected weights are rejected. */
+  value?: 1;
   at?: number;
+  evidenceSessionId?: string;
+  eventId?: string;
+  source?: VaultFrontEvidenceSource;
+  /** Server-derived pseudonymous key. Never send a raw account identifier. */
+  actorKey?: string;
 }
 
 export interface VaultFrontPlaytestPulseSummary {
@@ -41,7 +46,18 @@ export interface VaultFrontPlaytestPulseSummary {
     lastEventAt: string | null;
     ageMinutes: number | null;
   };
-  recent: VaultFrontPlaytestPulseEvent[];
+  recent: Array<Omit<VaultFrontPlaytestPulseEvent, "actorKey">>;
+  evidence: {
+    acceptedHumanEvents: number;
+    uniqueHumanSessions: number;
+    uniqueHumanActors: number;
+    duplicateEvents: number;
+    rejectedEvents: number;
+    excludedBySource: Record<
+      Exclude<VaultFrontEvidenceSource, "human">,
+      number
+    >;
+  };
   insights: string[];
   actionInsights: string[];
   operatorNext: {
@@ -53,6 +69,7 @@ export interface VaultFrontPlaytestPulseSummary {
     status: "not-started" | "warming" | "blocked" | "ready";
     checks: {
       fresh: boolean;
+      sampleSize: boolean;
       tutorial: boolean;
       feedback: boolean;
       rivalExposure: boolean;
@@ -64,6 +81,51 @@ export interface VaultFrontPlaytestPulseSummary {
 }
 
 const MAX_RECENT = 40;
+const allowedEvents: Record<VaultFrontPulseSurface, ReadonlySet<string>> = {
+  tutorial: new Set(["shown", "advance", "complete", "skip"]),
+  match: new Set([
+    "feedback",
+    "feedback_epic",
+    "feedback_balanced",
+    "feedback_off",
+  ]),
+  tournament: new Set(["seed_bracket", "report_winner"]),
+  retention: new Set([
+    "funnel_win",
+    "funnel_loss",
+    "rival_challenge_shown",
+    "rival_goal_saved",
+    "rival_requeue_clicked",
+    "rival_rematch_requested",
+  ]),
+};
+
+const seenEventIds = new Set<string>();
+const seenEventOrder: string[] = [];
+const humanSessionActors = new Map<string, string>();
+const sessionEvents = new Map<string, Set<string>>();
+let duplicateEvents = 0;
+let rejectedEvents = 0;
+let legacyEventSequence = 0;
+const excludedBySource: Record<
+  Exclude<VaultFrontEvidenceSource, "human">,
+  number
+> = {
+  agent: 0,
+  test: 0,
+  system: 0,
+};
+
+function sessionsWith(
+  surface: VaultFrontPulseSurface,
+  ...events: string[]
+): number {
+  let count = 0;
+  for (const keys of sessionEvents.values()) {
+    if (events.some((event) => keys.has(`${surface}:${event}`))) count += 1;
+  }
+  return count;
+}
 
 const pulse = {
   events: 0,
@@ -80,7 +142,7 @@ const pulse = {
   retentionRematchRequested: 0,
   firstEventAt: null as number | null,
   lastEventAt: null as number | null,
-  recent: [] as VaultFrontPlaytestPulseEvent[],
+  recent: [] as Array<Omit<VaultFrontPlaytestPulseEvent, "actorKey">>,
 };
 
 export function resetVaultFrontPlaytestPulseForTests(): void {
@@ -99,75 +161,164 @@ export function resetVaultFrontPlaytestPulseForTests(): void {
   pulse.firstEventAt = null;
   pulse.lastEventAt = null;
   pulse.recent = [];
+  seenEventIds.clear();
+  seenEventOrder.length = 0;
+  humanSessionActors.clear();
+  sessionEvents.clear();
+  duplicateEvents = 0;
+  rejectedEvents = 0;
+  legacyEventSequence = 0;
+  excludedBySource.agent = 0;
+  excludedBySource.test = 0;
+  excludedBySource.system = 0;
 }
 
 export function recordVaultFrontPlaytestPulse(
   input: VaultFrontPlaytestPulseEvent,
 ): VaultFrontPlaytestPulseSummary {
-  const value = Math.max(1, Math.min(10_000, input.value ?? 1));
+  const source = input.source ?? "system";
+  const value = input.value ?? 1;
   const at = input.at ?? Date.now();
-  const event = { ...input, value, at };
+  const eventId =
+    input.eventId ?? `legacy:${source}:${at}:${legacyEventSequence++}`;
+  const evidenceSessionId =
+    input.evidenceSessionId ?? `legacy:${source}:${eventId}`;
 
-  pulse.events += value;
+  if (!allowedEvents[input.surface].has(input.event) || value !== 1) {
+    rejectedEvents += 1;
+    return buildVaultFrontPlaytestPulseSummary(at);
+  }
+  if (seenEventIds.has(eventId)) {
+    duplicateEvents += 1;
+    return buildVaultFrontPlaytestPulseSummary(at);
+  }
+  seenEventIds.add(eventId);
+  seenEventOrder.push(eventId);
+  if (seenEventOrder.length > 20_000) {
+    const oldest = seenEventOrder.shift();
+    if (oldest) seenEventIds.delete(oldest);
+  }
+
+  const publicEvent: Omit<VaultFrontPlaytestPulseEvent, "actorKey"> = {
+    surface: input.surface,
+    event: input.event,
+    value: 1,
+    at,
+    evidenceSessionId,
+    eventId,
+    source,
+  };
+  pulse.recent.unshift(publicEvent);
+  pulse.recent = pulse.recent.slice(0, MAX_RECENT);
+
+  // Only authenticated, server-pseudonymized human evidence contributes to
+  // launch gates. Agent, test, and system samples remain visible but excluded.
+  if (source !== "human") {
+    excludedBySource[source] += 1;
+    return buildVaultFrontPlaytestPulseSummary(at);
+  }
+  if (!input.actorKey) {
+    rejectedEvents += 1;
+    return buildVaultFrontPlaytestPulseSummary(at);
+  }
+  const sessionActor = humanSessionActors.get(evidenceSessionId);
+  if (sessionActor && sessionActor !== input.actorKey) {
+    rejectedEvents += 1;
+    return buildVaultFrontPlaytestPulseSummary(at);
+  }
+  humanSessionActors.set(evidenceSessionId, input.actorKey);
+  const evidence = sessionEvents.get(evidenceSessionId) ?? new Set<string>();
+  evidence.add(`${input.surface}:${input.event}`);
+  sessionEvents.set(evidenceSessionId, evidence);
+
+  pulse.events += 1;
   pulse.firstEventAt ??= at;
   pulse.lastEventAt = at;
 
-  if (event.surface === "tutorial") {
-    if (event.event === "shown") pulse.tutorialShown += value;
-    if (event.event === "advance") pulse.tutorialAdvanced += value;
-    if (event.event === "complete") pulse.tutorialCompleted += value;
-    if (event.event === "skip") pulse.tutorialSkipped += value;
-  } else if (event.surface === "match") {
-    pulse.matchFeedback += value;
-  } else if (event.surface === "tournament") {
-    pulse.tournamentActions += value;
-  } else if (event.surface === "retention") {
-    pulse.retentionSignals += value;
-    if (event.event === "rival_challenge_shown") {
-      pulse.retentionChallengeShown += value;
+  if (input.surface === "tutorial") {
+    if (input.event === "shown") pulse.tutorialShown += 1;
+    if (input.event === "advance") pulse.tutorialAdvanced += 1;
+    if (input.event === "complete") pulse.tutorialCompleted += 1;
+    if (input.event === "skip") pulse.tutorialSkipped += 1;
+  } else if (input.surface === "match") {
+    pulse.matchFeedback += 1;
+  } else if (input.surface === "tournament") {
+    pulse.tournamentActions += 1;
+  } else if (input.surface === "retention") {
+    pulse.retentionSignals += 1;
+    if (input.event === "rival_challenge_shown") {
+      pulse.retentionChallengeShown += 1;
     }
-    if (event.event === "rival_goal_saved") {
-      pulse.retentionGoalSaved += value;
+    if (input.event === "rival_goal_saved") {
+      pulse.retentionGoalSaved += 1;
     }
-    if (event.event === "rival_requeue_clicked") {
-      pulse.retentionRequeued += value;
+    if (input.event === "rival_requeue_clicked") {
+      pulse.retentionRequeued += 1;
     }
-    if (event.event === "rival_rematch_requested") {
-      pulse.retentionRematchRequested += value;
+    if (input.event === "rival_rematch_requested") {
+      pulse.retentionRematchRequested += 1;
     }
   }
 
-  pulse.recent.unshift(event);
-  pulse.recent = pulse.recent.slice(0, MAX_RECENT);
-  return buildVaultFrontPlaytestPulseSummary();
+  return buildVaultFrontPlaytestPulseSummary(at);
 }
-
 export function buildVaultFrontPlaytestPulseSummary(
   now = Date.now(),
 ): VaultFrontPlaytestPulseSummary {
+  const tutorialShownSessions = sessionsWith("tutorial", "shown");
   const tutorialCompletion =
-    pulse.tutorialShown > 0
-      ? Number((pulse.tutorialCompleted / pulse.tutorialShown).toFixed(4))
+    tutorialShownSessions > 0
+      ? Number(
+          (
+            sessionsWith("tutorial", "complete") / tutorialShownSessions
+          ).toFixed(4),
+        )
       : 0;
   const tutorialAdvance =
-    pulse.tutorialShown > 0
-      ? Number((pulse.tutorialAdvanced / pulse.tutorialShown).toFixed(4))
+    tutorialShownSessions > 0
+      ? Number(
+          (sessionsWith("tutorial", "advance") / tutorialShownSessions).toFixed(
+            4,
+          ),
+        )
       : 0;
   const tutorialSkip =
-    pulse.tutorialShown > 0
-      ? Number((pulse.tutorialSkipped / pulse.tutorialShown).toFixed(4))
+    tutorialShownSessions > 0
+      ? Number(
+          (sessionsWith("tutorial", "skip") / tutorialShownSessions).toFixed(4),
+        )
       : 0;
   const matchFeedback =
-    pulse.events > 0
-      ? Number((pulse.matchFeedback / pulse.events).toFixed(4))
+    humanSessionActors.size > 0
+      ? Number(
+          (
+            sessionsWith(
+              "match",
+              "feedback",
+              "feedback_epic",
+              "feedback_balanced",
+              "feedback_off",
+            ) / humanSessionActors.size
+          ).toFixed(4),
+        )
       : 0;
-  const retentionActions =
-    pulse.retentionGoalSaved +
-    pulse.retentionRequeued +
-    pulse.retentionRematchRequested;
+
+  const retentionExposureSessions = sessionsWith(
+    "retention",
+    "rival_challenge_shown",
+  );
   const retentionAction =
-    pulse.retentionChallengeShown > 0
-      ? Number((retentionActions / pulse.retentionChallengeShown).toFixed(4))
+    retentionExposureSessions > 0
+      ? Number(
+          (
+            sessionsWith(
+              "retention",
+              "rival_goal_saved",
+              "rival_requeue_clicked",
+              "rival_rematch_requested",
+            ) / retentionExposureSessions
+          ).toFixed(4),
+        )
       : 0;
   const ageMinutes =
     pulse.lastEventAt === null
@@ -183,7 +334,7 @@ export function buildVaultFrontPlaytestPulseSummary(
     ),
   );
   const status =
-    pulse.events === 0 ? "no-signal" : score >= 35 ? "ready" : "warming";
+    pulse.events === 0 ? "no-signal" : score >= 30 ? "ready" : "warming";
 
   const actionInsights = buildActionInsights({
     tutorialAdvance,
@@ -238,6 +389,14 @@ export function buildVaultFrontPlaytestPulseSummary(
       ageMinutes,
     },
     recent: pulse.recent.slice(0, 10),
+    evidence: {
+      acceptedHumanEvents: pulse.events,
+      uniqueHumanSessions: humanSessionActors.size,
+      uniqueHumanActors: new Set(humanSessionActors.values()).size,
+      duplicateEvents,
+      rejectedEvents,
+      excludedBySource: { ...excludedBySource },
+    },
     insights: buildPulseInsights(tutorialCompletion, tutorialSkip, ageMinutes),
     actionInsights,
     operatorNext: buildOperatorNext({
@@ -262,6 +421,7 @@ function buildAlphaGate(input: {
 }): VaultFrontPlaytestPulseSummary["alphaGate"] {
   const checks = {
     fresh: input.ageMinutes !== null && input.ageMinutes <= 1440,
+    sampleSize: new Set(humanSessionActors.values()).size >= 3,
     tutorial:
       pulse.tutorialShown > 0 &&
       input.tutorialAdvance >= 0.5 &&
@@ -280,6 +440,7 @@ function buildAlphaGate(input: {
       "tutorial",
       "Prove onboarding: tutorial advance 50%+ and completion 35%+.",
     ],
+
     [
       "feedback",
       "Prove the post-match surface: record at least one feedback signal.",
@@ -289,6 +450,10 @@ function buildAlphaGate(input: {
       "Seed rivalry revenge and show the Rival Challenge card.",
     ],
     ["rivalAction", "Drive Rival Challenge action rate to 25%+."],
+    [
+      "sampleSize",
+      "Collect authenticated evidence from at least three distinct human actors.",
+    ],
   ];
   const passed = Object.values(checks).filter(Boolean).length;
   const total = Object.keys(checks).length;
@@ -308,7 +473,7 @@ function buildAlphaGate(input: {
     checks,
     passLabel:
       status === "ready"
-        ? "Alpha gate passed: tutorial, feedback, rivalry exposure, Rival action, and freshness are all green."
+        ? "Alpha gate passed: three authenticated actors, tutorial, feedback, rivalry exposure, Rival action, and freshness are all green."
         : `${passed}/${total} alpha gate checks passing.`,
     nextCheck,
   };

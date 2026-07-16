@@ -343,9 +343,9 @@ export class GameLeftSidebar extends LitElement implements Layer {
             ? "max-[400px]:w-full max-[400px]:rounded-none"
             : ""
         } transition-all duration-300 ease-out`}
-        style="margin-top: ${this.barOffset +
-        this.dockOffsetY}px; margin-left: ${this.dockOffsetX}px; zoom: ${this
-          .hudScale};"
+        style="margin-top: ${
+          this.barOffset + this.dockOffsetY
+        }px; margin-left: ${this.dockOffsetX}px; zoom: ${this.hudScale};"
       >
         <div class="flex items-center gap-2 text-white shrink-0">
           <button
@@ -368,85 +368,98 @@ export class GameLeftSidebar extends LitElement implements Layer {
             }}
           >
             <img
-              src=${this.isLeaderboardShow
-                ? leaderboardSolidIcon
-                : leaderboardRegularIcon}
-              alt=${translateText("help_modal.icon_alt_player_leaderboard") ||
-              "Player Leaderboard Icon"}
+              src=${
+                this.isLeaderboardShow
+                  ? leaderboardSolidIcon
+                  : leaderboardRegularIcon
+              }
+              alt=${
+                translateText("help_modal.icon_alt_player_leaderboard") ||
+                "Player Leaderboard Icon"
+              }
               width="18"
               height="18"
             />
           </div>
-          ${this.isTeamGame
+          ${
+            this.isTeamGame
+              ? html`
+                  <div
+                    class="cursor-pointer p-1.5 bg-slate-800/60 hover:bg-slate-700/75 border rounded-md border-cyan-300/30 transition-colors"
+                    @click=${this.toggleTeamLeaderboard}
+                    role="button"
+                    tabindex="0"
+                    @keydown=${(e: KeyboardEvent) => {
+                      if (
+                        e.key === "Enter" ||
+                        e.key === " " ||
+                        e.code === "Space"
+                      ) {
+                        e.preventDefault();
+                        this.toggleTeamLeaderboard();
+                      }
+                    }}
+                  >
+                    <img
+                      src=${
+                        this.isTeamLeaderboardShow
+                          ? teamSolidIcon
+                          : teamRegularIcon
+                      }
+                      alt=${
+                        translateText("help_modal.icon_alt_team_leaderboard") ||
+                        "Team Leaderboard Icon"
+                      }
+                      width="18"
+                      height="18"
+                    />
+                  </div>
+                `
+              : null
+          }
+          ${
+            this.hudEditMode
+              ? html`
+                  <button
+                    class="cursor-pointer px-2 py-1.5 bg-cyan-600/35 hover:bg-cyan-600/50 border rounded-md border-cyan-300/55 text-[11px]"
+                    @pointerdown=${this.onDockDragStart}
+                    title="Drag dock"
+                  >
+                    Drag
+                  </button>
+                  <button
+                    class="cursor-pointer px-2 py-1.5 bg-slate-700/60 hover:bg-slate-600 border rounded-md border-slate-400 text-[11px]"
+                    @click=${() =>
+                      this.setDockVariant(
+                        this.dockVariant === "top" ? "stack" : "top",
+                      )}
+                    title="Toggle A/B variant"
+                  >
+                    ${this.dockVariant === "top" ? "AB:Top" : "AB:Stack"}
+                  </button>
+                `
+              : ""
+          }
+        </div>
+        ${
+          expanded && this.isPlayerTeamLabelVisible
             ? html`
                 <div
-                  class="cursor-pointer p-1.5 bg-slate-800/60 hover:bg-slate-700/75 border rounded-md border-cyan-300/30 transition-colors"
-                  @click=${this.toggleTeamLeaderboard}
-                  role="button"
-                  tabindex="0"
-                  @keydown=${(e: KeyboardEvent) => {
-                    if (
-                      e.key === "Enter" ||
-                      e.key === " " ||
-                      e.code === "Space"
-                    ) {
-                      e.preventDefault();
-                      this.toggleTeamLeaderboard();
-                    }
-                  }}
+                  class="flex items-center text-white mt-1 shrink-0 text-xs"
+                  @contextmenu=${(e: Event) => e.preventDefault()}
                 >
-                  <img
-                    src=${this.isTeamLeaderboardShow
-                      ? teamSolidIcon
-                      : teamRegularIcon}
-                    alt=${translateText(
-                      "help_modal.icon_alt_team_leaderboard",
-                    ) || "Team Leaderboard Icon"}
-                    width="18"
-                    height="18"
-                  />
+                  ${translateText("help_modal.ui_your_team")}
+                  <span
+                    style="--color: ${this.playerColor.toRgbString()}"
+                    class="text-(--color)"
+                  >
+                    &nbsp;${getTranslatedPlayerTeamLabel(this.playerTeam)}
+                    &#10687;
+                  </span>
                 </div>
               `
-            : null}
-          ${this.hudEditMode
-            ? html`
-                <button
-                  class="cursor-pointer px-2 py-1.5 bg-cyan-600/35 hover:bg-cyan-600/50 border rounded-md border-cyan-300/55 text-[11px]"
-                  @pointerdown=${this.onDockDragStart}
-                  title="Drag dock"
-                >
-                  Drag
-                </button>
-                <button
-                  class="cursor-pointer px-2 py-1.5 bg-slate-700/60 hover:bg-slate-600 border rounded-md border-slate-400 text-[11px]"
-                  @click=${() =>
-                    this.setDockVariant(
-                      this.dockVariant === "top" ? "stack" : "top",
-                    )}
-                  title="Toggle A/B variant"
-                >
-                  ${this.dockVariant === "top" ? "AB:Top" : "AB:Stack"}
-                </button>
-              `
-            : ""}
-        </div>
-        ${expanded && this.isPlayerTeamLabelVisible
-          ? html`
-              <div
-                class="flex items-center text-white mt-1 shrink-0 text-xs"
-                @contextmenu=${(e: Event) => e.preventDefault()}
-              >
-                ${translateText("help_modal.ui_your_team")}
-                <span
-                  style="--color: ${this.playerColor.toRgbString()}"
-                  class="text-(--color)"
-                >
-                  &nbsp;${getTranslatedPlayerTeamLabel(this.playerTeam)}
-                  &#10687;
-                </span>
-              </div>
-            `
-          : null}
+            : null
+        }
         <div
           class=${`block lg:flex flex-wrap overflow-x-auto min-w-0 ${expanded ? "flex-1 w-full" : "w-full"} transition-all duration-200 ${
             expanded

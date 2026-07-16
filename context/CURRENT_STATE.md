@@ -6,6 +6,30 @@ Public-safe summary:
 - internal operational records were sanitized for public-repo safety on 2026-04-03
 - detailed internal state now lives in the private Studio OS / ops repository
 
+## 2026-07-16 — Session 73 Recovery-to-Arc Mission Complete
+
+Recovered the interrupted S72 boundary, checkpointed it independently, and then completed the full `/start → /audit → /implement → /closeout` product mission without converting local evidence into launch claims.
+
+**Product and trust systems shipped:**
+
+- Authenticated, pseudonymous, deduplicated Alpha Gate evidence now distinguishes human, agent, and test sources; only three or more distinct human sessions can satisfy the human evidence gate.
+- Replay consumption verifies signatures fail-closed outside development/test, and authenticated rematch requests now create real private lobbies instead of UI-only retention events.
+- Vault Pressure turns three successful deliveries into a 90-second breach window whose next delivery is decisive; expiry rolls pressure back to two, with HUD and telemetry coverage.
+- The tactical coach now has seven deterministic local triggers, while optional remote enhancement is explicit, attributed, default-off, and bounded by a positive hourly cap.
+- Match outcomes now feed an idempotent server-authoritative progression spine with Elo, history, season, achievements, and a mounted Progression Debrief.
+- Readiness separates declared from verified evidence and reports server status, release status, warnings, and remaining launch gates without false-green inference.
+
+**Engineering and public surface shipped:**
+
+- CI now enforces coverage, shrink-only formatting, dependency-free bundle budgets, and robust local-stack E2E defaults; all emitted JavaScript chunks are below 500 kB gzip.
+- Exact trust-gated dependency updates and transitive remediation reduced `npm audit` from 34 findings to zero; the Studio supply-chain incident scan found no matches.
+- Public sitemap, legal, contact, documentation, AI-agent, footer, JSON-LD, and upstream-attribution surfaces now score 10/10 in the local sitemap compliance audit.
+- Recovery provenance, prompt/initiate separation, CANON-044 task structure, audit JSON/Markdown derivation, and second-order innovation evidence now have deterministic tests.
+
+**Verification:** 107/107 Vitest files and 697/697 tests pass with coverage ratchets green; exact CI-profile Playwright passes 22/22; production TypeScript/Vite build, ESLint, formatting ratchet, bundle budgets, npm audit, supply-chain scan, sitemap compliance, Canon conformance, and Studio doctor all pass. Studio doctor reports `overallPass: true`, `failing: 0`, and `blockingFailing: 0`.
+
+**Honesty boundary:** lifecycle remains `public-unlaunched` / FORGE. Human alpha evidence, staging parity, project-domain Brevo delivery, native Obelisk relying-party auth, live web-header/Core Web Vitals/theme evidence, and founder launch approval remain release gates rather than claimed accomplishments.
+
 ## 2026-07-16 — Session 72 Interrupted-State Recovery Complete
 
 Recovered the post-Session-71 dirty tree and restored a clean, evidence-backed session boundary before beginning new product work.

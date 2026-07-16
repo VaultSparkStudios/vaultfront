@@ -33,11 +33,11 @@ The `agent` field is mandatory as of protocol v1.0. It lets downstream tooling (
 
 Everything else routes itself. Memorize these three:
 
-| Command | Section | One-line intent |
-|---|---|---|
-| `/start` or `start` | §1 | Begin every session — lock + load context + render brief |
-| `/go` or `go` | §2 | Autonomous sprint through the Unified Genius List at quality bar |
-| `/closeout` or `closeout` | §3 | Write-back + score + commit + push |
+| Command                   | Section | One-line intent                                                  |
+| ------------------------- | ------- | ---------------------------------------------------------------- |
+| `/start` or `start`       | §1      | Begin every session — lock + load context + render brief         |
+| `/go` or `go`             | §2      | Autonomous sprint through the Unified Genius List at quality bar |
+| `/closeout` or `closeout` | §3      | Write-back + score + commit + push                               |
 
 Natural-language invocation works too. Typing "start" without the slash, or saying "begin session" / "let's start", routes the same. For Codex specifically, there is no native slash-command subsystem, so slash-prefixed commands must be matched as plain user text with the leading `/` treated as optional.
 
@@ -48,11 +48,13 @@ Natural-language invocation works too. Typing "start" without the slash, or sayi
 **v1.3 — Token-lean, AI-first (S101).** Target: ≤8K tokens consumed by session start. Raw context files are synthesized into the startup brief — they are NOT individually read at startup.
 
 1. **Write session lock.** Use the dedicated standalone script — bash `echo` silently fails for dotfiles on Windows, and ops.mjs may not be present in all project repos:
+
    ```
    node scripts/write-session-lock.mjs --agent claude-code
    ```
 
 2. **Run preflight scripts.** These emit compact stdout — read their printed output only, do not open their output files:
+
    - `node scripts/detect-session-mode.mjs --explain` (BUILDER vs FOUNDER, ~100 tokens)
    - `node scripts/compact-handoff.mjs` (Haiku-compress LATEST_HANDOFF to cache — silent if fresh)
    - `node scripts/check-secrets.mjs --audit` (credentials gateway health)
@@ -61,27 +63,33 @@ Natural-language invocation works too. Typing "start" without the slash, or sayi
    If any tool is missing, note it and continue.
 
 3. **Context-meter preflight — BEFORE loading any context files:**
+
    ```
    node scripts/context-meter.mjs --json
    ```
+
    - `CONTINUE` → proceed to step 4.
-   - `CONSIDER_CLOSEOUT` → warn the founder: *"Context already N% used. Recommend fresh terminal."* Proceed only on explicit founder confirmation.
+   - `CONSIDER_CLOSEOUT` → warn the founder: _"Context already N% used. Recommend fresh terminal."_ Proceed only on explicit founder confirmation.
    - `CLOSEOUT` → **stop immediately.** Do not read any context files. Show cached genius list from `.cache/genius-list.json` if available, then prompt for `/closeout`. This terminal is exhausted.
 
 4. **Initiation type check.** Check `context/SELF_IMPROVEMENT_LOOP.md` exists and has ≥2 dated session entries (grep for `^## [0-9]` — do NOT read the full file).
+
    - Missing or 0–1 entries → route to `/initiate`. Stop.
 
 5. **Load startup brief — THE ONLY CONTEXT READ AT SESSION START.**
+
    ```
    node scripts/render-startup-brief.mjs   # skip if docs/STARTUP_BRIEF.md < 24h old
    node scripts/validate-brief-format.mjs docs/STARTUP_BRIEF.md
    ```
+
    - Validator exits 0 → read `docs/STARTUP_BRIEF.md` (~3K tokens) and display it. This single file synthesizes: PROJECT_BRIEF · SOUL · BRAIN · CURRENT_STATE · DECISIONS · TASK_BOARD · LATEST_HANDOFF · SIL rolling header · TRUTH_AUDIT · STUDIO_BRAIN (Founder Mode). **Do NOT additionally read any of those raw files** — load them on-demand only when a specific task requires them.
    - Validator exits 1 → run `node scripts/ops.mjs onboard --repair --write`, re-render, re-validate.
    - Brief or renderer missing → run `node scripts/ops.mjs onboard --repair --write` first.
    - **Improvising a prose brief inline is a protocol violation.** The canonical box-drawing format (project title header · WHERE WE LEFT OFF · SCORE · SIGNALS · HUMAN PRESSURE · GENIUS HIT LIST) is load-bearing for multi-agent continuity — Claude and Codex must hand off without losing format-encoded signal.
 
 6. **SIL escalation check.** Read from the SCORE block in the brief — no separate file read:
+
    - Note sparkline trajectory and lowest-scoring category.
    - List unactioned `[SIL]` items visible in the GENIUS HIT LIST block.
    - Any `[SIL:2⛔]` item must be escalated to the top of the sprint plan immediately.
@@ -108,7 +116,7 @@ Natural-language invocation works too. Typing "start" without the slash, or sayi
 
 ## §2 — `/go` protocol
 
-Meaning: *"Update memory and task board with all Genius List items/ideas and implement all items at the highest/optimal quality."*
+Meaning: _"Update memory and task board with all Genius List items/ideas and implement all items at the highest/optimal quality."_
 
 ### 2.0 Preflight (abort if any fails)
 
@@ -146,6 +154,7 @@ node scripts/cache-genius-list.mjs --write
 ```
 
 Then read `.cache/genius-list.json` (or `docs/GENIUS_LIST.md`). Confirm:
+
 - Item count ≥ 10 (list v3 targets 12)
 - `IGNIS source` is `fallback` or `live`
 - Top 3 items have Final scores > 80
@@ -156,15 +165,16 @@ Empty or corrupted → run `node scripts/ops.mjs doctor` and stop. Upstream brea
 
 Read `context/PROJECT_STATUS.json → type` (or `portfolio/PROJECT_REGISTRY.json` in Founder Mode).
 
-| Project type | Offer specialty | When |
-|---|---|---|
-| `game` | `/game-loop-review` | No playtest review in 3+ sessions or design items on list |
-| `novel` | `/novel-continuity-check` | New chapters landed or CANON items on list |
-| `app` / `web-app` / `saas` | `/app-release-gate` | Project is SPARKED or LAUNCH items on list |
-| `infrastructure` / `internal-ops` | `/infra-debt-sweep` | Velocity declining 3+ sessions or DEBT items |
-| any with placeholder SOUL.md | `/soul-interview` | `context/SOUL.md` still has template placeholders |
+| Project type                      | Offer specialty           | When                                                      |
+| --------------------------------- | ------------------------- | --------------------------------------------------------- |
+| `game`                            | `/game-loop-review`       | No playtest review in 3+ sessions or design items on list |
+| `novel`                           | `/novel-continuity-check` | New chapters landed or CANON items on list                |
+| `app` / `web-app` / `saas`        | `/app-release-gate`       | Project is SPARKED or LAUNCH items on list                |
+| `infrastructure` / `internal-ops` | `/infra-debt-sweep`       | Velocity declining 3+ sessions or DEBT items              |
+| any with placeholder SOUL.md      | `/soul-interview`         | `context/SOUL.md` still has template placeholders         |
 
 Surface the suggestion: `Detected project type: <type>. Before /go, consider /<specialty-skill> — <reason>. Continue? (y/n/switch)`.
+
 - `y` → proceed.
 - `n` → hand off to specialty, stop.
 - `switch` → run specialty first, then resume.
@@ -174,13 +184,15 @@ No relevant specialty → skip silently.
 ### 2.3 Sync net-new items into TASK_BOARD
 
 For each genius-list item not already in `context/TASK_BOARD.md → Unified Genius List`:
+
 - Append a new row with tier, category, status, effort, title.
 - Preserve ranked order (higher Final score = higher table rank).
 - Append-only — never delete or reorder existing rows.
 
 ### 2.4 Capture memory patterns
 
-If the genius list surfaces a *pattern* across items (e.g. "3 items blocked on the same credential", "2 items converge on the same infra gap", "new category of blocker"), write one memory entry:
+If the genius list surfaces a _pattern_ across items (e.g. "3 items blocked on the same credential", "2 items converge on the same infra gap", "new category of blocker"), write one memory entry:
+
 - `project` type for studio-state patterns.
 - `feedback` type for workflow corrections the user endorsed by approving `/go`.
 - Never write memory for individual transient items — only recurring patterns.
@@ -192,21 +204,24 @@ Memory location: per-agent personal memory. For Claude Code that's `~/.claude/pr
 Walk top-to-bottom. For each item:
 
 **Classify:**
-| Status | Action |
-|---|---|
-| `unblocked` | Proceed to execute. |
-| `human-blocked` | Run blocker preflight (§2.6). Do NOT escalate without trying elevated access. |
-| `cross-repo-locked` | Skip with note. Add retry hint for the onboard-retry workflow. |
-| `externally-blocked` / `blocked-on-hub` | Skip. Owned elsewhere. |
+
+| Status                                  | Action                                                                        |
+| --------------------------------------- | ----------------------------------------------------------------------------- |
+| `unblocked`                             | Proceed to execute.                                                           |
+| `human-blocked`                         | Run blocker preflight (§2.6). Do NOT escalate without trying elevated access. |
+| `cross-repo-locked`                     | Skip with note. Add retry hint for the onboard-retry workflow.                |
+| `externally-blocked` / `blocked-on-hub` | Skip. Owned elsewhere.                                                        |
 
 **Gate execution.** Before a risky action, state the action and ask for confirmation:
+
 - Local edits + reversible file writes → proceed without confirm.
 - Committing current repo → proceed via `/closeout` autopilot, not mid-sprint.
-- Committing / pushing to *another* repo → always confirm + honor `scripts/check-repo-lock.sh`.
+- Committing / pushing to _another_ repo → always confirm + honor `scripts/check-repo-lock.sh`.
 - Rotating / creating secrets → always confirm.
 - Opening PRs, posting announcements, cron schedules → always confirm.
 
 **Quality bar:**
+
 - Full implementation — no TODOs, no stubs, no half-wired scaffolding.
 - Idempotent — re-running does not duplicate state.
 - Syntax-checked (`node --check`, `npx tsc --noEmit`, etc.) before moving on.
@@ -239,8 +254,9 @@ node scripts/context-meter.mjs --json
 ```
 
 Behavior per meter verdict:
+
 - `CONTINUE` → pick the next item and keep going.
-- `CONSIDER_CLOSEOUT` → finish the **current** item cleanly, then prompt the founder once: *"Context N% used. Continue or `/closeout` + fresh session?"* Default is CONTINUE unless founder redirects.
+- `CONSIDER_CLOSEOUT` → finish the **current** item cleanly, then prompt the founder once: _"Context N% used. Continue or `/closeout` + fresh session?"_ Default is CONTINUE unless founder redirects.
 - `CLOSEOUT` → stop immediately. Surface deferred items to handoff. Prompt for `/closeout`.
 
 Prioritize compounding items (sanitizer that unblocks 4 items beats one shallow win). Order within the list is IGNIS-ranked — follow it.
@@ -312,6 +328,7 @@ Explicit founder invocation (`closeout` / `/closeout`) always executes immediate
 ### 3.0.1 Intent check
 
 Compare actual work to `context/LATEST_HANDOFF.md → Session Intent:`.
+
 - **Achieved** · **Partial** (note scope drift) · **Redirected** (log reason)
 
 Bypass audit: any commit that used `--no-verify` / `--no-gpg-sign` → log in `context/DECISIONS.md` with date, hook bypassed, reason, follow-up task.
@@ -334,12 +351,13 @@ Bypass audit: any commit that used `--no-verify` / `--no-gpg-sign` → log in `c
 ### 3.2 Rolling data + scoring
 
 Compute before scoring:
+
 - **Velocity:** count Now → Done this session, exclude `[SIL]` meta-tasks.
 - **Debt delta:** ↑ net new `[DEBT]` · ↓ net resolved · → unchanged.
 - **Rolling averages** (3/5/10/25/all) from SIL entries.
 - **Sparkline** (last 5 totals): `▁<100 · ▂<200 · ▃<300 · ▄<350 · ▅<400 · ▆<450 · ▇<480 · █480–500`.
 
-Score 5 categories, 0–100 each (Dev Health / Creative Alignment / Momentum / Engagement / Process Quality). Infrastructure vs product projects use different Engagement rubrics — see `AGENTS.md` → *Engagement scoring*.
+Score 5 categories, 0–100 each (Dev Health / Creative Alignment / Momentum / Engagement / Process Quality). Infrastructure vs product projects use different Engagement rubrics — see `AGENTS.md` → _Engagement scoring_.
 
 ### 3.3 Human Action Required
 
@@ -379,6 +397,7 @@ Never skip the confirmation prompt. `--dry-run` shows plan without writes.
 ### 3.10 Creative Direction Record
 
 Review the full session for human direction. Append to `docs/CREATIVE_DIRECTION_RECORD.md`:
+
 - Any creative direction (features, feel, scope)
 - Brand/tone/quality guidance
 - Canon-affecting decisions
@@ -410,7 +429,8 @@ Full step-by-step for each specialty command. `/go` points to these when project
 
 ### §4 — `/initiate` (new project onboarding)
 
-*Full protocol at `docs/templates/project-system/INITIATE_PROMPT.template.md`.* Summary:
+_Full protocol at `docs/templates/project-system/INITIATE_PROMPT.template.md`._ Summary:
+
 1. Parse project name.
 2. Create GitHub repo (`gh repo create`).
 3. Scaffold 15 context files from `docs/templates/project-system/`.
@@ -458,6 +478,7 @@ Target: 60 seconds from command to ready-to-build.
 ### §9 — `/soul-interview` (creative identity discovery)
 
 Five questions, in order. Record the answers into `context/SOUL.md`:
+
 1. "If this project had to have three non-negotiables, what are they?"
 2. "Who is this for? What does a user say to their friend to recommend it?"
 3. "What is the one thing this project does that nothing else does?"
@@ -514,6 +535,7 @@ Any red → block launch. Green across the board → mark project ready for SPAR
 ### §15 — `/ask` (plain-English intent router)
 
 Inputs are natural language. Match against this document + the skill registry and:
+
 - **High confidence** (intent → exactly one skill) → invoke the matched skill; log "routed to `/<skill>` because <one sentence>".
 - **Medium** (2–3 skills match) → present top 3 options with one-line rationale each; default to #1 if user says "go".
 - **Low** (no match) → ask one clarifying question. Do not guess.
@@ -548,4 +570,20 @@ Read `AGENTS.md` at repo root → read this file → execute. No agent-specific 
 - **Append-only for specialty protocols.** Adding a new specialty (e.g. `/video-review`) appends a new `§N` section. Existing sections are edited only to clarify or fix bugs, never to reverse decisions silently — use `context/DECISIONS.md` for reversal reasoning.
 - **Version bump** (`<!-- session-protocol-version: -->` at top) when a change is breaking or a new command lands.
 
-*Canonical source: `vaultspark-studio-ops/docs/SESSION_PROTOCOL.md`. Propagated to all registry repos.*
+_Canonical source: `vaultspark-studio-ops/docs/SESSION_PROTOCOL.md`. Propagated to all registry repos._
+
+## CANON-044 · In-session Wave scaffold
+
+For every multi-step task, agents MUST keep a visible, project-specific Wave
+list (Wave 1, Wave 2, …), update it while work is active, and reconcile it at
+closeout. A generic template is not evidence of an active plan.
+
+Interrupted sessions begin with the read-only provenance check:
+
+```bash
+node scripts/classify-recovery-provenance.mjs --json
+```
+
+Unresolved merge markers are corruption and must be reported before edits.
+A lint-staged automatic backup records provenance only; it does not prove the
+backed-up changes were committed.

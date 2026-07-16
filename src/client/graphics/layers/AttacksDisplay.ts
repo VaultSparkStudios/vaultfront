@@ -248,27 +248,31 @@ export class AttacksDisplay extends LitElement implements Layer {
                   this.game.playerBySmallID(attack.attackerID) as PlayerView
                 )?.name()}</span
               >
-              ${attack.retreating
-                ? `(${translateText("events_display.retreating")}...)`
-                : ""} `,
+              ${
+                attack.retreating
+                  ? `(${translateText("events_display.retreating")}...)`
+                  : ""
+              } `,
             onClick: () => this.attackWarningOnClick(attack),
             className:
               "text-left text-red-400 inline-flex items-center gap-0.5 lg:gap-1 min-w-0",
             translate: false,
           })}
-          ${!attack.retreating
-            ? this.renderButton({
-                content: html`<img
-                  src="${swordIcon}"
-                  class="h-4 w-4"
-                  style="filter: brightness(0) saturate(100%) invert(27%) sepia(91%) saturate(4551%) hue-rotate(348deg) brightness(89%) contrast(97%)"
-                />`,
-                onClick: () => this.handleRetaliate(attack),
-                className:
-                  "ml-auto inline-flex items-center justify-center cursor-pointer bg-red-900/50 hover:bg-red-800/70 rounded-lg px-1.5 py-1 border border-red-700/50",
-                translate: false,
-              })
-            : ""}
+          ${
+            !attack.retreating
+              ? this.renderButton({
+                  content: html`<img
+                    src="${swordIcon}"
+                    class="h-4 w-4"
+                    style="filter: brightness(0) saturate(100%) invert(27%) sepia(91%) saturate(4551%) hue-rotate(348deg) brightness(89%) contrast(97%)"
+                  />`,
+                  onClick: () => this.handleRetaliate(attack),
+                  className:
+                    "ml-auto inline-flex items-center justify-center cursor-pointer bg-red-900/50 hover:bg-red-800/70 rounded-lg px-1.5 py-1 border border-red-700/50",
+                  translate: false,
+                })
+              : ""
+          }
         </div>
       `,
     );
@@ -301,16 +305,18 @@ export class AttacksDisplay extends LitElement implements Layer {
               "text-left text-blue-400 inline-flex items-center gap-0.5 lg:gap-1 min-w-0",
             translate: false,
           })}
-          ${!attack.retreating
-            ? this.renderButton({
-                content: "❌",
-                onClick: () => this.emitCancelAttackIntent(attack.id),
-                className: "ml-auto text-left shrink-0",
-                disabled: attack.retreating,
-              })
-            : html`<span class="ml-auto truncate text-blue-400"
-                >(${translateText("events_display.retreating")}...)</span
-              >`}
+          ${
+            !attack.retreating
+              ? this.renderButton({
+                  content: "❌",
+                  onClick: () => this.emitCancelAttackIntent(attack.id),
+                  className: "ml-auto text-left shrink-0",
+                  disabled: attack.retreating,
+                })
+              : html`<span class="ml-auto truncate text-blue-400"
+                  >(${translateText("events_display.retreating")}...)</span
+                >`
+          }
         </div>
       `,
     );
@@ -338,16 +344,18 @@ export class AttacksDisplay extends LitElement implements Layer {
               "text-left text-gray-400 inline-flex items-center gap-0.5 lg:gap-1 min-w-0",
             translate: false,
           })}
-          ${!landAttack.retreating
-            ? this.renderButton({
-                content: "❌",
-                onClick: () => this.emitCancelAttackIntent(landAttack.id),
-                className: "ml-auto text-left shrink-0",
-                disabled: landAttack.retreating,
-              })
-            : html`<span class="ml-auto truncate text-blue-400"
-                >(${translateText("events_display.retreating")}...)</span
-              >`}
+          ${
+            !landAttack.retreating
+              ? this.renderButton({
+                  content: "❌",
+                  onClick: () => this.emitCancelAttackIntent(landAttack.id),
+                  className: "ml-auto text-left shrink-0",
+                  disabled: landAttack.retreating,
+                })
+              : html`<span class="ml-auto truncate text-blue-400"
+                  >(${translateText("events_display.retreating")}...)</span
+                >`
+          }
         </div>
       `,
     );
@@ -401,16 +409,18 @@ export class AttacksDisplay extends LitElement implements Layer {
               "text-left text-blue-400 inline-flex items-center gap-0.5 lg:gap-1 min-w-0",
             translate: false,
           })}
-          ${!boat.retreating()
-            ? this.renderButton({
-                content: "❌",
-                onClick: () => this.emitBoatCancelIntent(boat.id()),
-                className: "ml-auto text-left shrink-0",
-                disabled: boat.retreating(),
-              })
-            : html`<span class="ml-auto truncate text-blue-400"
-                >(${translateText("events_display.retreating")}...)</span
-              >`}
+          ${
+            !boat.retreating()
+              ? this.renderButton({
+                  content: "❌",
+                  onClick: () => this.emitBoatCancelIntent(boat.id()),
+                  className: "ml-auto text-left shrink-0",
+                  disabled: boat.retreating(),
+                })
+              : html`<span class="ml-auto truncate text-blue-400"
+                  >(${translateText("events_display.retreating")}...)</span
+                >`
+          }
         </div>
       `,
     );

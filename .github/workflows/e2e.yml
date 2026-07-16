@@ -28,8 +28,8 @@ jobs:
       - name: Run E2E tests
         run: npm run e2e
         env:
-          # Point at the built prod server when available, else dev server
-          E2E_BASE_URL: ${{ vars.E2E_BASE_URL || '' }}
+          # Omit an empty variable so Playwright starts and probes the local stack.
+          E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
 
       - uses: actions/upload-artifact@v4
         if: failure()

@@ -1,0 +1,27 @@
+# VaultFront
+
+> A convoy-driven browser strategy warfront in public-unlaunched alpha.
+
+## Core URLs
+- Landing: https://vaultfront.vaultsparkstudios.com/
+- About: https://vaultfront.vaultsparkstudios.com/about/
+- How to play: https://vaultfront.vaultsparkstudios.com/docs/
+- Contact: https://vaultfront.vaultsparkstudios.com/contact/
+- Source: https://github.com/VaultSparkStudios/VaultFront
+
+## What this project does
+VaultFront is a browser strategy game built from OpenFrontIO. Its original
+direction emphasizes capturing objectives, escorting convoys, jamming routes,
+and converting coordinated deliveries into decisive pressure. It is not yet
+declared launch-ready; staging, identity, contact delivery, and human playtest
+evidence remain explicit gates.
+
+## Rights
+Source code follows the repository's GNU Affero General Public License v3
+obligations. OpenFrontIO attribution remains in CREDITS.md and LICENSING.md.
+VaultSpark-original branding, content, assets, and designs retain their
+applicable rights.
+
+## Studio
+A VaultSpark Studios LLC project. https://vaultsparkstudios.com
+Contact: contact@vaultfront.vaultsparkstudios.com

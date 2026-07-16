@@ -178,11 +178,13 @@ export class TutorialOverlay extends LitElement {
           >
             ${this.showHint ? "▲ Hide hint" : "▼ Show hint"}
           </button>
-          ${this.showHint
-            ? html`<p class="mt-1 text-gray-400 italic text-xs leading-snug">
-                ${current.hint}
-              </p>`
-            : nothing}
+          ${
+            this.showHint
+              ? html`<p class="mt-1 text-gray-400 italic text-xs leading-snug">
+                  ${current.hint}
+                </p>`
+              : nothing
+          }
         </div>
 
         <!-- Progress bar -->
@@ -198,13 +200,13 @@ export class TutorialOverlay extends LitElement {
             ${STEP_ORDER.map(
               (stepId) => html`
                 <span
-                  class="w-1.5 h-1.5 rounded-full ${this.state?.completedSteps.includes(
-                    stepId,
-                  )
-                    ? "bg-yellow-400"
-                    : stepId === this.state?.currentStep
-                      ? "bg-yellow-400/50"
-                      : "bg-gray-600"}"
+                  class="w-1.5 h-1.5 rounded-full ${
+                    this.state?.completedSteps.includes(stepId)
+                      ? "bg-yellow-400"
+                      : stepId === this.state?.currentStep
+                        ? "bg-yellow-400/50"
+                        : "bg-gray-600"
+                  }"
                 ></span>
               `,
             )}

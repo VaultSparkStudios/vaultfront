@@ -93,10 +93,9 @@ export class GameStartingModal extends LitElement {
     if (!this.prophecy) return null;
     return html`
       <div
-        class="mt-3 rounded-lg border border-purple-500/40 bg-purple-900/20 p-3 text-left transition-opacity duration-1000 ${this
-          .prophecyVisible
-          ? "opacity-100"
-          : "opacity-0"}"
+        class="mt-3 rounded-lg border border-purple-500/40 bg-purple-900/20 p-3 text-left transition-opacity duration-1000 ${
+          this.prophecyVisible ? "opacity-100" : "opacity-0"
+        }"
       >
         <div
           class="text-xs font-semibold text-purple-300 mb-1.5 tracking-wider"
@@ -128,11 +127,14 @@ export class GameStartingModal extends LitElement {
           <span>Loss →</span>
           <span class="text-red-400 font-semibold">${p.deltaIfLoss} ELO</span>
         </div>
-        ${p.threat
-          ? html`<div class="text-xs text-slate-400 mt-1.5">
-              ⚠ Biggest threat: <span class="text-amber-300">${p.threat}</span>
-            </div>`
-          : null}
+        ${
+          p.threat
+            ? html`<div class="text-xs text-slate-400 mt-1.5">
+                ⚠ Biggest threat:
+                <span class="text-amber-300">${p.threat}</span>
+              </div>`
+            : null
+        }
       </div>
     `;
   }
@@ -157,14 +159,16 @@ export class GameStartingModal extends LitElement {
     const isVisible = this.isVisible;
     return html`
       <div
-        class="fixed inset-0 bg-black/30 backdrop-blur-[4px] z-[9998] transition-all duration-300 ${isVisible
-          ? "opacity-100 visible"
-          : "opacity-0 invisible"}"
+        class="fixed inset-0 bg-black/30 backdrop-blur-[4px] z-[9998] transition-all duration-300 ${
+          isVisible ? "opacity-100 visible" : "opacity-0 invisible"
+        }"
       ></div>
       <div
-        class="fixed top-1/2 left-1/2 bg-zinc-800/70 p-6 rounded-xl z-[9999] shadow-[0_0_20px_rgba(0,0,0,0.5)] backdrop-blur-[5px] text-white w-[300px] text-center transition-all duration-300 -translate-x-1/2 ${isVisible
-          ? "opacity-100 visible -translate-y-1/2"
-          : "opacity-0 invisible -translate-y-[48%]"}"
+        class="fixed top-1/2 left-1/2 bg-zinc-800/70 p-6 rounded-xl z-[9999] shadow-[0_0_20px_rgba(0,0,0,0.5)] backdrop-blur-[5px] text-white w-[300px] text-center transition-all duration-300 -translate-x-1/2 ${
+          isVisible
+            ? "opacity-100 visible -translate-y-1/2"
+            : "opacity-0 invisible -translate-y-[48%]"
+        }"
       >
         <div class="text-xl mt-5 mb-2.5 px-0">
           © VaultFront and Contributors

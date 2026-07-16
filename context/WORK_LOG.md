@@ -59,3 +59,23 @@ Append chronological entries.
 - Files or systems touched: AGENTS.md, context/_, prompts/_, logs/WORK_LOG.md
 - Risks created or removed: Removed — project now has agent continuity and hub compliance
 - Recommended next move: Fill out project-specific content in context files
+
+---
+
+### 2026-07-16 — Session 72 interrupted-state recovery
+
+- Goal: Reconstruct and verify the cut-off prior session before beginning new product work.
+- What changed: Validated inherited files/configuration, removed incompatible generated auth stubs, restored an honest quarantine boundary, repaired inherited hook lint, refreshed public-safe truth, and checkpointed the recovery independently.
+- Files or systems touched: Studio protocol helpers, Obelisk quarantine paths, public-safe context/audit surfaces, dependency automation, and build/lint guardrails.
+- Risks created or removed: Removed stale build and quarantine claims; no product or launch evidence was inferred.
+- Recommended next move: Begin the fresh S73 full arc from the verified recovery checkpoint.
+
+---
+
+### 2026-07-16 — Session 73 full recovery-to-arc mission
+
+- Goal: Execute `/start → /audit → /implement → /closeout`, exhaust the 12-item ranked audit and implement second-order innovations.
+- What changed: Shipped trusted Alpha Gate/replay/rematch paths, Vault Pressure, deterministic coach, authoritative progression, remote-AI cost firewall, readiness truth, public surfaces, CI ratchets, protocol provenance guards, dependency remediation, and all three innovation-pack candidates.
+- Files or systems touched: Core gameplay, client HUD/post-match surfaces, server evidence/progression/replay/rematch/readiness systems, CI/E2E/build tooling, public metadata/pages, protocol scripts/tests, audit and context ledgers.
+- Risks created or removed: Removed forgeable evidence, unsigned replay consumption, fake rematch telemetry, default-on remote AI exposure, 34 dependency findings, and phantom-green CI. Remaining launch gates are explicitly enumerated and unclaimed.
+- Recommended next move: Run the authenticated three-human staging Alpha Gate, then verify Brevo, Obelisk, live web hardening/theme evidence, and founder launch approval.

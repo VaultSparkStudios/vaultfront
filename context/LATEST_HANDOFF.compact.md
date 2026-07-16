@@ -1,35 +1,50 @@
-<!-- generated-by: recovery-closeout deterministic compact -->
-<!-- source: context/LATEST_HANDOFF.md -->
-<!-- generated-at: 2026-07-16 -->
+<!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
+<!-- source-hash: d414da764272 -->
+<!-- generated-at: 2026-07-16T22:59:08.992Z -->
 
 # LATEST_HANDOFF (compact)
 
-Session
+# Handoff Summary — Session 73 (2026-07-16)
 
-- Current: S72 recovery closeout (2026-07-16)
+## Status
 
-Recovered
+- Latest session: 73, following S72 recovery
+- Project state: public-unlaunched / FORGE until live gates evidenced
 
-- Preserved validated Studio protocol, Canon adoption, Windows process-hygiene, and Dependabot propagation
-- Removed incompatible/unreferenced generated Obelisk helpers from deployable src
-- Untracked obelisk-passport reference cargo; files remain local behind .gitignore
-- Restored an honest recovery boundary before the fresh full arc
+## Shipped
 
-Verification
+- All 12 items from AUDIT_2026-07-16.json plus 3 innovation-pack candidates
+- Authenticated source-labeled Alpha Gate evidence; replay signature enforcement
+- Real private-lobby rematches; Vault Pressure breach climax; deterministic tactical coaching
+- Server-authoritative progression; remote-AI cost caps; readiness truth (declared vs verified)
+- CI ratchets; protocol provenance/canon repair; zero-vulnerability dependency train
 
-- JSON/config integrity clean; 52 changed/untracked scripts parse
-- npm test: 94/94 files, 655/655 tests; server: 10/10 files, 30/30 tests
-- npm run build-prod: green after removing the incompatible React/JSX stub
-- Studio doctor: overallPass true; blockingFailing 0
+## Verification
 
-Current Intent
+- 107/107 Vitest files, 697/697 tests pass; coverage ratchets pass
+- CI-profile Playwright 22/22; build, lint, format, bundle budgets, npm audit, supply-chain scan, sitemap, Canon, doctor all pass
+- Doctor: overallPass true, failing 0, blockingFailing 0
+- Recovery boundary committed/pushed as 62f22956 before S73 work
 
-- Run the fresh project-aware full arc
-- Apply release/web-canon and game-loop lenses
-- Reconcile registry app/public-unlaunched vs local game/internal profile truth
+## Current Intent
 
-Residuals
+Execute staging launch-evidence corridor, starting with authenticated three-human Alpha Gate. Hold public-unlaunched/FORGE until every live-only gate is evidenced.
 
-- Production Obelisk relying-party origin and native Lit auth integration remain open
-- Live rivalry/rematch Alpha Gate evidence remains absent
-- Revenue remains unverified until a real checkout/supporter event exists
+## Now Bucket (top 3)
+
+1. Authenticated Alpha Gate across three distinct human staging sessions
+2. Staging parity verification
+3. Live CSP/HSTS/Core Web Vitals and theme screenshot evidence
+
+## Blockers (top 3)
+
+1. Project-domain Brevo inbound delivery unverified
+2. Native Obelisk relying-party auth not live
+3. Real revenue/supporter observation not yet captured
+
+## Human-Blocked
+
+- Founder launch approval (pending; open since S73 close)
+- Three-human staging sessions required (pending; open since S73 close)
+
+Next session: begin the staging launch-evidence corridor with the three-human Alpha Gate.

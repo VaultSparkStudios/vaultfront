@@ -10,12 +10,7 @@ import { nanoid } from "nanoid";
 import { logger } from "./Logger";
 
 export type WarStatus =
-  | "pending"
-  | "accepted"
-  | "active"
-  | "complete"
-  | "declined"
-  | "expired";
+  "pending" | "accepted" | "active" | "complete" | "declined" | "expired";
 
 export interface ClanWar {
   id: string;

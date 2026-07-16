@@ -1,64 +1,44 @@
-<!-- generated-by: recovery-closeout verified board -->
-<!-- generated-at: 2026-07-16 (Session 72 recovery closeout) -->
+<!-- generated-by: S73 verified closeout -->
+<!-- generated-at: 2026-07-16 -->
 
 # Closeout Status Board — VaultFront
 
-```
-╔══ SESSION CLOSEOUT · VaultFront · S72 RECOVERY ════════════════╗
-║  Date: 2026-07-16  ·  SIL: 999/1000  ·  Velocity: 1→            ║
-║  Mode: FOUNDER  ·  Agent: codex                                  ║
+```text
+╔══ SESSION CLOSEOUT · VaultFront · S73 FULL ARC ═══════════════╗
+║  Date: 2026-07-16 · SIL: 943/1000 · Velocity: 15↑ · Debt: ↓  ║
+║  Mode: FOUNDER · Agent: codex · Lifecycle: FORGE              ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ WHAT SHIPPED · RECOVERY BOUNDARY ═══════════════════════════╗
-║  ✓ Studio protocol/Canon/Dependabot propagation verified        ║
-║  ✓ Incompatible Obelisk React/JSX build blocker removed          ║
-║  ✓ Passport cargo local + ignored; public index clean            ║
-║  ✓ Rights ledger local + ignored; AGPL LICENSE remains public     ║
-║  ✓ Canonical staged-secret scanner restored locally              ║
+╔══ WHAT SHIPPED ═══════════════════════════════════════════════╗
+║  ✓ 12/12 ranked audit items                                  ║
+║  ✓ 3/3 second-order innovation candidates                    ║
+║  ✓ Trusted Alpha evidence · replay · real rematch             ║
+║  ✓ Vault Pressure · deterministic coach · progression         ║
+║  ✓ Cost firewall · readiness truth · public/agent surfaces    ║
+║  ✓ CI ratchets · protocol repair · dependency security        ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ SCORES · SIL 999/1000 ═══════════════════════════════════════╗
-║    Dev Health         100  ██████████                            ║
-║    Alignment          100  ██████████                            ║
-║    Momentum           100  ██████████                            ║
-║    Engagement         100  ██████████                            ║
-║    Process Qual       100  ██████████                            ║
-║    Coherence          100  ██████████                            ║
-║    Security           100  ██████████                            ║
-║    Ecosystem          100  ██████████                            ║
-║    Capital             99  ██████████                            ║
-║    Automation         100  ██████████                            ║
+╔══ SCORES · SIL 943/1000 ══════════════════════════════════════╗
+║  Dev 96 · Align 97 · Momentum 100 · Engagement 82             ║
+║  Process 98 · Coherence 94 · Security 96 · Ecosystem 84       ║
+║  Capital 99 · Automation 97                                  ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ WRITE-BACK STATUS ═══════════════════════════════════════════╗
-║  ✓ context/CURRENT_STATE.md                                      ║
-║  ✓ context/TASK_BOARD.md                                         ║
-║  ✓ context/LATEST_HANDOFF.md                                     ║
-║  ✓ logs/WORK_LOG.md                                              ║
-║  ✓ context/DECISIONS.md                                          ║
-║  ✓ context/SELF_IMPROVEMENT_LOOP.md                              ║
-║  — docs/CREATIVE_DIRECTION_RECORD.md (no prior-session direction)║
-║  ✓ context/TRUTH_AUDIT.md                                        ║
-║  ✓ context/PROJECT_STATUS.json                                   ║
-║  ✓ agent memory (~/.codex/memories/vaultfront/)                  ║
+╔══ VERIFICATION ═══════════════════════════════════════════════╗
+║  Tests: 697/697 · Coverage ratchet: pass                      ║
+║  Browser: 22/22 under exact CI profile                        ║
+║  Build/typecheck/lint/format/bundle: pass                     ║
+║  npm audit: 0 · supply-chain incidents: 0                     ║
+║  Sitemap: 10/10 · Canon gaps: 0                               ║
+║  Doctor: overallPass true · failing 0 · blockingFailing 0     ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Recovery checkpoint: 65 files · committed cleanly              ║
-║  Ahead: 1  ·  Behind: 0                                          ║
-║  Branch: main  ·  force-push: never                              ║
+╔══ RECOVERY BOUNDARY ══════════════════════════════════════════╗
+║  ✓ S72 reconstructed, integrity-checked, and verified         ║
+║  ✓ Recovery checkpoint 62f22956 pushed before S73             ║
+║  ✓ No reset-hard or force-push used                           ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ DEPLOYMENT ══════════════════════════════════════════════════╗
-║  Staging: local · npm run build-prod ✓                            ║
-║  Live: N/A — public-unlaunched / FORGE                           ║
-╚════════════════════════════════════════════════════════════════╝
-╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
-║  Doctor:        blockingFailing 0 · overallPass true             ║
-║  Tests:         655/655 + server 30/30                            ║
-║  Build:         TypeScript + Vite production ✓                    ║
-║  Secrets:       staged scan 0 findings                           ║
-║  Sanitization:  strict 0 critical · 0 warning                     ║
-║  Shells:        0 background started · 0 running                  ║
-╚════════════════════════════════════════════════════════════════╝
-╔══ NEXT SESSION ════════════════════════════════════════════════╗
-║  Fresh S73 full arc: start → audit → implement → closeout       ║
+╔══ RELEASE POSTURE ════════════════════════════════════════════╗
+║  Public-unlaunched / FORGE                                    ║
+║  Next: three-human staging Alpha Gate → Brevo → Obelisk →     ║
+║        live web/theme evidence → revenue → founder approval   ║
 ╚════════════════════════════════════════════════════════════════╝
 ```
 
-_Verified recovery board; all gate values derived from live commands._
+_All green values above come from live commands; live-only release evidence is intentionally excluded._

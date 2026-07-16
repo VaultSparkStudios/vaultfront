@@ -433,19 +433,21 @@ export class UserSettingModal extends BaseModal {
 
           <div class="hidden lg:flex items-center gap-2 justify-center mt-4">
             <button
-              class="px-6 py-2 text-xs font-bold transition-all duration-200 rounded-lg uppercase tracking-widest ${this
-                .activeTab === "basic"
-                ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
-                : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"}"
+              class="px-6 py-2 text-xs font-bold transition-all duration-200 rounded-lg uppercase tracking-widest ${
+                this.activeTab === "basic"
+                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                  : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
+              }"
               @click=${() => (this.activeTab = "basic")}
             >
               ${translateText("user_setting.tab_basic")}
             </button>
             <button
-              class="px-6 py-2 text-xs font-bold transition-all duration-200 rounded-lg uppercase tracking-widest ${this
-                .activeTab === "keybinds"
-                ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
-                : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"}"
+              class="px-6 py-2 text-xs font-bold transition-all duration-200 rounded-lg uppercase tracking-widest ${
+                this.activeTab === "keybinds"
+                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                  : "text-white/40 hover:text-white hover:bg-white/5 border border-transparent"
+              }"
               @click=${() => (this.activeTab = "keybinds")}
             >
               ${translateText("user_setting.tab_keybinds")}
@@ -927,8 +929,9 @@ export class UserSettingModal extends BaseModal {
         description="${translateText("user_setting.attack_ratio_desc")}"
         min="1"
         max="100"
-        .value=${Number(localStorage.getItem("settings.attackRatio") ?? "0.2") *
-        100}
+        .value=${
+          Number(localStorage.getItem("settings.attackRatio") ?? "0.2") * 100
+        }
         @change=${this.sliderAttackRatio}
       ></setting-slider>
 
@@ -947,49 +950,51 @@ export class UserSettingModal extends BaseModal {
         @change=${this.changeAttackRatioIncrement}
       ></setting-select>
 
-      ${this.showEasterEggSettings
-        ? html`
-            <setting-slider
-              label="${translateText(
-                "user_setting.easter_writing_speed_label",
-              )}"
-              description="${translateText(
-                "user_setting.easter_writing_speed_desc",
-              )}"
-              min="0"
-              max="100"
-              value="40"
-              easter="true"
-              @change=${(e: CustomEvent) => {
-                const value = e.detail?.value;
-                if (value !== undefined) {
-                  console.log("Changed:", value);
-                } else {
-                  console.warn("Slider event missing detail.value", e);
-                }
-              }}
-            ></setting-slider>
+      ${
+        this.showEasterEggSettings
+          ? html`
+              <setting-slider
+                label="${translateText(
+                  "user_setting.easter_writing_speed_label",
+                )}"
+                description="${translateText(
+                  "user_setting.easter_writing_speed_desc",
+                )}"
+                min="0"
+                max="100"
+                value="40"
+                easter="true"
+                @change=${(e: CustomEvent) => {
+                  const value = e.detail?.value;
+                  if (value !== undefined) {
+                    console.log("Changed:", value);
+                  } else {
+                    console.warn("Slider event missing detail.value", e);
+                  }
+                }}
+              ></setting-slider>
 
-            <setting-number
-              label="${translateText("user_setting.easter_bug_count_label")}"
-              description="${translateText(
-                "user_setting.easter_bug_count_desc",
-              )}"
-              value="100"
-              min="0"
-              max="1000"
-              easter="true"
-              @change=${(e: CustomEvent) => {
-                const value = e.detail?.value;
-                if (value !== undefined) {
-                  console.log("Changed:", value);
-                } else {
-                  console.warn("Slider event missing detail.value", e);
-                }
-              }}
-            ></setting-number>
-          `
-        : null}
+              <setting-number
+                label="${translateText("user_setting.easter_bug_count_label")}"
+                description="${translateText(
+                  "user_setting.easter_bug_count_desc",
+                )}"
+                value="100"
+                min="0"
+                max="1000"
+                easter="true"
+                @change=${(e: CustomEvent) => {
+                  const value = e.detail?.value;
+                  if (value !== undefined) {
+                    console.log("Changed:", value);
+                  } else {
+                    console.warn("Slider event missing detail.value", e);
+                  }
+                }}
+              ></setting-number>
+            `
+          : null
+      }
     `;
   }
 

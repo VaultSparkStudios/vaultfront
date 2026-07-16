@@ -151,16 +151,18 @@ export class PlayStyleCareerArc extends LitElement {
         <span class="arc-title"
           >Career Arc — Last ${last20.length} Matches</span
         >
-        ${this.trend
-          ? html`<span
-              class="trend-chip"
-              style="color:${STYLE_COLORS[
-                this.trend.style
-              ]};background:${STYLE_COLORS[this.trend.style]}22"
-            >
-              Trending: ${STYLE_ICONS[this.trend.style]} ${this.trend.style} ▲
-            </span>`
-          : ""}
+        ${
+          this.trend
+            ? html`<span
+                class="trend-chip"
+                style="color:${
+                  STYLE_COLORS[this.trend.style]
+                };background:${STYLE_COLORS[this.trend.style]}22"
+              >
+                Trending: ${STYLE_ICONS[this.trend.style]} ${this.trend.style} ▲
+              </span>`
+            : ""
+        }
       </div>
       <div class="timeline">
         ${last20.map(
@@ -169,18 +171,20 @@ export class PlayStyleCareerArc extends LitElement {
             <div class="timeline-node">
               <div
                 class="node-dot ${i === last20.length - 1 ? "latest" : ""}"
-                style="background:${STYLE_COLORS[
-                  entry.style
-                ]}33;color:${STYLE_COLORS[entry.style]}"
+                style="background:${
+                  STYLE_COLORS[entry.style]
+                }33;color:${STYLE_COLORS[entry.style]}"
                 title="${entry.style} — ${this.formatDate(entry.timestamp)}"
               >
                 ${STYLE_ICONS[entry.style]}
               </div>
-              ${i === 0 || i === last20.length - 1
-                ? html`<div class="node-date">
-                    ${this.formatDate(entry.timestamp)}
-                  </div>`
-                : ""}
+              ${
+                i === 0 || i === last20.length - 1
+                  ? html`<div class="node-date">
+                      ${this.formatDate(entry.timestamp)}
+                    </div>`
+                  : ""
+              }
             </div>
           `,
         )}

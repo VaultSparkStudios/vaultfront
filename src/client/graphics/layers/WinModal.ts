@@ -33,6 +33,7 @@ import {
   recordVaultFrontOutcomeTelemetry,
   recordVaultFrontPlaytestPulse,
   recordVaultFrontRecapEvent,
+  type RematchStatus,
   ReplayHighlight,
   requestReplayHighlight,
   shareMatchInvite,
@@ -114,11 +115,7 @@ export class WinModal extends LitElement implements Layer {
   private recapActionPlan: string[] = [];
 
   private actionableGoalKey:
-    | "vault_first"
-    | "convoy_impact"
-    | "pulse_chain"
-    | "focus_stable"
-    | "" = "";
+    "vault_first" | "convoy_impact" | "pulse_chain" | "focus_stable" | "" = "";
 
   @state()
   private nextGoalSaved = false;
@@ -162,6 +159,12 @@ export class WinModal extends LitElement implements Layer {
 
   @state()
   private rematchPending = false;
+
+  @state()
+  private rematchResult: RematchStatus | null = null;
+
+  @state()
+  private rematchError: string | null = null;
 
   @state()
   private highlightCopied = false;
@@ -235,41 +238,47 @@ export class WinModal extends LitElement implements Layer {
   render() {
     return html`
       <div
-        class="${this.isVisible
-          ? "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800/70 p-6 shrink-0 rounded-lg z-9999 shadow-2xl backdrop-blur-xs text-white w-87.5 max-w-[90%] md:w-175"
-          : "hidden"}"
+        class="${
+          this.isVisible
+            ? "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gray-800/70 p-6 shrink-0 rounded-lg z-9999 shadow-2xl backdrop-blur-xs text-white w-87.5 max-w-[90%] md:w-175"
+            : "hidden"
+        }"
       >
-        ${this.showSpotlight && this.spotlightAchievement
-          ? html`
-              <div
-                class="flex flex-col items-center justify-center py-8 gap-4 animate-pulse"
-              >
-                <div class="text-6xl">
-                  ${this.spotlightAchievement.iconEmoji ?? "🏆"}
-                </div>
+        ${
+          this.showSpotlight && this.spotlightAchievement
+            ? html`
                 <div
-                  class="text-amber-300 text-xs font-semibold tracking-widest uppercase"
+                  class="flex flex-col items-center justify-center py-8 gap-4 animate-pulse"
                 >
-                  Achievement Unlocked
+                  <div class="text-6xl">
+                    ${this.spotlightAchievement.iconEmoji ?? "🏆"}
+                  </div>
+                  <div
+                    class="text-amber-300 text-xs font-semibold tracking-widest uppercase"
+                  >
+                    Achievement Unlocked
+                  </div>
+                  <div class="text-white text-2xl font-bold text-center">
+                    ${this.spotlightAchievement.name}
+                  </div>
+                  <div class="text-slate-300 text-sm text-center max-w-xs">
+                    ${this.spotlightAchievement.description}
+                  </div>
                 </div>
-                <div class="text-white text-2xl font-bold text-center">
-                  ${this.spotlightAchievement.name}
-                </div>
-                <div class="text-slate-300 text-sm text-center max-w-xs">
-                  ${this.spotlightAchievement.description}
-                </div>
-              </div>
-            `
-          : html`
-              <h2 class="m-0 mb-4 text-[26px] text-center text-white">
-                ${this._title || ""}
-              </h2>
-              ${this.renderRecapSection()} ${this.innerHtml()}
-            `}
+              `
+            : html`
+                <h2 class="m-0 mb-4 text-[26px] text-center text-white">
+                  ${this._title || ""}
+                </h2>
+                ${this.renderRecapSection()} ${this.innerHtml()}
+              `
+        }
         ${this.showButtons ? this.renderMicroFeedback() : null}
-        ${this.showButtons && this.mutatorVoteCandidates.length > 0
-          ? this.renderMutatorVote()
-          : null}
+        ${
+          this.showButtons && this.mutatorVoteCandidates.length > 0
+            ? this.renderMutatorVote()
+            : null
+        }
         <div class="${this.showButtons ? "flex flex-col gap-2" : "hidden"}">
           <div class="flex justify-between gap-2.5">
             <button
@@ -278,23 +287,27 @@ export class WinModal extends LitElement implements Layer {
             >
               ${translateText("win_modal.exit")}
             </button>
-            ${this.isRankedGame
-              ? html`
-                  <button
-                    @click=${this._handleRequeue}
-                    class="flex-1 px-3 py-3 text-base cursor-pointer bg-purple-600 text-white border-0 rounded-sm transition-all duration-200 hover:bg-purple-500 hover:-translate-y-px active:translate-y-px"
-                  >
-                    ${translateText("win_modal.requeue")}
-                  </button>
-                `
-              : null}
+            ${
+              this.isRankedGame
+                ? html`
+                    <button
+                      @click=${this._handleRequeue}
+                      class="flex-1 px-3 py-3 text-base cursor-pointer bg-purple-600 text-white border-0 rounded-sm transition-all duration-200 hover:bg-purple-500 hover:-translate-y-px active:translate-y-px"
+                    >
+                      ${translateText("win_modal.requeue")}
+                    </button>
+                  `
+                : null
+            }
             <button
               @click=${this.hide}
               class="flex-1 px-3 py-3 text-base cursor-pointer bg-blue-500/60 text-white border-0 rounded-sm transition-all duration-200 hover:bg-blue-500/80 hover:-translate-y-px active:translate-y-px"
             >
-              ${this.game?.myPlayer()?.isAlive()
-                ? translateText("win_modal.keep")
-                : translateText("win_modal.spectate")}
+              ${
+                this.game?.myPlayer()?.isAlive()
+                  ? translateText("win_modal.keep")
+                  : translateText("win_modal.spectate")
+              }
             </button>
           </div>
           <div class="flex justify-between gap-2.5">
@@ -306,10 +319,18 @@ export class WinModal extends LitElement implements Layer {
             </button>
             <button
               @click=${this._handleRematch}
-              class="flex-1 px-3 py-2 text-sm cursor-pointer bg-orange-500/70 text-white border-0 rounded-sm transition-all duration-200 hover:bg-orange-500/90 hover:-translate-y-px active:translate-y-px"
+              class="flex-1 px-3 py-2 text-sm cursor-pointer bg-orange-500/70 text-white border-0 rounded-sm transition-all duration-200 hover:bg-orange-500/90 hover:-translate-y-px active:translate-y-px disabled:cursor-wait disabled:opacity-60"
               ?disabled=${this.rematchPending}
             >
-              ${this.rematchPending ? "Rematch sent!" : "Rematch"}
+              ${
+                this.rematchPending
+                  ? "Creating rematch…"
+                  : this.rematchResult
+                    ? "Open rematch lobby"
+                    : this.rematchError
+                      ? "Retry rematch"
+                      : "Rematch"
+              }
             </button>
             <button
               @click=${this._handleShareHighlight}
@@ -317,21 +338,36 @@ export class WinModal extends LitElement implements Layer {
             >
               ${this.highlightCopied ? "Clip copied!" : "Share Clip"}
             </button>
-            ${this.replayHighlight
-              ? html`<a
-                  href=${this.replayHighlight.shareUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="flex-1 px-3 py-2 text-sm cursor-pointer bg-violet-600/70 text-white border-0 rounded-sm transition-all duration-200 hover:bg-violet-600/90 hover:-translate-y-px text-center no-underline"
-                  title="${this.replayHighlight.ogTitle}"
-                >
-                  ▶ Watch Highlight<br /><span
-                    class="text-[10px] text-violet-200/80"
-                    >${this.replayHighlight.topMoment}</span
+            ${
+              this.replayHighlight
+                ? html`<a
+                    href=${this.replayHighlight.shareUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex-1 px-3 py-2 text-sm cursor-pointer bg-violet-600/70 text-white border-0 rounded-sm transition-all duration-200 hover:bg-violet-600/90 hover:-translate-y-px text-center no-underline"
+                    title="${this.replayHighlight.ogTitle}"
                   >
-                </a>`
-              : ""}
+                    ▶ Watch Highlight<br /><span
+                      class="text-[10px] text-violet-200/80"
+                      >${this.replayHighlight.topMoment}</span
+                    >
+                  </a>`
+                : ""
+            }
           </div>
+          ${
+            this.rematchResult
+              ? html`<a
+                  href=${this.rematchResult.joinUrl}
+                  class="block text-xs text-center text-orange-200 underline underline-offset-2"
+                  >Rematch lobby ready · join before it expires</a
+                >`
+              : this.rematchError
+                ? html`<p class="text-xs text-center text-red-300" role="alert">
+                    ${this.rematchError}
+                  </p>`
+                : ""
+          }
           <div class="flex justify-end">
             <button
               @click=${this._handleShareCard}
@@ -463,24 +499,26 @@ export class WinModal extends LitElement implements Layer {
             `,
           )}
         </div>
-        ${this.mutatorVoteCandidates.length > 2
-          ? html`
-              <div class="flex justify-center mt-1.5 gap-2">
-                ${this.mutatorVoteCandidates
-                  .slice(2)
-                  .map(
-                    (c) => html`
-                      <button
-                        @click=${() => vote(c.key)}
-                        class="px-3 py-1.5 text-xs bg-transparent border border-purple-500/30 text-purple-400 rounded-md cursor-pointer hover:bg-purple-500/15 transition-colors"
-                      >
-                        ${c.name}
-                      </button>
-                    `,
-                  )}
-              </div>
-            `
-          : null}
+        ${
+          this.mutatorVoteCandidates.length > 2
+            ? html`
+                <div class="flex justify-center mt-1.5 gap-2">
+                  ${this.mutatorVoteCandidates
+                    .slice(2)
+                    .map(
+                      (c) => html`
+                        <button
+                          @click=${() => vote(c.key)}
+                          class="px-3 py-1.5 text-xs bg-transparent border border-purple-500/30 text-purple-400 rounded-md cursor-pointer hover:bg-purple-500/15 transition-colors"
+                        >
+                          ${c.name}
+                        </button>
+                      `,
+                    )}
+                </div>
+              `
+            : null
+        }
       </div>
     `;
   }
@@ -499,9 +537,11 @@ export class WinModal extends LitElement implements Layer {
           ${this.recapCards.map(
             (card) => html`
               <div
-                class="rounded-sm border ${card.positive
-                  ? "border-emerald-400/50 bg-emerald-900/25"
-                  : "border-rose-400/50 bg-rose-900/20"} p-2"
+                class="rounded-sm border ${
+                  card.positive
+                    ? "border-emerald-400/50 bg-emerald-900/25"
+                    : "border-rose-400/50 bg-rose-900/20"
+                } p-2"
               >
                 <div class="text-xs uppercase tracking-wide text-slate-300">
                   ${card.title}
@@ -510,9 +550,9 @@ export class WinModal extends LitElement implements Layer {
                   You: ${card.myValue} | Winners: ${card.winnerValue}
                 </div>
                 <div
-                  class="text-xs mt-1 ${card.positive
-                    ? "text-emerald-200"
-                    : "text-rose-200"}"
+                  class="text-xs mt-1 ${
+                    card.positive ? "text-emerald-200" : "text-rose-200"
+                  }"
                 >
                   ${card.deltaText}
                 </div>
@@ -522,24 +562,26 @@ export class WinModal extends LitElement implements Layer {
         </div>
 
         <div class="mt-2 text-sm text-slate-100">${this.recapReason}</div>
-        ${this.momentRewards.length > 0
-          ? html`<div
-              class="mt-2 rounded-sm border border-cyan-400/35 bg-cyan-900/20 p-2"
-            >
-              <div class="text-xs uppercase tracking-wide text-cyan-200">
-                Moment Rewards
-              </div>
-              <div class="mt-1 flex flex-wrap gap-1.5">
-                ${this.momentRewards.map(
-                  (moment) =>
-                    html`<span
-                      class="rounded border border-cyan-300/35 bg-cyan-500/20 px-2 py-0.5 text-xs text-cyan-50"
-                      >${moment}</span
-                    >`,
-                )}
-              </div>
-            </div>`
-          : ""}
+        ${
+          this.momentRewards.length > 0
+            ? html`<div
+                class="mt-2 rounded-sm border border-cyan-400/35 bg-cyan-900/20 p-2"
+              >
+                <div class="text-xs uppercase tracking-wide text-cyan-200">
+                  Moment Rewards
+                </div>
+                <div class="mt-1 flex flex-wrap gap-1.5">
+                  ${this.momentRewards.map(
+                    (moment) =>
+                      html`<span
+                        class="rounded border border-cyan-300/35 bg-cyan-500/20 px-2 py-0.5 text-xs text-cyan-50"
+                        >${moment}</span
+                      >`,
+                  )}
+                </div>
+              </div>`
+            : ""
+        }
 
         <div
           class="mt-2 rounded-sm border border-amber-400/40 bg-amber-900/25 p-2"
@@ -548,45 +590,57 @@ export class WinModal extends LitElement implements Layer {
             Next Match Hint
           </div>
           <div class="text-sm text-amber-100 mt-1">${this.actionableHint}</div>
-          ${this.recapActionPlan.length > 0
-            ? html`<div
-                class="mt-2 rounded-sm border border-amber-300/25 bg-black/15 p-2 text-[12px] text-amber-50"
-              >
-                <div class="text-[11px] uppercase tracking-wide text-amber-200">
-                  Next Match Script
-                </div>
-                <div class="mt-1 space-y-1">
-                  ${this.recapActionPlan.map(
-                    (step, index) => html`<div>${index + 1}. ${step}</div>`,
-                  )}
-                </div>
-              </div>`
-            : ""}
+          ${
+            this.recapActionPlan.length > 0
+              ? html`<div
+                  class="mt-2 rounded-sm border border-amber-300/25 bg-black/15 p-2 text-[12px] text-amber-50"
+                >
+                  <div
+                    class="text-[11px] uppercase tracking-wide text-amber-200"
+                  >
+                    Next Match Script
+                  </div>
+                  <div class="mt-1 space-y-1">
+                    ${this.recapActionPlan.map(
+                      (step, index) => html`<div>${index + 1}. ${step}</div>`,
+                    )}
+                  </div>
+                </div>`
+              : ""
+          }
           <div class="mt-2 flex flex-wrap gap-2">
             <button
-              class="px-3 py-1.5 text-sm cursor-pointer border-0 rounded-sm transition-colors ${requeuePrimary
-                ? "bg-fuchsia-500/80 text-white hover:bg-fuchsia-400"
-                : "bg-amber-500/70 text-black hover:bg-amber-400"}"
-              @click=${requeuePrimary
-                ? this.onRecapPrimaryRequeueClick
-                : this.saveNextMatchGoal}
+              class="px-3 py-1.5 text-sm cursor-pointer border-0 rounded-sm transition-colors ${
+                requeuePrimary
+                  ? "bg-fuchsia-500/80 text-white hover:bg-fuchsia-400"
+                  : "bg-amber-500/70 text-black hover:bg-amber-400"
+              }"
+              @click=${
+                requeuePrimary
+                  ? this.onRecapPrimaryRequeueClick
+                  : this.saveNextMatchGoal
+              }
             >
-              ${requeuePrimary
-                ? "Queue Next Ranked Match"
-                : this.nextGoalSaved
-                  ? "Goal Saved"
-                  : "Set As Next Match Goal"}
+              ${
+                requeuePrimary
+                  ? "Queue Next Ranked Match"
+                  : this.nextGoalSaved
+                    ? "Goal Saved"
+                    : "Set As Next Match Goal"
+              }
             </button>
-            ${requeuePrimary
-              ? html`
-                  <button
-                    class="px-3 py-1.5 text-sm cursor-pointer bg-amber-500/70 text-black border-0 rounded-sm hover:bg-amber-400 transition-colors"
-                    @click=${this.saveNextMatchGoal}
-                  >
-                    ${this.nextGoalSaved ? "Goal Saved" : "Save Goal Instead"}
-                  </button>
-                `
-              : null}
+            ${
+              requeuePrimary
+                ? html`
+                    <button
+                      class="px-3 py-1.5 text-sm cursor-pointer bg-amber-500/70 text-black border-0 rounded-sm hover:bg-amber-400 transition-colors"
+                      @click=${this.saveNextMatchGoal}
+                    >
+                      ${this.nextGoalSaved ? "Goal Saved" : "Save Goal Instead"}
+                    </button>
+                  `
+                : null
+            }
           </div>
         </div>
 
@@ -611,37 +665,41 @@ export class WinModal extends LitElement implements Layer {
         <div class="text-xs uppercase tracking-wide text-amber-200 mb-1">
           Post-Win Fortune
         </div>
-        ${this.fortuneRevealed
-          ? html`
-              <div class="flex items-center gap-3">
-                <div class="text-3xl">
-                  ${this.fortuneItem.type === "emoji"
-                    ? this.fortuneItem.value
-                    : this.fortuneItem.type === "badge"
-                      ? "🏅"
-                      : "🏆"}
-                </div>
-                <div>
-                  <div class="text-sm font-bold text-white">
-                    ${this.fortuneItem.name}
+        ${
+          this.fortuneRevealed
+            ? html`
+                <div class="flex items-center gap-3">
+                  <div class="text-3xl">
+                    ${
+                      this.fortuneItem.type === "emoji"
+                        ? this.fortuneItem.value
+                        : this.fortuneItem.type === "badge"
+                          ? "🏅"
+                          : "🏆"
+                    }
                   </div>
-                  <div class="text-xs text-slate-300 capitalize">
-                    ${this.fortuneItem.rarity} · ${this.fortuneItem.type}
+                  <div>
+                    <div class="text-sm font-bold text-white">
+                      ${this.fortuneItem.name}
+                    </div>
+                    <div class="text-xs text-slate-300 capitalize">
+                      ${this.fortuneItem.rarity} · ${this.fortuneItem.type}
+                    </div>
                   </div>
                 </div>
-              </div>
-            `
-          : html`
-              <button
-                class="w-full py-2 text-sm bg-amber-500/20 border border-amber-400/40 rounded text-amber-200 cursor-pointer hover:bg-amber-500/35 transition-colors"
-                @click=${() => {
-                  this.fortuneRevealed = true;
-                  this.requestUpdate();
-                }}
-              >
-                ✦ Reveal Fortune
-              </button>
-            `}
+              `
+            : html`
+                <button
+                  class="w-full py-2 text-sm bg-amber-500/20 border border-amber-400/40 rounded text-amber-200 cursor-pointer hover:bg-amber-500/35 transition-colors"
+                  @click=${() => {
+                    this.fortuneRevealed = true;
+                    this.requestUpdate();
+                  }}
+                >
+                  ✦ Reveal Fortune
+                </button>
+              `
+        }
       </div>
     `;
   }
@@ -663,48 +721,54 @@ export class WinModal extends LitElement implements Layer {
   private renderCoachDebrief() {
     return html`
       <div class="mt-2">
-        ${this.coachDebriefMoments === null
-          ? html`
-              <button
-                class="w-full py-2 text-sm bg-indigo-500/20 border border-indigo-400/40 rounded text-indigo-200 cursor-pointer hover:bg-indigo-500/35 transition-colors"
-                @click=${() => {
-                  this._loadCoachDebrief();
-                  this.requestUpdate();
-                }}
-                ?disabled=${this.coachDebriefLoading}
-              >
-                ${this.coachDebriefLoading
-                  ? "Loading coach debrief…"
-                  : "🎯 Get AI Coach Debrief"}
-              </button>
-            `
-          : this.coachDebriefMoments.length === 0
-            ? html`<div class="text-xs text-slate-500 text-center py-2">
-                No debrief moments available.
-              </div>`
-            : html`
-                <div class="space-y-2">
-                  ${this.coachDebriefMoments.map(
-                    (m) => html`
-                      <div
-                        class="rounded border border-indigo-400/30 bg-indigo-900/15 p-2"
-                      >
+        ${
+          this.coachDebriefMoments === null
+            ? html`
+                <button
+                  class="w-full py-2 text-sm bg-indigo-500/20 border border-indigo-400/40 rounded text-indigo-200 cursor-pointer hover:bg-indigo-500/35 transition-colors"
+                  @click=${() => {
+                    this._loadCoachDebrief();
+                    this.requestUpdate();
+                  }}
+                  ?disabled=${this.coachDebriefLoading}
+                >
+                  ${
+                    this.coachDebriefLoading
+                      ? "Loading coach debrief…"
+                      : "🎯 Get AI Coach Debrief"
+                  }
+                </button>
+              `
+            : this.coachDebriefMoments.length === 0
+              ? html`<div class="text-xs text-slate-500 text-center py-2">
+                  No debrief moments available.
+                </div>`
+              : html`
+                  <div class="space-y-2">
+                    ${this.coachDebriefMoments.map(
+                      (m) => html`
                         <div
-                          class="text-xs uppercase tracking-wide text-indigo-300 mb-0.5"
+                          class="rounded border border-indigo-400/30 bg-indigo-900/15 p-2"
                         >
-                          ${m.decision}
+                          <div
+                            class="text-xs uppercase tracking-wide text-indigo-300 mb-0.5"
+                          >
+                            ${m.decision}
+                          </div>
+                          <div class="text-sm text-slate-100">${m.optimal}</div>
+                          ${
+                            m.why
+                              ? html`<div class="text-xs text-indigo-200 mt-1">
+                                  Why: ${m.why}
+                                </div>`
+                              : ""
+                          }
                         </div>
-                        <div class="text-sm text-slate-100">${m.optimal}</div>
-                        ${m.why
-                          ? html`<div class="text-xs text-indigo-200 mt-1">
-                              Why: ${m.why}
-                            </div>`
-                          : ""}
-                      </div>
-                    `,
-                  )}
-                </div>
-              `}
+                      `,
+                    )}
+                  </div>
+                `
+        }
       </div>
     `;
   }
@@ -729,10 +793,11 @@ export class WinModal extends LitElement implements Layer {
           ${tabs.map(
             (t) => html`
               <button
-                class="px-3 py-1 text-xs rounded cursor-pointer transition-colors border ${this
-                  .activeTab === t.key
-                  ? "bg-slate-600/50 border-slate-400/50 text-white"
-                  : "bg-transparent border-slate-600/30 text-slate-400 hover:text-slate-200"}"
+                class="px-3 py-1 text-xs rounded cursor-pointer transition-colors border ${
+                  this.activeTab === t.key
+                    ? "bg-slate-600/50 border-slate-400/50 text-white"
+                    : "bg-transparent border-slate-600/30 text-slate-400 hover:text-slate-200"
+                }"
                 @click=${() => {
                   this.activeTab = t.key;
                   this.requestUpdate();
@@ -762,9 +827,9 @@ export class WinModal extends LitElement implements Layer {
     const deltaColor = isGain ? "text-emerald-400" : "text-rose-400";
     return html`
       <div
-        class="mt-2 rounded-sm border border-indigo-400/40 bg-indigo-900/20 p-3 flex items-center justify-between gap-2 ${tierChanged
-          ? "animate-pulse"
-          : ""}"
+        class="mt-2 rounded-sm border border-indigo-400/40 bg-indigo-900/20 p-3 flex items-center justify-between gap-2 ${
+          tierChanged ? "animate-pulse" : ""
+        }"
       >
         <div class="flex flex-col gap-0.5">
           <div class="text-xs uppercase tracking-wide text-indigo-300">
@@ -775,14 +840,16 @@ export class WinModal extends LitElement implements Layer {
           </div>
         </div>
         <div
-          class="text-sm font-bold ${deltaColor} tabular-nums ${tierChanged
-            ? "text-base"
-            : ""}"
+          class="text-sm font-bold ${deltaColor} tabular-nums ${
+            tierChanged ? "text-base" : ""
+          }"
         >
           ${deltaText}
-          ${tierChanged
-            ? html`<span class="text-amber-300 ml-1">Tier Up!</span>`
-            : ""}
+          ${
+            tierChanged
+              ? html`<span class="text-amber-300 ml-1">Tier Up!</span>`
+              : ""
+          }
         </div>
       </div>
     `;
@@ -844,10 +911,11 @@ export class WinModal extends LitElement implements Layer {
           </button>
         </div>
         <div class="text-sm text-slate-200 leading-relaxed">
-          ${this.dynastyStoryTyped}${this.dynastyStoryTyped.length <
-          (this.dynastyStory?.length ?? 0)
-            ? html`<span class="animate-pulse">▌</span>`
-            : ""}
+          ${this.dynastyStoryTyped}${
+            this.dynastyStoryTyped.length < (this.dynastyStory?.length ?? 0)
+              ? html`<span class="animate-pulse">▌</span>`
+              : ""
+          }
         </div>
       </div>
     `;
@@ -945,9 +1013,11 @@ export class WinModal extends LitElement implements Layer {
                 class="w-full text-left rounded px-2 py-1 bg-cyan-500/15 hover:bg-cyan-500/25"
                 @click=${() => this.jumpToReplayMoment(moment)}
                 ?disabled=${moment.tile === null}
-                title=${moment.tile === null
-                  ? "No map location available for this moment"
-                  : "Jump camera to this replay moment"}
+                title=${
+                  moment.tile === null
+                    ? "No map location available for this moment"
+                    : "Jump camera to this replay moment"
+                }
               >
                 <span
                   class="inline-block mr-1 text-[10px] uppercase tracking-wide text-cyan-200"
@@ -1389,10 +1459,22 @@ export class WinModal extends LitElement implements Layer {
   private _handleRematch = async () => {
     const gameId = this.game?.gameID();
     if (!gameId || this.rematchPending) return;
-    const me = await getUserMe();
-    const playerId = me ? (me.player?.publicId ?? "anon") : "anon";
-    await createRematch(gameId, playerId);
+    if (this.rematchResult) {
+      window.location.href = this.rematchResult.joinUrl;
+      return;
+    }
+
     this.rematchPending = true;
+    this.rematchError = null;
+    const result = await createRematch(gameId);
+    this.rematchPending = false;
+    if (!result) {
+      this.rematchError =
+        "Rematch lobby could not be created. Your previous match is unchanged; retry when ready.";
+      return;
+    }
+
+    this.rematchResult = result;
     this.recordRivalChallengePulse("rival_rematch_requested");
   };
 
@@ -1493,7 +1575,7 @@ export class WinModal extends LitElement implements Layer {
     void recordVaultFrontPlaytestPulse({
       surface: "retention",
       event,
-      value: Math.max(1, this.rivalryRevengeDelta),
+      value: 1,
     });
   }
 
@@ -1794,11 +1876,7 @@ export class WinModal extends LitElement implements Layer {
 
   private updateAdaptiveNudgeSignal(
     goalKey:
-      | "vault_first"
-      | "convoy_impact"
-      | "pulse_chain"
-      | "focus_stable"
-      | "",
+      "vault_first" | "convoy_impact" | "pulse_chain" | "focus_stable" | "",
     weak: boolean,
   ): void {
     if (!goalKey) return;
@@ -2034,8 +2112,7 @@ export class WinModal extends LitElement implements Layer {
 
   private computePlayStyle(
     myStats:
-      | import("../../../core/Schemas").AllPlayersStats[string]
-      | undefined,
+      import("../../../core/Schemas").AllPlayersStats[string] | undefined,
   ) {
     const vf = myStats?.vaultfront;
     const n = (v: bigint | undefined) =>

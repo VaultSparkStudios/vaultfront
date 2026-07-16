@@ -212,35 +212,41 @@ export class StreamOverlayPage extends LitElement {
         <div class="vf-divider"></div>
         <div class="vf-meta">
           ${o.mapName ? html`<span>${o.mapName}</span>` : ""}
-          ${o.playerCount
-            ? html`<span>${o.playerCount} players</span>`
-            : html`<span>—</span>`}
+          ${
+            o.playerCount
+              ? html`<span>${o.playerCount} players</span>`
+              : html`<span>—</span>`
+          }
         </div>
         <div class="vf-divider"></div>
         <div class="vf-commentary ${this.commentaryFade ? "fade" : ""}">
-          ${o.commentary ||
-          (o.activity ? `🎯 ${o.activity}` : "Waiting for action…")}
+          ${
+            o.commentary ||
+            (o.activity ? `🎯 ${o.activity}` : "Waiting for action…")
+          }
         </div>
-        ${o.crowdInterceptPct !== null
-          ? html`
-              <div class="vf-divider"></div>
-              <div class="vf-crowd">
-                <div class="vf-crowd-label">
-                  Crowd: ${o.crowdInterceptPct}% intercept (${o.crowdTotal})
+        ${
+          o.crowdInterceptPct !== null
+            ? html`
+                <div class="vf-divider"></div>
+                <div class="vf-crowd">
+                  <div class="vf-crowd-label">
+                    Crowd: ${o.crowdInterceptPct}% intercept (${o.crowdTotal})
+                  </div>
+                  <div class="vf-crowd-bar">
+                    <div
+                      class="vf-crowd-intercept"
+                      style="width:${o.crowdInterceptPct}%"
+                    ></div>
+                    <div
+                      class="vf-crowd-delivery"
+                      style="width:${100 - o.crowdInterceptPct}%"
+                    ></div>
+                  </div>
                 </div>
-                <div class="vf-crowd-bar">
-                  <div
-                    class="vf-crowd-intercept"
-                    style="width:${o.crowdInterceptPct}%"
-                  ></div>
-                  <div
-                    class="vf-crowd-delivery"
-                    style="width:${100 - o.crowdInterceptPct}%"
-                  ></div>
-                </div>
-              </div>
-            `
-          : ""}
+              `
+            : ""
+        }
         <div class="vf-status">${o.connected ? "● LIVE" : "○ Connecting"}</div>
       </div>
     `;

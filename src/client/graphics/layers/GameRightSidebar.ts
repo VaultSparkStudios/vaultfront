@@ -1109,16 +1109,16 @@ export class GameRightSidebar extends LitElement implements Layer {
         </div>
         <div class="h-1.5 rounded-full bg-slate-700 overflow-hidden">
           <div
-            class="h-full rounded-full ${ch.completed
-              ? "bg-emerald-400"
-              : "bg-amber-400"} transition-all"
+            class="h-full rounded-full ${
+              ch.completed ? "bg-emerald-400" : "bg-amber-400"
+            } transition-all"
             style="width:${pct}%"
           ></div>
         </div>
         <div
-          class="text-right text-[9px] mt-0.5 ${ch.completed
-            ? "text-emerald-300"
-            : "text-slate-400"}"
+          class="text-right text-[9px] mt-0.5 ${
+            ch.completed ? "text-emerald-300" : "text-slate-400"
+          }"
         >
           ${ch.completed ? "✓ Complete" : `${ch.progress}/${ch.target}`}
         </div>
@@ -1138,32 +1138,38 @@ export class GameRightSidebar extends LitElement implements Layer {
           (item) => html`
             <div
               class="flex items-center gap-1 rounded border border-cyan-300/35 bg-cyan-500/10 px-1.5 py-0.5"
-              title=${item.details
-                ? `${item.details} | Click to center camera`
-                : "Center camera on objective"}
+              title=${
+                item.details
+                  ? `${item.details} | Click to center camera`
+                  : "Center camera on objective"
+              }
             >
               <button
                 class="hover:text-cyan-100"
                 @click=${() => this.focusTile(item.tile)}
               >
                 <span>${item.text}</span>
-                ${item.tag
-                  ? html`<span
-                      class="ml-1 rounded border px-1 py-0.5 ${this.threatClass(
-                        item.tag as "Low" | "Medium" | "High",
-                      )}"
-                      >${item.tag}</span
-                    >`
-                  : ""}
+                ${
+                  item.tag
+                    ? html`<span
+                        class="ml-1 rounded border px-1 py-0.5 ${this.threatClass(
+                          item.tag as "Low" | "Medium" | "High",
+                        )}"
+                        >${item.tag}</span
+                      >`
+                    : ""
+                }
               </button>
-              ${item.actionLabel
-                ? html`<button
-                    class="rounded border border-amber-300/45 bg-amber-500/20 px-1 py-0.5 text-[10px] text-amber-50 hover:bg-amber-500/30"
-                    @click=${() => this.performRailAction(item)}
-                  >
-                    ${item.actionLabel}
-                  </button>`
-                : ""}
+              ${
+                item.actionLabel
+                  ? html`<button
+                      class="rounded border border-amber-300/45 bg-amber-500/20 px-1 py-0.5 text-[10px] text-amber-50 hover:bg-amber-500/30"
+                      @click=${() => this.performRailAction(item)}
+                    >
+                      ${item.actionLabel}
+                    </button>`
+                  : ""
+              }
             </div>
           `,
         )}
@@ -1176,8 +1182,9 @@ export class GameRightSidebar extends LitElement implements Layer {
     return html`
       <div
         class="fixed z-[1160] flex w-[min(92vw,320px)] flex-col gap-1"
-        style="zoom: ${this
-          .hudScale}; right: ${this.vaultFeedRightPx()}px; top: ${this.vaultFeedTopPx()}px;"
+        style="zoom: ${
+          this.hudScale
+        }; right: ${this.vaultFeedRightPx()}px; top: ${this.vaultFeedTopPx()}px;"
       >
         ${this.recentVaultFeed.map(
           (entry) => html`
@@ -1321,26 +1328,29 @@ export class GameRightSidebar extends LitElement implements Layer {
             KPI
           </div>
           <div
-            class="cursor-pointer rounded px-1.5 py-0.5 text-[11px] ${this
-              .vaultDebugActive
-              ? "bg-amber-500/35 text-amber-50 hover:bg-amber-500/50"
-              : "bg-slate-600/45 text-slate-100 hover:bg-slate-600/65"}"
+            class="cursor-pointer rounded px-1.5 py-0.5 text-[11px] ${
+              this.vaultDebugActive
+                ? "bg-amber-500/35 text-amber-50 hover:bg-amber-500/50"
+                : "bg-slate-600/45 text-slate-100 hover:bg-slate-600/65"
+            }"
             title="Toggle VaultFront debug checklist and logs"
             @click=${() => this.toggleVaultDebug()}
           >
             ${this.vaultDebugActive ? "VDbg On" : "VDbg"}
           </div>
-          ${this.hudEditMode
-            ? html`
-                <div
-                  class="cursor-pointer rounded bg-cyan-500/35 px-1.5 py-0.5 text-[11px] hover:bg-cyan-500/55"
-                  title="Drag right HUD dock"
-                  @pointerdown=${this.onDockDragStart}
-                >
-                  Drag
-                </div>
-              `
-            : ""}
+          ${
+            this.hudEditMode
+              ? html`
+                  <div
+                    class="cursor-pointer rounded bg-cyan-500/35 px-1.5 py-0.5 text-[11px] hover:bg-cyan-500/55"
+                    title="Drag right HUD dock"
+                    @pointerdown=${this.onDockDragStart}
+                  >
+                    Drag
+                  </div>
+                `
+              : ""
+          }
           <div
             class="cursor-pointer p-1 rounded hover:bg-white/10"
             @click=${this.onSettingsButtonClick}
@@ -1356,9 +1366,11 @@ export class GameRightSidebar extends LitElement implements Layer {
         </div>
 
         <div
-          class="${this.timelineExpanded || this.viewportWidth() >= 1200
-            ? "max-w-75 border-l border-white/20 pl-2 text-[11px] leading-4"
-            : "hidden"}"
+          class="${
+            this.timelineExpanded || this.viewportWidth() >= 1200
+              ? "max-w-75 border-l border-white/20 pl-2 text-[11px] leading-4"
+              : "hidden"
+          }"
         >
           <div class="text-cyan-200 font-semibold mb-0.5">
             Objective Timeline
@@ -1374,46 +1386,50 @@ export class GameRightSidebar extends LitElement implements Layer {
             ).map(
               (chip) =>
                 html`<button
-                  class="rounded border px-1 py-0.5 ${this.timelineFilters[
-                    chip.key
-                  ]
-                    ? "border-cyan-200/65 bg-cyan-500/25 text-cyan-50"
-                    : "border-slate-300/35 bg-slate-700/30 text-slate-200"}"
+                  class="rounded border px-1 py-0.5 ${
+                    this.timelineFilters[chip.key]
+                      ? "border-cyan-200/65 bg-cyan-500/25 text-cyan-50"
+                      : "border-slate-300/35 bg-slate-700/30 text-slate-200"
+                  }"
                   @click=${() => this.toggleTimelineFilter(chip.key)}
                 >
                   ${chip.label}
                 </button>`,
             )}
           </div>
-          ${filteredTimeline.length === 0
-            ? html`<div class="text-white/55">No objective activity yet</div>`
-            : filteredTimeline.slice(-4).map(
-                (entry) =>
-                  html`<button
-                    class="block w-full text-left text-white/85 truncate hover:text-cyan-200"
-                    title=${entry.tile !== undefined
-                      ? "Jump to objective location"
-                      : entry.label}
-                    @click=${() => {
-                      if (entry.tile !== undefined) {
-                        this.focusTile(entry.tile);
-                        logHudTelemetry("hud_timeline_jump");
+          ${
+            filteredTimeline.length === 0
+              ? html`<div class="text-white/55">No objective activity yet</div>`
+              : filteredTimeline.slice(-4).map(
+                  (entry) =>
+                    html`<button
+                      class="block w-full text-left text-white/85 truncate hover:text-cyan-200"
+                      title=${
+                        entry.tile !== undefined
+                          ? "Jump to objective location"
+                          : entry.label
                       }
-                    }}
-                  >
-                    [${this.secondsToHms(
-                      Math.max(
-                        0,
-                        Math.floor(
-                          (entry.tick -
-                            this.game.config().numSpawnPhaseTurns()) /
-                            10,
+                      @click=${() => {
+                        if (entry.tile !== undefined) {
+                          this.focusTile(entry.tile);
+                          logHudTelemetry("hud_timeline_jump");
+                        }
+                      }}
+                    >
+                      [${this.secondsToHms(
+                        Math.max(
+                          0,
+                          Math.floor(
+                            (entry.tick -
+                              this.game.config().numSpawnPhaseTurns()) /
+                              10,
+                          ),
                         ),
-                      ),
-                    )}]
-                    ${entry.label}
-                  </button>`,
-              )}
+                      )}]
+                      ${entry.label}
+                    </button>`,
+                )
+          }
         </div>
         ${this.renderKpiPanel()}
       </aside>
@@ -1426,30 +1442,34 @@ export class GameRightSidebar extends LitElement implements Layer {
     const showPauseButton = isReplayOrSingleplayer || this.isLobbyCreator;
 
     return html`
-      ${isReplayOrSingleplayer
-        ? html`
-            <div class="cursor-pointer" @click=${this.toggleReplayPanel}>
-              <img
-                src=${FastForwardIconSolid}
-                alt="replay"
-                width="20"
-                height="20"
-              />
-            </div>
-          `
-        : ""}
-      ${showPauseButton
-        ? html`
-            <div class="cursor-pointer" @click=${this.onPauseButtonClick}>
-              <img
-                src=${this.isPaused ? playIcon : pauseIcon}
-                alt="play/pause"
-                width="20"
-                height="20"
-              />
-            </div>
-          `
-        : ""}
+      ${
+        isReplayOrSingleplayer
+          ? html`
+              <div class="cursor-pointer" @click=${this.toggleReplayPanel}>
+                <img
+                  src=${FastForwardIconSolid}
+                  alt="replay"
+                  width="20"
+                  height="20"
+                />
+              </div>
+            `
+          : ""
+      }
+      ${
+        showPauseButton
+          ? html`
+              <div class="cursor-pointer" @click=${this.onPauseButtonClick}>
+                <img
+                  src=${this.isPaused ? playIcon : pauseIcon}
+                  alt="play/pause"
+                  width="20"
+                  height="20"
+                />
+              </div>
+            `
+          : ""
+      }
     `;
   }
 }

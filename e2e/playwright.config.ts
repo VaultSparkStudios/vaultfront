@@ -1,5 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
 
+export function normalizeE2EBaseUrl(value: string | undefined) {
+  const trimmed = value?.trim();
+  if (!trimmed) return undefined;
+  return trimmed;
+}
+
+const configuredBaseUrl = normalizeE2EBaseUrl(process.env.E2E_BASE_URL);
+const baseURL = configuredBaseUrl ?? "http://localhost:9000";
+
 export default defineConfig({
   testDir: ".",
   testMatch: "**/*.spec.ts",
@@ -9,7 +18,7 @@ export default defineConfig({
   reporter: process.env.CI ? "github" : "list",
 
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? "http://localhost:9000",
+    baseURL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "off",
@@ -26,11 +35,11 @@ export default defineConfig({
     },
   ],
 
-  webServer: process.env.E2E_BASE_URL
+  webServer: configuredBaseUrl
     ? undefined
     : {
         command: "npm run dev",
-        url: "http://localhost:9000",
+        url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 60_000,
       },

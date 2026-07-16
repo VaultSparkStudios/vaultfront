@@ -49,11 +49,15 @@ export default defineConfig(({ mode }) => {
       exclude: [...configDefaults.exclude, "**/.codex-temp-*/**", "e2e/**"],
       coverage: {
         provider: "v8",
+        reporter: ["text", "json", "json-summary"],
         thresholds: {
-          lines: 70,
-          functions: 70,
-          branches: 60,
-          statements: 70,
+          // The checked-in ratchet owns measurable no-regression policy. Keep
+          // Vitest's disconnected global threshold neutral so the JSON report
+          // is always emitted and can be evaluated with critical-module floors.
+          lines: 0,
+          functions: 0,
+          branches: 0,
+          statements: 0,
         },
       },
     },
@@ -62,13 +66,27 @@ export default defineConfig(({ mode }) => {
     publicDir: "resources", // Access static assets via import or explicit copy
 
     resolve: {
-      alias: {
-        "protobufjs/minimal": path.resolve(
-          __dirname,
-          "node_modules/protobufjs/minimal.js",
-        ),
-        resources: path.resolve(__dirname, "resources"),
-      },
+      alias: [
+        {
+          find: /^\/images\//,
+          replacement: `${path.resolve(__dirname, "resources/images")}/`,
+        },
+        {
+          find: /^\/sounds\//,
+          replacement: `${path.resolve(__dirname, "resources/sounds")}/`,
+        },
+        {
+          find: "protobufjs/minimal",
+          replacement: path.resolve(
+            __dirname,
+            "node_modules/protobufjs/minimal.js",
+          ),
+        },
+        {
+          find: "resources",
+          replacement: path.resolve(__dirname, "resources"),
+        },
+      ],
     },
 
     plugins: [
@@ -93,6 +111,22 @@ export default defineConfig(({ mode }) => {
           {
             src: "proprietary/*",
             dest: ".",
+          },
+          {
+            // Standard public-launch surface overlays the legacy resources
+            // publicDir without moving thousands of inherited game assets.
+            src: "public/*",
+            dest: ".",
+          },
+          ...["about", "contact", "docs", "ip", "privacy", "terms"].map(
+            (route) => ({
+              src: `public/${route}/*`,
+              dest: route,
+            }),
+          ),
+          {
+            src: "public/.well-known/*",
+            dest: ".well-known",
           },
         ],
       }),
@@ -121,8 +155,20 @@ export default defineConfig(({ mode }) => {
       assetsDir: "assets", // Sub-directory for assets
       rollupOptions: {
         output: {
-          manualChunks: {
-            vendor: ["pixi.js", "howler", "zod", "protobufjs"],
+          manualChunks(id) {
+            const normalized = id.replace(/\\/gu, "/");
+            if (normalized.includes("/node_modules/pixi.js/")) {
+              return "render-vendor";
+            }
+
+            if (
+              normalized.includes("/src/core/") ||
+              normalized.includes("/src/client/graphics/") ||
+              normalized.includes("/src/client/components/")
+            ) {
+              return "game-ui";
+            }
+            return undefined;
           },
         },
       },

@@ -187,6 +187,16 @@ function scanContent(relPath, content) {
       (i > 0 && ALLOWLIST_COMMENT.test(lines[i - 1]));
     if (allowComment) continue;
 
+    // npm SRI values are public package-integrity metadata, not credentials.
+    // Exempt only the exact lockfile integrity field so URLs and arbitrary
+    // package metadata remain scanned.
+    const packageIntegrityLine =
+      relPath === "package-lock.json" &&
+      /^\s*"integrity":\s*"sha(?:1|256|384|512)-[A-Za-z0-9+/=]+",?\s*$/u.test(
+        line,
+      );
+    if (packageIntegrityLine) continue;
+
     for (const pat of PATTERNS) {
       const match = line.match(pat.regex);
       if (!match) continue;

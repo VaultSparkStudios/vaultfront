@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-07-16",
+  "source": "vitest-v8 coverage/coverage-summary.json",
+  "tolerance": 0.1,
+  "global": {
+    "lines": 50.35,
+    "statements": 49.68,
+    "functions": 45.95,
+    "branches": 38.58
+  },
+  "criticalModules": {
+    "src/server/ReplayStore.ts": {
+      "lines": 81.35,
+      "statements": 78.46,
+      "functions": 81.81,
+      "branches": 72.97
+    },
+    "src/server/VaultFrontPlaytestPulse.ts": {
+      "lines": 94.26,
+      "statements": 93.33,
+      "functions": 100,
+      "branches": 90.78
+    },
+    "src/server/VaultFrontReadiness.ts": {
+      "lines": 97.77,
+      "statements": 97.91,
+      "functions": 100,
+      "branches": 92.45
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://vaultsparkstudios.com/schemas/agents-v1.json",
+  "project": "vaultfront",
+  "name": "VaultFront",
+  "vaultStatus": "FORGE",
+  "releaseStatus": "public-unlaunched",
+  "archetype": "game",
+  "capabilities": ["browser-game", "multiplayer", "single-player", "replays"],
+  "endpoints": {
+    "landing": "https://vaultfront.vaultsparkstudios.com/",
+    "docs": "https://vaultfront.vaultsparkstudios.com/docs/",
+    "contact": "mailto:contact@vaultfront.vaultsparkstudios.com",
+    "source": "https://github.com/VaultSparkStudios/VaultFront"
+  },
+  "agentInteractions": [],
+  "authentication": {
+    "provider": "Obelisk",
+    "status": "not-wired"
+  },
+  "rights": {
+    "code": "GNU AGPL-3.0; see LICENSE and LICENSING.md",
+    "branding": "VaultSpark-original branding, content, assets, and designs retain their applicable rights",
+    "upstream": "OpenFrontIO; see CREDITS.md"
+  },
+  "studio": {
+    "owner": "VaultSpark Studios LLC",
+    "url": "https://vaultsparkstudios.com"
+  }
+}

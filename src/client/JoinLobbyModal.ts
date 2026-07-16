@@ -107,90 +107,98 @@ export class JoinLobbyModal extends BaseModal {
               : undefined,
         })}
         <div class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4 mr-1">
-          ${this.isConnecting
+          ${
+            this.isConnecting
+              ? html`
+                  <div
+                    class="min-h-[240px] flex flex-col items-center justify-center gap-4"
+                  >
+                    <div
+                      class="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"
+                    ></div>
+                    <p class="text-center text-white/80 text-sm">
+                      ${translateText("public_lobby.connecting")}
+                    </p>
+                  </div>
+                `
+              : html`
+                  ${this.gameConfig ? this.renderGameConfig() : html``}
+                  ${
+                    this.players.length > 0
+                      ? html`
+                          <lobby-player-view
+                            class="mt-6"
+                            .gameMode=${this.gameConfig?.gameMode ?? GameMode.FFA}
+                            .clients=${this.players}
+                            .lobbyCreatorClientID=${hostClientID}
+                            .currentClientID=${this.currentClientID}
+                            .teamCount=${this.gameConfig?.playerTeams ?? 2}
+                            .nationCount=${nationsConfigToSlider(
+                              this.gameConfig?.nations ?? "default",
+                              this.nationCount,
+                            )}
+                          ></lobby-player-view>
+                        `
+                      : ""
+                  }
+                `
+          }
+        </div>
+
+        ${
+          this.isPrivateLobby()
             ? html`
                 <div
-                  class="min-h-[240px] flex flex-col items-center justify-center gap-4"
+                  class="p-6 lg:p-6 border-t border-white/10 bg-black/20 shrink-0"
                 >
-                  <div
-                    class="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin"
-                  ></div>
-                  <p class="text-center text-white/80 text-sm">
-                    ${translateText("public_lobby.connecting")}
-                  </p>
+                  <button
+                    class="w-full py-4 text-sm font-bold text-white uppercase tracking-widest bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all shadow-lg shadow-blue-900/20 hover:shadow-blue-900/40 hover:-translate-y-0.5 active:translate-y-0 disabled:transform-none"
+                    disabled
+                  >
+                    ${translateText("private_lobby.joined_waiting")}
+                  </button>
                 </div>
               `
             : html`
-                ${this.gameConfig ? this.renderGameConfig() : html``}
-                ${this.players.length > 0
-                  ? html`
-                      <lobby-player-view
-                        class="mt-6"
-                        .gameMode=${this.gameConfig?.gameMode ?? GameMode.FFA}
-                        .clients=${this.players}
-                        .lobbyCreatorClientID=${hostClientID}
-                        .currentClientID=${this.currentClientID}
-                        .teamCount=${this.gameConfig?.playerTeams ?? 2}
-                        .nationCount=${nationsConfigToSlider(
-                          this.gameConfig?.nations ?? "default",
-                          this.nationCount,
-                        )}
-                      ></lobby-player-view>
-                    `
-                  : ""}
-              `}
-        </div>
-
-        ${this.isPrivateLobby()
-          ? html`
-              <div
-                class="p-6 lg:p-6 border-t border-white/10 bg-black/20 shrink-0"
-              >
-                <button
-                  class="w-full py-4 text-sm font-bold text-white uppercase tracking-widest bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl transition-all shadow-lg shadow-blue-900/20 hover:shadow-blue-900/40 hover:-translate-y-0.5 active:translate-y-0 disabled:transform-none"
-                  disabled
-                >
-                  ${translateText("private_lobby.joined_waiting")}
-                </button>
-              </div>
-            `
-          : html`
-              <div
-                class="p-6 lg:p-6 border-t border-white/10 bg-black/20 shrink-0"
-              >
                 <div
-                  class="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 flex items-center justify-between gap-3"
+                  class="p-6 lg:p-6 border-t border-white/10 bg-black/20 shrink-0"
                 >
-                  <div class="flex flex-col">
-                    <span
-                      class="text-[10px] font-bold uppercase tracking-widest text-white/40"
-                      >${translateText("public_lobby.status")}</span
-                    >
-                    <span class="text-sm font-bold text-white"
-                      >${statusLabel}</span
-                    >
+                  <div
+                    class="w-full px-4 py-3 rounded-xl border border-white/10 bg-white/5 flex items-center justify-between gap-3"
+                  >
+                    <div class="flex flex-col">
+                      <span
+                        class="text-[10px] font-bold uppercase tracking-widest text-white/40"
+                        >${translateText("public_lobby.status")}</span
+                      >
+                      <span class="text-sm font-bold text-white"
+                        >${statusLabel}</span
+                      >
+                    </div>
+                    ${
+                      maxPlayers > 0
+                        ? html`
+                            <div
+                              class="flex items-center gap-2 text-white/80 text-xs font-bold uppercase tracking-widest"
+                            >
+                              <span>${playerCount}/${maxPlayers}</span>
+                              <svg
+                                class="w-4 h-4 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.972 0 004 15v3H1v-3a3 3 0 013.75-2.906z"
+                                ></path>
+                              </svg>
+                            </div>
+                          `
+                        : html``
+                    }
                   </div>
-                  ${maxPlayers > 0
-                    ? html`
-                        <div
-                          class="flex items-center gap-2 text-white/80 text-xs font-bold uppercase tracking-widest"
-                        >
-                          <span>${playerCount}/${maxPlayers}</span>
-                          <svg
-                            class="w-4 h-4 text-white"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.972 0 004 15v3H1v-3a3 3 0 013.75-2.906z"
-                            ></path>
-                          </svg>
-                        </div>
-                      `
-                    : html``}
                 </div>
-              </div>
-            `}
+              `
+        }
       </div>
     `;
 
@@ -433,26 +441,34 @@ export class JoinLobbyModal extends BaseModal {
           (m) => html`
             <lobby-config-item
               .label=${translateText(m.labelKey)}
-              .value=${m.value !== undefined
-                ? renderNumber(m.value)
-                : translateText("common.enabled")}
+              .value=${
+                m.value !== undefined
+                  ? renderNumber(m.value)
+                  : translateText("common.enabled")
+              }
             ></lobby-config-item>
           `,
         )}
-        ${c.gameMode !== GameMode.FFA &&
-        c.playerTeams &&
-        c.playerTeams !== HumansVsNations
-          ? html`
-              <lobby-config-item
-                .label=${typeof c.playerTeams === "string"
-                  ? translateText("host_modal.team_type")
-                  : translateText("host_modal.team_count")}
-                .value=${typeof c.playerTeams === "string"
-                  ? translateText("host_modal.teams_" + c.playerTeams)
-                  : c.playerTeams.toString()}
-              ></lobby-config-item>
-            `
-          : html``}
+        ${
+          c.gameMode !== GameMode.FFA &&
+          c.playerTeams &&
+          c.playerTeams !== HumansVsNations
+            ? html`
+                <lobby-config-item
+                  .label=${
+                    typeof c.playerTeams === "string"
+                      ? translateText("host_modal.team_type")
+                      : translateText("host_modal.team_count")
+                  }
+                  .value=${
+                    typeof c.playerTeams === "string"
+                      ? translateText("host_modal.teams_" + c.playerTeams)
+                      : c.playerTeams.toString()
+                  }
+                ></lobby-config-item>
+              `
+            : html``
+        }
       </div>
       ${this.renderDisabledUnits()}
     `;

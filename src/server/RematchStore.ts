@@ -1,79 +1,115 @@
 /**
- * RematchStore — tracks post-game rematch intents with a short TTL.
+ * RematchStore — worker-local registry for real post-game lobby corridors.
  *
- * Flow:
- *   1. Game ends → any player calls POST /api/rematch/:gameId with their playerId.
- *   2. Server stores the intent, returns a rematch code and joinUrl.
- *   3. Other players from the same game call POST /api/rematch/:gameId to join.
- *   4. When all original players have joined (or TTL expires), the rematch lobby
- *      is created by the matchmaking system using the stored game config.
- *
- * Storage: in-memory with automatic TTL eviction (5 minutes). No Postgres
- * persistence needed — rematch intents are ephemeral by design.
+ * A rematch entry exists only after Worker has authenticated the caller,
+ * cloned the source game's safe configuration, and created the lobby. The
+ * store contains privacy-safe participant keys and never treats an intent as
+ * a successful rematch.
  */
 
 import { nanoid } from "nanoid";
 
 export interface RematchEntry {
   gameId: string;
+  lobbyId: string;
   code: string;
-  playerIds: string[];
   mapName: string;
   expiresAt: number;
   joinUrl: string;
+  participantCount: number;
+  status: "ready";
 }
 
-const TTL_MS = 5 * 60 * 1_000; // 5 minutes
-const PLAY_BASE =
-  process.env.PLAY_BASE_URL ?? "https://play-vaultfront.vaultsparkstudios.com";
+interface StoredRematchEntry extends RematchEntry {
+  participantKeys: Set<string>;
+}
 
-class RematchStore {
-  private entries = new Map<string, RematchEntry>();
+export interface CreateRematchEntryInput {
+  gameId: string;
+  lobbyId: string;
+  actorKey: string;
+  mapName: string;
+  joinUrl: string;
+}
+
+const TTL_MS = 5 * 60 * 1_000;
+
+export class RematchStore {
+  private entries = new Map<string, StoredRematchEntry>();
   private codeToGameId = new Map<string, string>();
 
-  constructor() {
-    // Evict expired entries every 60 seconds
-    setInterval(() => this.evict(), 60_000);
+  constructor(private readonly now: () => number = Date.now) {
+    const timer = setInterval(() => this.evict(), 60_000);
+    timer.unref?.();
   }
 
-  /** Create or join a rematch for the given game. Returns the updated entry. */
-  upsert(gameId: string, playerId: string, mapName = ""): RematchEntry {
-    const existing = this.entries.get(gameId);
+  /** Register a lobby that has already been created successfully. */
+  create(input: CreateRematchEntryInput): RematchEntry {
+    const existing = this.getStored(input.gameId);
     if (existing) {
-      if (!existing.playerIds.includes(playerId)) {
-        existing.playerIds.push(playerId);
-      }
-      return existing;
+      existing.participantKeys.add(input.actorKey);
+      existing.participantCount = existing.participantKeys.size;
+      return this.toPublicEntry(existing);
     }
 
     const code = nanoid(8);
-    const entry: RematchEntry = {
-      gameId,
+    const participantKeys = new Set([input.actorKey]);
+    const entry: StoredRematchEntry = {
+      gameId: input.gameId,
+      lobbyId: input.lobbyId,
       code,
-      playerIds: [playerId],
-      mapName,
-      expiresAt: Date.now() + TTL_MS,
-      joinUrl: `${PLAY_BASE}/join?rematch=${encodeURIComponent(code)}`,
+      mapName: input.mapName,
+      expiresAt: this.now() + TTL_MS,
+      joinUrl: input.joinUrl,
+      participantCount: participantKeys.size,
+      participantKeys,
+      status: "ready",
     };
-    this.entries.set(gameId, entry);
-    this.codeToGameId.set(code, gameId);
-    return entry;
+    this.entries.set(input.gameId, entry);
+    this.codeToGameId.set(code, input.gameId);
+    return this.toPublicEntry(entry);
+  }
+
+  join(gameId: string, actorKey: string): RematchEntry | null {
+    const entry = this.getStored(gameId);
+    if (!entry) return null;
+    entry.participantKeys.add(actorKey);
+    entry.participantCount = entry.participantKeys.size;
+    return this.toPublicEntry(entry);
   }
 
   get(gameId: string): RematchEntry | null {
-    const entry = this.entries.get(gameId);
-    if (!entry) return null;
-    if (Date.now() > entry.expiresAt) {
-      this.remove(gameId);
-      return null;
-    }
-    return entry;
+    const entry = this.getStored(gameId);
+    return entry ? this.toPublicEntry(entry) : null;
   }
 
   getByCode(code: string): RematchEntry | null {
     const gameId = this.codeToGameId.get(code);
     if (!gameId) return null;
     return this.get(gameId);
+  }
+
+  private getStored(gameId: string): StoredRematchEntry | null {
+    const entry = this.entries.get(gameId);
+    if (!entry) return null;
+    if (this.now() > entry.expiresAt) {
+      this.remove(gameId);
+      return null;
+    }
+    return entry;
+  }
+
+  private toPublicEntry(entry: StoredRematchEntry): RematchEntry {
+    return {
+      gameId: entry.gameId,
+      lobbyId: entry.lobbyId,
+      code: entry.code,
+      mapName: entry.mapName,
+      expiresAt: entry.expiresAt,
+      joinUrl: entry.joinUrl,
+      participantCount: entry.participantCount,
+      status: entry.status,
+    };
   }
 
   private remove(gameId: string): void {
@@ -83,7 +119,7 @@ class RematchStore {
   }
 
   private evict(): void {
-    const now = Date.now();
+    const now = this.now();
     for (const [gameId, entry] of this.entries) {
       if (now > entry.expiresAt) this.remove(gameId);
     }

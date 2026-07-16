@@ -151,10 +151,7 @@ export class GameManager {
   }
 
   private assignVaultWeeklyMutator():
-    | "none"
-    | "lane_fog"
-    | "accelerated_cooldowns"
-    | "double_passive" {
+    "none" | "lane_fog" | "accelerated_cooldowns" | "double_passive" {
     const now = new Date();
     const yearStart = Date.UTC(now.getUTCFullYear(), 0, 1);
     const dayMs = 24 * 60 * 60 * 1000;

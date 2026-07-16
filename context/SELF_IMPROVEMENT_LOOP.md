@@ -4,12 +4,38 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 999/1000 | Velocity: 1→ | Debt: → | Velocity trend: →
-Avgs — 3: 88.7 | Momentum runway: strong | Intent rate: 100%
-3-session: Dev 10 | Align 30 | Momentum 13 | Engage 28 | Process 10
-Last session: 2026-07-16 Session 72 interrupted-state recovery closeout
+Total: 943/1000 | Velocity: 15↑ | Debt: ↓ | Velocity trend: ↑
+Avgs — 3: 980.3 | Momentum runway: release-evidence corridor | Intent rate: 100%
+Categories: Dev 96 | Align 97 | Momentum 100 | Engage 82 | Process 98 | Coherence 94 | Security 96 | Ecosystem 84 | Capital 99 | Automation 97
+Last session: 2026-07-16 Session 73 full recovery-to-arc mission
 
 <!-- rolling-status-end -->
+
+## Sprint: 2026-07-16 — Session 73 Full Recovery-to-Arc Mission (SIL recalibrated: 943/1000)
+
+Recovered and checkpointed the interrupted S72 boundary, then shipped all 12 ranked S73 audit items and all 3 second-order innovations. The pass hardened launch evidence, replay/rematch trust, the convoy climax, coaching/progression, cost controls, public surfaces, CI truth, protocol provenance, and dependency security.
+
+| Category              |        Score | Evidence                                                                                                                               |
+| --------------------- | -----------: | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev Health            |           96 | 697 tests, coverage ratchet, build/typecheck, lint, E2E, and zero audit findings; explicit build warnings remain.                      |
+| Creative Alignment    |           97 | Vault Pressure, convoy-centric coaching, and progression deepen the project-specific fantasy without off-axis systems.                 |
+| Momentum              |          100 | 12/12 ranked items plus 3/3 second-order candidates shipped in one continuous mission.                                                 |
+| Engagement            |           82 | Real rematch/progression and a decisive breach climax shipped, but no human retention evidence is invented.                            |
+| Process Quality       |           98 | Recovery boundary, audit sidecar derivation, evidence labeling, and broad gates are deterministic and reviewable.                      |
+| Cross-Repo Coherence  |           94 | Registry correction traveled through signed Ark cargo; acceptance remains pending.                                                     |
+| Security Posture      |           96 | Authenticated evidence/rematch, fail-closed replay verification, zero npm vulnerabilities; native Obelisk auth remains a release gate. |
+| Ecosystem Integration |           84 | AI-agent/public surfaces and readiness contracts exist; staging, Brevo, Obelisk, and live web evidence remain open.                    |
+| Capital Efficiency    |           99 | Remote AI is default-off, explicitly capped, and attributed; local deterministic behavior preserves cost neutrality.                   |
+| Automation Coverage   |           97 | CI adds coverage, formatting, bundle, E2E, protocol, and evidence guards; legacy formatting and live-only checks remain.               |
+| **Total**             | **943/1000** | Evidence-based score.                                                                                                                  |
+
+**Recalibration:** 999 → 943 is an observability correction, not a regression. Prior scoring treated absent human/staging/identity/live-web evidence as nearly perfect; S73 now prices those gaps honestly.
+
+**Top win:** Trusted evidence and a decisive gameplay/progression loop shipped together, so product depth and release truth reinforce each other.
+
+**Top gap:** The staging launch-evidence corridor has not yet produced distinct-human, email, identity, live web/theme, revenue, or founder-approval evidence.
+
+**Committed to TASK_BOARD:** cycle-free build-warning cleanup; authenticated staging launch-evidence corridor.
 
 ## Sprint: 2026-07-16 — Session 72 Interrupted-State Recovery Closeout (SIL held: 999/1000)
 

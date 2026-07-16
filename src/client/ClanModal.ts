@@ -216,10 +216,11 @@ export class ClanModal extends LitElement {
                     this.tab = t;
                     if (t === "leaderboard") await this.loadLeaderboard();
                   }}
-                  class="flex-1 py-2 text-sm font-medium cursor-pointer border-0 ${this
-                    .tab === t
-                    ? "bg-yellow-500/20 text-yellow-400 border-b-2 border-yellow-400"
-                    : "bg-transparent text-gray-400 hover:text-white"}"
+                  class="flex-1 py-2 text-sm font-medium cursor-pointer border-0 ${
+                    this.tab === t
+                      ? "bg-yellow-500/20 text-yellow-400 border-b-2 border-yellow-400"
+                      : "bg-transparent text-gray-400 hover:text-white"
+                  }"
                 >
                   ${t === "my_clan" ? "My Clan" : "Leaderboard"}
                 </button>
@@ -229,14 +230,18 @@ export class ClanModal extends LitElement {
 
           <!-- Content -->
           <div class="p-5 max-h-96 overflow-y-auto">
-            ${this.error
-              ? html`<p class="text-red-400 text-sm mb-3">${this.error}</p>`
-              : nothing}
-            ${this.loading
-              ? html`<p class="text-gray-400 text-center py-8">Loading…</p>`
-              : this.tab === "my_clan"
-                ? this.renderMyClan()
-                : this.renderLeaderboard()}
+            ${
+              this.error
+                ? html`<p class="text-red-400 text-sm mb-3">${this.error}</p>`
+                : nothing
+            }
+            ${
+              this.loading
+                ? html`<p class="text-gray-400 text-center py-8">Loading…</p>`
+                : this.tab === "my_clan"
+                  ? this.renderMyClan()
+                  : this.renderLeaderboard()
+            }
           </div>
         </div>
       </div>
@@ -253,11 +258,13 @@ export class ClanModal extends LitElement {
             >
             <span class="text-xl font-semibold">${this.myClan.name}</span>
           </div>
-          ${this.myClan.description
-            ? html`<p class="text-gray-400 text-sm">
-                ${this.myClan.description}
-              </p>`
-            : nothing}
+          ${
+            this.myClan.description
+              ? html`<p class="text-gray-400 text-sm">
+                  ${this.myClan.description}
+                </p>`
+              : nothing
+          }
           <p class="text-xs text-gray-500">
             ${this.myClan.members.length}
             member${this.myClan.members.length !== 1 ? "s" : ""}

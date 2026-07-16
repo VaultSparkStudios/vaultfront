@@ -119,30 +119,42 @@ export class AbDashboard extends LitElement {
           >
           <span class="text-sm text-slate-300">${exp.description}</span>
         </div>
-        ${exp.variants
-          ? html`<div class="mb-2">
-              <div class="text-xs text-slate-400 mb-1 uppercase tracking-wide">
-                Variants (rate = events/users)
-              </div>
-              ${this.renderVariantTable(exp.variants)}
-            </div>`
-          : ""}
-        ${exp.rewardVariants
-          ? html`<div class="mb-2">
-              <div class="text-xs text-slate-400 mb-1 uppercase tracking-wide">
-                Reward Variants
-              </div>
-              ${this.renderVariantTable(exp.rewardVariants)}
-            </div>`
-          : ""}
-        ${exp.hudVariants
-          ? html`<div>
-              <div class="text-xs text-slate-400 mb-1 uppercase tracking-wide">
-                HUD Variants
-              </div>
-              ${this.renderVariantTable(exp.hudVariants)}
-            </div>`
-          : ""}
+        ${
+          exp.variants
+            ? html`<div class="mb-2">
+                <div
+                  class="text-xs text-slate-400 mb-1 uppercase tracking-wide"
+                >
+                  Variants (rate = events/users)
+                </div>
+                ${this.renderVariantTable(exp.variants)}
+              </div>`
+            : ""
+        }
+        ${
+          exp.rewardVariants
+            ? html`<div class="mb-2">
+                <div
+                  class="text-xs text-slate-400 mb-1 uppercase tracking-wide"
+                >
+                  Reward Variants
+                </div>
+                ${this.renderVariantTable(exp.rewardVariants)}
+              </div>`
+            : ""
+        }
+        ${
+          exp.hudVariants
+            ? html`<div>
+                <div
+                  class="text-xs text-slate-400 mb-1 uppercase tracking-wide"
+                >
+                  HUD Variants
+                </div>
+                ${this.renderVariantTable(exp.hudVariants)}
+              </div>`
+            : ""
+        }
       </div>
     `;
   }
@@ -158,9 +170,11 @@ export class AbDashboard extends LitElement {
               A/B Experiment Dashboard
             </h1>
             <div class="text-xs text-slate-400">
-              ${this.results
-                ? `Loaded at ${new Date(this.results.generatedAt).toLocaleTimeString()}`
-                : ""}
+              ${
+                this.results
+                  ? `Loaded at ${new Date(this.results.generatedAt).toLocaleTimeString()}`
+                  : ""
+              }
             </div>
           </div>
           <button
@@ -170,17 +184,19 @@ export class AbDashboard extends LitElement {
             Refresh
           </button>
         </div>
-        ${this.loading
-          ? html`<div class="text-slate-400 text-sm">Loading…</div>`
-          : this.error
-            ? html`<div
-                class="rounded border border-red-500/40 bg-red-900/20 p-4 text-red-300 text-sm"
-              >
-                ${this.error}
-              </div>`
-            : this.results?.experiments.map((exp) =>
-                this.renderExperiment(exp),
-              )}
+        ${
+          this.loading
+            ? html`<div class="text-slate-400 text-sm">Loading…</div>`
+            : this.error
+              ? html`<div
+                  class="rounded border border-red-500/40 bg-red-900/20 p-4 text-red-300 text-sm"
+                >
+                  ${this.error}
+                </div>`
+              : this.results?.experiments.map((exp) =>
+                  this.renderExperiment(exp),
+                )
+        }
       </div>
     `;
   }

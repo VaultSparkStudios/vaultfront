@@ -44,6 +44,7 @@ function makePlayer(
     isPlayer: () => true,
     isAlive: () => true,
     displayName: () => `Player${id}`,
+    team: () => null,
     isFriendly: () => false,
     numTilesOwned: () => tiles,
     troops: () => currentTroops,
@@ -86,6 +87,7 @@ function makeGame(
     minute8Behind: vi.fn(),
     cleanExecutionStreak: vi.fn(),
     squadObjectiveCompleted: vi.fn(),
+    stats: vi.fn(() => ({})),
   };
 
   const playerMap = new Map(players.map((p) => [p.smallID(), p]));
@@ -101,6 +103,8 @@ function makeGame(
     owner: ownerFn ?? (() => defaultOwner),
     manhattanDist: (a: number, b: number) => Math.abs(a - b),
     ticks: () => 1000,
+    getWinner: () => null,
+    setWinner: vi.fn(),
     inSpawnPhase: () => false,
     drainVaultFrontCommands: () => [],
     isValidCoord: () => false,
@@ -322,5 +326,36 @@ describe("VaultFront lifecycle integration", () => {
 
     expect(game._stats.vaultCaptured).toHaveBeenCalledTimes(2);
     expect(execution.convoys).toHaveLength(2);
+  });
+
+  test("three deliveries open a breach window and the next delivery wins", () => {
+    const player = makePlayer(1);
+    const { execution, game } = baseExecution([player]);
+
+    execution.advanceVaultPressure(player, 1000, 5);
+    execution.advanceVaultPressure(player, 1010, 5);
+    execution.advanceVaultPressure(player, 1020, 5);
+
+    expect(execution.vaultPressure.get(1)).toBe(3);
+    expect(execution.breachWindowUntilTick.get(1)).toBe(1920);
+    expect(game.setWinner).not.toHaveBeenCalled();
+
+    execution.advanceVaultPressure(player, 1030, 5);
+
+    expect(game.setWinner).toHaveBeenCalledTimes(1);
+    expect(game.setWinner).toHaveBeenCalledWith(player, {});
+    expect(execution.isActive()).toBe(false);
+  });
+
+  test("expired breach window falls back one pressure step", () => {
+    const player = makePlayer(1);
+    const { execution } = baseExecution([player]);
+    execution.vaultPressure.set(1, 3);
+    execution.breachWindowUntilTick.set(1, 1100);
+
+    execution.sweepExpiredBreachWindows(1101);
+
+    expect(execution.breachWindowUntilTick.get(1)).toBe(0);
+    expect(execution.vaultPressure.get(1)).toBe(2);
   });
 });

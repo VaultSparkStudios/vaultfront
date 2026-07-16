@@ -261,16 +261,19 @@ export class TournamentModal extends LitElement {
                     this.tab = t;
                     if (t === "browse") await this.loadTournaments();
                   }}
-                  class="flex-1 py-2 text-sm font-medium cursor-pointer border-0 ${this
-                    .tab === t
-                    ? "bg-blue-500/20 text-blue-400 border-b-2 border-blue-400"
-                    : "bg-transparent text-gray-400 hover:text-white"}"
+                  class="flex-1 py-2 text-sm font-medium cursor-pointer border-0 ${
+                    this.tab === t
+                      ? "bg-blue-500/20 text-blue-400 border-b-2 border-blue-400"
+                      : "bg-transparent text-gray-400 hover:text-white"
+                  }"
                 >
-                  ${t === "browse"
-                    ? "Browse"
-                    : t === "bracket"
-                      ? "Bracket"
-                      : "Create"}
+                  ${
+                    t === "browse"
+                      ? "Browse"
+                      : t === "bracket"
+                        ? "Bracket"
+                        : "Create"
+                  }
                 </button>
               `,
             )}
@@ -278,21 +281,27 @@ export class TournamentModal extends LitElement {
 
           <!-- Content -->
           <div class="p-5 max-h-[28rem] overflow-y-auto">
-            ${this.error
-              ? html`<p class="text-red-400 text-sm mb-3">${this.error}</p>`
-              : nothing}
-            ${this.successMsg
-              ? html`<p class="text-green-400 text-sm mb-3">
-                  ${this.successMsg}
-                </p>`
-              : nothing}
-            ${this.loading
-              ? html`<p class="text-gray-400 text-center py-8">Loading…</p>`
-              : this.tab === "browse"
-                ? this.renderBrowse()
-                : this.tab === "bracket"
-                  ? this.renderBracket()
-                  : this.renderCreate()}
+            ${
+              this.error
+                ? html`<p class="text-red-400 text-sm mb-3">${this.error}</p>`
+                : nothing
+            }
+            ${
+              this.successMsg
+                ? html`<p class="text-green-400 text-sm mb-3">
+                    ${this.successMsg}
+                  </p>`
+                : nothing
+            }
+            ${
+              this.loading
+                ? html`<p class="text-gray-400 text-center py-8">Loading…</p>`
+                : this.tab === "browse"
+                  ? this.renderBrowse()
+                  : this.tab === "bracket"
+                    ? this.renderBracket()
+                    : this.renderCreate()
+            }
           </div>
         </div>
       </div>
@@ -318,27 +327,30 @@ export class TournamentModal extends LitElement {
                   ${t.mapName || "Any map"} · Max ${t.maxPlayers} players
                 </p>
                 <span
-                  class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${t.status ===
-                  "registration"
-                    ? "bg-green-600/30 text-green-400"
-                    : t.status === "active"
-                      ? "bg-blue-600/30 text-blue-400"
-                      : "bg-gray-600/30 text-gray-400"}"
+                  class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${
+                    t.status === "registration"
+                      ? "bg-green-600/30 text-green-400"
+                      : t.status === "active"
+                        ? "bg-blue-600/30 text-blue-400"
+                        : "bg-gray-600/30 text-gray-400"
+                  }"
                 >
                   ${t.status}
                 </span>
               </div>
               <div class="flex flex-col gap-1 shrink-0">
-                ${t.status === "registration"
-                  ? html`
-                      <button
-                        @click=${() => this.register(t.id)}
-                        class="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded cursor-pointer border-0"
-                      >
-                        Register
-                      </button>
-                    `
-                  : nothing}
+                ${
+                  t.status === "registration"
+                    ? html`
+                        <button
+                          @click=${() => this.register(t.id)}
+                          class="px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded cursor-pointer border-0"
+                        >
+                          Register
+                        </button>
+                      `
+                    : nothing
+                }
                 <button
                   @click=${async () => {
                     this.tab = "bracket";
@@ -374,53 +386,61 @@ export class TournamentModal extends LitElement {
           <p class="text-sm text-gray-400">
             ${tournament.mapName || "Any map"} · Status:
             <span
-              class="${tournament.status === "active"
-                ? "text-blue-400"
-                : tournament.status === "complete"
-                  ? "text-green-400"
-                  : "text-gray-400"}"
+              class="${
+                tournament.status === "active"
+                  ? "text-blue-400"
+                  : tournament.status === "complete"
+                    ? "text-green-400"
+                    : "text-gray-400"
+              }"
               >${tournament.status}</span
             >
           </p>
-          ${tournament.status === "registration"
-            ? html`
-                <button
-                  @click=${() => this.seedTournament(tournament.id)}
-                  class="px-3 py-1.5 text-xs bg-amber-600 hover:bg-amber-500 text-white rounded cursor-pointer border-0 shrink-0"
-                >
-                  Seed bracket
-                </button>
-              `
-            : nothing}
+          ${
+            tournament.status === "registration"
+              ? html`
+                  <button
+                    @click=${() => this.seedTournament(tournament.id)}
+                    class="px-3 py-1.5 text-xs bg-amber-600 hover:bg-amber-500 text-white rounded cursor-pointer border-0 shrink-0"
+                  >
+                    Seed bracket
+                  </button>
+                `
+              : nothing
+          }
         </div>
-        ${operations
-          ? html`
-              <div
-                class="mb-4 rounded bg-slate-950/60 border border-blue-500/30 p-3 text-xs text-slate-300"
-              >
-                <div class="flex items-center justify-between gap-3 mb-2">
-                  <span class="font-semibold text-blue-300"
-                    >Operator brief</span
-                  >
-                  <span class="text-slate-400"
-                    >${operations.registeredPlayers}/${tournament.maxPlayers}
-                    players</span
-                  >
+        ${
+          operations
+            ? html`
+                <div
+                  class="mb-4 rounded bg-slate-950/60 border border-blue-500/30 p-3 text-xs text-slate-300"
+                >
+                  <div class="flex items-center justify-between gap-3 mb-2">
+                    <span class="font-semibold text-blue-300"
+                      >Operator brief</span
+                    >
+                    <span class="text-slate-400"
+                      >${operations.registeredPlayers}/${tournament.maxPlayers}
+                      players</span
+                    >
+                  </div>
+                  <p class="text-slate-200 mb-2">${operations.nextAction}</p>
+                  <div class="flex flex-wrap gap-2 text-[11px] text-slate-400">
+                    <span>Missing slots: ${operations.missingSlots}</span>
+                    <span
+                      >Next match:
+                      ${
+                        operations.nextMatchId === null
+                          ? "none"
+                          : `#${operations.nextMatchId}`
+                      }</span
+                    >
+                    <span>Overlay: ${operations.overlayUrl}</span>
+                  </div>
                 </div>
-                <p class="text-slate-200 mb-2">${operations.nextAction}</p>
-                <div class="flex flex-wrap gap-2 text-[11px] text-slate-400">
-                  <span>Missing slots: ${operations.missingSlots}</span>
-                  <span
-                    >Next match:
-                    ${operations.nextMatchId === null
-                      ? "none"
-                      : `#${operations.nextMatchId}`}</span
-                  >
-                  <span>Overlay: ${operations.overlayUrl}</span>
-                </div>
-              </div>
-            `
-          : nothing}
+              `
+            : nothing
+        }
         <div class="flex gap-6 overflow-x-auto pb-2">
           ${rounds.map(
             (roundMatches, ri) => html`
@@ -428,77 +448,90 @@ export class TournamentModal extends LitElement {
                 <p
                   class="text-xs text-gray-500 mb-2 font-medium uppercase tracking-wide"
                 >
-                  ${ri === rounds.length - 1 && rounds.length > 1
-                    ? "Final"
-                    : `Round ${ri + 1}`}
+                  ${
+                    ri === rounds.length - 1 && rounds.length > 1
+                      ? "Final"
+                      : `Round ${ri + 1}`
+                  }
                 </p>
                 <div class="space-y-3">
                   ${roundMatches.map(
                     (m) => html`
                       <div
-                        class="bg-gray-800 rounded p-2 text-xs space-y-1 border ${m.status ===
-                        "complete"
-                          ? "border-gray-600"
-                          : "border-blue-500/30"}"
+                        class="bg-gray-800 rounded p-2 text-xs space-y-1 border ${
+                          m.status === "complete"
+                            ? "border-gray-600"
+                            : "border-blue-500/30"
+                        }"
                       >
                         <div
-                          class="flex items-center justify-between gap-2 ${m.winnerId ===
-                          m.playerA
-                            ? "text-white font-semibold"
-                            : "text-gray-400"}"
+                          class="flex items-center justify-between gap-2 ${
+                            m.winnerId === m.playerA
+                              ? "text-white font-semibold"
+                              : "text-gray-400"
+                          }"
                         >
                           <span class="truncate max-w-20"
-                            >${m.playerA
-                              ? m.playerA.slice(0, 10) + "…"
-                              : "BYE"}</span
+                            >${
+                              m.playerA ? m.playerA.slice(0, 10) + "…" : "BYE"
+                            }</span
                           >
-                          ${m.winnerId === m.playerA
-                            ? html`<span class="text-green-400">W</span>`
-                            : nothing}
-                          ${this.canReportWinner(m, m.playerA)
-                            ? html`
-                                <button
-                                  @click=${() =>
-                                    this.reportWinner(
-                                      m.id,
-                                      m.playerA as string,
-                                    )}
-                                  class="text-[10px] bg-green-700 hover:bg-green-600 text-white rounded px-1.5 py-0.5 border-0 cursor-pointer"
-                                >
-                                  Win
-                                </button>
-                              `
-                            : nothing}
+                          ${
+                            m.winnerId === m.playerA
+                              ? html`<span class="text-green-400">W</span>`
+                              : nothing
+                          }
+                          ${
+                            this.canReportWinner(m, m.playerA)
+                              ? html`
+                                  <button
+                                    @click=${() =>
+                                      this.reportWinner(
+                                        m.id,
+                                        m.playerA as string,
+                                      )}
+                                    class="text-[10px] bg-green-700 hover:bg-green-600 text-white rounded px-1.5 py-0.5 border-0 cursor-pointer"
+                                  >
+                                    Win
+                                  </button>
+                                `
+                              : nothing
+                          }
                         </div>
                         <div class="border-t border-gray-700"></div>
                         <div
-                          class="flex items-center justify-between gap-2 ${m.winnerId ===
-                          m.playerB
-                            ? "text-white font-semibold"
-                            : "text-gray-400"}"
+                          class="flex items-center justify-between gap-2 ${
+                            m.winnerId === m.playerB
+                              ? "text-white font-semibold"
+                              : "text-gray-400"
+                          }"
                         >
                           <span class="truncate max-w-20"
-                            >${m.playerB
-                              ? m.playerB.slice(0, 10) + "…"
-                              : "BYE"}</span
+                            >${
+                              m.playerB ? m.playerB.slice(0, 10) + "…" : "BYE"
+                            }</span
                           >
-                          ${m.winnerId === m.playerB
-                            ? html`<span class="text-green-400">W</span>`
-                            : nothing}
-                          ${this.canReportWinner(m, m.playerB)
-                            ? html`
-                                <button
-                                  @click=${() =>
-                                    this.reportWinner(
-                                      m.id,
-                                      m.playerB as string,
-                                    )}
-                                  class="text-[10px] bg-green-700 hover:bg-green-600 text-white rounded px-1.5 py-0.5 border-0 cursor-pointer"
-                                >
-                                  Win
-                                </button>
-                              `
-                            : nothing}
+                          ${
+                            m.winnerId === m.playerB
+                              ? html`<span class="text-green-400">W</span>`
+                              : nothing
+                          }
+                          ${
+                            this.canReportWinner(m, m.playerB)
+                              ? html`
+                                  <button
+                                    @click=${() =>
+                                      this.reportWinner(
+                                        m.id,
+                                        m.playerB as string,
+                                      )}
+                                    class="text-[10px] bg-green-700 hover:bg-green-600 text-white rounded px-1.5 py-0.5 border-0 cursor-pointer"
+                                  >
+                                    Win
+                                  </button>
+                                `
+                              : nothing
+                          }
                         </div>
                       </div>
                     `,
@@ -518,8 +551,8 @@ export class TournamentModal extends LitElement {
   ): boolean {
     return Boolean(
       playerId &&
-        match.status !== "complete" &&
-        this.activeBracket?.tournament.status === "active",
+      match.status !== "complete" &&
+      this.activeBracket?.tournament.status === "active",
     );
   }
 

@@ -182,13 +182,15 @@ export class AchievementsPanel extends LitElement {
         <span class="count-chip"
           >${unlockedCount} / ${totalCount} unlocked</span
         >
-        ${metaUnlocked > 0
-          ? html`<span
-              class="count-chip"
-              style="border-color:rgba(168,85,247,.4);color:#d8b4fe;"
-              >${metaUnlocked} meta</span
-            >`
-          : ""}
+        ${
+          metaUnlocked > 0
+            ? html`<span
+                class="count-chip"
+                style="border-color:rgba(168,85,247,.4);color:#d8b4fe;"
+                >${metaUnlocked} meta</span
+              >`
+            : ""
+        }
       </div>
 
       <div class="section-title">Base Achievements</div>
@@ -202,10 +204,12 @@ export class AchievementsPanel extends LitElement {
                   .replace(/\b\w/g, (c) => c.toUpperCase())}
               </div>
               <div class="card-desc">
-                ${a.progressLabel !== "Not yet unlocked" &&
-                a.unlockedAt === null
-                  ? a.progressLabel
-                  : ""}
+                ${
+                  a.progressLabel !== "Not yet unlocked" &&
+                  a.unlockedAt === null
+                    ? a.progressLabel
+                    : ""
+                }
               </div>
               <div class="progress-bar-wrap">
                 <div
@@ -213,11 +217,13 @@ export class AchievementsPanel extends LitElement {
                   style="width:${a.progress}%"
                 ></div>
               </div>
-              ${a.unlockedAt !== null
-                ? html`<div class="unlock-date">
-                    Unlocked ${this.formatDate(a.unlockedAt)}
-                  </div>`
-                : html`<div class="progress-label">${a.progress}%</div>`}
+              ${
+                a.unlockedAt !== null
+                  ? html`<div class="unlock-date">
+                      Unlocked ${this.formatDate(a.unlockedAt)}
+                    </div>`
+                  : html`<div class="progress-label">${a.progress}%</div>`
+              }
             </div>
           `,
         )}
@@ -242,17 +248,21 @@ export class AchievementsPanel extends LitElement {
                 ${c.requires.map(
                   (r) => html`
                     <span
-                      class="meta-req-chip ${c.completedRequires.includes(r)
-                        ? "done"
-                        : ""}"
+                      class="meta-req-chip ${
+                        c.completedRequires.includes(r) ? "done" : ""
+                      }"
                       >${r.replace(/_/g, " ")}</span
                     >
                   `,
                 )}
               </div>
-              ${c.unlocked
-                ? html`<div class="unlock-date">Reward: ${c.reward.title}</div>`
-                : ""}
+              ${
+                c.unlocked
+                  ? html`<div class="unlock-date">
+                      Reward: ${c.reward.title}
+                    </div>`
+                  : ""
+              }
             </div>
           `,
         )}

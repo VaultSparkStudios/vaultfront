@@ -87,8 +87,7 @@ function updateAccountNavButton(userMeResponse: UserMeResponse | false) {
   if (!button) return;
 
   const avatarEl = document.getElementById("nav-account-avatar") as
-    | (HTMLImageElement & { _navToken?: symbol })
-    | null;
+    (HTMLImageElement & { _navToken?: symbol }) | null;
   const personIconEl = document.getElementById(
     "nav-account-person-icon",
   ) as SVGElement | null;

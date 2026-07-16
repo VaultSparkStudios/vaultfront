@@ -30,6 +30,15 @@ describe("WinCheckExecution", () => {
     expect(spy).toHaveBeenCalled();
   });
 
+  it("preserves a winner already set by a parallel victory path", () => {
+    mg.getWinner = vi.fn(() => ({ id: "vault-breach-winner" }));
+    const ffaSpy = vi.spyOn(winCheck as any, "checkWinnerFFA");
+
+    winCheck.tick(10);
+
+    expect(ffaSpy).not.toHaveBeenCalled();
+    expect(winCheck.isActive()).toBe(false);
+  });
   it("should call checkWinnerTeam in non-FFA mode", () => {
     mg.config = vi.fn(() => ({
       gameConfig: vi.fn(() => ({

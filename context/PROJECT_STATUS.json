@@ -4,40 +4,40 @@
   "name": "VaultFront",
   "status": "active",
   "health": "green",
-  "currentSession": 72,
+  "currentSession": 73,
   "lastAgent": "codex",
-  "currentFocus": "Session 72 recovery closeout complete: protocol/Canon/Dependabot propagation verified, incompatible Obelisk stubs removed from deployable source, and local passport cargo genuinely quarantined, and the private rights ledger removed from the public index.",
-  "nextMilestone": "Run a fresh project-aware audit and implementation arc, reconcile registry/local profile drift, then complete verified release and game-loop priorities before any public promotion.",
+  "currentFocus": "Session 73 full recovery-to-arc mission complete: all 12 ranked audit items and 3 second-order innovations shipped across trusted alpha evidence, replay/rematch integrity, Vault Pressure, deterministic coaching, authoritative progression, public/release truth, CI ratchets, and dependency security.",
+  "nextMilestone": "Collect authenticated evidence from at least three distinct human alpha sessions on staging, then verify project-domain email, native Obelisk relying-party auth, live web hardening/theme evidence, and founder launch approval before any SPARKED transition.",
   "blockers": [],
   "lastUpdated": "2026-07-16",
   "lifecycle": "alpha",
-  "audience": "internal",
+  "audience": "public-unlaunched",
   "type": "game",
-  "entropyScore": 0.08,
+  "entropyScore": 0.046,
   "entropyStatus": "healthy",
-  "entropyComputedAt": "2026-06-04",
-  "entropyMethod": "coherence-variance + decision-reversal count + intent-drift; all three at minimum — no off-axis features, 0 decision reversals in 5 sessions, 100% intent achievement, SIL coherence 100/100",
+  "entropyComputedAt": "2026-07-16",
+  "entropyMethod": "Studio protocol entropy: context freshness, truth/IGNIS age, SIL skip pressure, stale human-action labels, and task-bucket pressure.",
   "testingSurfaces": [
     {
       "type": "tests",
       "status": "green",
       "label": "Unit and server regression",
       "command": "npm test",
-      "purpose": "Vitest core/client suite plus focused server tests. All 94 client/core test files (655 tests) plus 10 server files (30 tests) pass as of Session 71."
+      "purpose": "Vitest core, client, server, and Studio protocol coverage. All 107 files / 697 tests pass in the broad coverage run as of Session 73."
     },
     {
       "type": "tests",
       "status": "green",
       "label": "Production build",
       "command": "npm run build-prod",
-      "purpose": "TypeScript no-emit plus production Vite bundle."
+      "purpose": "TypeScript no-emit plus Vite 7 production bundle; every emitted JavaScript chunk is below 500 kB gzip."
     },
     {
       "type": "tests",
       "status": "green",
       "label": "E2E smoke",
       "command": "npm run e2e",
-      "purpose": "Playwright homepage, settings, manifest, and solo-flow smoke. CI-style serial run passes; local parallel run is flaky."
+      "purpose": "Playwright desktop/mobile homepage, settings, manifest, health, environment, and solo-flow smoke. Exact CI profile passes 22/22 serially."
     },
     {
       "type": "local",
@@ -47,7 +47,7 @@
       "purpose": "Client and worker stack for manual match, tournament, and HUD checks."
     }
   ],
-  "freeTierCostStatus": "exempt-internal",
+  "freeTierCostStatus": "cost-neutral",
   "revenueSignalStatus": "checkout-api-present-live-revenue-unverified",
   "readinessEndpoint": "/api/vaultfront/readiness",
   "playtestPulseEndpoint": "/api/vaultfront/playtest-pulse/summary",
@@ -56,20 +56,20 @@
   "silRubricVersion": "3.0",
   "silMax": 1000,
   "silScoreLegacy500": null,
-  "silScore": 999,
-  "testsPassing": 655,
-  "testsTotal": 655,
+  "silScore": 943,
+  "testsPassing": 697,
+  "testsTotal": 697,
   "silCategoriesV3": {
-    "devHealth": 100,
-    "creativeAlignment": 100,
+    "devHealth": 96,
+    "creativeAlignment": 97,
     "momentum": 100,
-    "engagement": 100,
-    "processQuality": 100,
-    "crossRepoCoherence": 100,
-    "securityPosture": 100,
-    "ecosystemIntegration": 100,
+    "engagement": 82,
+    "processQuality": 98,
+    "crossRepoCoherence": 94,
+    "securityPosture": 96,
+    "ecosystemIntegration": 84,
     "capitalEfficiency": 99,
-    "automationCoverage": 100
+    "automationCoverage": 97
   },
   "silScoreV3MigratedAt": "2026-04-21",
   "modelTier": "T1_sonnet",
@@ -81,5 +81,19 @@
   "ignisGrade": "FORGE",
   "ignisLastComputed": "2026-07-16",
   "sessionMode": "founder",
-  "sessionModeAutoShiftedAt": "2026-06-07T18:14:59.755Z"
+  "sessionModeAutoShiftedAt": "2026-06-07T18:14:59.755Z",
+  "silAvg3": 980.3,
+  "silVelocity": 15,
+  "silDebt": "down",
+  "silLastSession": 73,
+  "auditStatus": "12-of-12-shipped-plus-3-innovations",
+  "releaseGates": [
+    "authenticated evidence from at least three distinct human alpha sessions",
+    "staging deployment and parity verification",
+    "project-domain Brevo inbound delivery verification",
+    "native Obelisk relying-party authentication",
+    "live CSP/HSTS/Core Web Vitals and theme screenshot evidence",
+    "founder launch approval"
+  ],
+  "entropyLastComputed": "2026-07-16"
 }

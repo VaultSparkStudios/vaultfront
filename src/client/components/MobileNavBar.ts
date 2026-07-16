@@ -88,10 +88,9 @@ export class MobileNavBar extends LitElement {
         </div>
         <!-- Mobile Navigation Menu Items -->
         <button
-          class="nav-menu-item block w-full text-left font-bold uppercase tracking-[0.05em] text-white/70 transition-all duration-200 cursor-pointer hover:text-amber-300 hover:translate-x-2.5 hover:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] text-[clamp(18px,2.8vh,32px)] py-[clamp(0.2rem,0.8vh,0.75rem)] [&.active]:text-amber-300 [&.active]:translate-x-2.5 [&.active]:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] ${currentPage ===
-          "page-play"
-            ? "active"
-            : ""}"
+          class="nav-menu-item block w-full text-left font-bold uppercase tracking-[0.05em] text-white/70 transition-all duration-200 cursor-pointer hover:text-amber-300 hover:translate-x-2.5 hover:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] text-[clamp(18px,2.8vh,32px)] py-[clamp(0.2rem,0.8vh,0.75rem)] [&.active]:text-amber-300 [&.active]:translate-x-2.5 [&.active]:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] ${
+            currentPage === "page-play" ? "active" : ""
+          }"
           data-page="page-play"
           data-i18n="main.play"
         ></button>
@@ -104,9 +103,11 @@ export class MobileNavBar extends LitElement {
             class="block text-left font-bold uppercase tracking-[0.05em] text-white/70 transition-all duration-200 cursor-pointer hover:text-amber-300 hover:translate-x-2.5 hover:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] [&.active]:text-amber-300 [&.active]:translate-x-2.5 [&.active]:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] text-[clamp(18px,2.8vh,32px)] py-[clamp(0.2rem,0.8vh,0.75rem)]"
             data-i18n="main.news"
           ></button>
-          ${this._notifications.showNewsDot()
-            ? this._renderDot("bg-red-500")
-            : ""}
+          ${
+            this._notifications.showNewsDot()
+              ? this._renderDot("bg-red-500")
+              : ""
+          }
         </div>
         <button
           class="nav-menu-item block w-full text-left font-bold uppercase tracking-[0.05em] text-white/70 transition-all duration-200 cursor-pointer hover:text-amber-300 hover:translate-x-2.5 hover:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] [&.active]:text-amber-300 [&.active]:translate-x-2.5 [&.active]:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] text-[clamp(18px,2.8vh,32px)] py-[clamp(0.2rem,0.8vh,0.75rem)]"
@@ -122,9 +123,11 @@ export class MobileNavBar extends LitElement {
             class="block text-left font-bold uppercase tracking-[0.05em] text-white/70 transition-all duration-200 cursor-pointer hover:text-amber-300 hover:translate-x-2.5 hover:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] [&.active]:text-amber-300 [&.active]:translate-x-2.5 [&.active]:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] text-[clamp(18px,2.8vh,32px)] py-[clamp(0.2rem,0.8vh,0.75rem)]"
             data-i18n="main.store"
           ></button>
-          ${this._notifications.showStoreDot()
-            ? this._renderDot("bg-red-500")
-            : ""}
+          ${
+            this._notifications.showStoreDot()
+              ? this._renderDot("bg-red-500")
+              : ""
+          }
         </div>
         <button
           class="nav-menu-item block w-full text-left font-bold uppercase tracking-[0.05em] text-white/70 transition-all duration-200 cursor-pointer hover:text-amber-300 hover:translate-x-2.5 hover:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] [&.active]:text-amber-300 [&.active]:translate-x-2.5 [&.active]:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] text-[clamp(18px,2.8vh,32px)] py-[clamp(0.2rem,0.8vh,0.75rem)]"
@@ -145,9 +148,11 @@ export class MobileNavBar extends LitElement {
             class="block text-left font-bold uppercase tracking-[0.05em] text-white/70 transition-all duration-200 cursor-pointer hover:text-amber-300 hover:translate-x-2.5 hover:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] [&.active]:text-amber-300 [&.active]:translate-x-2.5 [&.active]:drop-shadow-[0_0_20px_rgba(251,191,36,0.45)] text-[clamp(18px,2.8vh,32px)] py-[clamp(0.2rem,0.8vh,0.75rem)]"
             data-i18n="main.help"
           ></button>
-          ${this._notifications.showHelpDot()
-            ? this._renderDot("bg-yellow-400")
-            : ""}
+          ${
+            this._notifications.showHelpDot()
+              ? this._renderDot("bg-yellow-400")
+              : ""
+          }
         </div>
         <div
           class="flex flex-col w-full mt-auto [.in-game_&]:hidden items-end justify-end pt-4 border-t border-white/10"

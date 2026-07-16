@@ -1,0 +1,1 @@
+See /.well-known/llms.txt for VaultFront's canonical machine-readable project brief.

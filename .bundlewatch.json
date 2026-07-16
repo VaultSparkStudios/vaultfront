@@ -1,12 +1,7 @@
 {
   "files": [
     {
-      "path": "static/assets/vendor-*.js",
-      "maxSize": "1.8 MB",
-      "compression": "gzip"
-    },
-    {
-      "path": "static/assets/index-*.js",
+      "path": "static/assets/*.js",
       "maxSize": "500 kB",
       "compression": "gzip"
     },

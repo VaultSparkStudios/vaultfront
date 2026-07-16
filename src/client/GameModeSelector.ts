@@ -97,14 +97,18 @@ export class GameModeSelector extends LitElement {
         <div
           class="grid grid-cols-1 lg:grid-cols-[3fr_2fr] lg:grid-rows-2 gap-4 lg:h-[28rem]"
         >
-          ${ffa
-            ? html`<div class="lg:row-span-2">
-                ${this.renderLobbyCard(ffa, this.getLobbyTitle(ffa))}
-              </div>`
-            : nothing}
-          ${teams
-            ? this.renderLobbyCard(teams, this.getLobbyTitle(teams))
-            : nothing}
+          ${
+            ffa
+              ? html`<div class="lg:row-span-2">
+                  ${this.renderLobbyCard(ffa, this.getLobbyTitle(ffa))}
+                </div>`
+              : nothing
+          }
+          ${
+            teams
+              ? this.renderLobbyCard(teams, this.getLobbyTitle(teams))
+              : nothing
+          }
           ${special ? this.renderSpecialLobbyCard(special) : nothing}
         </div>
         ${this.renderQuickActionsSection()}
@@ -233,31 +237,35 @@ export class GameModeSelector extends LitElement {
         class="vf-mode-card group flex flex-col w-full h-44 lg:h-full text-white uppercase rounded-2xl overflow-hidden transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] ${CARD_BG}"
       >
         <div class="relative flex-1 overflow-hidden ${CARD_BG}">
-          ${mapImageSrc
-            ? html`<img
-                src="${mapImageSrc}"
-                alt="${mapName ?? lobby.gameConfig?.gameMap ?? "map"}"
-                draggable="false"
-                class="absolute inset-0 w-full h-full object-cover object-center scale-[1.08] pointer-events-none saturate-[1.12] contrast-[1.06]"
-              />`
-            : null}
+          ${
+            mapImageSrc
+              ? html`<img
+                  src="${mapImageSrc}"
+                  alt="${mapName ?? lobby.gameConfig?.gameMap ?? "map"}"
+                  draggable="false"
+                  class="absolute inset-0 w-full h-full object-cover object-center scale-[1.08] pointer-events-none saturate-[1.12] contrast-[1.06]"
+                />`
+              : null
+          }
           <div
             class="absolute inset-0 pointer-events-none bg-gradient-to-b from-slate-950/15 via-transparent to-slate-950/70"
           ></div>
           <div
             class="absolute inset-x-2 bottom-2 flex items-end justify-between gap-2"
           >
-            ${modifierLabels.length > 0
-              ? html`<div class="flex flex-col items-start gap-1">
-                  ${modifierLabels.map(
-                    (label) =>
-                      html`<span
-                        class="px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide bg-teal-600 text-white shadow-[0_0_6px_rgba(13,148,136,0.35)]"
-                        >${label}</span
-                      >`,
-                  )}
-                </div>`
-              : html`<div></div>`}
+            ${
+              modifierLabels.length > 0
+                ? html`<div class="flex flex-col items-start gap-1">
+                    ${modifierLabels.map(
+                      (label) =>
+                        html`<span
+                          class="px-2 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide bg-teal-600 text-white shadow-[0_0_6px_rgba(13,148,136,0.35)]"
+                          >${label}</span
+                        >`,
+                    )}
+                  </div>`
+                : html`<div></div>`
+            }
             <div class="shrink-0">
               <span
                 class="text-[10px] font-bold uppercase tracking-widest bg-blue-600 px-2 py-0.5 rounded"
@@ -275,13 +283,15 @@ export class GameModeSelector extends LitElement {
             >
               ${titleContent}
             </h3>
-            ${mapName
-              ? html`<p
-                  class="text-[10px] text-white/70 uppercase tracking-wider text-left"
-                >
-                  ${mapName}
-                </p>`
-              : ""}
+            ${
+              mapName
+                ? html`<p
+                    class="text-[10px] text-white/70 uppercase tracking-wider text-left"
+                  >
+                    ${mapName}
+                  </p>`
+                : ""
+            }
           </div>
           <span
             class="text-xs font-bold uppercase tracking-widest shrink-0 ml-2"

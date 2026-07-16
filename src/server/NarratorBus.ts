@@ -12,6 +12,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { Response } from "express";
 import { logger as Logger } from "./Logger";
+import { canAttemptRemoteAi, reserveRemoteAiCall } from "./RemoteAiPolicy";
 
 let anthropic: Anthropic | null = null;
 
@@ -129,7 +130,7 @@ export class NarratorBus {
     activityLabel: string,
     context?: NarratorContextSnapshot,
   ): void {
-    if (!process.env.ANTHROPIC_API_KEY) return;
+    if (!canAttemptRemoteAi()) return;
     const state = this.games.get(gameId);
     if (!state || state.clients.size === 0) return;
 
@@ -189,6 +190,15 @@ export class NarratorBus {
     persona: NarratorPersona,
     userContent: string,
   ): Promise<void> {
+    const reservation = reserveRemoteAiCall("narrator");
+    if (!reservation.allowed) {
+      Logger.info("NarratorBus: remote AI cost firewall denied generation", {
+        gameId,
+        persona,
+        reason: reservation.posture.reason,
+      });
+      return;
+    }
     try {
       const systemPrompt = blendedPersonaPrompt(
         persona,

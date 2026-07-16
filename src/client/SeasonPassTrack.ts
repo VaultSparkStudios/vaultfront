@@ -203,39 +203,47 @@ export class SeasonPassTrack extends LitElement {
             m.milestone.reward.value,
           );
           return html`
-            ${i > 0
-              ? html`<div class="connector ${m.claimed ? "done" : ""}"></div>`
-              : ""}
+            ${
+              i > 0
+                ? html`<div class="connector ${m.claimed ? "done" : ""}"></div>`
+                : ""
+            }
             <div class="milestone">
               <div
                 class="node ${nodeClass}"
                 title="${m.milestone.title} — ${m.milestone.description}"
                 @click=${claimable ? () => this._claim(m.milestone.id) : null}
               >
-                ${m.claimed
-                  ? icon
-                  : claimable
-                    ? html`<span style="filter: brightness(1.4)">${icon}</span>`
-                    : html`
-                        <svg
-                          class="progress-arc"
-                          viewBox="0 0 42 42"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          ${
-                            /* raw SVG as unsafeHTML workaround — inline via template */ ""
-                          }
-                        </svg>
-                        <span style="opacity:0.5;font-size:0.85rem">🔒</span>
-                      `}
+                ${
+                  m.claimed
+                    ? icon
+                    : claimable
+                      ? html`<span style="filter: brightness(1.4)"
+                          >${icon}</span
+                        >`
+                      : html`
+                          <svg
+                            class="progress-arc"
+                            viewBox="0 0 42 42"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            ${
+                              /* raw SVG as unsafeHTML workaround — inline via template */ ""
+                            }
+                          </svg>
+                          <span style="opacity:0.5;font-size:0.85rem">🔒</span>
+                        `
+                }
               </div>
               <div class="node-label ${labelClass}">
                 ${m.milestone.title.split(" ").slice(0, 2).join(" ")}
-                ${!m.claimed
-                  ? html`<br /><span style="font-size:0.58rem"
-                        >${m.progress}/${m.target}</span
-                      >`
-                  : ""}
+                ${
+                  !m.claimed
+                    ? html`<br /><span style="font-size:0.58rem"
+                          >${m.progress}/${m.target}</span
+                        >`
+                    : ""
+                }
               </div>
             </div>
           `;

@@ -34,6 +34,13 @@ export class WinCheckExecution implements Execution {
       return;
     }
     if (this.mg === null) throw new Error("Not initialized");
+    // A deterministic parallel victory path (for example Vault Breach) may
+    // have already resolved the game. Preserve that winner instead of letting
+    // the inherited territory/time check overwrite it on the next cadence.
+    if (this.mg.getWinner() !== null) {
+      this.active = false;
+      return;
+    }
 
     if (this.mg.config().gameConfig().gameMode === GameMode.FFA) {
       this.checkWinnerFFA();

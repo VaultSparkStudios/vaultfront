@@ -39,8 +39,7 @@ export class NarratorReporter implements Layer {
     if (!updates) return;
 
     const activities = updates[GameUpdateType.VaultFrontActivity] as
-      | VaultFrontActivityUpdate[]
-      | undefined;
+      VaultFrontActivityUpdate[] | undefined;
     if (!activities?.length) return;
 
     const now = Date.now();

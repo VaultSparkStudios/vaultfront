@@ -43,6 +43,8 @@ docs/CREATIVE_DIRECTION_RECORD.md
 # Generated Obelisk relying-party passport stubs are public-safe references only.
 # Do not commit until the production origin is registered and the integration is wired.
 obelisk-passport/
+src/ObeliskLogin.tsx
+src/obelisk-callback.ts
 
 # Private Studio OS rights ledger; preserve locally, never publish in this public repo.
 docs/RIGHTS_PROVENANCE.md

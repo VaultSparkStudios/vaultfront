@@ -52,6 +52,19 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 
 ## Follow-ups
 
+## Completed (2026-07-16 — Session 73 full arc)
+
+All 12 items from `docs/AUDIT_2026-07-16.json` shipped, followed by all 3 evidence-detected second-order innovation candidates. The arc added authenticated Alpha Gate evidence, signed replay enforcement, real private-lobby rematches, Vault Pressure, deterministic coaching, a remote-AI cost firewall, readiness truth, authoritative progression, CI/coverage/format/bundle ratchets, protocol recovery guards, a hardened public surface, and a zero-vulnerability dependency train.
+
+Verification: 107/107 files and 697/697 tests; 22/22 Playwright tests under the exact CI profile; production build/typecheck; lint; coverage, formatting, and bundle ratchets; `npm audit` zero; Studio supply-chain scan zero matches; sitemap 10/10; Canon conformance zero gaps; Studio doctor `overallPass: true` and `blockingFailing: 0`.
+
+- [done] [SIL] Reconcile registry/local project profile — local truth is now `game/public-unlaunched`; signed Ark correction cargo `01JTM66B6TEE83C483CEB936FA` requests registry `app → game` without weakening the launch posture.
+- [done] [SIL] Add recovery-provenance classification — deterministic classifier and protocol tests distinguish backup residue, propagation, and current-session artifacts.
+- [release-evidence] Run the authenticated Alpha Gate on staging with at least three distinct human sessions; automated/test evidence cannot satisfy it.
+- [release-evidence] Observe a real checkout/supporter event before changing the revenue signal from unverified.
+- [SIL] Replace the remaining Rollup circular-chunk warning and mixed JSON import-attribute warnings with a cycle-free lazy boundary while preserving per-chunk budgets.
+- [SIL] Execute the staging launch-evidence corridor: Brevo delivery, native Obelisk relying-party auth, strict live headers/Core Web Vitals, and multi-theme screenshot verification.
+
 ## Completed (2026-07-16 — Session 72 recovery closeout)
 
 Recovered and verified the interrupted post-S71 tree: retained the validated Studio protocol/Canon/Dependabot propagation, removed incompatible/unreferenced Obelisk helpers from deployable `src/`, untracked the local ignored passport cargo so quarantine is real, preserved the rights ledger locally while removing it from the public index, and proved the boundary with 94 files / 655 tests plus 10 server files / 30 tests and Studio doctor `blockingFailing: 0`.
@@ -72,8 +85,8 @@ All 3 items from `docs/AUDIT_2026-06-14_S71.md` shipped: `obelisk-passport-quara
 - [done] ⚡ process / truth · 20m · Document next alpha-gate operator action — **DONE S70**: task board synced append-only, startup brief regenerated, and `validate-task-ids` passed.
 - [done] ⚡ capital_efficiency / truth · 20m · Keep revenue warning honest — **DONE S70**: startup brief still reports revenue signal as blocked/unverified and broad `npm test` passed.
 - [done] ⚡ dev_health / automation · 20m · Production build regression gate — **DONE S70**: `npm run build-prod` passed after `/go` helper repair.
-- [human-blocked] 🔥 feedback_loop / launch · 1h · Manual rivalry/rematch alpha playtest — requires real tester/manual playtest evidence.
-- [human-blocked] ⚠ capital_efficiency / revenue · manual · Observe live checkout/supporter event — requires real checkout/supporter telemetry.
+- [release-evidence] 🔥 feedback_loop / launch · 1h · Manual rivalry/rematch alpha playtest — requires real tester/manual playtest evidence.
+- [release-evidence] ⚠ capital_efficiency / revenue · manual · Observe live checkout/supporter event — requires real checkout/supporter telemetry.
 
 ## Completed (2026-06-14 — Session 70 /audit + /implement pass)
 

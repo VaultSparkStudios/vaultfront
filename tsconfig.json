@@ -35,5 +35,10 @@
     "src/scripts",
     "vite.config.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "obelisk-passport/**",
+    "src/ObeliskLogin.tsx",
+    "src/obelisk-callback.ts"
+  ]
 }

@@ -17,7 +17,7 @@
  * then expose /api/replay/:id on Worker.
  */
 
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHash, createHmac, timingSafeEqual } from "crypto";
 
 export interface ReplayIntent {
   /** Serialized player intent (matches existing transport format) */
@@ -54,26 +54,85 @@ export interface ReplayManifest {
 // HMAC helpers — prevent tampered replays from faking achievements in tournaments
 // ---------------------------------------------------------------------------
 
-const REPLAY_SECRET =
-  process.env.REPLAY_SECRET ?? "dev-replay-secret-change-in-prod";
+function developmentReplayKey(): string {
+  // Deterministic local-only HMAC material. This is deliberately derived,
+  // non-secret, and never accepted as release evidence.
+  return createHash("sha256")
+    .update(["vaultfront", "development", "replay", "v1"].join(":"))
+    .digest("hex");
+}
+
+export interface ReplayIntegrityPosture {
+  status: "configured" | "development-only" | "missing";
+  canSignAndVerify: boolean;
+  evidence: string;
+}
+
+function isDevelopmentRuntime(): boolean {
+  return (
+    process.env.NODE_ENV === "test" ||
+    process.env.GAME_ENV?.toLowerCase() === "dev"
+  );
+}
+
+function replaySecret(): string | null {
+  const configured = process.env.REPLAY_SECRET?.trim();
+  if (configured) return configured;
+  return isDevelopmentRuntime() ? developmentReplayKey() : null;
+}
+
+export function getReplayIntegrityPosture(): ReplayIntegrityPosture {
+  if (process.env.REPLAY_SECRET?.trim()) {
+    return {
+      status: "configured",
+      canSignAndVerify: true,
+      evidence: "Replay HMAC key is configured for this process.",
+    };
+  }
+  if (isDevelopmentRuntime()) {
+    return {
+      status: "development-only",
+      canSignAndVerify: true,
+      evidence:
+        "Replay HMAC uses a development-only key; this posture is not release evidence.",
+    };
+  }
+  return {
+    status: "missing",
+    canSignAndVerify: false,
+    evidence:
+      "Replay HMAC key is missing; replay recording and consumption fail closed.",
+  };
+}
 
 function computeSignature(manifest: ReplayManifest): string {
+  const secret = replaySecret();
+  if (!secret) {
+    throw new Error("REPLAY_SECRET is required outside development and tests");
+  }
   const canonical = JSON.stringify({
     gameId: manifest.gameId,
     mapName: manifest.mapName,
     seed: manifest.seed,
+    configSnapshot: manifest.configSnapshot,
     startedAt: manifest.startedAt,
     endedAt: manifest.endedAt ?? null,
     durationTurns: manifest.durationTurns,
+    intents: manifest.intents.map((intent) => ({
+      serialized: Array.from(intent.serialized),
+      turn: intent.turn,
+      playerSmallID: intent.playerSmallID,
+    })),
+    turns: manifest.turns ?? [],
   });
-  return createHmac("sha256", REPLAY_SECRET).update(canonical).digest("hex");
+  return createHmac("sha256", secret).update(canonical).digest("hex");
 }
 
 /** Returns true when the manifest's signature matches the computed HMAC. */
 export function verifyReplaySignature(manifest: ReplayManifest): boolean {
   if (!manifest.signature) return false;
-  const expected = computeSignature(manifest);
   try {
+    const expected = computeSignature(manifest);
     return timingSafeEqual(
       Buffer.from(manifest.signature, "hex"),
       Buffer.from(expected, "hex"),
@@ -90,7 +149,7 @@ export interface ReplayBackend {
 }
 
 /** In-memory backend — suitable for development and single-instance staging */
-class InMemoryReplayBackend implements ReplayBackend {
+export class InMemoryReplayBackend implements ReplayBackend {
   private store = new Map<string, ReplayManifest>();
 
   async save(gameId: string, manifest: ReplayManifest): Promise<void> {
@@ -190,14 +249,28 @@ export class ReplayStore {
     await this.backend.save(gameId, recording);
   }
 
+  /** Load only manifests that pass complete HMAC verification. */
   async getReplay(gameId: string): Promise<ReplayManifest | null> {
-    return this.backend.load(gameId);
+    const manifest = await this.backend.load(gameId);
+    if (!manifest || !verifyReplaySignature(manifest)) return null;
+    return manifest;
   }
 
   async listReplays(
     limit = 20,
   ): Promise<{ gameId: string; startedAt: number }[]> {
-    return this.backend.list(limit);
+    const candidates = await this.backend.list(Math.max(limit, 1) * 2);
+    const verified = await Promise.all(
+      candidates.map(async (candidate) =>
+        (await this.getReplay(candidate.gameId)) ? candidate : null,
+      ),
+    );
+    return verified
+      .filter(
+        (candidate): candidate is { gameId: string; startedAt: number } =>
+          candidate !== null,
+      )
+      .slice(0, limit);
   }
 }
 

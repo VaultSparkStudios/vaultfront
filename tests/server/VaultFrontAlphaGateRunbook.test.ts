@@ -4,6 +4,7 @@ import {
   buildVaultFrontPlaytestPulseSummary,
   recordVaultFrontPlaytestPulse,
   resetVaultFrontPlaytestPulseForTests,
+  type VaultFrontPlaytestPulseEvent,
 } from "../../src/server/VaultFrontPlaytestPulse";
 import { buildVaultFrontReadiness } from "../../src/server/VaultFrontReadiness";
 
@@ -13,45 +14,53 @@ function seedReadyPulse(): ReturnType<
   typeof buildVaultFrontPlaytestPulseSummary
 > {
   resetVaultFrontPlaytestPulseForTests();
-  recordVaultFrontPlaytestPulse({
-    surface: "tutorial",
-    event: "shown",
-    value: 4,
-    at: now,
-  });
-  recordVaultFrontPlaytestPulse({
-    surface: "tutorial",
-    event: "advance",
-    value: 3,
-    at: now,
-  });
-  recordVaultFrontPlaytestPulse({
-    surface: "tutorial",
-    event: "complete",
-    value: 2,
-    at: now,
-  });
-  recordVaultFrontPlaytestPulse({
-    surface: "match",
-    event: "feedback",
-    value: 2,
-    at: now,
-  });
-  recordVaultFrontPlaytestPulse({
-    surface: "retention",
-    event: "rival_challenge_shown",
-    value: 4,
-    at: now,
-  });
-  recordVaultFrontPlaytestPulse({
-    surface: "retention",
-    event: "rival_requeue_clicked",
-    value: 1,
-    at: now,
-  });
+  for (let actor = 1; actor <= 3; actor += 1) {
+    const fixtureId = String(actor);
+    recordHumanEvidence(
+      { surface: "tutorial", event: "shown", at: now },
+      fixtureId,
+    );
+    recordHumanEvidence(
+      { surface: "tutorial", event: "advance", at: now },
+      fixtureId,
+    );
+    recordHumanEvidence(
+      { surface: "tutorial", event: "complete", at: now },
+      fixtureId,
+    );
+    recordHumanEvidence(
+      { surface: "match", event: "feedback", at: now },
+      fixtureId,
+    );
+    recordHumanEvidence(
+      { surface: "retention", event: "rival_challenge_shown", at: now },
+      fixtureId,
+    );
+    recordHumanEvidence(
+      { surface: "retention", event: "rival_requeue_clicked", at: now },
+      fixtureId,
+    );
+  }
   return buildVaultFrontPlaytestPulseSummary(now + 60_000);
 }
 
+let humanEventSequence = 0;
+function recordHumanEvidence(
+  input: Omit<
+    VaultFrontPlaytestPulseEvent,
+    "source" | "actorKey" | "evidenceSessionId" | "eventId"
+  >,
+  fixtureId = "default",
+) {
+  return recordVaultFrontPlaytestPulse({
+    ...input,
+    value: 1,
+    source: "human",
+    actorKey: `human-actor-fixture-${fixtureId}`,
+    evidenceSessionId: `human-session-fixture-${fixtureId}`,
+    eventId: `human-event-fixture-${fixtureId}-${humanEventSequence++}`,
+  });
+}
 describe("buildVaultFrontAlphaGateRunbook", () => {
   it("turns an empty pulse into an operator checklist without clearing warnings", () => {
     resetVaultFrontPlaytestPulseForTests();
@@ -73,10 +82,9 @@ describe("buildVaultFrontAlphaGateRunbook", () => {
 
   it("surfaces incomplete alpha evidence as concrete proof fields", () => {
     resetVaultFrontPlaytestPulseForTests();
-    recordVaultFrontPlaytestPulse({
+    recordHumanEvidence({
       surface: "retention",
       event: "rival_challenge_shown",
-      value: 4,
       at: now,
     });
     const pulse = buildVaultFrontPlaytestPulseSummary(now + 60_000);
@@ -89,7 +97,7 @@ describe("buildVaultFrontAlphaGateRunbook", () => {
 
     expect(runbook.status).toBe("warming");
     expect(runbook.evidenceFields).toContain(
-      "failedChecks=tutorial,feedback,rivalAction",
+      "failedChecks=sampleSize,tutorial,feedback,rivalAction",
     );
     expect(runbook.checklist.some((item) => item.includes("TODO"))).toBe(true);
   });

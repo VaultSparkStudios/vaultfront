@@ -314,11 +314,9 @@ export class VaultFrontTutorial extends LitElement {
             ${STEPS.map(
               (_, i) => html`
                 <div
-                  class="progress-dot ${i < this.step
-                    ? "done"
-                    : i === this.step
-                      ? "active"
-                      : ""}"
+                  class="progress-dot ${
+                    i < this.step ? "done" : i === this.step ? "active" : ""
+                  }"
                 ></div>
               `,
             )}

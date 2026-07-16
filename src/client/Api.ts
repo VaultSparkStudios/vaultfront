@@ -444,7 +444,7 @@ const VaultFrontFunnelSummarySchema = z.object({
 const VaultFrontPlaytestPulseEventSchema = z.object({
   surface: z.enum(["tutorial", "match", "tournament", "retention"]),
   event: z.string().min(1).max(64),
-  value: z.number().int().min(1).optional(),
+  value: z.literal(1).optional(),
 });
 
 const VaultFrontPlaytestPulseSummarySchema = z.object({
@@ -478,8 +478,25 @@ const VaultFrontPlaytestPulseSummarySchema = z.object({
     ageMinutes: z.number().nullable(),
   }),
   recent: z.array(
-    VaultFrontPlaytestPulseEventSchema.extend({ at: z.number() }),
+    VaultFrontPlaytestPulseEventSchema.extend({
+      at: z.number(),
+      evidenceSessionId: z.string(),
+      eventId: z.string(),
+      source: z.enum(["human", "agent", "test", "system"]),
+    }),
   ),
+  evidence: z.object({
+    acceptedHumanEvents: z.number(),
+    uniqueHumanSessions: z.number(),
+    uniqueHumanActors: z.number(),
+    duplicateEvents: z.number(),
+    rejectedEvents: z.number(),
+    excludedBySource: z.object({
+      agent: z.number(),
+      test: z.number(),
+      system: z.number(),
+    }),
+  }),
   insights: z.array(z.string()),
   actionInsights: z.array(z.string()),
   operatorNext: z.object({
@@ -491,6 +508,7 @@ const VaultFrontPlaytestPulseSummarySchema = z.object({
     status: z.enum(["not-started", "warming", "blocked", "ready"]),
     checks: z.object({
       fresh: z.boolean(),
+      sampleSize: z.boolean(),
       tutorial: z.boolean(),
       feedback: z.boolean(),
       rivalExposure: z.boolean(),
@@ -1010,20 +1028,48 @@ export async function fetchVaultFrontFunnelSummary(
   }
 }
 
+const VAULTFRONT_EVIDENCE_SESSION_KEY = "vaultfront:evidence-session:v1";
+
+function evidenceIdentifier(prefix: string): string {
+  const uuid = globalThis.crypto?.randomUUID?.();
+  return `${prefix}:${uuid ?? `${Date.now()}:${Math.random().toString(36).slice(2)}`}`;
+}
+
+function evidenceSessionId(): string {
+  try {
+    const existing = sessionStorage.getItem(VAULTFRONT_EVIDENCE_SESSION_KEY);
+    if (existing) return existing;
+    const created = evidenceIdentifier("session");
+    sessionStorage.setItem(VAULTFRONT_EVIDENCE_SESSION_KEY, created);
+    return created;
+  } catch {
+    return evidenceIdentifier("session");
+  }
+}
+
 export async function recordVaultFrontPlaytestPulse(
   input: VaultFrontPlaytestPulseEvent,
 ): Promise<boolean> {
   const parsed = VaultFrontPlaytestPulseEventSchema.safeParse(input);
-  if (!parsed.success) {
-    return false;
-  }
+  if (!parsed.success) return false;
   try {
+    const authHeader = await getAuthHeader();
+    const fallbackToken = authHeader ? null : await getPlayToken();
     const response = await fetch(
       `${getApiBase()}/api/vaultfront/playtest-pulse`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(parsed.data),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader || `Bearer ${fallbackToken}`,
+        },
+        body: JSON.stringify({
+          ...parsed.data,
+          value: 1,
+          evidenceSessionId: evidenceSessionId(),
+          eventId: evidenceIdentifier("event"),
+          source: "human",
+        }),
       },
     );
     return response.ok;
@@ -1031,7 +1077,6 @@ export async function recordVaultFrontPlaytestPulse(
     return false;
   }
 }
-
 export async function fetchVaultFrontPlaytestPulseSummary(): Promise<
   VaultFrontPlaytestPulseSummary | false
 > {
@@ -1106,27 +1151,47 @@ export async function shareMatchInvite(gameId: string): Promise<void> {
 
 export interface RematchStatus {
   gameId: string;
+  lobbyId: string;
   code: string;
-  playerIds: string[];
+  mapName: string;
+  participantCount: number;
   expiresAt: number;
   joinUrl: string;
+  status: "ready";
 }
+
+const RematchStatusSchema = z.object({
+  gameId: z.string(),
+  lobbyId: z.string(),
+  code: z.string(),
+  mapName: z.string(),
+  participantCount: z.number().int().positive(),
+  expiresAt: z.number(),
+  joinUrl: z.string().url(),
+  status: z.literal("ready"),
+});
 
 export async function createRematch(
   gameId: string,
-  playerId: string,
+  _legacyPlayerId?: string,
 ): Promise<RematchStatus | false> {
   try {
+    const authHeader = await getAuthHeader();
+    const fallbackToken = authHeader ? null : await getPlayToken();
     const res = await fetch(
       `${getApiBase()}/api/rematch/${encodeURIComponent(gameId)}`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ playerId }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader || `Bearer ${fallbackToken}`,
+        },
+        body: JSON.stringify({}),
       },
     );
     if (!res.ok) return false;
-    return (await res.json()) as RematchStatus;
+    const parsed = RematchStatusSchema.safeParse(await res.json());
+    return parsed.success ? parsed.data : false;
   } catch {
     return false;
   }
@@ -1140,12 +1205,12 @@ export async function getRematchStatus(
       `${getApiBase()}/api/rematch/status/${encodeURIComponent(gameId)}`,
     );
     if (!res.ok) return false;
-    return (await res.json()) as RematchStatus;
+    const parsed = RematchStatusSchema.safeParse(await res.json());
+    return parsed.success ? parsed.data : false;
   } catch {
     return false;
   }
 }
-
 // ── Replay highlights ─────────────────────────────────────────────────────
 
 export interface ReplayHighlight {
@@ -1406,10 +1471,7 @@ export async function fetchMicroHint(params: {
 // ── Session 5 API functions ────────────────────────────────────────────────
 
 export type PlayStyle =
-  | "Iron Fist"
-  | "Convoy Lord"
-  | "Shadow Broker"
-  | "Balanced";
+  "Iron Fist" | "Convoy Lord" | "Shadow Broker" | "Balanced";
 
 export interface AchievementProgress {
   id: string;

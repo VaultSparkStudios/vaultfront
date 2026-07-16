@@ -113,62 +113,69 @@ export class ToggleInputCard extends LitElement {
           class="w-full h-full p-3 flex flex-col items-center justify-between gap-2 focus:outline-none"
         >
           <div
-            class="w-5 h-5 rounded border flex items-center justify-center transition-colors mt-1 ${this
-              .checked
-              ? "bg-blue-500 border-blue-500"
-              : "border-white/20 bg-white/5"}"
+            class="w-5 h-5 rounded border flex items-center justify-center transition-colors mt-1 ${
+              this.checked
+                ? "bg-blue-500 border-blue-500"
+                : "border-white/20 bg-white/5"
+            }"
           >
-            ${this.checked
-              ? html`<svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-3 w-3 text-white"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clip-rule="evenodd"
-                  />
-                </svg>`
-              : ""}
+            ${
+              this.checked
+                ? html`<svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-3 w-3 text-white"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>`
+                : ""
+            }
           </div>
 
-          ${this.checked
-            ? html`<div class="h-[30px] my-1"></div>`
-            : html`<div class="h-[2px] w-4 rounded my-3 bg-white/10"></div>`}
+          ${
+            this.checked
+              ? html`<div class="h-[30px] my-1"></div>`
+              : html`<div class="h-[2px] w-4 rounded my-3 bg-white/10"></div>`
+          }
 
           <span
-            class="${CARD_LABEL_CLASS} text-center ${this.checked
-              ? "text-white"
-              : "text-white/60"}"
+            class="${CARD_LABEL_CLASS} text-center ${
+              this.checked ? "text-white" : "text-white/60"
+            }"
           >
             ${translateText(this.labelKey)}
           </span>
         </button>
 
-        ${this.checked
-          ? html`
-              <div
-                class="absolute left-3 right-3 top-1/2 -translate-y-1/2 z-10"
-              >
-                <input
-                  type=${this.inputType}
-                  id=${this.inputId ?? nothing}
-                  min=${this.inputMin ?? nothing}
-                  max=${this.inputMax ?? nothing}
-                  step=${this.inputStep ?? nothing}
-                  .value=${String(this.inputValue ?? "")}
-                  class=${INPUT_CLASS}
-                  aria-label=${this.inputAriaLabel ?? nothing}
-                  placeholder=${this.inputPlaceholder ?? nothing}
-                  @input=${this.onInput}
-                  @change=${this.onChange}
-                  @keydown=${this.onKeyDown}
-                />
-              </div>
-            `
-          : nothing}
+        ${
+          this.checked
+            ? html`
+                <div
+                  class="absolute left-3 right-3 top-1/2 -translate-y-1/2 z-10"
+                >
+                  <input
+                    type=${this.inputType}
+                    id=${this.inputId ?? nothing}
+                    min=${this.inputMin ?? nothing}
+                    max=${this.inputMax ?? nothing}
+                    step=${this.inputStep ?? nothing}
+                    .value=${String(this.inputValue ?? "")}
+                    class=${INPUT_CLASS}
+                    aria-label=${this.inputAriaLabel ?? nothing}
+                    placeholder=${this.inputPlaceholder ?? nothing}
+                    @input=${this.onInput}
+                    @change=${this.onChange}
+                    @keydown=${this.onKeyDown}
+                  />
+                </div>
+              `
+            : nothing
+        }
       </div>
     `;
   }
