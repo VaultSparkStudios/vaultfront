@@ -4,6 +4,16 @@ Append-only. Each session appends one entry. Never edit prior entries.
 
 ---
 
+## 2026-07-16 — Session 72 interrupted-state recovery closeout
+
+- Goal: Reconstruct the cut-off post-S71 work, verify every claim against live gates, finish the missing closeout boundary, and checkpoint it separately before a new full arc.
+- What changed: Preserved validated Studio protocol/Canon/Dependabot propagation; removed incompatible/unreferenced Obelisk helpers from deployable `src/`; untracked locally retained passport cargo behind `.gitignore`; preserved the rights ledger locally while removing it from the public index; refreshed public-safe handoff, state, truth, status, SIL, audit, and closeout artifacts.
+- Files or systems touched: Studio helper scripts (including restored local staged-secret scanner), Canon adoption, Dependabot workflows, Obelisk source hygiene, startup/closeout surfaces, and public-safe context files.
+- Risks created or removed: Removed a production TypeScript build blocker, false quarantine state, duplicate-source ambiguity, inherited pre-commit lint blockers, and phantom-green recovery risk. Preserved the honest boundary that Obelisk is not route-wired or production-ready and that live playtest/revenue evidence remains absent.
+- Recommended next move: Begin the fresh full arc, reconcile registry/local profile drift, then implement the highest verified release/game-loop findings.
+
+---
+
 ## 2026-06-14 — Session 71 protocol helper guard pass
 
 - Goal: Continue `/start → /audit → /implement → /closeout` with a fresh audit around the current Studio protocol helper refresh.

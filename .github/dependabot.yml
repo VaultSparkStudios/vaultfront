@@ -1,0 +1,39 @@
+# VaultSpark Studios — canonical Dependabot config (CANON-043).
+# Source of truth: vaultspark-studio-ops/docs/templates/project-system/.github/dependabot.yml
+# Propagated studio-wide via Ark canon-update + PENDING_PROPAGATION (lock-aware).
+#
+# GROUPING is the load-bearing change: ungrouped, Dependabot opens one PR per
+# advisory (≈30/repo) which pile up unmerged on the default branch — that is
+# exactly the "vulnerabilities on every repo" the founder sees. Groups collapse
+# those into a handful of mergeable PRs; the auto-merge workflow then clears
+# patch/minor + security updates after checks. Majors stay human-gated.
+#
+# Groups apply to BOTH version updates and security updates.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels: ["dependencies"]
+    groups:
+      # Dev-toolchain churn (vite/vitest/esbuild/@babel/postcss/eslint …) — the
+      # bulk of the alert noise. One grouped PR, auto-merged on patch/minor.
+      dev-dependencies:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+      # Production minor/patch — grouped; majors break out individually for review.
+      production-minor-patch:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "github-actions"]
+    groups:
+      github-actions:
+        patterns: ["*"]

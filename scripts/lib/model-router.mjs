@@ -6,7 +6,7 @@
  * studio-wide model upgrades in one place.
  *
  * Rules:
- *   COMPLEX  → claude-opus-4-7    (strategy, deep analysis, extended thinking)
+ *   COMPLEX  → claude-opus-4-8    (strategy, deep analysis, extended thinking)
  *   MODERATE → claude-sonnet-4-6  (implementation, code, Q&A, most work)
  *   SIMPLE   → claude-haiku-4-5-20251001  (validations, lookups, quick checks)
  *
@@ -54,7 +54,7 @@ const LEDGER_DEFAULT = path.resolve(
 );
 
 export const MODELS = {
-  opus: "claude-opus-4-7",
+  opus: "claude-opus-4-8",
   sonnet: "claude-sonnet-4-6",
   haiku: "claude-haiku-4-5-20251001",
 };
@@ -78,7 +78,7 @@ export function contextWindowForAgent(agent) {
   // Env override: CLAUDE_CONTEXT_LIMIT=1000000 for Max/extended-context plans
   if (process.env.CLAUDE_CONTEXT_LIMIT)
     return parseInt(process.env.CLAUDE_CONTEXT_LIMIT, 10);
-  // Studio Ops founder runs Opus 4.7 (1M context) exclusively across Claude Code sessions.
+  // Studio Ops founder runs Opus 4.8 (1M context) exclusively across Claude Code sessions.
   // Set CLAUDE_CONTEXT_LIMIT=200000 to pin to the legacy 200K window.
   if (agent === "claude-code") return CONTEXT_WINDOWS["opus-1m"];
   if (agent === "codex") return CONTEXT_WINDOWS["codex-1m"];
@@ -513,6 +513,15 @@ export function buildMcpServers(servers) {
  * @param {boolean|object} [opts.compaction]   - true → defaults, or buildCompactionConfig() result (G5)
  * @param {boolean|object} [opts.contextEditing] - true → defaults, or buildContextEditingConfig() result (G9)
  * @param {Array} [opts.mcpServers] - array of {name,url,vaultId|authToken,toolAllowlist} (G2)
+ * @param {string} [opts.cachePrefix] - S178: stable canon/system prefix to prompt-cache.
+ *   When set, it is prepended to `system` as a cache_control'd text block (the stable
+ *   prefix is cached; any string `system` becomes a non-cached per-call tail). Use for
+ *   the byte-identical canon/rubric preamble shared across many calls (~90% input savings
+ *   on repeat). `cachePrefixTtl` ('5m'|'1h', default '1h') picks the cache window.
+ * @param {'5m'|'1h'} [opts.cachePrefixTtl='1h']
+ * @param {boolean|object} [opts.memory=false] - S178: enable the native memory tool
+ *   (memory_20250818, ships under context-management beta). true → default tool def;
+ *   object → reserved for future per-tool config. No-op for callers that don't set it.
  * @returns {Promise<object>} parsed API response
  */
 export function callClaude(
@@ -535,6 +544,8 @@ export function callClaude(
     codeExecution = false,
     files = false,
     turnClassify = true,
+    cachePrefix = null,
+    cachePrefixTtl = "1h",
   },
   httpsModule,
 ) {
@@ -558,7 +569,7 @@ export function callClaude(
         routedModel = "claude-haiku-4-5-20251001";
         classifyTag = `routing:turn-classifier-v1:${verdict.reason}`;
       } else if (verdict.model === "opus" && /haiku|sonnet/i.test(model)) {
-        routedModel = "claude-opus-4-7";
+        routedModel = MODELS.opus;
         classifyTag = `routing:turn-classifier-v1:${verdict.reason}`;
       }
     } catch {
@@ -566,7 +577,28 @@ export function callClaude(
     }
   }
   const body = { model: routedModel, max_tokens: maxTokens, messages };
-  if (system) body.system = system;
+  // S178 — prompt-caching on a stable canon/system prefix. The prefix is emitted
+  // as a cache_control'd block (cached across calls); a string `system` is kept as
+  // a non-cached per-call tail. An array `system` is preserved as-is after the prefix.
+  if (cachePrefix) {
+    const prefixBlock =
+      cachePrefixTtl === "1h"
+        ? withCache({ type: "text", text: cachePrefix }, { ttl: "1h" })
+        : withCache(
+            { type: "text", text: cachePrefix },
+            { ttl: cachePrefixTtl || "5m" },
+          );
+    const tail = system
+      ? typeof system === "string"
+        ? [{ type: "text", text: system }]
+        : Array.isArray(system)
+          ? system
+          : [system]
+      : [];
+    body.system = [prefixBlock, ...tail];
+  } else if (system) {
+    body.system = system;
+  }
   if (thinking) body.thinking = thinking;
 
   // G5/G9 — merge context_management edits (compaction + clear_tool_uses + clear_thinking)
@@ -606,6 +638,8 @@ export function callClaude(
     Array.isArray(blocks) && blocks.some((b) => b?.cache_control?.ttl === "1h");
   const autoLong =
     longCache ||
+    (!!cachePrefix && cachePrefixTtl === "1h") ||
+    detectLong(body.system) ||
     detectLong(system) ||
     detectLong(messages?.flatMap?.((m) => m?.content || []) || []);
 

@@ -6,6 +6,24 @@ Public-safe summary:
 - internal operational records were sanitized for public-repo safety on 2026-04-03
 - detailed internal state now lives in the private Studio OS / ops repository
 
+## 2026-07-16 — Session 72 Interrupted-State Recovery Complete
+
+Recovered the post-Session-71 dirty tree and restored a clean, evidence-backed session boundary before beginning new product work.
+
+**Recovered work:**
+
+- Preserved the validated Studio protocol propagation set, including Windows child-process hiding, shared doctor/blocker/context policies, Canon adoption tracking, and Dependabot automation.
+- Removed all unreferenced generated Obelisk helpers from deployable `src/`; the React `.tsx` stub was incompatible with this Lit project and broke TypeScript production builds.
+- Untracked the generated `obelisk-passport/` reference cargo while retaining it locally behind `.gitignore`, making the existing quarantine claim real.
+- Refreshed public-safe startup, handoff, status, truth, and closeout surfaces for the recovered Session 72 boundary.
+- Restored the canonical local `scripts/scan-secrets.mjs` helper so staged security scans target VaultFront rather than the control-plane repository.
+- Repaired the inherited `lint-staged` blockers in Obelisk TTL fallback, ANSI stripping, and CommonJS script lint configuration; focused ESLint now passes without bypass.
+- Preserved `docs/RIGHTS_PROVENANCE.md` locally but untracked/ignored it to clear the public-repo private-document sanitization gate; the root AGPL-3.0 `LICENSE` remains tracked.
+
+**Verification:** all changed/untracked JSON parses; `~/.claude.json` and settings pass the Studio guard with zero recent corruption; 53 changed/untracked scripts pass `node --check`; broad `npm test` passes 94 files / 655 tests plus the dedicated 10 server files / 30 tests; Studio doctor reports `overallPass: true` and `blockingFailing: 0`. The first staging build exposed the incompatible React stub; after quarantine repair, `npm run build-prod` passes with TypeScript clean and only the known non-blocking Vite warnings.
+
+**Honesty boundary:** this recovery did not claim a live rivalry/rematch playtest, observed revenue, route-wired Obelisk login, or production relying-party readiness.
+
 ## 2026-06-14 — Session 71 Protocol Helper Guard Pass Complete
 
 Shipped all 3 items from `docs/AUDIT_2026-06-14_S71.md`.

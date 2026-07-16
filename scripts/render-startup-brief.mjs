@@ -13,19 +13,22 @@
  *   node scripts/ops.mjs startup-brief
  */
 
-import { spawnSync } from "child_process";
 import fs from "fs";
 import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
+import { loadProvenanceMap } from "./classify-warning-provenance.mjs";
 import {
   renderLastCompleted,
   renderTestItNow,
   renderTitleHeader,
 } from "./lib/brief-blocks.mjs";
 import { loadPortfolioTaskBoards } from "./lib/cross-repo-tasks.mjs";
+import { isWarning } from "./lib/doctor-predicates.mjs";
 import { loadIgnisInsight } from "./lib/ignis-insight.mjs";
 import { contextWindowForAgent } from "./lib/model-router.mjs";
+import { spawnSync } from "./lib/safe-spawn.mjs";
+import { BLOCKED_STATUSES_CORE } from "./lib/shared-policies.mjs";
 import { forecastNext, parseSilHistory } from "./lib/sil-forecaster.mjs";
 import { parseUnifiedItems } from "./lib/task-board.mjs";
 import { sparkline as _sparkline } from "./lib/visual-blocks.mjs";
@@ -55,12 +58,26 @@ if (process.argv.includes("--v5") || process.env.BRIEF_V5 === "1") {
 const W = 62; // inner box width (content between ║  and  ║)
 const BW = W + 4; // total line width including ║  prefix/suffix
 
-// ── Preflight: doctor --fix (S120 audit #2 — clear stable warns before render) ─
+// ── Preflight: doctor --fix --update-json (S120 audit #2 — clear stable warns) ─
+// S173 [audit #1 · CANON-031 observability honesty]: the preflight already runs
+// a full doctor pass, but historically WITHOUT --update-json, so the brief read
+// `status.doctorScore` as last written at the PRIOR session's closeout. When a
+// probe self-healed between sessions (e.g. propagation-adoption fail→warn) the
+// brief kept surfacing a PHANTOM ⛔ "N failing" the live doctor no longer agreed
+// with. Adding --update-json persists the freshly-computed score (spawnSync is
+// synchronous and completes before loadAllFiles reads PROJECT_STATUS.json), so
+// the SIGNALS box always reflects the doctor run the brief itself just triggered.
 if (!process.env.STUDIO_BRIEF_NO_DOCTOR_FIX) {
   try {
     spawnSync(
       process.execPath,
-      [path.join(__dirname, "ops.mjs"), "doctor", "--fix", "--quiet"],
+      [
+        path.join(__dirname, "ops.mjs"),
+        "doctor",
+        "--fix",
+        "--update-json",
+        "--quiet",
+      ],
       {
         stdio: "ignore",
         timeout: 30000,
@@ -478,6 +495,7 @@ if (!silTotal && status.silScore) {
   silTotal = status.silScore;
   silMax = status.silMax || 1000;
 }
+const silStreak = status.silStreak ?? 0; // S202: consecutive max-score sessions
 function parseScore(label) {
   // Tolerate suffixes like "Engagement (infra)" — match label followed by optional
   // whitespace + parenthesized note before the column separator.
@@ -626,12 +644,7 @@ const unifiedItems = parseUnifiedItems(taskBoard);
 const openNow = unifiedItems.filter((item) => item.status === "unblocked");
 const openNext = openNow.slice(3);
 const openBlocked = unifiedItems.filter((item) =>
-  [
-    "human-blocked",
-    "cross-repo-locked",
-    "externally-blocked",
-    "blocked-on-hub",
-  ].includes(item.status),
+  BLOCKED_STATUSES_CORE.includes(item.status),
 );
 
 function taskLabel(item, maxLen = 54) {
@@ -879,6 +892,32 @@ try {
   /* keep defaults */
 }
 
+// ── Cost anomaly signal — SHARED evaluator (S181 [audit #1]) ─────────────────
+// Previously an inline rolling-window check on NOTIONAL list-price (entryCost),
+// which double-counted flat-rate Max-Plan interactive tokens as metered API spend
+// → a phantom ⛔ "$916 4.4× spike". It also diverged from check-cost-anomaly.mjs
+// (the S153 two-implementations class). Now both surfaces call ONE evaluator that
+// runs the alarm on REAL metered cost and reports notional separately.
+let sigCost = "✓",
+  costDetail = "no ledger data";
+try {
+  const { readEntries, evaluateCostAnomaly } = await import(
+    "./cache-ledger-rollup.mjs"
+  );
+  const ledgerPath = path.join(root, "docs", "cache-ledger.ndjson");
+  const ledEntries = readEntries(ledgerPath);
+  if (ledEntries.length > 0) {
+    const v = evaluateCostAnomaly(ledEntries);
+    sigCost = v.sig;
+    const realPart = `real $${v.realMetered7d.toFixed(2)}/7d`;
+    costDetail = v.notionalNote
+      ? `${realPart} · ${v.notionalNote}`
+      : `${realPart} · ${v.reasons[0] || "normal"}`;
+  }
+} catch {
+  /* best-effort */
+}
+
 // ── Doctor score ─────────────────────────────────────────────────────────────
 const doctorScore = status.doctorScore ?? null;
 const sigDoctor = !doctorScore
@@ -888,9 +927,45 @@ const sigDoctor = !doctorScore
       ? "⚠"
       : "✓"
     : "⛔";
-const doctorDetail = doctorScore
-  ? `${doctorScore.passing}/${doctorScore.total} (${doctorScore.score}%)  ·  ${doctorScore.date}${doctorScore.failing > 0 ? `  ·  ${doctorScore.failing} failing` : doctorScore.warning > 0 ? `  ·  ${doctorScore.warning} warning` : "  ✓"}`
-  : "not yet tracked — run: node scripts/ops.mjs doctor --update-json";
+// S171 [audit #4] — aggregate-honesty: a bare "9 warning" reads as 9 studio-ops
+// problems. Append the ownership split (self vs sibling-rollout) so the founder
+// sees that ~all of them are portfolio-rollout trackers studio-ops surfaces but
+// does not own. Reuses the warning-provenance classifier (no recompute) and
+// degrades gracefully to the bare count if checks/map are unavailable.
+// Compact ownership split (box inner width is 62; date is dropped when warnings
+// exist so the split fits — ownership is the load-bearing signal, not the date).
+let ownershipSplit = "";
+try {
+  if (doctorScore?.checks && doctorScore.warning > 0) {
+    // Classify exactly the set the doctor TALLIES as warnings (the canonical
+    // isWarning predicate — shared with run-doctor.mjs via doctor-predicates.mjs,
+    // S172 [audit #4]) so the split always sums to the displayed count. (The
+    // provenance classifier walks the BROADER isNonGreen set on purpose — naming
+    // both predicates is what kills the silent divergence the old inline copies
+    // carried.)
+    const map = loadProvenanceMap();
+    const byOwner = { self: 0, sibling: 0, chronic: 0 };
+    for (const c of doctorScore.checks) {
+      if (!isWarning(c)) continue;
+      const o = map[c.id]?.owner || "self";
+      byOwner[o] = (byOwner[o] || 0) + 1;
+    }
+    const parts = [];
+    if (byOwner.self) parts.push(`${byOwner.self} self`);
+    if (byOwner.sibling) parts.push(`${byOwner.sibling} sib`);
+    if (byOwner.chronic) parts.push(`${byOwner.chronic} chronic`);
+    if (parts.length) ownershipSplit = `: ${parts.join("·")}`;
+  }
+} catch {
+  /* split is advisory */
+}
+const doctorDetail = !doctorScore
+  ? "not yet tracked — run: node scripts/ops.mjs doctor --update-json"
+  : doctorScore.failing > 0
+    ? `${doctorScore.passing}/${doctorScore.total} (${doctorScore.score}%)  ·  ${doctorScore.failing} failing`
+    : doctorScore.warning > 0
+      ? `${doctorScore.passing}/${doctorScore.total} (${doctorScore.score}%)  ·  ${doctorScore.warning} warn${ownershipSplit}`
+      : `${doctorScore.passing}/${doctorScore.total} (${doctorScore.score}%)  ·  ${doctorScore.date}  ✓`;
 
 // ── Entropy ───────────────────────────────────────────────────────────────────
 const entropy = status.entropyScore ?? null;
@@ -953,6 +1028,11 @@ const runwayNum = runwayNumMatch
       ? 1
       : 5;
 // G1 S121 — prefer fresh .cache/test-count.json (from refresh-test-count.mjs) over PROJECT_STATUS values.
+// S181 [audit #2] — freshness guard: the cache silently went stale (179 files cached
+// while the live suite had 225), so the brief reported a confident-but-wrong count.
+// Flag the count stale when the cache is >24h old OR predates the newest test file
+// — a stale count is surfaced as such, never as fresh truth (CANON-031).
+let testsStale = false;
 try {
   const tcPath = path.join(root, ".cache", "test-count.json");
   if (fs.existsSync(tcPath)) {
@@ -961,11 +1041,40 @@ try {
       status.testsTotal = tc.total;
       status.testsPassing = tc.passed;
       if (tc.generatedAt) status.testsLastRun = tc.generatedAt.slice(0, 10);
+      const cacheMs = fs.statSync(tcPath).mtimeMs;
+      const ageH = (Date.now() - cacheMs) / 3.6e6;
+      let newestTestMs = 0;
+      try {
+        const td = path.join(root, "scripts", "test");
+        for (const f of fs.readdirSync(td)) {
+          if (!/\.(mjs|ts)$/.test(f)) continue;
+          const m = fs.statSync(path.join(td, f)).mtimeMs;
+          if (m > newestTestMs) newestTestMs = m;
+        }
+      } catch {
+        /* no test dir */
+      }
+      testsStale = ageH > 24 || (newestTestMs > 0 && newestTestMs > cacheMs);
     }
   }
 } catch {
   /* non-fatal — fall through to PROJECT_STATUS values */
 }
+function listSignalCount(value) {
+  return Array.isArray(value)
+    ? value.length
+    : typeof value === "number"
+      ? value
+      : 0;
+}
+
+function compactFileList(files, max = 2) {
+  const list = Array.isArray(files) ? files : [];
+  const names = list.slice(0, max).map((f) => path.basename(String(f)));
+  const extra = Math.max(0, list.length - names.length);
+  return names.join(", ") + (extra ? ` +${extra}` : "");
+}
+
 // Prefer explicit pass/total from run-tests; fall back to testsTotal only; then exempt; else warn.
 const testsExempt =
   !status.testsTotal &&
@@ -979,12 +1088,26 @@ if (
   typeof status.testsTotal === "number" &&
   status.testsTotal > 0
 ) {
+  const deferredCount = listSignalCount(status.testsDeferred);
+  const envBlockedCount = listSignalCount(status.testsEnvBlocked);
   const allPass = status.testsPassing === status.testsTotal;
   const mostlyPass = status.testsPassing / status.testsTotal >= 0.9;
-  sigTests = allPass ? "✓" : mostlyPass ? "⚠" : "⛔";
+  sigTests =
+    testsStale || deferredCount || envBlockedCount
+      ? "⚠"
+      : allPass
+        ? "✓"
+        : mostlyPass
+          ? "⚠"
+          : "⛔";
   testsLabel =
     `${status.testsPassing}/${status.testsTotal} passing` +
     (status.testsLastRun ? ` (${status.testsLastRun})` : "");
+  if (deferredCount)
+    testsLabel += ` · ${deferredCount} deferred: ${compactFileList(status.testsDeferred)}`;
+  if (envBlockedCount)
+    testsLabel += ` · ${envBlockedCount} env-blocked: ${compactFileList(status.testsEnvBlocked)}`;
+  if (testsStale) testsLabel += " · STALE — run node scripts/run-tests.mjs";
 } else if (testsExempt) {
   sigTests = "✓";
   testsLabel = "N/A (protocol repo)";
@@ -1071,6 +1194,23 @@ function buildGeniusBoxFromMarkdown(markdown) {
   if (entries.length === 0) return "";
 
   const out = [top("GENIUS HIT LIST")];
+  // S211 [SIL S209 #2]: surface the IGNIS rank source so a fallback-degraded list
+  // (D-S209.4 — once ~2mo stale on fallback while live was reachable) is never
+  // silent. Parsed from the GENIUS_LIST.md header (`**Rank source:** live`).
+  const rankMatch = markdown.match(/\*\*Rank source:\*\*\s*(\w+)/i);
+  if (rankMatch) {
+    const src = rankMatch[1].toLowerCase();
+    const genMatch = markdown.match(/\*\*Generated:\*\*\s*(\S+)/);
+    let ageStr = "";
+    if (genMatch) {
+      const ageD = (Date.now() - new Date(genMatch[1])) / 86_400_000;
+      if (!Number.isNaN(ageD))
+        ageStr = ` · ${ageD < 1 ? "<1" : Math.round(ageD)}d old`;
+    }
+    const icon = src === "live" ? "✓" : "⚠";
+    out.push(row(`${icon} rank source: ${src}${ageStr}`.slice(0, W)));
+    out.push(blank());
+  }
   for (const entry of entries) {
     out.push(row(entry.title.slice(0, W)));
     out.push(row(entry.summary.slice(0, W)));
@@ -1454,7 +1594,13 @@ const lines = [
     owner: status.owner,
   }),
   ``,
-  renderLastCompleted(status.lastSessionSummary),
+  renderLastCompleted(status.lastSessionSummary, {
+    expectedSession: currentSession - 1,
+    fallback:
+      status.currentFocus ||
+      shippedLine ||
+      "Latest session details unavailable.",
+  }),
   ``,
   ...(Array.isArray(status.testingSurfaces) && status.testingSurfaces.length
     ? [
@@ -1473,7 +1619,7 @@ const lines = [
   blank(),
   row(`  ${silTotal}/${silMax}   ${bar24(silTotal, silMax)}   ${pct}`),
   row(
-    `  SIL v3.0  ·  Avg3: ${avg3Raw ?? "?"}  ·  Velocity ${velocity}${velTrend || "→"}`,
+    `  SIL v3.0  ·  Avg3: ${avg3Raw ?? "?"}  ·  Velocity ${velocity}${velTrend || "→"}${silStreak >= 2 ? `  ·  Streak ${silStreak}${silStreak >= 8 ? " 🔥" : silStreak >= 4 ? " ✦" : ""}` : ""}`,
   ),
   row(
     `  Last active: ${daysSinceActive}d  ·  Last closeout: ${daysSinceClosedOut}d  ·  (active = newest of SIL/status/handoff)`,
@@ -1522,8 +1668,11 @@ const lines = [
   // ── WHERE WE LEFT OFF ──────────────────────────────────────────────────────
   top(`WHERE WE LEFT OFF  ·  Session ${currentSession - 1}`),
   row(`Shipped:  ${shippedLine.slice(0, W - 10)}`),
+  // S181 [audit #2] — was `${testsTotal} passing`, which labelled the TOTAL as
+  // PASSING (179 "passing" while 10 failed) — a CANON-031 lying surface that
+  // contradicted the SIGNALS block. Show passing/total, matching testsLabel.
   row(
-    `Tests:    ${status.testsTotal ?? "?"} passing  ·  Deploy: ${status.lastDeployStatus || "N/A"}`,
+    `Tests:    ${typeof status.testsPassing === "number" ? `${status.testsPassing}/${status.testsTotal ?? "?"}` : (status.testsTotal ?? "?")} passing  ·  Deploy: ${status.lastDeployStatus || "N/A"}`,
   ),
   bot(),
   ``,
@@ -1600,6 +1749,7 @@ const lines = [
   ),
   row(`${sigDeploy}  Deploy gaps   ${deployLabel}`),
   row(`${sigDoctor}  Doctor        ${doctorDetail}`),
+  row(`${sigCost}  Cost          ${costDetail}`),
   bot(),
   ``,
   // ── IGNIS INSIGHT ──────────────────────────────────────────────────────────
@@ -1816,8 +1966,26 @@ if (v5Mode !== "off") {
             `  ◆ brief-v5 compare: v3=${v3Bytes}b v5=${v5Bytes}b  (${reductionPct}% reduction)`,
           );
           if (v5Mode === "1" || v5Mode === "promote") {
-            fs.copyFileSync(v5File, outputPath);
-            console.log(`  ◆ brief-v5 promoted → docs/STARTUP_BRIEF.md`);
+            // S209 [audit #2] — promotion guard. v5 must not overwrite the
+            // canonical brief unless it passes the same validator /start uses AND
+            // carries no unresolved computed-block stub. This is the safety net
+            // that stops a half-built v5 (e.g. an unwired SIGNALS/HUMAN PRESSURE
+            // resolver) from silently becoming the founder's primary surface.
+            const v5Text = fs.readFileSync(v5File, "utf8");
+            const hasStub = /\{"script":\s*"/.test(v5Text);
+            const valid = spawnSync(
+              node,
+              [path.join(__dirname, "validate-brief-format.mjs"), v5File],
+              { cwd: root },
+            );
+            if (hasStub || valid.status !== 0) {
+              console.error(
+                `  ⚠ brief-v5 promotion BLOCKED — ${hasStub ? "unresolved computed-block stub" : "failed validate-brief-format"}; keeping v3.1 canonical.`,
+              );
+            } else {
+              fs.copyFileSync(v5File, outputPath);
+              console.log(`  ◆ brief-v5 promoted → docs/STARTUP_BRIEF.md`);
+            }
           }
         }
       }

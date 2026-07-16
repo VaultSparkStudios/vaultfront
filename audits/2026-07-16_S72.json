@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1.3",
+  "project": "vaultfront",
+  "date": "2026-07-16",
+  "session": 72,
+  "agent": "codex",
+  "kind": "recovery-closeout",
+  "sil": {
+    "score": 999,
+    "max": 1000,
+    "delta": 0,
+    "note": "Recovered the interrupted post-S71 boundary with direct provenance, integrity, test, and doctor evidence without claiming new product impact."
+  },
+  "shipped": [
+    "studio-protocol-propagation-recovery",
+    "obelisk-stub-quarantine-repair",
+    "session-72-public-truth-boundary",
+    "public-rights-ledger-sanitization"
+  ],
+  "verification": [
+    {
+      "command": "JSON/NDJSON integrity sweep",
+      "status": "pass",
+      "evidence": "All changed/untracked JSON parsed."
+    },
+    {
+      "command": "node --check on changed/untracked scripts",
+      "status": "pass",
+      "evidence": "53 scripts parsed."
+    },
+    {
+      "command": "npm test",
+      "status": "pass",
+      "evidence": "94 main files / 655 tests plus 10 server files / 30 tests passed."
+    },
+    {
+      "command": "node scripts/run-doctor.mjs --json (studio-ops)",
+      "status": "pass",
+      "evidence": "overallPass=true; blockingFailing=0; 115 passing; 25 advisory warnings; 2 expected skips."
+    },
+    {
+      "command": "claude-json-guard --status",
+      "status": "pass",
+      "evidence": "Claude config valid; zero corruption events in 24h."
+    },
+    {
+      "command": "npm run build-prod",
+      "status": "pass",
+      "evidence": "Initial recovery run exposed incompatible React/JSX stub; repaired run passed TypeScript and Vite production build."
+    },
+    {
+      "command": "check-public-repo-sanitization --project vaultfront --strict",
+      "status": "pass",
+      "evidence": "Strict rerun clean: 0 critical, 0 warning, 0 total findings."
+    },
+    {
+      "command": "npx eslint protocol recovery blockers",
+      "status": "pass",
+      "evidence": "Obelisk TTL fallback, ANSI stripping, and CommonJS shim project-service/rule configuration pass focused ESLint."
+    }
+  ],
+  "residualRisks": [
+    "Obelisk production relying-party origin, callback route, and server verification are not complete.",
+    "Live rivalry/rematch alpha playtest evidence remains absent.",
+    "Revenue remains unverified until a real checkout/supporter event is observed.",
+    "Registry and local project-type/audience metadata disagree."
+  ],
+  "next": [
+    "Run the fresh full project-aware arc.",
+    "Reconcile registry/local project profile truth.",
+    "Implement all verified release and game-loop findings before public promotion."
+  ]
+}

@@ -52,6 +52,13 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 
 ## Follow-ups
 
+## Completed (2026-07-16 — Session 72 recovery closeout)
+
+Recovered and verified the interrupted post-S71 tree: retained the validated Studio protocol/Canon/Dependabot propagation, removed incompatible/unreferenced Obelisk helpers from deployable `src/`, untracked the local ignored passport cargo so quarantine is real, preserved the rights ledger locally while removing it from the public index, and proved the boundary with 94 files / 655 tests plus 10 server files / 30 tests and Studio doctor `blockingFailing: 0`.
+
+- [SIL] Reconcile registry `app/public-unlaunched` metadata with local `game/internal` project truth so audit and release gates consume one intentional profile.
+- [SIL] Add a recovery-provenance check that distinguishes `lint-staged` backup residue, propagated protocol files, and current-session generated artifacts.
+
 ## Completed (2026-06-14 — Session 71 /audit + /implement pass)
 
 All 3 items from `docs/AUDIT_2026-06-14_S71.md` shipped: `obelisk-passport-quarantine`, `protocol-helper-regression-harness`, and `s71-truth-sync`. Verification passed with focused Studio helper Vitest, startup brief render/validation, compact handoff, secrets audit, blocker preflight, PROJECT_STATUS invariant check, broad `npm test` (94 files / 655 tests plus 10 server files / 30 tests), and `npm run build-prod`.

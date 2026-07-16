@@ -112,10 +112,35 @@ function loadEnv() {
 
 function loadCapMap() {
   if (_capMap) return _capMap;
+  // S180 [audit #2] — distinguish ABSENT (legit: CI without secrets/, silent) from
+  // CORRUPT (the file exists but won't parse — e.g. smart-quote/encoding damage).
+  // The old blanket `catch { empty }` made a corrupted CAPABILITY_MAP.json degrade
+  // every capability resolution SILENTLY (a CANON-031 observability violation): a
+  // single curly quote could make getSecret/resolveCapability fail to find any
+  // capability with no signal. Corruption now fails LOUD (stderr + access log)
+  // while still returning empty so callers degrade gracefully rather than crash.
+  if (!fs.existsSync(CAP_MAP_PATH)) {
+    _capMap = { capabilities: {} };
+    return _capMap;
+  }
   try {
     _capMap = JSON.parse(fs.readFileSync(CAP_MAP_PATH, "utf8"));
-  } catch {
-    _capMap = { capabilities: {} };
+  } catch (e) {
+    const msg =
+      `CAPABILITY_MAP.json is present but UNPARSEABLE (${e.message}). ` +
+      `Capability resolution is degraded to empty — fix the file. ` +
+      `Common cause: smart quotes (U+201C/U+201D) or encoding mojibake from a paste.`;
+    try {
+      process.stderr.write(`⚠ secrets: ${msg}\n`);
+    } catch {
+      /* stream closed */
+    }
+    try {
+      audit({ event: "capability-map-corrupt", error: e.message });
+    } catch {
+      /* never break callers */
+    }
+    _capMap = { capabilities: {}, _corrupt: true, _corruptError: e.message };
   }
   return _capMap;
 }
@@ -140,6 +165,17 @@ function audit(entry) {
  * `capability` is a free-form string for auditing (e.g. "claude.api").
  */
 export function getSecret(key, capability = "unspecified") {
+  // Deterministic test seam (S210). When STUDIO_OPS_TEST_NO_SECRETS is explicitly set,
+  // the gateway behaves as if NO credential is vaulted — so credential-gated branches
+  // (fallback / early-bail / offline paths) can be exercised the SAME way on a
+  // credentialed founder host and in credential-less CI. Without this, tests that
+  // `delete process.env.X` to force a fallback are silently host-dependent, because
+  // getSecret reads from secrets/*.env, not process.env (see
+  // tier1-gateway-credential-test-honesty). Production never sets this flag.
+  if (/^(1|true|yes|on)$/i.test(process.env.STUDIO_OPS_TEST_NO_SECRETS || "")) {
+    audit({ key, capability, result: "TEST_NO_SECRETS" });
+    return null;
+  }
   const env = loadEnv();
   const val = env[key] ?? process.env[key] ?? null;
   audit({ key, capability, result: val ? "FOUND" : "MISSING" });

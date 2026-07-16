@@ -2,6 +2,22 @@
 
 This repo now keeps only a public-safe handoff summary. Detailed handoff history is maintained privately.
 
+## Where We Left Off — 2026-07-16
+
+**Session goal:** Recover and verify the interrupted post-S71 state, finish its missing closeout boundary, and checkpoint it before beginning a fresh full arc.
+
+**Shipped:** Preserved the validated Studio protocol/Canon/Dependabot propagation, removed incompatible/unreferenced Obelisk helpers from deployable `src/`, untracked the locally retained `obelisk-passport/` cargo behind `.gitignore`, preserved the rights ledger locally while removing it from the public index, refreshed public-safe truth surfaces, and recorded Session 72 as a recovery closeout rather than inventing an audit pass.
+
+**Impact:** VaultFront now has a clean provenance boundary. An incompatible React/JSX stub can no longer break the Lit production build, and the generated passport reference cargo is genuinely local/ignored rather than tracked. Protocol propagation is backed by live syntax, regression, configuration-integrity, build, and Studio-doctor evidence.
+
+**Verification:** changed/untracked JSON parses; 53 changed/untracked scripts pass `node --check`; the Claude configuration guard reports valid config and zero recent corruption; `npm test` passes 94 files / 655 tests plus 10 server files / 30 tests; Studio doctor reports `overallPass: true`, 115 passing probes, and `blockingFailing: 0`; the repaired local staging build passes `npm run build-prod`; inherited pre-commit lint blockers are fixed at source and focused ESLint passes.
+
+**Known residuals:** Production Obelisk relying-party registration and a native Lit-compatible auth implementation remain open. The real rivalry/rematch Alpha Gate still needs live tester evidence. Revenue remains unverified until a real checkout/supporter event exists. Registry and local project-type/audience metadata disagree and must be deliberately reconciled.
+
+**Suggested next focus:** Run the fresh project-aware `/start → /audit → /implement → /closeout` arc, applying both release/web-canon and game-loop lenses, then resolve the highest verified unblocked findings before any public promotion.
+
+---
+
 ## Where We Left Off — 2026-06-14
 
 **Session goal:** Continue `/start → /audit → /implement → /closeout` with a fresh S71 audit focused on making the refreshed Studio protocol helper surface shippable without accidentally promoting an unfinished Obelisk passport stub.

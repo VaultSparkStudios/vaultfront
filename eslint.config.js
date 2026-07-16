@@ -95,7 +95,7 @@ export default [
     },
   },
   {
-    files: ["scripts/**/*.mjs"],
+    files: ["scripts/**/*.{mjs,cjs}"],
     languageOptions: {
       parserOptions: {
         projectService: false,
@@ -107,6 +107,7 @@ export default [
       "no-empty": "off",
       "no-useless-escape": "off",
       "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-require-imports": "off",
       eqeqeq: "off",
     },
   },

@@ -19,11 +19,11 @@
  *   node scripts/ops.mjs closeout-board
  */
 
-import { spawnSync } from "child_process";
 import fs from "fs";
 import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
+import { spawnSync } from "./lib/safe-spawn.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STUDIO_ROOT = path.resolve(__dirname, "..");
@@ -79,7 +79,12 @@ function readText(p) {
 }
 
 function sh(cmd) {
-  const r = spawnSync(cmd, { shell: true, cwd: ROOT, encoding: "utf8" });
+  const r = spawnSync(cmd, {
+    shell: true,
+    windowsHide: true,
+    cwd: ROOT,
+    encoding: "utf8",
+  });
   return { out: r.stdout || "", err: r.stderr || "", code: r.status ?? -1 };
 }
 
@@ -128,6 +133,52 @@ function canonicalLiveUrl() {
   if (entry?.stagingUrl)
     return { url: entry.stagingUrl, badge: "staging", type: "staging" };
   return null;
+}
+
+/**
+ * Explicit deployment surface (S183 founder directive): the closeout board must
+ * always show BOTH the staging/testing URL and the live URL, each with an honest
+ * status — never collapse them, never hide one. `internal` / pre-deploy projects
+ * render N/A (truthful, not blank). Auto-sourced from the registry so it can't
+ * drift from PROJECT_STATUS.
+ */
+function deploymentRows() {
+  const status = readJson(STATUS_PATH);
+  const reg = readJson(REGISTRY_PATH);
+  const slug = path.basename(ROOT).toLowerCase();
+  const entry =
+    reg?.projects?.find(
+      (p) =>
+        p.slug?.toLowerCase() === slug ||
+        p.localPath?.toLowerCase()?.endsWith(slug) ||
+        p.folderName?.toLowerCase() === slug,
+    ) || {};
+  const stagingType = status?.stagingType ?? entry?.stagingType;
+  const stagingUrl = status?.stagingUrl ?? entry?.stagingUrl;
+  const liveUrl =
+    status?.runtimeUrl ||
+    entry?.runtimeUrl ||
+    entry?.liveUrl ||
+    entry?.deployedUrl;
+  const vs = (entry?.vaultStatus || "").toUpperCase();
+
+  // Staging row
+  let staging;
+  if (stagingType === "none")
+    staging = "N/A — internal/exempt (stagingType: none)";
+  else if (stagingUrl)
+    staging = `${stagingUrl}  ·  ${stagingType || "staging"}`;
+  else staging = `not configured  ·  type: ${stagingType || "—"}`;
+
+  // Live row
+  let live;
+  if (liveUrl && vs === "SPARKED") live = `${liveUrl}  ·  🌐 LIVE (SPARKED)`;
+  else if (liveUrl)
+    live = `${liveUrl}  ·  preview/${vs || "FORGE"} (not yet SPARKED)`;
+  else if (vs === "VAULTED") live = "N/A — VAULTED (paused)";
+  else live = "N/A — pre-deploy (FORGE)";
+
+  return { staging, live };
 }
 
 function parseShippedFromHandoff() {
@@ -398,6 +449,13 @@ function render() {
   lines.push(row(`Ahead: ${aheadRes || "?"}  ·  Behind: ${behindRes || "?"}`));
   const branch = sh("git branch --show-current").out.trim();
   lines.push(row(`Branch: ${branch || "?"}`));
+  lines.push(bottom());
+
+  // 5.5 DEPLOYMENT (S183 — staging + live, always both, honest status)
+  const deploy = deploymentRows();
+  lines.push(top("DEPLOYMENT"));
+  lines.push(row(`Staging:  ${deploy.staging.slice(0, W - 10)}`));
+  lines.push(row(`Live:     ${deploy.live.slice(0, W - 10)}`));
   lines.push(bottom());
 
   // 6. POST-SESSION SIGNALS

@@ -1,19 +1,19 @@
-<!-- generated-by: scripts/render-closeout-board.mjs v1.0 -->
-<!-- generated-at: 2026-06-14 (Session 71 closeout) -->
+<!-- generated-by: recovery-closeout verified board -->
+<!-- generated-at: 2026-07-16 (Session 72 recovery closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
-╔══ SESSION CLOSEOUT · VaultFront · S71 ═════════════════════════╗
-║  Date: 2026-06-14  ·  SIL: 999/1000  ·  Velocity: —              ║
+╔══ SESSION CLOSEOUT · VaultFront · S72 RECOVERY ════════════════╗
+║  Date: 2026-07-16  ·  SIL: 999/1000  ·  Velocity: 1→            ║
 ║  Mode: FOUNDER  ·  Agent: codex                                  ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ WHAT SHIPPED · last 5 commits ═══════════════════════════════╗
-║  ✓ feat(alpha-gate): add operator runbook closeout               ║
-║  ✓ feat(vaultfront): add alpha gate passport                     ║
-║  ✓ chore(closeout): ship session 68 operator playtest script     ║
-║  ✓ feat(vaultfront): ship session 67 playtest funnel             ║
-║  ✓ chore(closeout): refresh session 66 board                     ║
+╔══ WHAT SHIPPED · RECOVERY BOUNDARY ═══════════════════════════╗
+║  ✓ Studio protocol/Canon/Dependabot propagation verified        ║
+║  ✓ Incompatible Obelisk React/JSX build blocker removed          ║
+║  ✓ Passport cargo local + ignored; public index clean            ║
+║  ✓ Rights ledger local + ignored; AGPL LICENSE remains public     ║
+║  ✓ Canonical staged-secret scanner restored locally              ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ SCORES · SIL 999/1000 ═══════════════════════════════════════╗
 ║    Dev Health         100  ██████████                            ║
@@ -24,7 +24,7 @@
 ║    Coherence          100  ██████████                            ║
 ║    Security           100  ██████████                            ║
 ║    Ecosystem          100  ██████████                            ║
-║    Capital            99   ██████████                            ║
+║    Capital             99  ██████████                            ║
 ║    Automation         100  ██████████                            ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WRITE-BACK STATUS ═══════════════════════════════════════════╗
@@ -34,27 +34,31 @@
 ║  ✓ logs/WORK_LOG.md                                              ║
 ║  ✓ context/DECISIONS.md                                          ║
 ║  ✓ context/SELF_IMPROVEMENT_LOOP.md                              ║
-║  · docs/CREATIVE_DIRECTION_RECORD.md                             ║
+║  — docs/CREATIVE_DIRECTION_RECORD.md (no prior-session direction)║
 ║  ✓ context/TRUTH_AUDIT.md                                        ║
 ║  ✓ context/PROJECT_STATUS.json                                   ║
-║  · agent memory (~/.claude/projects/<slug>/memory/)              ║
+║  ✓ agent memory (~/.codex/memories/vaultfront/)                  ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 38 files  ·  M:34 A:0 D:0 ?:4                          ║
-║  Ahead: 0  ·  Behind: 0                                          ║
-║  Branch: main                                                    ║
+║  Recovery checkpoint: 65 files · committed cleanly              ║
+║  Ahead: 1  ·  Behind: 0                                          ║
+║  Branch: main  ·  force-push: never                              ║
+╚════════════════════════════════════════════════════════════════╝
+╔══ DEPLOYMENT ══════════════════════════════════════════════════╗
+║  Staging: local · npm run build-prod ✓                            ║
+║  Live: N/A — public-unlaunched / FORGE                           ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
-║  Doctor:        —                                                ║
-║  Compliance:    —                                                ║
-║  Tests:         655/655                                          ║
-║  IGNIS:         11d ago                                          ║
-║  Truth:         green                                            ║
-║  Sanitization:  —                                                ║
+║  Doctor:        blockingFailing 0 · overallPass true             ║
+║  Tests:         655/655 + server 30/30                            ║
+║  Build:         TypeScript + Vite production ✓                    ║
+║  Secrets:       staged scan 0 findings                           ║
+║  Sanitization:  strict 0 critical · 0 warning                     ║
+║  Shells:        0 background started · 0 running                  ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ NEXT SESSION ════════════════════════════════════════════════╗
-║  (no genius cache — run `node scripts/cache-genius-list.mjs`)    ║
+║  Fresh S73 full arc: start → audit → implement → closeout       ║
 ╚════════════════════════════════════════════════════════════════╝
 ```
 
-_Generated by `scripts/render-closeout-board.mjs v1.0`_
+_Verified recovery board; all gate values derived from live commands._

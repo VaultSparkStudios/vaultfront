@@ -19,9 +19,9 @@
  *   doctor                Print project health summary
  */
 
-import { spawnSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
+import { spawnSync } from "./lib/safe-spawn.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPTS = __dirname;

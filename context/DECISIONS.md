@@ -2,6 +2,20 @@
 
 Public-safe decisions only. Detailed internal decision history is maintained privately.
 
+## 2026-07-16 — Generated Obelisk helpers remain quarantined until a native integration is ready
+
+**Decision:** Remove all generated Obelisk helpers from deployable `src/` and untrack `obelisk-passport/` while retaining that reference cargo locally behind `.gitignore`.
+
+**Why:** The committed React `.tsx` helper was unreferenced, introduced a missing `react` dependency, required JSX compiler settings the Lit project does not use, and broke `npm run build-prod`. The passport directory was also still tracked, so the prior local/ignored quarantine claim was not true in Git.
+
+**Constraint:** Do not add a React dependency merely to preserve a generated stub. Implement Obelisk natively for the project Lit architecture only after production relying-party origin, callback contract, and server verification requirements are available and testable.
+
+## 2026-07-16 — Keep rights provenance local/private while preserving AGPL obligations publicly
+
+**Decision:** Untrack `docs/RIGHTS_PROVENANCE.md` from the public repository and keep it locally behind `.gitignore`. Retain the root AGPL-3.0 `LICENSE` and public source availability required by the OpenFrontIO fork obligation.
+
+**Why:** The canonical sanitization scanner classifies the detailed rights ledger as a private Studio OS document. Removing it from the public index clears the private-document gate without weakening the actual copyleft notice or source-availability obligation.
+
 ## 2026-06-14 — Generated Obelisk passport stubs stay local until relying-party origin registration
 
 **Decision:** `obelisk-passport/` is ignored in this repo until VaultFront has a registered production relying-party origin and a deliberate login/callback/server verification integration plan. The generated files can remain in the local workspace as reference cargo, but they are not deployable source yet.

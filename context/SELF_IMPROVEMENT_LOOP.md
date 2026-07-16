@@ -4,12 +4,20 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 999/1000 | Velocity: 98↑ | Debt: → | Velocity trend: ↑
+Total: 999/1000 | Velocity: 1→ | Debt: → | Velocity trend: →
 Avgs — 3: 88.7 | Momentum runway: strong | Intent rate: 100%
 3-session: Dev 10 | Align 30 | Momentum 13 | Engage 28 | Process 10
-Last session: 2026-06-14 Session 71 Protocol helper guard pass
+Last session: 2026-07-16 Session 72 interrupted-state recovery closeout
 
 <!-- rolling-status-end -->
+
+## Sprint: 2026-07-16 — Session 72 Interrupted-State Recovery Closeout (SIL held: 999/1000)
+
+Recovered the failed post-S71 boundary without inventing product impact. Preserved validated Studio protocol, Canon adoption, Windows process-hygiene, and Dependabot propagation; removed incompatible/unreferenced Obelisk helpers from deployable source; made the ignored passport quarantine real; cleared the public private-rights-ledger finding while retaining AGPL licensing; and refreshed public-safe truth with direct configuration, syntax, test, build, and Studio-doctor evidence.
+
+**Delta: 999 → 999.** Process quality and dev-health evidence improved through provenance reconstruction and direct verification, but no point was added because this recovery did not produce live tester, revenue, or production-auth evidence. Capital efficiency remains 99/100 and every other category remains 100/100.
+
+**Brainstorm commitments:** reconcile registry/local project-profile drift; add automated recovery-provenance classification for stash residue versus generated and propagated files.
 
 ## Sprint: 2026-06-14 — Session 71 Protocol Helper Guard Pass (SIL held: 999/1000)
 

@@ -10,48 +10,72 @@
  *   node scripts/ops.mjs write-session-lock --agent claude-code
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// Self-healing default label, derived from the model-router chokepoint (the single
+// source of truth for model IDs) when it's reachable: a chokepoint bump (opus 4.7
+// -> 4.8) carries into the lock label automatically — no stale hardcode (S165).
+// write-session-lock is deliberately copyable + invoked standalone (concurrency
+// tests, bootstrap), so the chokepoint may be absent; fall back to the current
+// canonical label rather than hard-failing the import. Strips the 'claude-' API
+// prefix to keep a human label (not an API ID) and appends the 1M-context suffix.
+let DEFAULT_CLAUDE_LABEL = "opus-4-8-1m";
+try {
+  const { MODELS } = await import("./lib/model-router.mjs");
+  if (MODELS?.opus)
+    DEFAULT_CLAUDE_LABEL = MODELS.opus.replace(/^claude-/, "") + "-1m";
+} catch {
+  /* standalone copy — chokepoint unavailable, keep fallback */
+}
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
 
-const agentArg = args.find((_, i) => args[i - 1] === '--agent') ?? 'claude-code';
-const noteArg = args.find((_, i) => args[i - 1] === '--note') ?? 'Session start via /start protocol v1.3';
+const agentArg =
+  args.find((_, i) => args[i - 1] === "--agent") ?? "claude-code";
+const noteArg =
+  args.find((_, i) => args[i - 1] === "--note") ??
+  "Session start via /start protocol v1.3";
 // Model can be pinned for accurate context-meter calibration. Precedence:
 //   --model <id>  >  $CLAUDE_MODEL_ID  >  $CLAUDE_MODEL  >  auto (by agent)
-const modelArg = args.find((_, i) => args[i - 1] === '--model')
-  ?? process.env.CLAUDE_MODEL_ID
-  ?? process.env.CLAUDE_MODEL
+const modelArg =
+  args.find((_, i) => args[i - 1] === "--model") ??
+  process.env.CLAUDE_MODEL_ID ??
+  process.env.CLAUDE_MODEL ??
   // Lock stores a human-readable label, NOT an API model ID (keeps chokepoint
   // tier1 test happy: no "claude-*-N" hardcoded outside lib/model-router.mjs).
-  ?? (agentArg === 'claude-code' ? 'opus-4-7-1m'
-      : agentArg === 'codex' ? 'codex-1m'
-      : 'unknown');
+  (agentArg === "claude-code"
+    ? DEFAULT_CLAUDE_LABEL
+    : agentArg === "codex"
+      ? "codex-1m"
+      : "unknown");
 // Context window in tokens. Precedence:
 //   --context-limit <n>  >  $CLAUDE_CONTEXT_LIMIT  >  inferred from model
 function inferCtxLimit(modelId) {
   if (/1m/i.test(modelId)) return 1_000_000;
   if (/opus|sonnet/i.test(modelId)) return 200_000;
-  if (modelId === 'codex-1m') return 1_000_000;
+  if (modelId === "codex-1m") return 1_000_000;
   return 200_000;
 }
-const ctxLimitArg = args.find((_, i) => args[i - 1] === '--context-limit');
+const ctxLimitArg = args.find((_, i) => args[i - 1] === "--context-limit");
 const ctxLimit = ctxLimitArg
   ? parseInt(ctxLimitArg, 10)
-  : (process.env.CLAUDE_CONTEXT_LIMIT ? parseInt(process.env.CLAUDE_CONTEXT_LIMIT, 10) : inferCtxLimit(modelArg));
+  : process.env.CLAUDE_CONTEXT_LIMIT
+    ? parseInt(process.env.CLAUDE_CONTEXT_LIMIT, 10)
+    : inferCtxLimit(modelArg);
 
 const projectName = path.basename(ROOT);
-const lockPath = path.join(ROOT, 'context', '.session-lock');
+const lockPath = path.join(ROOT, "context", ".session-lock");
 const now = new Date().toISOString();
 // Preserve existing session_start so repeated /start invocations within the
 // same Studio Ops session don't orphan ledger entries (the meter filters
 // ledger entries by ts >= session_start). Use --force to rotate.
-const FORCE = args.includes('--force');
+const FORCE = args.includes("--force");
 let sessionStart = now;
 if (!FORCE && fs.existsSync(lockPath)) {
-  const prior = fs.readFileSync(lockPath, 'utf8');
+  const prior = fs.readFileSync(lockPath, "utf8");
   const m = prior.match(/^session_start:\s*(\S+)/m);
   if (m) {
     const priorTs = new Date(m[1]).getTime();
@@ -68,11 +92,13 @@ const content = [
   `context_limit: ${ctxLimit}`,
   `project: ${projectName}`,
   `note: ${noteArg}`,
-  '',
-].join('\n');
+  "",
+].join("\n");
 
-fs.writeFileSync(lockPath, content, 'utf8');
-console.log(`✓ context/.session-lock written (agent: ${agentArg}, project: ${projectName})`);
+fs.writeFileSync(lockPath, content, "utf8");
+console.log(
+  `✓ context/.session-lock written (agent: ${agentArg}, project: ${projectName})`,
+);
 // Calendar auto-event at /start removed S107.10 — noise without signal.
 // Founder already knows they just typed /start; the calendar event restated
 // that without providing any planning signal. Script stays available for

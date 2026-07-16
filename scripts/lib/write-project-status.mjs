@@ -25,6 +25,10 @@ import { fileURLToPath } from "node:url";
 
 // S156 #21: canonical list lives in lib/sil-categories.mjs (policy-drift extraction)
 import { V3_CATS as CATS } from "./sil-categories.mjs";
+// S196: SIL v6 dual-axis. Single write path — the Impact-axis invariant runs here
+// too (non-breaking: fires only when silImpactCategories is present), so there is
+// never a second divergent write path for the new fields.
+import { enforceSilV6Invariant } from "./sil-v6.mjs";
 
 /**
  * Pure invariant pass. Returns { status, violations } — status is a new object
@@ -77,7 +81,10 @@ export function enforceSilInvariant(status) {
       out.silMax = 1000;
     }
   }
-  return { status: out, violations };
+  // SIL v6 Impact-axis invariant (non-breaking — no-op unless silImpactCategories present).
+  const v6 = enforceSilV6Invariant(out);
+  for (const v of v6.violations) violations.push(v);
+  return { status: v6.status, violations };
 }
 
 /**

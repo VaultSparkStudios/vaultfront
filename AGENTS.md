@@ -37,13 +37,15 @@ Full decision: `vaultspark-studio-ops/docs/STUDIO_CANON.md` → CANON-008
 
 <!-- studio-os:universal-sections-start -->
 <!-- Source: vaultspark-studio-ops/docs/templates/project-system/AGENTS_universal_sections.md -->
-<!-- DO NOT EDIT — re-run `node scripts/propagate-agents-sections.mjs --apply` from studio-ops to refresh -->
+<!-- DO NOT EDIT — re-run via /start deferred-propagation hook or scripts/propagate-agents-sections.mjs -->
 
 <!-- Universal AGENTS.md sections — propagated to every Studio repo via scripts/propagate-agents-sections.mjs -->
 <!-- Owner: Studio Ops · Source: docs/templates/project-system/AGENTS_universal_sections.md -->
 <!-- Last revised: 2026-06-07 (S158 — lean rewrite: canon prose → generated index + pointers; ~32KB→~10KB) -->
 
 > **This block is the studio-wide operational layer, shared by every VaultSpark repo.** It carries the gates and pointers you need resident every session. Full canon prose lives once, in `vaultspark-studio-ops/docs/STUDIO_CANON.md` — the index below points into it. Don't expand canon text back into this file; keep it lean.
+
+<!-- canon-section: hard-gates -->
 
 ## The hard gates (run before you label anything blocked)
 
@@ -57,6 +59,20 @@ node ../vaultspark-studio-ops/scripts/ops.mjs blocker-preflight              # 2
 ```
 
 Reserve human-blocked **only** for: hardware-key enrollment · provider dashboard signup · billing/payment confirmation · CANON-gated destructive ops (force-push to main, npm publish, prod DB drop). **Everything else is agent work** — apply scripted migrations/deploys/secret-puts yourself (`wrangler deploy`, `wrangler secret put`, `gh secret set`, `gcloud …`, `node scripts/migrate-*.mjs --apply`). The founder-twin auto-approves safe patterns; deny patterns still gate at the founder.
+
+<!-- canon-section: canon-conformance -->
+
+## Canon conformance — know which canon apply to YOU (CANON-046 · D-S193.1)
+
+Canon is **self-checking per project**, not a wall of rules you skim. At `/start` (and any time you're unsure), resolve which canon apply to this project, at what tier, and where you have gaps:
+
+```bash
+node ../vaultspark-studio-ops/scripts/check-canon-conformance.mjs --project . --offline
+```
+
+It reads `vaultspark-studio-ops/portfolio/CANON_MATRIX.json` (tier + applicability per canon, CANON-046) against the LIVE `docs/STUDIO_CANON.md` and classifies each applicable canon: **conformed/gap** (live per-project checkers) · **doctor-owned** · **portfolio** · **manual** (judgment canon, with a reason) · **unmeasured** (no automated check yet — an actionable coverage gap). An **ABSOLUTE-tier gap is a hard stop**; STRONG gaps need a one-line justification in `DECISIONS.md`. Full canon prose + tiers: `vaultspark-studio-ops/docs/STUDIO_CANON.md`; the machine-readable applicability matrix: `vaultspark-studio-ops/portfolio/CANON_MATRIX.json`.
+
+<!-- canon-section: secrets -->
 
 ## Secrets gateway (CANON-012)
 
@@ -74,9 +90,18 @@ console.log(redact(`Using ${key}`));
 
 Capability → env-var names: `vaultspark-studio-ops/secrets/CAPABILITY_MAP.json`. MISSING credential → `/intake-credentials`. Never print raw secrets (`redact()` everything). Stripe Agent Payments (autonomous spend w/ cap): capability `stripe.agent-payments`. Full: `vaultspark-studio-ops/docs/SECRETS_PROTOCOL.md`.
 
+<!-- canon-section: founder-twin -->
+<!-- canon-section: broad-approval -->
+
 ## Founder-Twin — shared cross-agent approval brain (CANON-024)
 
-One shared auto-approval model across Claude Code, Codex, and managed agents — patterns learned by one benefit all. **Claude Code:** wired via `~/.claude/settings.json` PreToolUse hook. **Codex/other:** call before risky commands — `node ../vaultspark-studio-ops/scripts/twin-ask.mjs Bash "<command>"` (exit 0=approve · 1=ask · 2=deny). Prefer one bounded command-family approval over piecemeal asks; never request broad approval for destructive/arbitrary-interpreter/`curl|sh`/heredoc/secret/force-push/publish/prod-destructive/billing/legal actions. Before any side-effecting/networked/privileged/cross-repo/payment/secret action verify: intent · scope (recursive ops resolve inside the intended dir) · trust (package-trust) · secrets-gateway-only · blast-radius+rollback · twin-verdict. Disable per-session: `export TWIN_DISABLED=1`. Spec: `vaultspark-studio-ops/docs/TWIN_PROTOCOL.md`.
+One shared auto-approval model across Claude Code, Codex, and managed agents — patterns learned by one benefit all. **Claude Code:** wired via `~/.claude/settings.json` PreToolUse hook. **Codex (native, S219):** `<repo>/.codex/hooks.json` + `.codex/hooks/pre-tool-use-twin.mjs` (propagated template `codex-hooks/`) map twin verdicts to PreToolUse allow/deny; ask defers to normal prompts. **Older builds / other CLIs:** call before risky commands — `node ../vaultspark-studio-ops/scripts/twin-ask.mjs Bash "<command>"` (exit 0=approve · 1=ask · 2=deny). Prefer one bounded command-family approval over piecemeal asks; never request broad approval for destructive/arbitrary-interpreter/`curl|sh`/heredoc/secret/force-push/publish/prod-destructive/billing/legal actions. Before any side-effecting/networked/privileged/cross-repo/payment/secret action verify: intent · scope (recursive ops resolve inside the intended dir) · trust (package-trust) · secrets-gateway-only · blast-radius+rollback · twin-verdict. Disable per-session: `export TWIN_DISABLED=1`. Spec: `vaultspark-studio-ops/docs/TWIN_PROTOCOL.md`.
+
+## Windows Git storm guard (Codex/Windows)
+
+On Windows, Git must be non-interactive under agent control. Run `node ../vaultspark-studio-ops/scripts/install-git-window-guard.mjs --apply` at `/start` (or local `node scripts/install-git-window-guard.mjs --apply` when present). It idempotently sets user-env guard variables for future Codex/shell processes; Studio scripts additionally inherit the same guard through `scripts/lib/safe-spawn.mjs` + `windows-hide-shim.cjs`. Symptoms this prevents: repeated `C:\Program Files\Git\cmd\git.exe` windows, credential helper prompts, commit-editor windows during rebase/commit, and pager focus stealing.
+
+<!-- canon-section: package-trust -->
 
 ## Package trust (CANON-023)
 
@@ -88,6 +113,8 @@ node ../vaultspark-studio-ops/scripts/package-trust.mjs --package <name>@<versio
 
 `BLOCK` = hard stop, pick another option. Treat raw GitHub zips, shortened URLs, installers, shell scripts, model weights, and browser extensions as quarantined until verified. After lockfile changes / before push: `node ../vaultspark-studio-ops/scripts/scan-npm-supply-chain.mjs --json`. Protocol: `vaultspark-studio-ops/docs/OBELISK_PACKAGE_TRUST_PROTOCOL.md`.
 
+<!-- canon-section: ark-transport -->
+
 ## Cross-repo transport — Studio Ark (CANON-018)
 
 **Never write directly to another repo's files. Ship cargo instead.** `/start` auto-drains your inbox (the `╔══ ARK STATUS ══╗` brief tile shows depth + sig health); receipts auto-emit on drain.
@@ -98,19 +125,44 @@ node scripts/ark.mjs ship --type repo-question --to '{"question":"...","replyTo"
 node scripts/ark.mjs ship --type agent-handoff --to '{"intent":"...","openFiles":["..."]}' < slug > --payload
 ```
 
+<!-- canon-section: co-authoring -->
+
 Producer allowlist: `vaultspark-studio-ops/portfolio/ark/MANIFEST.json` (`canon-update` + `phantom-blocker-fix` are studio-ops only). Co-authoring roles (CANON-022): Designer owns source-of-truth · Mechanizer owns canon/probes/templates · Propagator owns cross-repo rollout (both studio-ops) · Implementer owns code. Design: `vaultspark-studio-ops/docs/STUDIO_ARK.md`.
+
+<!-- canon-section: skill-discovery -->
+<!-- canon-section: audit-implement -->
 
 ## Skill & capability discovery (CANON-012)
 
 Don't know the command? Check capabilities before declaring anything unknown or blocked: master index `vaultspark-studio-ops/docs/AGENT_CAPABILITIES.md` · NL lookup `node ../vaultspark-studio-ops/scripts/ops.mjs cap "<intent>"` · skills `~/.claude/skills/` (Claude) / `~/.agents/skills/` (Codex) · cheatsheet `vaultspark-studio-ops/docs/SKILL_MAP.md`. Universal skills: `/audit` (9-axis audit → `docs/AUDIT_<date>.md`) + `/implement` (ship the audit). No match → file an innovation candidate.
+
+**Before building any tool, check the reuse-registry (CANON-039 · Internal-First):** `vaultspark-studio-ops/docs/INTERNAL_TOOLS.md` is the studio-wide registry of already-built internal tools (arc/guard/propagation/secrets/Ark/doctor and more). Reuse an existing internal tool before researching OSS or building new; only build when the registry has no fit and OSS research comes up short. Record a new reusable tool back to the registry so the next project finds it.
 
 ## Public-facing project requirements
 
 For `audience: public-*` projects:
 
 - **Sitemap (CANON-011):** every page in `vaultspark-studio-ops/docs/PROJECT_SITEMAP_STANDARD.md` exists + passes bars (LCP <1.8s · CWV green · strict CSP · `/agents.json` · `/.well-known/llms.txt` · sitemap.xml). Score ≥8/10 before SPARKED. Audit: `node ../vaultspark-studio-ops/scripts/check-sitemap-compliance.mjs --project <slug>`.
-- **Website scaffold (D-S119.3):** before scaffolding any page, consult `vaultspark-studio-ops/portfolio/STUDIO_WEBSITE_SCAFFOLD/catalog.json` + `patterns.json`; use the consensus pattern unless SOUL justifies deviation (log in DECISIONS). Public signup → wire the Vault SSO contract (`vaultspark-studio-ops/docs/VAULT_SSO_CONTRACT.md`).
-- **Enforce:** branding line per type (CANON-006), footer `© 2026 VaultSpark Studios LLC. All rights reserved.`, `/privacy` + `/terms`, acronyms spelled out on first use (CANON-030), free tier cost-neutral (CANON-029), staging before prod (CANON-007). `/app-release-gate` checks these before any SPARKED flip.
+- **Website scaffold (D-S119.3 · RECOMMENDATION, not a mandate — D-S183.2):** consult `vaultspark-studio-ops/portfolio/STUDIO_WEBSITE_SCAFFOLD/catalog.json` + `patterns.json` as a **recommended starting library** to draw from and elevate per your SOUL — not a strict "only-use-this". Note deviations in DECISIONS so the catalog learns. Make menus/page names/themes/schemas/stack **as project-specific as possible** and keep exploring better options (**CANON-049** — never static). Whatever you start from must clear the elite bar:
+  - Start visual implementation from the scaffold's semantic theme layer when useful: `vaultspark-studio-ops/docs/templates/project-system/website-theme-tokens.css` + `patterns.json` theme recipes, then adapt colors/assets to the project's own brand kit.
+  - **CANON-041** desktop↔mobile parity + genuinely impressive UI/UX (scrollable 100dvh mobile drawer, never a broken/sticky menu — the pattern is the floor, not the finish).
+  - **CANON-047** theme toggle (≥ dark + light + optional project themes, each a human-best palette tied to branding) — **AI image-test every theme** (screenshot pages/panels/modals; no black-on-black / light-on-white / sub-WCAG-AA; blocking in `/app-release-gate`).
+  - **CANON-048** dual-audience: built for Humans AND AI Agents (`/agents.json` + `/.well-known/llms.txt` + JSON-LD + Obelisk agent auth) + AI-search-first (GEO/AEO alongside SEO).
+  - **CANON-045** Obelisk identity plane — public signup/auth wires Obelisk for ONE studio account across every project + human/agent receipts (Vault SSO contract folding into Obelisk; target Obelisk).
+- **Enforce (legal/IP complete):** branding line per type (CANON-006), footer `© 2026 VaultSpark Studios LLC. All rights reserved.`, proprietary/all-rights-reserved notice (CANON-008), `/privacy` + `/terms`, acronyms spelled out on first use (CANON-030), free tier cost-neutral (CANON-029), staging before prod (CANON-007). `/app-release-gate` checks these before any SPARKED flip.
+- **Contact page + working email (D-S194.1 · MUST · public sites):** every project with a public website ships a `/contact` page with a **working email on the project's own domain** that **forwards/copies to `founder@vaultsparkstudios.com`**. Email infra is **Brevo** (studio-ops secrets capability `brevo`): configure a Brevo inbound/forward route for the project domain → `founder@vaultsparkstudios.com` and verify SPF/DKIM; a contact form may POST the Brevo transactional API, a `mailto:` to the on-domain address is the floor. Reachability is the point — the address must actually deliver. Extends the CANON-011 universal page set; scaffold: `STUDIO_WEBSITE_SCAFFOLD/catalog.json → studioEnforcements.contactRequirement` + `_universal/contact.html.template`.
+
+## Actively CHECK canon — don't just point at it (S183 founder directive)
+
+Referencing the index below is not enough — **every project actively checks Studio Canon and records its posture.** At `/initiate` (mandatory) and on `/start`, run:
+
+```bash
+node ../vaultspark-studio-ops/scripts/check-canon-adoption.mjs --project . --write   # initiate / refresh
+node ../vaultspark-studio-ops/scripts/check-canon-adoption.mjs --project . --suggest # start (pre-fill safe conformance-backed suggestions)
+node ../vaultspark-studio-ops/scripts/check-canon-adoption.mjs --project . --check   # start (verify current)
+```
+
+It reads the **live** `STUDIO_CANON.md` (always current) and maintains `context/CANON_ADOPTION.md` — each ACTIVE canon marked adopted / pending / review / exempt-with-reason. `--suggest` may pre-fill `adopted (suggested)` only from conformance/doctor evidence; judgment canon remain `review`. Walk the remaining `review` rows for your type. A missing/stale adoption file is a doctor finding (`canon-adoption-active`). The canon index below is the _map_; `CANON_ADOPTION.md` is your _checked posture against it_.
 
 ---
 
@@ -120,41 +172,56 @@ For `audience: public-*` projects:
 
 **Studio Canon — index.** Full text + rationale for every entry: **vaultspark-studio-ops/docs/STUDIO_CANON.md** (jump to the matching `## CANON-NNN` heading). These are studio-wide defaults; you are expected to follow them. Read the full entry before acting on anything you're unsure about, and before changing canon, public promises, rights, licenses, launch dates, or security/data handling.
 
-- **CANON-001** · Rolling Status headers use HTML comment markers for programmatic identification — The SIL Rolling Status header block is delimited by <!-- rolling-status-start --> and <!-- rolling-status-end --> HTML comment markers
-- **CANON-002** · Sessions 1–3 are a Calibration Window, excluded from studio-level averaging — The first 3 sessions of any project are labeled "Calibration" and excluded from studio-level SIL averaging in portfolio/STUDIO_SIL.md until Session 4
-- **CANON-003** · prompts/initiate.md is separate from prompts/start.md for token efficiency — Initiation protocol lives in prompts/initiate.md
-- **CANON-004** · studioOsApplied: true requires Layer 1 SIL format, not just a context/ folder — A project is only considered studioOsApplied: true when it has the Layer 1 SIL format: Rolling Status header with HTML comment markers + closeout/start prompts with…
-- **CANON-005** · CDR gap recovery check is mandatory at startup and closeout for compacted sessions — Both prompts/start.md and prompts/closeout.md include explicit instructions to check for and recover CDR entries from prior sessions that were never formally closed out…
-- **CANON-006** · Every public-facing product must display VaultSpark Studios branding with a link-back — Every VaultSpark Studios product with audience: public-unlaunched, public-live, or public-traction must include a visible VaultSpark Studios branding element with a…
-- **CANON-007** · Every project must have a staging environment before deploying to production — Every VaultSpark project must have a staging environment — local or Hetzner-hosted — where changes are tested before reaching production
-- **CANON-008** · All VaultSpark IP is proprietary by default; open-source licenses are explicit exceptions only — All code, content, assets, and designs created by VaultSpark Studios are proprietary and all rights are reserved by VaultSpark Studios LLC unless an open-source license is…
-- **CANON-009** · SIL rubric is 10 × 100 = 1000 — v3.0
-- **CANON-010** · Claude Code and Codex must have strict skills + hooks + MCP parity — Every Studio OS command/skill/hook/MCP tool is available identically in Claude Code and OpenAI Codex
-- **CANON-011** · Every public-facing project must follow the universal sitemap standard — Every VaultSpark project with audience: public-\* must implement the page set, quality bars (UX/speed/security/intelligence/SEO), /agents.json, and /.well-known/llms.txt…
-- **CANON-012** · Every studio agent resolves credentials via the secrets gateway — Every Claude / Codex / subagent / managed-agent in every Studio repo MUST resolve credentials via getSecret(key, capability) from vaultspark-studio-ops/scripts/lib/secrets.mjs
-- **CANON-013** · Every project picks one of 3 canonical low-cost archetypes at `/initiate` — Every new VaultSpark project picks ONE of three archetypes — A (Static SaaS/Marketing — Cloudflare Pages + Workers + D1), B (Real-time/multiplayer — adds Durable Objects),…
-- **CANON-015** · Claude Max Plan first; API requires founder approval + cost estimate — When building features that invoke Claude, the default execution surface is the Claude Max Plan the studio already pays for
-- **CANON-016** · Studio OS protocol/process/enforcement propagates ecosystem-wide — Studio OS protocol, process, and enforcement rules are not local to vaultspark-studio-ops — they ship to every project's agent-facing surfaces
-- **CANON-017** · Free, long-term, scaleable integrations preferred; build-vs-buy bias toward build — When choosing project integrations on top of canonical infra (CANON-013 stack archetypes A/B/C + CANON-012 secrets gateway), agents must:
-- **CANON-018** · All cross-repo agent communication MUST flow through Studio Ark — Studio Ark adopted as canon. All cross-repo intelligence rides the Ark. See docs/STUDIO_ARK.md
-- **CANON-019** · Founder-Action Discipline — try first, label blocked only with evidence
-- **CANON-020** · Analytica is the canonical Studio analytics + insight plane — Analytica elevated to canonical analytics + insight plane for the studio
-- **CANON-021** · Obelisk is the Studio-wide trust + capability protocol — Obelisk adopted as Studio-wide trust + capability protocol; supersedes D-S119.2 (VaultRoot naming)
-- **CANON-022** · Agent Co-Authoring Protocol — Agent Co-Authoring Protocol formalized. The Hub↔studio-ops Obelisk collaboration is now canonical pattern for all future cross-agent protocol work
-- **CANON-023** · Obelisk Package Trust gates every agent install/download — Obelisk Package Trust adopted as the Studio-wide agent supply-chain decision gate
-- **CANON-024** · Broad approvals require non-malicious action verification — Broad approval + non-malicious action verification adopted as the Studio-wide approval discipline
-- **CANON-025** · Trinity role separation: VEILOS · IGNIS · Obelisk — Trinity role separation locked. See docs/PROPOSAL_2026-05-21_HIVEMIND.md for full 7-phase build plan (P1–P7, ~98h across 4–6 months)
-- **CANON-026** · IGNIS visibility scope — private-by-default
-- **CANON-027** · PQC migration-ready language discipline — PQC migration-ready language is canon. Override requires explicit founder direction logged in CDR
-- **CANON-028** · Founder Identity Privacy — no personal name, no personal email
-- **CANON-029** · Free-Tier Cost Discipline — no variable cost on free plans
-- **CANON-030** · Acronym Expansion in Public Content — spell it out, acronym in parentheses
-- **CANON-031** · Observability Honesty — no lying surfaces
-- **CANON-032** · Build-Optimal for Flagships — no premature constraint
-- **CANON-033** · Launch Announcement Discipline — no silent launches
-- **CANON-034** · Browser Experience Excellence — browser is never second-class
-- **CANON-035** · Project Brand Identity — every project designs its own professional logo, favicon, and brand kit
-- **CANON-036** · Deploy Currency Discipline — production must not silently lag main
+- **CANON-001** · Rolling Status headers use HTML comment markers for programmatic identification
+- **CANON-002** · Sessions 1–3 are a Calibration Window, excluded from studio-level averaging
+- **CANON-003** · prompts/initiate.md is separate from prompts/start.md for token efficiency
+- **CANON-004** · studioOsApplied: true requires Layer 1 SIL format, not just a context/ folder
+- **CANON-005** · CDR gap recovery check is mandatory at startup and closeout for compacted sessions
+- **CANON-006** · Every public-facing product must display VaultSpark Studios branding with a link-back
+- **CANON-007** · Every project must have a staging environment before deploying to production
+- **CANON-008** · All VaultSpark IP is proprietary by default; open-source licenses are explicit exceptions only
+- **CANON-009** · SIL rubric is 10 × 100 = 1000
+- **CANON-010** · Claude Code and Codex must have strict skills + hooks + MCP parity
+- **CANON-011** · Every public-facing project must follow the universal sitemap standard
+- **CANON-012** · Every studio agent resolves credentials via the secrets gateway
+- **CANON-013** · Every project picks one of 3 canonical low-cost archetypes at `/initiate`
+- **CANON-015** · Claude Max Plan first; API requires founder approval + cost estimate
+- **CANON-016** · Studio OS protocol/process/enforcement propagates ecosystem-wide
+- **CANON-017** · Free, long-term, scaleable integrations preferred; build-vs-buy bias toward build
+- **CANON-018** · All cross-repo agent communication MUST flow through Studio Ark
+- **CANON-019** · Founder-Action Discipline
+- **CANON-020** · Analytica is the canonical Studio analytics + insight plane
+- **CANON-021** · Obelisk is the Studio-wide trust + capability protocol
+- **CANON-022** · Agent Co-Authoring Protocol
+- **CANON-023** · Obelisk Package Trust gates every agent install/download
+- **CANON-024** · Broad approvals require non-malicious action verification
+- **CANON-025** · Trinity role separation: VEILOS · IGNIS · Obelisk
+- **CANON-026** · IGNIS visibility scope
+- **CANON-027** · PQC migration-ready language discipline
+- **CANON-028** · Founder Identity Privacy
+- **CANON-029** · Free-Tier Cost Discipline
+- **CANON-030** · Acronym Expansion in Public Content
+- **CANON-031** · Observability Honesty
+- **CANON-032** · Build-Optimal for Flagships
+- **CANON-033** · Launch Announcement Discipline
+- **CANON-034** · Browser Experience Excellence
+- **CANON-035** · Project Brand Identity
+- **CANON-036** · Deploy Currency Discipline
+- **CANON-037** · Canon Half-Life and Automated Consistency
+- **CANON-038** · Shared Studio Self-Host Server
+- **CANON-039** · Build-It-Ourselves, Internal-First, OSS-Research Discipline
+- **CANON-040** · Agent-Deployed Migrations
+- **CANON-041** · Website Mobile Parity + Elite Visual Craft
+- **CANON-042** · Studio Branding System: approved usages, DBA rule, and the elite auto-updating footer
+- **CANON-043** · Baseline repository security hygiene
+- **CANON-044** · In-session task scaffolding (Phase/Wave lists), reconciled at closeout
+- **CANON-045** · Obelisk is the unified studio identity + auth plane
+- **CANON-046** · Canon weighting: tiers + autonomy-first conflict resolution
+- **CANON-047** · Theme system + AI-verified human readability
+- **CANON-048** · Dual-audience ecosystem: every surface built for Humans AND AI Agents
+- **CANON-049** · Continuous evolution: the studio + every project is never static
+- **CANON-050** · Atlas: the foundation that carries the ecosystem — and the standard it is held to
+- **CANON-051** · Web Hardening: every public surface meets the edge-security + standard-files baseline
 
 <!-- canon-index:end -->
 

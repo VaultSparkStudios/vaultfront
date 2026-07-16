@@ -3,8 +3,18 @@
 # Truth Audit
 
 Overall status: green
-Last reviewed: 2026-06-14
+Last reviewed: 2026-07-16
 Public-safe summary only. Sensitive verification notes are maintained privately.
+
+## 2026-07-16
+
+- Recovery provenance: the immediate prior run stopped during `/start`; the inherited dirty layer matched a June 18 `lint-staged` recovery stash plus later Studio protocol propagation. No new audit or implementation had begun.
+- Integrity truth: changed/untracked JSON parses; 53 changed/untracked scripts pass `node --check`; the Studio Claude-config guard reports valid configuration and zero corruption events in the prior 24 hours.
+- Obelisk truth: the committed React `.tsx` helper was unreferenced and incompatible with this Lit project, failing TypeScript because React/JSX are not configured. All deployable Obelisk stubs were removed; `obelisk-passport/` remains local and ignored after being untracked.
+- Verification truth: direct `npm test` passes 94 main files / 655 tests plus 10 server files / 30 tests. Studio doctor reports `overallPass: true`, 115 passing, 25 advisory warnings, 2 expected skips, and `blockingFailing: 0`. The local staging build initially failed on the React stub, proving the earlier build claim stale; the repaired local staging gate now passes `npm run build-prod` with TypeScript clean.
+- Commit-gate truth: the recovery pre-commit hook initially reproduced three inherited lint failures; Obelisk TTL fallback, ANSI stripping, and CommonJS script lint configuration were fixed at source with focused ESLint green and no hook bypass.
+- Sanitization truth: `docs/RIGHTS_PROVENANCE.md` is preserved locally but untracked/ignored; the root AGPL-3.0 `LICENSE` remains public and the upstream copyleft obligation is unchanged.
+- Residual truth: live rivalry/rematch playtest evidence, observed revenue, production Obelisk relying-party registration, and route/server verification remain unclaimed.
 
 ## 2026-06-14
 

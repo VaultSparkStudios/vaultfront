@@ -1,81 +1,80 @@
 /**
- * task-board.mjs — parse context/TASK_BOARD.md into structured item arrays.
+ * task-board.mjs
  *
- * Exports:
- *   parseUnifiedItems(text) → { title, description, status }[]
- *   parseHumanItems(text)   → { title, description }[]
+ * Shared TASK_BOARD parsing helpers used by startup, blocker, and queue flows.
  */
 
-const HUMAN_BLOCKED_SIGNALS = [
-  "human action required",
-  "human-blocked",
-  "needs founder",
-  "manual step",
-  "dashboard signup",
-  "requires login",
-  "ui-only",
-];
-const CROSS_REPO_SIGNALS = ["cross-repo", "another repo", "owned by"];
-const EXTERNAL_SIGNALS = ["waiting on", "external", "third-party", "vendor"];
-const HUB_SIGNALS = ["hub-blocked", "blocked-on-hub"];
-
-function classifyStatus(text) {
-  const t = text.toLowerCase();
-  if (HUB_SIGNALS.some((s) => t.includes(s))) return "blocked-on-hub";
-  if (CROSS_REPO_SIGNALS.some((s) => t.includes(s))) return "cross-repo-locked";
-  if (EXTERNAL_SIGNALS.some((s) => t.includes(s))) return "externally-blocked";
-  if (HUMAN_BLOCKED_SIGNALS.some((s) => t.includes(s))) return "human-blocked";
-  return "unblocked";
+export function extractSection(markdown, heading) {
+  const parts = String(markdown || "").split(/^## /m);
+  const match = parts.find((part) => part.startsWith(heading));
+  if (!match) return "";
+  const nl = match.indexOf("\n");
+  return nl === -1 ? "" : match.slice(nl + 1);
 }
 
-/**
- * Parse a TASK_BOARD.md text into unified items.
- * Recognises markdown list items (- or *) and ## section headings as groupers.
- */
-export function parseUnifiedItems(text) {
-  if (!text || typeof text !== "string") return [];
-  const lines = text.split("\n");
-  const items = [];
-  let currentSection = "";
+export function parseUnifiedItems(markdown) {
+  const section = extractSection(markdown, "Unified Genius List");
+  if (!section) return [];
 
-  for (const line of lines) {
-    const sectionMatch = line.match(/^#{1,3}\s+(.+)/);
-    if (sectionMatch) {
-      currentSection = sectionMatch[1].trim();
-      continue;
-    }
-    const itemMatch = line.match(/^[-*]\s+(.+)/);
-    if (itemMatch) {
-      const raw = itemMatch[1].trim();
-      const status = classifyStatus(`${currentSection} ${raw}`);
-      items.push({
-        title: raw,
-        description: "",
-        status,
-        section: currentSection,
-      });
-    }
+  const items = [];
+  for (const line of section.split(/\r?\n/)) {
+    if (!/^\|\s*[\d.]+\s*\|/.test(line)) continue;
+    const cells = line
+      .split("|")
+      .slice(1, -1)
+      .map((cell) => cell.trim());
+    if (cells.length < 6 || cells[0] === "#") continue;
+    const [rank, tier, category, status, effort, item] = cells;
+    const titleMatch = item.match(/\*\*(.+?)\*\*/);
+    items.push({
+      rank,
+      rankNumber: parseFloat(rank),
+      tier,
+      category,
+      status,
+      effort,
+      item: item.replace(/\*\*/g, ""),
+      rawItem: item,
+      title: (titleMatch ? titleMatch[1] : item)
+        .replace(/\*\*/g, "")
+        .replace(/\s+/g, " ")
+        .trim(),
+    });
   }
+
   return items;
 }
 
-/**
- * Parse a TASK_BOARD.md text into human-action items only.
- * Returns items whose section or text suggests human intervention is required.
- */
-export function parseHumanItems(text) {
-  if (!text || typeof text !== "string") return [];
-  const all = parseUnifiedItems(text);
-  return all.filter(
-    (item) =>
-      [
-        "human-blocked",
-        "cross-repo-locked",
-        "externally-blocked",
-        "blocked-on-hub",
-      ].includes(item.status) ||
-      HUMAN_BLOCKED_SIGNALS.some((s) =>
-        `${item.section} ${item.title}`.toLowerCase().includes(s),
-      ),
+export function parseHumanItems(markdown) {
+  const section = extractSection(markdown, "Human Action Required");
+  if (!section) return [];
+
+  return section
+    .split(/\r?\n/)
+    .map((line) => line.match(/^- \[ \] \*\*(.*?)\*\* — (.*)$/))
+    .filter(Boolean)
+    .map((parts) => {
+      const title = parts[1].trim();
+      const description = parts[2].trim();
+      const ageMatch =
+        description.match(/\((~?\d+)\s+sessions?\)/i) ||
+        description.match(/\((\d+)\s+sessions?\s+old\)/i);
+      const ageSessions = ageMatch
+        ? parseInt(ageMatch[1].replace("~", ""), 10)
+        : null;
+      return {
+        title,
+        description,
+        raw: `**${title}** — ${description}`,
+        ageSessions,
+      };
+    });
+}
+
+export function extractCurrentSessionIntent(markdown) {
+  const match = String(markdown || "").match(
+    /## Current Session Intent: Session \d+\n([\s\S]*?)(?=\n## |\n---|$)/,
   );
+  if (!match) return "";
+  return match[1].trim().replace(/\r?\n+/g, " ");
 }

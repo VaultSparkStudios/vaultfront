@@ -1,59 +1,84 @@
-import fs from "fs";
-import path from "path";
+/**
+ * human-action-ages.mjs — First-seen tracker for Human Action Required items.
+ *
+ * Founder unlocks brief box showed "new" for items that had no `~N sessions`
+ * notation, so aged-item escalation couldn't fire. This module maintains
+ * portfolio/HUMAN_ACTION_AGES.json mapping each canonical action title to its
+ * first-seen ISO date and session number.
+ *
+ * Usage:
+ *   import { ensureAges, daysSince } from './lib/human-action-ages.mjs';
+ *   const ages = ensureAges(taskBoardText, { root });
+ *   ages[title] -> { firstSeen: '2026-01-02', session: 45 }
+ */
 
-const LEDGER_REL = path.join("context", "human-action-ages.json");
+import fs from "node:fs";
+import path from "node:path";
 
-function todayIso() {
-  return new Date().toISOString().slice(0, 10);
+const LEDGER_REL = "portfolio/HUMAN_ACTION_AGES.json";
+
+function parseHumanItems(taskBoardText) {
+  const parts = taskBoardText.split(/^## /m);
+  const section = parts.find((p) => p.startsWith("Human Action Required"));
+  if (!section) return [];
+  const body = section.slice(section.indexOf("\n") + 1);
+  return body
+    .split(/\r?\n/)
+    .filter((l) => /^- \[ \]/.test(l))
+    .map((line) => {
+      const clean = line.replace(/^- \[ \]\s*/, "").replace(/\*\*/g, "");
+      const title = clean.split(/\s+—\s+/)[0].trim();
+      return { title, raw: line };
+    });
 }
 
-export function daysSince(dateIso, now = new Date()) {
-  const then = new Date(`${dateIso}T00:00:00Z`);
-  if (Number.isNaN(then.getTime())) return 0;
-  return Math.max(0, Math.floor((now.getTime() - then.getTime()) / 86_400_000));
-}
-
-function readLedger(filePath) {
+function readLedger(root) {
+  const p = path.join(root, LEDGER_REL);
+  if (!fs.existsSync(p)) return {};
   try {
-    return JSON.parse(fs.readFileSync(filePath, "utf8"));
+    return JSON.parse(fs.readFileSync(p, "utf8"));
   } catch {
     return {};
   }
 }
 
-export function ensureAges(taskBoard, { root }) {
-  const ledgerPath = path.join(root, LEDGER_REL);
-  const ledger = readLedger(ledgerPath);
-  const currentTitles = taskBoard
-    .split(/\r?\n/)
-    .filter((line) => /^- \[ \]/.test(line))
-    .map((line) =>
-      line
-        .replace(/^- \[ \]\s*/, "")
-        .replace(/\*\*/g, "")
-        .split(/\s+--\s+|\s+—\s+/)[0]
-        .trim(),
-    )
-    .filter(Boolean);
+function writeLedger(root, ledger) {
+  const p = path.join(root, LEDGER_REL);
+  fs.mkdirSync(path.dirname(p), { recursive: true });
+  fs.writeFileSync(p, JSON.stringify(ledger, null, 2));
+}
 
-  let changed = false;
-  const today = todayIso();
-  for (const title of currentTitles) {
-    if (!ledger[title]) {
-      ledger[title] = { firstSeen: today };
-      changed = true;
+export function ensureAges(taskBoardText, opts = {}) {
+  const root = opts.root || process.cwd();
+  const ledger = readLedger(root);
+  const items = parseHumanItems(taskBoardText);
+  const today = new Date().toISOString().slice(0, 10);
+  const session = opts.currentSession || null;
+  let dirty = false;
+
+  // Add any new items with today's date.
+  for (const item of items) {
+    if (!ledger[item.title]) {
+      ledger[item.title] = { firstSeen: today, session };
+      dirty = true;
     }
   }
 
-  if (changed) {
-    try {
-      fs.mkdirSync(path.dirname(ledgerPath), { recursive: true });
-      fs.writeFileSync(`${ledgerPath}.tmp`, JSON.stringify(ledger, null, 2));
-      fs.renameSync(`${ledgerPath}.tmp`, ledgerPath);
-    } catch {
-      return ledger;
+  // Prune titles that no longer appear (they got resolved).
+  const activeTitles = new Set(items.map((i) => i.title));
+  for (const title of Object.keys(ledger)) {
+    if (!activeTitles.has(title)) {
+      delete ledger[title];
+      dirty = true;
     }
   }
 
+  if (dirty && !opts.readonly) writeLedger(root, ledger);
   return ledger;
+}
+
+export function daysSince(isoDate) {
+  const d = new Date(isoDate).getTime();
+  if (!Number.isFinite(d)) return null;
+  return Math.floor((Date.now() - d) / 86400000);
 }
