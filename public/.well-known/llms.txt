@@ -3,10 +3,10 @@
 > A convoy-driven browser strategy warfront in public-unlaunched alpha.
 
 ## Core URLs
-- Landing: https://vaultfront.vaultsparkstudios.com/
-- About: https://vaultfront.vaultsparkstudios.com/about/
-- How to play: https://vaultfront.vaultsparkstudios.com/docs/
-- Contact: https://vaultfront.vaultsparkstudios.com/contact/
+- Landing: https://vaultsparkstudios.com/vaultfront/
+- Public runtime: unavailable
+- Join alpha: mailto:founder@vaultsparkstudios.com?subject=VaultFront%20alpha%20interest
+- How to play: https://vaultsparkstudios.com/vaultfront/#how-to-play
 - Source: https://github.com/VaultSparkStudios/VaultFront
 
 ## What this project does
@@ -24,4 +24,4 @@ applicable rights.
 
 ## Studio
 A VaultSpark Studios LLC project. https://vaultsparkstudios.com
-Contact: contact@vaultfront.vaultsparkstudios.com
+Contact: founder@vaultsparkstudios.com (temporary alpha-intake address)

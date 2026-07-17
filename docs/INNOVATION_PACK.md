@@ -1,10 +1,10 @@
 <!-- generated-by: scripts/innovation-pack.mjs -->
-<!-- generated-at: 2026-07-16T22:48:49.473Z -->
+<!-- generated-at: 2026-07-17T01:37:12.445Z -->
 
-# Innovation Pack
+# Second-Order Innovation Pack
 
-Fallback candidates generated when the primary genius list is thin. Completion is derived from checked-in implementation evidence.
+Generated only after the audit-backed Unified Genius List was exhausted. Completion is derived from checked-in implementation evidence.
 
-1. [x] **alpha-gate-evidence-runbook** — Turn the operatorNext alpha-gate checklist into a repeatable local/manual runbook without replacing real tester evidence. Evidence: VaultFrontAlphaGateRunbook plus human-evidence and revenue-separation tests.
-2. [x] **revenue-warning-fixture** — Add a focused fixture proving revenue warnings remain visible until a real checkout/supporter signal exists. Evidence: VaultFrontReadiness warning/pass fixtures.
-3. [x] **startup-go-protocol-smoke** — Keep a smoke test around `/start` and `/go` helper scripts so public-repo protocol drift is caught early. Evidence: StudioStartGoSmoke dispatcher and contract tests.
+1. [x] **runtime-integrity-passport** — Ship a digestible process-local Runtime Integrity Passport. Fuse live IPC/game-loop health, experiment rejection posture, remote-AI reservation truth, and bounded WebSocket policy into one admin-only, scope-labeled, SHA-256-digested contract. Evidence: RuntimeIntegrityPassport module, admin route, canonical digest and tamper-sensitive tests.
+2. [x] **release-evidence-manifest** — Emit a machine-readable Release Evidence Manifest after every build. Bind Git revision/dirty state, launch mode, audit exhaustion, and exact transfer budgets into static/release-evidence.json so promotion and agents consume the same provenance. Evidence: post-build manifest generator, build wiring, and clean/dirty provenance tests.
+3. [x] **exhaustion-proof-gate** — Turn complete-all into a machine-enforced Exhaustion Proof gate. Fail the doctor and closeout whenever the latest audit or innovation sidecar retains a pending unblocked item; emit counts and exact item IDs instead of relying on prose. Evidence: audit+innovation exhaustion checker, doctor probe, and pending/deferred fixtures.

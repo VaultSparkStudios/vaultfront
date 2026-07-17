@@ -52,6 +52,21 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 
 ## Follow-ups
 
+## Completed (2026-07-16 — Session 74 saturated integrity arc)
+
+All 11 newly verified findings in `docs/AUDIT_2026-07-16.json` shipped; the complete audit is exhausted at 23/23, followed by all 3/3 second-order innovation candidates in `docs/INNOVATION_PACK.json`.
+
+Key outcomes: server-authoritative mutation authorization, experiment-integrity enforcement, bounded WebSockets, process-local worker-health watermarks, truthful project doctor, audit-driven Genius List, release/security-header truth, warning-free cycle-free production chunks, transfer/cardinality budgets, provider-bound remote-AI reservations, Runtime Integrity Passport, Release Evidence Manifest, and machine-checked work exhaustion.
+
+Verification: 122 files / 762 unique Vitest tests plus an independent 25-file / 90-test server pass; 22/22 desktop/mobile Playwright; lint; typecheck; production build; formatting and bundle ratchets; sitemap 10/10; Canon zero gaps; doctor `blockingFailing: 0`; audit 23/23 and innovations 3/3 shipped.
+
+- [release-evidence] Collect authenticated evidence from at least three distinct human staging sessions; test or agent events cannot substitute.
+- [release-evidence] Configure and verify project-domain Brevo delivery to the studio inbox.
+- [release-evidence] Wire and verify native Obelisk relying-party authentication.
+- [release-evidence] Verify live CSP/HSTS, Core Web Vitals, and every theme with screenshots after a real staging origin exists.
+- [release-evidence] Observe a real checkout/supporter event before changing revenue status.
+- [release-evidence] Obtain founder approval before any SPARKED transition or public announcement.
+
 ## Completed (2026-07-16 — Session 73 full arc)
 
 All 12 items from `docs/AUDIT_2026-07-16.json` shipped, followed by all 3 evidence-detected second-order innovation candidates. The arc added authenticated Alpha Gate evidence, signed replay enforcement, real private-lobby rematches, Vault Pressure, deterministic coaching, a remote-AI cost firewall, readiness truth, authoritative progression, CI/coverage/format/bundle ratchets, protocol recovery guards, a hardened public surface, and a zero-vulnerability dependency train.

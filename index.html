@@ -86,7 +86,7 @@
     </style>
 
     <!-- SEO -->
-    <link rel="canonical" href="%VITE_CANONICAL_URL%" />
+    <link rel="canonical" href="https://vaultsparkstudios.com/vaultfront/" />
     <meta
       name="description"
       content="Lead your nation in VaultFront, a fast multiplayer strategy battle royale focused on timing, objectives, and tactical comebacks."
@@ -113,7 +113,7 @@
             "name": "VaultFront",
             "applicationCategory": "Game",
             "gamePlatform": "Web browser",
-            "url": "https://vaultfront.vaultsparkstudios.com/",
+            "url": "https://vaultsparkstudios.com/vaultfront/",
             "isBasedOn": "https://github.com/openfrontio/OpenFrontIO",
             "publisher": {
               "@type": "Organization",
@@ -131,13 +131,19 @@
     </script>
 
     <!-- Open Graph -->
-    <meta property="og:url" content="%VITE_CANONICAL_URL%" />
+    <meta
+      property="og:url"
+      content="https://vaultsparkstudios.com/vaultfront/"
+    />
     <meta property="og:title" content="VaultFront - Battle Royale" />
     <meta
       property="og:description"
       content="Lead your nation in VaultFront, a fast multiplayer strategy battle royale focused on timing, objectives, and tactical comebacks."
     />
-    <meta property="og:image" content="%VITE_OG_IMAGE_URL%" />
+    <meta
+      property="og:image"
+      content="https://vaultsparkstudios.com/assets/og-image.png"
+    />
     <meta property="og:type" content="game" />
 
     <!-- Injected from Server env -->
@@ -168,7 +174,9 @@
     <script>
       window.googletag = window.googletag || { cmd: [] };
       googletag.cmd.push(function () {
-        googletag.pubads().set("page_url", "%VITE_CANONICAL_URL%");
+        googletag
+          .pubads()
+          .set("page_url", "https://vaultsparkstudios.com/vaultfront/");
       });
     </script>
 

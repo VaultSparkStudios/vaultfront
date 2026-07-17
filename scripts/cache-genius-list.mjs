@@ -12,18 +12,20 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { findLatestAuditSidecar } from "./lib/audit-sidecar.mjs";
 import { spawnSync } from "./lib/safe-spawn.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
 const cachePath = path.join(root, ".cache", "genius-list.json");
+const latestAuditInfo = findLatestAuditSidecar(root);
 const sourceFiles = [
   "context/TASK_BOARD.md",
   "context/PROJECT_STATUS.json",
   "context/CURRENT_STATE.md",
   "context/SELF_IMPROVEMENT_LOOP.md",
   "docs/STARTUP_BRIEF.md",
-  "docs/AUDIT_2026-06-13_S69.md",
+  ...(latestAuditInfo ? [`docs/AUDIT_${latestAuditInfo.date}.json`] : []),
 ].map((rel) => path.join(root, rel));
 
 function mtimeMs(file) {

@@ -11,5 +11,28 @@
       "compression": "gzip"
     }
   ],
+  "initialEntry": {
+    "html": "static/index.html",
+    "maxGzipBytes": 738885,
+    "maxBrotliBytes": 586751
+  },
+  "media": {
+    "root": "static/assets",
+    "extensions": [
+      ".mp3",
+      ".png",
+      ".webp",
+      ".jpg",
+      ".jpeg",
+      ".gif",
+      ".svg",
+      ".woff",
+      ".woff2",
+      ".ttf",
+      ".eot"
+    ],
+    "maxTotalBytes": 14678071,
+    "maxFileBytes": 4101503
+  },
   "defaultCompression": "gzip"
 }

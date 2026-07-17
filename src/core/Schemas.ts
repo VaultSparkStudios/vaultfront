@@ -1,5 +1,5 @@
-import countries from "resources/countries.json";
-import quickChatData from "resources/QuickChat.json";
+import countries from "resources/countries.json" with { type: "json" };
+import quickChatData from "resources/QuickChat.json" with { type: "json" };
 import { z } from "zod";
 import {
   ColorPaletteSchema,

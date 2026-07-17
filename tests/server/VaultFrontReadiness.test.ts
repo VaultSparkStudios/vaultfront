@@ -2,6 +2,34 @@ import { describe, expect, it } from "vitest";
 import { buildVaultFrontReadiness } from "../../src/server/VaultFrontReadiness";
 
 describe("buildVaultFrontReadiness", () => {
+  it("preserves scoped runtime health evidence without implying fleet health", () => {
+    const payload = buildVaultFrontReadiness({
+      healthy: true,
+      processRole: "worker",
+      workerId: 3,
+      healthEvidence: {
+        scope: "process-local-worker",
+        httpRequest: "responding",
+        ipcConnected: true,
+        ipcWatermark: {
+          healthy: true,
+          lastMasterMessageAt: 12_100,
+          ageMs: 150,
+          maxAgeMs: 2_000,
+        },
+        gameLoop: {
+          healthy: true,
+          lastTickCompletedAt: 12_000,
+          ageMs: 250,
+          maxAgeMs: 3_500,
+        },
+      },
+    });
+
+    expect(payload.healthEvidence.scope).toBe("process-local-worker");
+    expect(payload.healthEvidence.gameLoop?.ageMs).toBe(250);
+    expect(payload.serverStatus).toBe("ready");
+  });
   it("keeps healthy server status separate from blocked release evidence", () => {
     const payload = buildVaultFrontReadiness({
       healthy: true,
@@ -175,6 +203,11 @@ describe("buildVaultFrontReadiness", () => {
         maxCallsPerHour: 10,
         callsUsed: 2,
         callsRemaining: 8,
+        enforcementScope: "process-local-per-worker",
+        windowStartedAt: 1_000,
+        callsByFeature: { coach: 2 },
+        providerBoundReservations: 2,
+        deniedReservations: 0,
         costProfile: "metered-hard-cap",
         reason: "ready",
       },

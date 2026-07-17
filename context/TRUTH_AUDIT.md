@@ -6,6 +6,32 @@ Overall status: green
 Last reviewed: 2026-07-16
 Public-safe summary only. Sensitive verification notes are maintained privately.
 
+## Protocol Genome — Session 74
+
+| Dimension                 | Score | Evidence                                                                                                                   |
+| ------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------- |
+| Schema alignment          |     5 | Audit, innovation, release-evidence, project-status, and doctor payloads parse and validate against their local contracts. |
+| Prompt/template alignment |     5 | The agent-neutral session protocol, active skill flow, Canon posture, and closeout ordering were followed.                 |
+| Derived-view freshness    |     5 | Current state, task board, handoff, truth audit, SIL, and project status describe Session 74 evidence.                     |
+| Handoff continuity        |     5 | The public-safe two-session handoff preserves S73 context and gives an evidence-bounded next move.                         |
+| Contradiction density     |     4 | Local surfaces agree; central registry audience/type and release-gate shape still need the already-shipped Ark correction. |
+
+**Genome total:** 24/25 — green. The one-point deduction is cross-repo metadata drift, not hidden local inconsistency.
+
+## 2026-07-16 — Session 74
+
+- Work truth: the latest audit sidecar contains 23/23 shipped entries, including 11 newly implemented findings; `docs/INNOVATION_PACK.json` contains 3/3 shipped innovations. `check-work-exhaustion.mjs` returns `ok: true` with no pending unblocked IDs.
+- Authority truth: all inventoried state-changing HTTP routes cross the shared verified-actor policy; contract tests cover the route inventory and actor/role decisions. This does not claim native Obelisk relying-party integration.
+- Experiment truth: assignment is server-owned; accepted values are literal unit events with UUID identity and deduplication; invalid/duplicate/spoofed attempts are counted separately.
+- Health truth: readiness is process-local and derives from HTTP, IPC freshness, and game-loop freshness. WebSocket payload, IP, spectator, worker, and buffered-byte limits are explicit policy values.
+- Remote-AI truth: reservations are placed only after authentication, validation, and cache lookup, immediately before provider-bound work. Posture explicitly says `process-local-per-worker`; counters are not a global distributed quota.
+- Build truth: TypeScript and warning-free Vite production build pass. Actual initial entry transfer is 738,884 bytes gzip and 586,665 bytes Brotli; media aggregate and largest-artifact budgets pass. The Release Evidence Manifest reports transfer pass and audit/innovation exhaustion.
+- Test truth: the broad run passes 122 files / 762 unique tests; the server subset independently repeats 25 files / 90 tests; Playwright passes 22/22 desktop/mobile tests with two bounded local workers.
+- Tooling truth: project doctor runs four real checks with `blockingFailing: 0`; formatting ratchet and lint pass after touched-file correction; sitemap compliance is 10/10 and Canon conformance reports zero gaps/zero absolute gaps.
+- Security truth: settings sanitization found zero issues. The full-tree entropy scanner reports low-confidence false positives in inherited binary/base64 assets, so it is not claimed green; the authoritative staged-diff scan passed with zero findings.
+- Release truth: public launch remains NO-GO. Studio Ops `release-gate` currently throws because registry `testing` is not an array, web hardening sees zero public origins, and the central cost gate still calls this project `exempt-internal`; signed Ark cargo requests control-plane correction. No sibling repo was edited.
+- SIL truth: 968/1000 is the exact sum of 10 categories. Engagement and ecosystem scores remain bounded by absent real-human and external integration evidence.
+
 ## 2026-07-16 — Session 73
 
 - Audit truth: all 12 items in `docs/AUDIT_2026-07-16.json` are marked shipped with per-item execution evidence; the Markdown audit is derived from that JSON. All 3 second-order innovation candidates are evidence-detected complete.

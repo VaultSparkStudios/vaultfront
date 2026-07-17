@@ -1,14 +1,44 @@
 import { Counter, metrics } from "@opentelemetry/api";
 import { logger } from "./Logger";
 
+export const VAULT_METRIC_ATTRIBUTE_KEYS = [
+  "duration_bucket",
+  "gold_tier",
+  "player_count_bucket",
+] as const;
+
+type VaultMetricAttributeKey = (typeof VAULT_METRIC_ATTRIBUTE_KEYS)[number];
+type VaultMetricAttributes = Partial<Record<VaultMetricAttributeKey, string>>;
+
+const vaultMetricAttributeKeys = new Set<string>(VAULT_METRIC_ATTRIBUTE_KEYS);
+
+export function assertVaultMetricAttributes(
+  attributes: Record<string, unknown>,
+): asserts attributes is VaultMetricAttributes {
+  for (const key of Object.keys(attributes)) {
+    if (!vaultMetricAttributeKeys.has(key)) {
+      throw new Error("Disallowed VaultMetrics attribute: " + key);
+    }
+  }
+}
+
+class CardinalitySafeCounter {
+  constructor(private readonly counter: Counter) {}
+
+  add(value: number, attributes: VaultMetricAttributes = {}): void {
+    assertVaultMetricAttributes(attributes);
+    this.counter.add(value, attributes);
+  }
+}
+
 interface VaultCounters {
-  vaultCaptured: Counter;
-  convoyDelivered: Counter;
-  executionChainCompleted: Counter;
-  surgeActivated: Counter;
-  matchStarted: Counter;
-  matchEnded: Counter;
-  achievementUnlocked: Counter;
+  vaultCaptured: CardinalitySafeCounter;
+  convoyDelivered: CardinalitySafeCounter;
+  executionChainCompleted: CardinalitySafeCounter;
+  surgeActivated: CardinalitySafeCounter;
+  matchStarted: CardinalitySafeCounter;
+  matchEnded: CardinalitySafeCounter;
+  achievementUnlocked: CardinalitySafeCounter;
 }
 
 let counters: VaultCounters | null = null;
@@ -35,7 +65,7 @@ function goldTier(goldReward: bigint): "low" | "mid" | "high" {
 
 function assertInitialized(method: string): VaultCounters | null {
   if (counters === null) {
-    logger.debug(`VaultMetrics.${method} called before init(), skipping`);
+    logger.debug("VaultMetrics." + method + " called before init(), skipping");
     return null;
   }
   return counters;
@@ -46,93 +76,99 @@ export const VaultMetrics = {
     const meter = metrics.getMeter(meterName);
 
     counters = {
-      vaultCaptured: meter.createCounter("vaultfront.vault_captured", {
-        description: "Number of vault capture events",
-      }),
-      convoyDelivered: meter.createCounter("vaultfront.convoy_delivered", {
-        description:
-          "Number of convoy delivery events, broken down by gold tier",
-      }),
-      executionChainCompleted: meter.createCounter(
-        "vaultfront.execution_chain_completed",
-        {
-          description: "Number of 3-step execution chain completions",
-        },
+      vaultCaptured: new CardinalitySafeCounter(
+        meter.createCounter("vaultfront.vault_captured", {
+          description: "Number of vault capture events",
+        }),
       ),
-      surgeActivated: meter.createCounter("vaultfront.surge_activated", {
-        description: "Number of surge activations",
-      }),
-      matchStarted: meter.createCounter("vaultfront.match_started", {
-        description: "Number of matches started",
-      }),
-      matchEnded: meter.createCounter("vaultfront.match_ended", {
-        description: "Number of matches ended, broken down by duration bucket",
-      }),
-      achievementUnlocked: meter.createCounter(
-        "vaultfront.achievement_unlocked",
-        {
-          description: "Number of achievement unlocks per achievement",
-        },
+      convoyDelivered: new CardinalitySafeCounter(
+        meter.createCounter("vaultfront.convoy_delivered", {
+          description:
+            "Number of convoy delivery events, broken down by gold tier",
+        }),
+      ),
+      executionChainCompleted: new CardinalitySafeCounter(
+        meter.createCounter("vaultfront.execution_chain_completed", {
+          description: "Number of 3-step execution chain completions",
+        }),
+      ),
+      surgeActivated: new CardinalitySafeCounter(
+        meter.createCounter("vaultfront.surge_activated", {
+          description: "Number of surge activations",
+        }),
+      ),
+      matchStarted: new CardinalitySafeCounter(
+        meter.createCounter("vaultfront.match_started", {
+          description:
+            "Number of matches started, broken down by player-count bucket",
+        }),
+      ),
+      matchEnded: new CardinalitySafeCounter(
+        meter.createCounter("vaultfront.match_ended", {
+          description:
+            "Number of matches ended, broken down by duration bucket",
+        }),
+      ),
+      achievementUnlocked: new CardinalitySafeCounter(
+        meter.createCounter("vaultfront.achievement_unlocked", {
+          description: "Number of achievement unlock events",
+        }),
       ),
     };
 
     logger.info("VaultMetrics initialized", { meterName });
   },
 
-  recordVaultCaptured(gameId: string): void {
+  recordVaultCaptured(_gameId: string): void {
     const c = assertInitialized("recordVaultCaptured");
     if (!c) return;
-    c.vaultCaptured.add(1, { "game.id": gameId });
+    c.vaultCaptured.add(1);
   },
 
-  recordConvoyDelivered(gameId: string, goldReward: bigint): void {
+  recordConvoyDelivered(_gameId: string, goldReward: bigint): void {
     const c = assertInitialized("recordConvoyDelivered");
     if (!c) return;
     c.convoyDelivered.add(1, {
-      "game.id": gameId,
       gold_tier: goldTier(goldReward),
     });
   },
 
-  recordExecutionChainCompleted(gameId: string): void {
+  recordExecutionChainCompleted(_gameId: string): void {
     const c = assertInitialized("recordExecutionChainCompleted");
     if (!c) return;
-    c.executionChainCompleted.add(1, { "game.id": gameId });
+    c.executionChainCompleted.add(1);
   },
 
-  recordSurgeActivated(gameId: string): void {
+  recordSurgeActivated(_gameId: string): void {
     const c = assertInitialized("recordSurgeActivated");
     if (!c) return;
-    c.surgeActivated.add(1, { "game.id": gameId });
+    c.surgeActivated.add(1);
   },
 
   recordMatchStarted(
-    gameId: string,
-    mapName: string,
+    _gameId: string,
+    _mapName: string,
     playerCount: number,
   ): void {
     const c = assertInitialized("recordMatchStarted");
     if (!c) return;
     c.matchStarted.add(1, {
-      "game.id": gameId,
-      map_name: mapName,
       player_count_bucket: playerCountBucket(playerCount),
     });
   },
 
-  recordMatchEnded(gameId: string, durationSeconds: number): void {
+  recordMatchEnded(_gameId: string, durationSeconds: number): void {
     const c = assertInitialized("recordMatchEnded");
     if (!c) return;
     c.matchEnded.add(1, {
-      "game.id": gameId,
       duration_bucket: durationBucket(durationSeconds),
     });
   },
 
-  recordAchievementUnlocked(achievementId: string): void {
+  recordAchievementUnlocked(_achievementId: string): void {
     const c = assertInitialized("recordAchievementUnlocked");
     if (!c) return;
-    c.achievementUnlocked.add(1, { achievement_id: achievementId });
+    c.achievementUnlocked.add(1);
   },
 
   /**
@@ -140,7 +176,7 @@ export const VaultMetrics = {
    * Call once from archiveGame() with totals summed across all players.
    */
   recordMatchAggregates(
-    gameId: string,
+    _gameId: string,
     totals: {
       vaultCaptures: number;
       convoyDeliveries: number;
@@ -151,18 +187,16 @@ export const VaultMetrics = {
     const c = assertInitialized("recordMatchAggregates");
     if (!c) return;
     if (totals.vaultCaptures > 0) {
-      c.vaultCaptured.add(totals.vaultCaptures, { "game.id": gameId });
+      c.vaultCaptured.add(totals.vaultCaptures);
     }
     if (totals.convoyDeliveries > 0) {
-      c.convoyDelivered.add(totals.convoyDeliveries, { "game.id": gameId });
+      c.convoyDelivered.add(totals.convoyDeliveries);
     }
     if (totals.executionChains > 0) {
-      c.executionChainCompleted.add(totals.executionChains, {
-        "game.id": gameId,
-      });
+      c.executionChainCompleted.add(totals.executionChains);
     }
     if (totals.surgeActivations > 0) {
-      c.surgeActivated.add(totals.surgeActivations, { "game.id": gameId });
+      c.surgeActivated.add(totals.surgeActivations);
     }
   },
 };

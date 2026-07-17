@@ -16,6 +16,8 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { findLatestAuditSidecar } from "./lib/audit-sidecar.mjs";
+import { GENIUS_CACHE_SCHEMA_VERSION } from "./lib/genius-cache.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
@@ -73,6 +75,7 @@ function item({
   blockedReason = "",
   recommendedModel = "sonnet",
   command = "",
+  ...metadata
 }) {
   return {
     id: slugify(title),
@@ -85,10 +88,11 @@ function item({
     score,
     finalScore: score,
     status,
-    blocked: !["unblocked", "done"].includes(status),
+    blocked: ["blocked", "human-blocked"].includes(status),
     blockedReason,
     recommendedModel,
     command,
+    ...metadata,
   };
 }
 
@@ -99,6 +103,39 @@ const latestAudit = readText("docs/AUDIT_2026-06-13_S69.md");
 const startupBrief = readText("docs/STARTUP_BRIEF.md");
 
 const candidates = [];
+const latestAuditInfo = findLatestAuditSidecar(root);
+const auditSource = latestAuditInfo
+  ? `docs/AUDIT_${latestAuditInfo.date}.json`
+  : null;
+const auditCandidates = (latestAuditInfo?.audit?.items ?? []).map(
+  (auditItem) => {
+    const rawStatus = String(auditItem.status ?? "pending").toLowerCase();
+    const mappedStatus =
+      rawStatus === "shipped" || rawStatus === "done"
+        ? "done"
+        : rawStatus === "pending"
+          ? "unblocked"
+          : rawStatus;
+    return item({
+      title: auditItem.title ?? auditItem.slug ?? "Untitled audit item",
+      summary: auditItem.why ?? auditItem.summary ?? "Audit-ranked work item.",
+      axis: auditItem.axis ?? "audit",
+      effort: auditItem.effortHours
+        ? `${auditItem.effortHours}h`
+        : "unspecified",
+      tier: auditItem.tier ?? "⚡",
+      score: Math.max(1, Math.round(Number(auditItem.priority ?? 0) * 2)),
+      status: mappedStatus,
+      blockedReason: auditItem.blockedReason ?? "",
+      recommendedModel: auditItem.recommendedModel ?? "sonnet",
+      command: auditItem.command ?? "",
+      auditSource,
+      auditSlug: auditItem.slug,
+      recipe: auditItem.recipe ?? "",
+      executionLog: auditItem.executionLog ?? [],
+    });
+  },
+);
 
 function completionNote(title) {
   const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -239,13 +276,16 @@ candidates.push(
 );
 
 const seen = new Set();
-const items = candidates
+const rankedCandidates =
+  auditCandidates.length > 0 ? auditCandidates : candidates;
+const items = rankedCandidates
   .filter((candidate) => {
     if (seen.has(candidate.slug)) return false;
     seen.add(candidate.slug);
     return true;
   })
   .map((candidate) => {
+    if (candidate.auditSource) return candidate;
     const done = completionNote(candidate.title);
     return done
       ? { ...candidate, status: "done", blocked: false, doneNote: done }
@@ -256,10 +296,11 @@ const items = candidates
 
 const generatedAt = new Date().toISOString();
 const payload = {
-  schemaVersion: "1.0",
+  schemaVersion: GENIUS_CACHE_SCHEMA_VERSION,
   project: status.slug ?? "vaultfront",
   generatedAt,
-  ignisSource: "fallback",
+  ignisSource: auditSource ? "latest-audit-sidecar" : "fallback",
+  auditSource,
   source: "scripts/generate-genius-list.mjs",
   items,
 };
@@ -272,7 +313,7 @@ function renderMarkdown(list) {
     "# Unified Genius List",
     "",
     `Project: ${payload.project}`,
-    "IGNIS source: fallback",
+    `IGNIS source: ${payload.ignisSource}`,
     "",
   ];
   for (const entry of list) {

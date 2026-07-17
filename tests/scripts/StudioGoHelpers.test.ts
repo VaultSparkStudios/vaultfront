@@ -22,23 +22,19 @@ describe("Studio /go helper scripts", () => {
     expect(result.status).toBe(0);
     const payload = JSON.parse(result.stdout);
     expect(payload.project).toBe("vaultfront");
-    expect(payload.ignisSource).toBe("fallback");
-    expect(payload.items.length).toBeGreaterThanOrEqual(3);
+    expect(payload.ignisSource).toBe("latest-audit-sidecar");
+    expect(payload.auditSource).toMatch(
+      /^docs\/AUDIT_\d{4}-\d{2}-\d{2}\.json$/,
+    );
+    expect(payload.items.length).toBeGreaterThan(0);
+    expect(
+      payload.items.every(
+        (item: { auditSource: string }) =>
+          item.auditSource === payload.auditSource,
+      ),
+    ).toBe(true);
     expect(
       payload.items.some((item: { status: string }) => item.status === "done"),
-    ).toBe(true);
-    expect(
-      payload.items.some(
-        (item: { title: string; status: string }) =>
-          item.title.includes("Manual rivalry") &&
-          item.status === "human-blocked",
-      ),
-    ).toBe(true);
-    expect(
-      payload.items.some(
-        (item: { title: string; status: string }) =>
-          item.title.includes("checkout") && item.status === "human-blocked",
-      ),
     ).toBe(true);
   });
 

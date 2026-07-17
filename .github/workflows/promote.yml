@@ -59,6 +59,25 @@ jobs:
           echo "${DEPLOY_SSH_KEY}" > ~/.ssh/id_rsa
           test -n "$DEPLOY_SERVER_HOST" && ssh-keyscan -H "$DEPLOY_SERVER_HOST" >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_rsa
+      - name: Resolve promoted image Git revision
+        env:
+          GHCR_REPO: ${{ vars.GHCR_REPO }}
+          GHCR_USERNAME: ${{ vars.GHCR_USERNAME }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          set -euo pipefail
+          if [[ "$IMAGE_TAG" == sha256:* ]]; then
+            IMAGE_REF="${GHCR_USERNAME}/${GHCR_REPO}@${IMAGE_TAG}"
+          else
+            IMAGE_REF="${GHCR_USERNAME}/${GHCR_REPO}:${IMAGE_TAG}"
+          fi
+          docker pull "$IMAGE_REF"
+          EXPECTED_GIT_SHA="$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$IMAGE_REF")"
+          if [[ ! "$EXPECTED_GIT_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Promoted image is missing a valid org.opencontainers.image.revision label" >&2
+            exit 1
+          fi
+          echo "EXPECTED_GIT_SHA=$EXPECTED_GIT_SHA" >> "$GITHUB_ENV"
 
       - name: Deploy promoted image
         env:
@@ -86,7 +105,7 @@ jobs:
         run: |
           echo "::group::Wait for deployment to start"
           set -euxo pipefail
-          while [ "$(curl -s https://${FQDN}/commit.txt)" != "${{ inputs.image_tag }}" ]; do
+          while [ "$(curl -fsS https://${FQDN}/commit.txt)" != "${EXPECTED_GIT_SHA}" ]; do
             if [ "$SECONDS" -ge 300 ]; then
               echo "Timeout: promoted build did not come up within 5 minutes"
               exit 1

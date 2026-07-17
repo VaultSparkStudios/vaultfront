@@ -22,10 +22,13 @@ test.describe("Settings / Theme", () => {
     await page.reload();
     await page.waitForSelector("play-page", { timeout: 10_000 });
 
-    const theme = await page.evaluate(() =>
-      document.documentElement.getAttribute("data-vaultfront-theme"),
-    );
-    expect(theme).toBe("light");
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          document.documentElement.getAttribute("data-vaultfront-theme"),
+        ),
+      )
+      .toBe("light");
   });
 
   test("dark theme class is applied on dark preference", async ({ page }) => {

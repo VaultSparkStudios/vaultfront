@@ -26,6 +26,7 @@ import { archive, finalizeGameRecord } from "./Archive";
 import { Client } from "./Client";
 import { dailyChallengeStore } from "./DailyChallengeStore";
 import { EloRating } from "./EloRating";
+import { ExperimentIntegrityGate } from "./ExperimentIntegrity";
 import { GameManager } from "./GameManager";
 import { registerGamePreviewRoute } from "./GamePreviewRoute";
 import { getUserMe, verifyClientToken } from "./jwt";
@@ -50,14 +51,30 @@ import { startPolling } from "./PollingLoop";
 import { predictionLeagueStore } from "./PredictionLeagueStore";
 import { PrivilegeRefresher } from "./PrivilegeRefresher";
 import { rematchStore } from "./RematchStore";
-import { canAttemptRemoteAi, reserveRemoteAiCall } from "./RemoteAiPolicy";
+import {
+  canAttemptRemoteAi,
+  remoteAiPosture,
+  reserveRemoteAiCall,
+} from "./RemoteAiPolicy";
 import { replayHighlightStore } from "./ReplayHighlightStore";
 import { getReplayIntegrityPosture, replayStore } from "./ReplayStore";
+import { buildRuntimeIntegrityPassport } from "./RuntimeIntegrityPassport";
 import { seasonMilestoneStore } from "./SeasonMilestoneStore";
+import {
+  MAX_SPECTATOR_BUFFERED_BYTES,
+  MAX_SPECTATORS_PER_GAME,
+  MAX_SPECTATORS_PER_WORKER,
+} from "./SpectatorBus";
 import { streamingBus } from "./StreamingBus";
 import { tournamentStore } from "./TournamentStore";
 import { verifyTurnstileToken } from "./Turnstile";
 import { tutorialOrchestrator } from "./TutorialOrchestrator";
+import {
+  canManageClan,
+  canManageTournament,
+  verifyOptionalIdentityClaim,
+  type VerifiedVaultFrontActor,
+} from "./VaultFrontAuthorization";
 import {
   buildVaultFrontPlaytestPulseSummary,
   recordVaultFrontPlaytestPulse,
@@ -67,7 +84,12 @@ import {
   vaultSeasonScheduler,
   type SeasonStatus,
 } from "./VaultSeasonScheduler";
-import { WorkerLobbyService } from "./WorkerLobbyService";
+import {
+  LOBBY_MAX_BUFFERED_BYTES,
+  LOBBY_WS_MAX_PAYLOAD_BYTES,
+  SPECTATOR_WS_MAX_PAYLOAD_BYTES,
+  WorkerLobbyService,
+} from "./WorkerLobbyService";
 import { initWorkerMetrics } from "./WorkerMetrics";
 
 const config = getServerConfigFromServer();
@@ -93,25 +115,32 @@ const VaultFrontRuntimeHudVariantSchema = z.enum([
   "default",
   "mobile_priority",
 ]);
+const ExperimentEventIdSchema = z
+  .string()
+  .min(16)
+  .max(128)
+  .regex(/^[a-zA-Z0-9_.:-]+$/);
 
 const VaultFrontDockEventSchema = z.object({
+  eventId: ExperimentEventIdSchema,
   event: z
     .string()
     .min(1)
     .max(64)
     .regex(/^[a-zA-Z0-9_.-]+$/),
   variant: VaultFrontDockVariantSchema.optional(),
-  value: z.number().int().min(1).max(10_000).default(1),
+  value: z.literal(1).default(1),
 });
 
 const VaultFrontRecapEventSchema = z.object({
+  eventId: ExperimentEventIdSchema,
   event: z
     .string()
     .min(1)
     .max(64)
     .regex(/^[a-zA-Z0-9_.-]+$/),
   variant: VaultFrontRecapVariantSchema.optional(),
-  value: z.number().int().min(1).max(10_000).default(1),
+  value: z.literal(1).default(1),
 });
 
 const VaultFrontOutcomeTelemetrySchema = z.object({
@@ -135,6 +164,7 @@ const VaultFrontOutcomeTelemetrySchema = z.object({
 });
 
 const VaultFrontRuntimeEventSchema = z.object({
+  eventId: ExperimentEventIdSchema,
   event: z
     .string()
     .min(1)
@@ -142,7 +172,7 @@ const VaultFrontRuntimeEventSchema = z.object({
     .regex(/^[a-zA-Z0-9_.-]+$/),
   rewardVariant: VaultFrontRuntimeRewardVariantSchema.optional(),
   hudVariant: VaultFrontRuntimeHudVariantSchema.optional(),
-  value: z.number().int().min(1).max(10_000).default(1),
+  value: z.literal(1).default(1),
 });
 
 const VaultFrontFunnelTelemetrySchema = z.object({
@@ -282,6 +312,7 @@ const vaultFrontRuntimeHudStats = new Map<
   ["mobile_priority", { assignedUsers: 0, events: {} }],
 ]);
 const vaultFrontFunnelSummaries = new Map<string, VaultFrontFunnelSummary>();
+const vaultFrontExperimentIntegrity = new ExperimentIntegrityGate();
 
 const DOCK_OBJECTIVE_EVENTS = new Set([
   "leaderboard_open_top",
@@ -354,6 +385,26 @@ async function resolveVaultFrontIdentity(req: Request): Promise<string | null> {
 
   return null;
 }
+async function requireVaultFrontActor(
+  req: Request,
+  res: Response,
+): Promise<VerifiedVaultFrontActor | null> {
+  const actor = await resolveAuthenticatedActorKey(req);
+  if (actor) return actor;
+  res.status(401).json({ error: "Authenticated play token required" });
+  return null;
+}
+
+function acceptActorClaim(
+  actor: VerifiedVaultFrontActor,
+  claimedPersistentId: string | undefined,
+  res: Response,
+): boolean {
+  const verdict = verifyOptionalIdentityClaim(actor, claimedPersistentId);
+  if (verdict.ok) return true;
+  res.status(verdict.status).json({ error: verdict.error });
+  return false;
+}
 
 function ensureDockAssignment(identity: string): VaultFrontDockAssignment {
   const existing = vaultFrontDockAssignments.get(identity);
@@ -377,10 +428,9 @@ function recordDockEvent(
   identity: string,
   event: string,
   value: number,
-  variantHint?: z.infer<typeof VaultFrontDockVariantSchema>,
 ): { variant: z.infer<typeof VaultFrontDockVariantSchema> } {
   const assignment = ensureDockAssignment(identity);
-  const variant = variantHint ?? assignment.variant;
+  const variant = assignment.variant;
   const stats = vaultFrontDockVariantStats.get(variant);
   if (stats) {
     stats.events[event] = (stats.events[event] ?? 0) + value;
@@ -415,10 +465,9 @@ function recordRecapEvent(
   identity: string,
   event: string,
   value: number,
-  variantHint?: z.infer<typeof VaultFrontRecapVariantSchema>,
 ): { variant: z.infer<typeof VaultFrontRecapVariantSchema> } {
   const assignment = ensureRecapAssignment(identity);
-  const variant = variantHint ?? assignment.variant;
+  const variant = assignment.variant;
   const stats = vaultFrontRecapVariantStats.get(variant);
   if (stats) {
     stats.events[event] = (stats.events[event] ?? 0) + value;
@@ -461,15 +510,13 @@ function recordRuntimeEvent(
   identity: string,
   event: string,
   value: number,
-  rewardVariantHint?: z.infer<typeof VaultFrontRuntimeRewardVariantSchema>,
-  hudVariantHint?: z.infer<typeof VaultFrontRuntimeHudVariantSchema>,
 ): {
   rewardVariant: z.infer<typeof VaultFrontRuntimeRewardVariantSchema>;
   hudVariant: z.infer<typeof VaultFrontRuntimeHudVariantSchema>;
 } {
   const assignment = ensureRuntimeAssignment(identity);
-  const rewardVariant = rewardVariantHint ?? assignment.rewardVariant;
-  const hudVariant = hudVariantHint ?? assignment.hudVariant;
+  const rewardVariant = assignment.rewardVariant;
+  const hudVariant = assignment.hudVariant;
   const rewardStats = vaultFrontRuntimeRewardStats.get(rewardVariant);
   const hudStats = vaultFrontRuntimeHudStats.get(hudVariant);
   if (rewardStats) {
@@ -835,26 +882,63 @@ export async function startWorker() {
   );
 
   app.get("/api/vaultfront/readiness", (_req, res) => {
-    res.json(
-      buildVaultFrontReadiness({
-        healthy: true,
-        processRole: "worker",
-        workerId,
-        revenueSignal:
-          process.env.VAULTFRONT_REVENUE_OBSERVED === "1"
-            ? {
-                status: "observed",
-                observedAt: process.env.VAULTFRONT_REVENUE_OBSERVED_AT,
-              }
-            : { status: "unverified" },
-        playtestPulse: buildVaultFrontPlaytestPulseSummary(),
-        replayIntegrity: getReplayIntegrityPosture(),
-        rightsEvidence: {
-          status: "declared",
-          path: "LICENSE and LICENSING.md",
-        },
-      }),
-    );
+    const gameLoop = gm.healthSnapshot();
+    const ipc = lobbyService.ipcHealthSnapshot();
+    const healthy = gameLoop.healthy && ipc.healthy;
+    const payload = buildVaultFrontReadiness({
+      healthy,
+      processRole: "worker",
+      workerId,
+      healthEvidence: {
+        scope: "process-local-worker",
+        httpRequest: "responding",
+        ipcConnected: ipc.connected,
+        ipcWatermark: ipc,
+        gameLoop,
+      },
+      revenueSignal:
+        process.env.VAULTFRONT_REVENUE_OBSERVED === "1"
+          ? {
+              status: "observed",
+              observedAt: process.env.VAULTFRONT_REVENUE_OBSERVED_AT,
+            }
+          : { status: "unverified" },
+      playtestPulse: buildVaultFrontPlaytestPulseSummary(),
+      replayIntegrity: getReplayIntegrityPosture(),
+      rightsEvidence: {
+        status: "declared",
+        path: "LICENSE and LICENSING.md",
+      },
+    });
+    return res.status(healthy ? 200 : 503).json(payload);
+  });
+
+  app.get("/api/admin/vaultfront/runtime-integrity-passport", (req, res) => {
+    if (req.headers[config.adminHeader()] !== config.adminToken()) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const gameLoop = gm.healthSnapshot();
+    const ipc = lobbyService.ipcHealthSnapshot();
+    const passport = buildRuntimeIntegrityPassport({
+      workerId,
+      observedAt: new Date().toISOString(),
+      health: {
+        httpResponding: true,
+        ipc,
+        gameLoop,
+      },
+      experimentIntegrity: vaultFrontExperimentIntegrity.snapshot(),
+      remoteAi: remoteAiPosture(),
+      websocketPolicy: {
+        lobbyMaxPayloadBytes: LOBBY_WS_MAX_PAYLOAD_BYTES,
+        spectatorMaxPayloadBytes: SPECTATOR_WS_MAX_PAYLOAD_BYTES,
+        lobbyMaxBufferedBytes: LOBBY_MAX_BUFFERED_BYTES,
+        spectatorMaxBufferedBytes: MAX_SPECTATOR_BUFFERED_BYTES,
+        maxSpectatorsPerGame: MAX_SPECTATORS_PER_GAME,
+        maxSpectatorsPerWorker: MAX_SPECTATORS_PER_WORKER,
+      },
+    });
+    return res.status(passport.status === "fail" ? 503 : 200).json(passport);
   });
 
   app.post("/api/create_game/:id", async (req, res) => {
@@ -927,7 +1011,7 @@ export async function startWorker() {
     log.info(`starting private lobby with id ${req.params.id}`);
     const game = gm.game(req.params.id);
     if (!game) {
-      return;
+      return res.status(404).json({ error: "Game not found" });
     }
     if (game.isPublic()) {
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -935,10 +1019,19 @@ export async function startWorker() {
       log.info(
         `cannot start public game ${game.id}, game is public, ip: ${ipAnonymize(clientIP)}`,
       );
-      return;
+      return res
+        .status(403)
+        .json({ error: "Public games cannot be started here" });
+    }
+    const actor = await requireVaultFrontActor(req, res);
+    if (!actor) return;
+    if (!game.isCreator(actor.persistentId)) {
+      return res
+        .status(403)
+        .json({ error: "Only the lobby creator can start this game" });
     }
     game.start();
-    res.status(200).json({ success: true });
+    return res.status(200).json({ success: true });
   });
 
   app.get("/api/game/:id/exists", async (req, res) => {
@@ -1064,16 +1157,29 @@ export async function startWorker() {
   });
 
   app.post("/api/vaultfront/ab/dock/event", async (req, res) => {
-    const identity = await resolveVaultFrontIdentity(req);
-    if (!identity) {
-      return res.status(401).json({ error: "Missing identity" });
+    const actor = await resolveAuthenticatedActorKey(req);
+    if (!actor) {
+      return res
+        .status(401)
+        .json({ error: "Authenticated play token required" });
     }
     const parsed = VaultFrontDockEventSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: z.prettifyError(parsed.error) });
     }
-    const { event, value, variant } = parsed.data;
-    const recorded = recordDockEvent(identity, event, value, variant);
+    const identity = `auth:${actor.persistentId}`;
+    const { eventId, event, value, variant } = parsed.data;
+    const assignment = ensureDockAssignment(identity);
+    const integrity = vaultFrontExperimentIntegrity.check({
+      eventId: `dock:${eventId}`,
+      value,
+      serverVariants: [assignment.variant],
+      clientVariants: [variant],
+    });
+    if (!integrity.ok) {
+      return res.status(409).json({ error: integrity.reason });
+    }
+    const recorded = recordDockEvent(identity, event, value);
     return res.json({
       ok: true,
       experimentId: "dock_layout_v1",
@@ -1105,6 +1211,7 @@ export async function startWorker() {
       },
       assignedTotal: top.assignedUsers + stack.assignedUsers,
       guardrail,
+      integrity: vaultFrontExperimentIntegrity.snapshot(),
     });
   });
 
@@ -1118,16 +1225,29 @@ export async function startWorker() {
   });
 
   app.post("/api/vaultfront/ab/recap/event", async (req, res) => {
-    const identity = await resolveVaultFrontIdentity(req);
-    if (!identity) {
-      return res.status(401).json({ error: "Missing identity" });
+    const actor = await resolveAuthenticatedActorKey(req);
+    if (!actor) {
+      return res
+        .status(401)
+        .json({ error: "Authenticated play token required" });
     }
     const parsed = VaultFrontRecapEventSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: z.prettifyError(parsed.error) });
     }
-    const { event, value, variant } = parsed.data;
-    const recorded = recordRecapEvent(identity, event, value, variant);
+    const identity = `auth:${actor.persistentId}`;
+    const { eventId, event, value, variant } = parsed.data;
+    const assignment = ensureRecapAssignment(identity);
+    const integrity = vaultFrontExperimentIntegrity.check({
+      eventId: `recap:${eventId}`,
+      value,
+      serverVariants: [assignment.variant],
+      clientVariants: [variant],
+    });
+    if (!integrity.ok) {
+      return res.status(409).json({ error: integrity.reason });
+    }
+    const recorded = recordRecapEvent(identity, event, value);
     return res.json({
       ok: true,
       experimentId: "recap_cta_v1",
@@ -1168,6 +1288,7 @@ export async function startWorker() {
         goalFocusRate: Number(goalCtaRate.toFixed(4)),
         requeueFocusRate: Number(requeueCtaRate.toFixed(4)),
       },
+      integrity: vaultFrontExperimentIntegrity.snapshot(),
     });
   });
 
@@ -1181,22 +1302,29 @@ export async function startWorker() {
   });
 
   app.post("/api/vaultfront/ab/runtime/event", async (req, res) => {
-    const identity = await resolveVaultFrontIdentity(req);
-    if (!identity) {
-      return res.status(401).json({ error: "Missing identity" });
+    const actor = await resolveAuthenticatedActorKey(req);
+    if (!actor) {
+      return res
+        .status(401)
+        .json({ error: "Authenticated play token required" });
     }
     const parsed = VaultFrontRuntimeEventSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: z.prettifyError(parsed.error) });
     }
-    const { event, value, rewardVariant, hudVariant } = parsed.data;
-    const recorded = recordRuntimeEvent(
-      identity,
-      event,
+    const identity = `auth:${actor.persistentId}`;
+    const { eventId, event, value, rewardVariant, hudVariant } = parsed.data;
+    const assignment = ensureRuntimeAssignment(identity);
+    const integrity = vaultFrontExperimentIntegrity.check({
+      eventId: `runtime:${eventId}`,
       value,
-      rewardVariant,
-      hudVariant,
-    );
+      serverVariants: [assignment.rewardVariant, assignment.hudVariant],
+      clientVariants: [rewardVariant, hudVariant],
+    });
+    if (!integrity.ok) {
+      return res.status(409).json({ error: integrity.reason });
+    }
+    const recorded = recordRuntimeEvent(identity, event, value);
     return res.json({
       ok: true,
       experimentId: "vault_runtime_v1",
@@ -1216,6 +1344,7 @@ export async function startWorker() {
         vaultFrontRuntimeRewardStats.entries(),
       ),
       hudVariants: Object.fromEntries(vaultFrontRuntimeHudStats.entries()),
+      integrity: vaultFrontExperimentIntegrity.snapshot(),
     });
   });
 
@@ -1242,6 +1371,7 @@ export async function startWorker() {
     };
     return res.json({
       generatedAt: Date.now(),
+      integrity: vaultFrontExperimentIntegrity.snapshot(),
       experiments: [
         {
           id: "dock_layout_v1",
@@ -1590,9 +1720,6 @@ export async function startWorker() {
     "/api/vaultfront/battle-narrative",
     narrativeRateLimit,
     async (req, res) => {
-      if (!reserveRemoteAiCall("debrief").allowed) {
-        return res.status(503).json({ error: "Narrative service unavailable" });
-      }
       const identity = await resolveVaultFrontIdentity(req);
       if (!identity) {
         return res.status(401).json({ error: "Missing identity" });
@@ -1611,6 +1738,11 @@ export async function startWorker() {
       const minutes = Math.floor(durationSeconds / 60);
 
       try {
+        if (!reserveRemoteAiCall("debrief").allowed) {
+          return res
+            .status(503)
+            .json({ error: "Narrative service unavailable" });
+        }
         const message = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 400,
@@ -1647,9 +1779,6 @@ export async function startWorker() {
     "/api/vaultfront/match-prophecy",
     prophecyRateLimit,
     async (req, res) => {
-      if (!reserveRemoteAiCall("other").allowed) {
-        return res.status(503).json({ error: "Prophecy service unavailable" });
-      }
       const {
         mapName = "the battlefield",
         playerCount = 4,
@@ -1660,6 +1789,11 @@ export async function startWorker() {
       const cachedProphecy = aiCacheGet(prophecyCacheKey);
       if (cachedProphecy) return res.json({ ...cachedProphecy, cached: true });
       try {
+        if (!reserveRemoteAiCall("other").allowed) {
+          return res
+            .status(503)
+            .json({ error: "Prophecy service unavailable" });
+        }
         const message = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 80,
@@ -1698,17 +1832,17 @@ export async function startWorker() {
     "/api/vaultfront/match-commentary",
     commentaryRateLimit,
     async (req, res) => {
-      if (!reserveRemoteAiCall("narrator").allowed) {
-        return res
-          .status(503)
-          .json({ error: "Commentary service unavailable" });
-      }
       const {
         playerCount = 4,
         mutator = "none",
         mapName = "unknown",
       } = req.body ?? {};
       try {
+        if (!reserveRemoteAiCall("narrator").allowed) {
+          return res
+            .status(503)
+            .json({ error: "Commentary service unavailable" });
+        }
         const message = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 300,
@@ -1824,9 +1958,6 @@ export async function startWorker() {
     "/api/vaultfront/match-mission",
     missionRateLimit,
     async (req, res) => {
-      if (!reserveRemoteAiCall("briefing").allowed) {
-        return res.status(503).json({ error: "Mission service unavailable" });
-      }
       const {
         mapName = "unknown",
         playerCount = 4,
@@ -1834,6 +1965,9 @@ export async function startWorker() {
         vaultSiteCount = 5,
       } = req.body ?? {};
       try {
+        if (!reserveRemoteAiCall("briefing").allowed) {
+          return res.status(503).json({ error: "Mission service unavailable" });
+        }
         const message = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 150,
@@ -1887,12 +2021,12 @@ export async function startWorker() {
     "/api/vaultfront/micro-hint",
     microHintRateLimit,
     async (req, res) => {
-      if (!reserveRemoteAiCall("coach").allowed) {
-        return res.status(503).json({ error: "Coach unavailable" });
-      }
       const gold = Number(req.query["gold"] ?? 0);
       const sites = Number(req.query["sites"] ?? 0);
       try {
+        if (!reserveRemoteAiCall("coach").allowed) {
+          return res.status(503).json({ error: "Coach unavailable" });
+        }
         const msg = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 50,
@@ -1953,9 +2087,6 @@ export async function startWorker() {
     "You are a VaultFront match predictor. Given player ELO ratings, return ONLY valid JSON with key 'predictions': array of {playerId, deltaIfWin, deltaIfLoss, threat?}. deltaIfWin and deltaIfLoss are integers. threat is the name/id of the most dangerous opponent for that player, or omitted. No prose, no markdown, just JSON.";
 
   app.get("/api/vaultfront/match-oracle", oracleRateLimit, async (req, res) => {
-    if (!reserveRemoteAiCall("intel").allowed) {
-      return res.status(503).json({ error: "Oracle unavailable" });
-    }
     const playerIdsRaw = req.query["players"];
     const playerIds: string[] = Array.isArray(playerIdsRaw)
       ? (playerIdsRaw as string[]).slice(0, 8)
@@ -1981,6 +2112,9 @@ export async function startWorker() {
     if (cached) return res.json({ ...cached, eloData, cached: true });
 
     try {
+      if (!reserveRemoteAiCall("intel").allowed) {
+        return res.status(503).json({ error: "Oracle unavailable" });
+      }
       const msg = await anthropic.messages.create({
         model: "claude-haiku-4-5-20251001",
         max_tokens: 300,
@@ -2023,9 +2157,6 @@ export async function startWorker() {
     "You are a tactical coach for VaultFront, a browser real-time strategy game. Analyze the player's top decisions from a match and provide a 3-paragraph tactical debrief. Paragraph 1: what worked well. Paragraph 2: the costliest mistake. Paragraph 3: one concrete improvement for next match. Be specific, encouraging, and concise (2-3 sentences per paragraph). Reference actual events from the log.";
 
   app.post("/api/vaultfront/match-coach", coachRateLimit, async (req, res) => {
-    if (!reserveRemoteAiCall("coach").allowed) {
-      return res.status(503).json({ error: "Coach service unavailable" });
-    }
     const identity = await resolveVaultFrontIdentity(req);
     if (!identity) {
       return res.status(401).json({ error: "Missing identity" });
@@ -2040,6 +2171,9 @@ export async function startWorker() {
       )
       .join("\n");
 
+    if (!reserveRemoteAiCall("coach").allowed) {
+      return res.status(503).json({ error: "Coach service unavailable" });
+    }
     try {
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache");
@@ -2097,9 +2231,6 @@ export async function startWorker() {
     "/api/vaultfront/dynasty-story",
     dynastyRateLimit,
     async (req, res) => {
-      if (!reserveRemoteAiCall("other").allowed) {
-        return res.status(503).json({ error: "Dynasty service unavailable" });
-      }
       const identity = await resolveVaultFrontIdentity(req);
       if (!identity) {
         return res.status(401).json({ error: "Missing identity" });
@@ -2111,6 +2242,9 @@ export async function startWorker() {
       const { clanId, clanName, recentOutcomes, topMoments } = parsed.data;
       const userContent = `Clan: ${clanName}\nRecent results: ${recentOutcomes.join("; ")}\nKey moments: ${topMoments.join("; ")}`;
       try {
+        if (!reserveRemoteAiCall("other").allowed) {
+          return res.status(503).json({ error: "Dynasty service unavailable" });
+        }
         const msg = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 80,
@@ -2150,9 +2284,6 @@ export async function startWorker() {
     "Generate a VaultFront bot commander persona. Format: 'CODENAME — one sentence origin story (max 100 chars)'. Tone: gritty, tactical, specific to the personality archetype. No quotes around the output.";
 
   app.get("/api/vaultfront/bot-persona", async (req, res) => {
-    if (!reserveRemoteAiCall("other").allowed) {
-      return res.status(503).json({ error: "Persona service unavailable" });
-    }
     const personality = String(req.query["personality"] ?? "").slice(0, 32);
     const seed = String(req.query["seed"] ?? "").slice(0, 32);
     const cacheKey = `${personality}:${seed}`;
@@ -2167,6 +2298,9 @@ export async function startWorker() {
     };
     const archetype = archetypes[personality] ?? "mysterious commander";
     try {
+      if (!reserveRemoteAiCall("other").allowed) {
+        return res.status(503).json({ error: "Persona service unavailable" });
+      }
       const msg = await anthropic.messages.create({
         model: "claude-haiku-4-5-20251001",
         max_tokens: 60,
@@ -2391,14 +2525,17 @@ export async function startWorker() {
     "/api/vaultfront/prematch-brief",
     prematchBriefRateLimit,
     async (req, res) => {
-      if (!reserveRemoteAiCall("briefing").allowed) {
-        return res.status(503).json({ error: "Brief service unavailable" });
-      }
-      const persistentId = String(req.query.persistentId ?? "").slice(0, 64);
+      const claimedPersistentId = String(req.query.persistentId ?? "").slice(
+        0,
+        64,
+      );
       const mapName = String(req.query.mapName ?? "Unknown Map").slice(0, 64);
-      if (!persistentId) {
+      if (!claimedPersistentId) {
         return res.status(400).json({ error: "Missing persistentId" });
       }
+      const actor = await requireVaultFrontActor(req, res);
+      if (!actor || !acceptActorClaim(actor, claimedPersistentId, res)) return;
+      const persistentId = actor.persistentId;
       const history = await playerStatsStore
         .getHistory(persistentId, 5)
         .catch(() => []);
@@ -2416,6 +2553,9 @@ export async function startWorker() {
       const cached = aiCacheGet(briefKey);
       if (cached) return res.json({ ...cached, cached: true });
       try {
+        if (!reserveRemoteAiCall("briefing").allowed) {
+          return res.status(503).json({ error: "Brief service unavailable" });
+        }
         const msg = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 120,
@@ -2455,9 +2595,6 @@ export async function startWorker() {
     "/api/vaultfront/match-recap/:gameId",
     recapRateLimit,
     async (req, res) => {
-      if (!reserveRemoteAiCall("debrief").allowed) {
-        return res.status(503).json({ error: "Recap service unavailable" });
-      }
       const gameId = req.params.gameId?.slice(0, 64) ?? "";
       if (!gameId) return res.status(400).json({ error: "Missing gameId" });
       const cached = matchRecapCache.get(gameId);
@@ -2468,6 +2605,9 @@ export async function startWorker() {
         parseInt(String(req.query.durationSec ?? "0")) / 60,
       );
       try {
+        if (!reserveRemoteAiCall("debrief").allowed) {
+          return res.status(503).json({ error: "Recap service unavailable" });
+        }
         const msg = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 160,
@@ -2510,12 +2650,9 @@ export async function startWorker() {
     "/api/vaultfront/coach-debrief",
     coachDebriefRateLimit,
     async (req, res) => {
-      if (!reserveRemoteAiCall("debrief").allowed) {
-        return res.status(503).json({ error: "Coach debrief unavailable" });
-      }
       const parsed = z
         .object({
-          persistentId: z.string().max(64),
+          persistentId: z.string().max(64).optional(),
           gameId: z.string().max(64),
           activityLog: z
             .array(
@@ -2539,7 +2676,11 @@ export async function startWorker() {
         .safeParse(req.body);
       if (!parsed.success)
         return res.status(400).json({ error: "Invalid request" });
-      const { persistentId, gameId, activityLog, matchStats } = parsed.data;
+      const actor = await requireVaultFrontActor(req, res);
+      if (!actor || !acceptActorClaim(actor, parsed.data.persistentId, res))
+        return;
+      const { gameId, activityLog, matchStats } = parsed.data;
+      const persistentId = actor.persistentId;
       const cacheKey = `${gameId}:${persistentId}`;
       const cached = coachDebriefCache.get(cacheKey);
       if (cached) return res.json({ ok: true, moments: cached, cached: true });
@@ -2553,6 +2694,9 @@ export async function startWorker() {
         ? `Result: ${matchStats.won ? "WIN" : "LOSS"}. Vaults: ${matchStats.vaultCaptures}. Convoys: ${matchStats.convoyDeliveries}. Style: ${matchStats.style ?? "mixed"}.`
         : "";
       try {
+        if (!reserveRemoteAiCall("debrief").allowed) {
+          return res.status(503).json({ error: "Coach debrief unavailable" });
+        }
         const msg = await anthropic.messages.create({
           model: "claude-haiku-4-5-20251001",
           max_tokens: 400,
@@ -2606,7 +2750,7 @@ export async function startWorker() {
     const parsed = z
       .object({
         gameId: z.string().max(64),
-        persistentId: z.string().max(64),
+        persistentId: z.string().max(64).optional(),
         matchRating: z.number().int().min(1).max(5),
         mapRating: z.number().int().min(1).max(5),
         mapName: z.string().max(64).default("unknown"),
@@ -2615,7 +2759,14 @@ export async function startWorker() {
       .safeParse(req.body);
     if (!parsed.success)
       return res.status(400).json({ error: "Invalid rating" });
-    matchRatings.push({ ...parsed.data, createdAt: Date.now() });
+    const actor = await requireVaultFrontActor(req, res);
+    if (!actor || !acceptActorClaim(actor, parsed.data.persistentId, res))
+      return;
+    matchRatings.push({
+      ...parsed.data,
+      persistentId: actor.persistentId,
+      createdAt: Date.now(),
+    });
     if (matchRatings.length > 2000) matchRatings.shift();
     return res.json({ ok: true });
   });
@@ -2687,7 +2838,7 @@ export async function startWorker() {
   app.post("/api/vaultfront/style-history", async (req, res) => {
     const parsed = z
       .object({
-        persistentId: z.string().max(64),
+        persistentId: z.string().max(64).optional(),
         matchId: z.string().max(64),
         style: z.enum([
           "Iron Fist",
@@ -2699,8 +2850,11 @@ export async function startWorker() {
       .safeParse(req.body);
     if (!parsed.success)
       return res.status(400).json({ error: "Invalid request" });
+    const actor = await requireVaultFrontActor(req, res);
+    if (!actor || !acceptActorClaim(actor, parsed.data.persistentId, res))
+      return;
     styleHistory.record(
-      parsed.data.persistentId,
+      actor.persistentId,
       parsed.data.matchId,
       parsed.data.style as PlayStyle,
     );
@@ -2719,21 +2873,28 @@ export async function startWorker() {
   // ── Vault Fortune Post-Win Draw ───────────────────────────────────────────
   const fortuneRateLimit = rateLimit({ windowMs: 60_000, max: 5 });
 
-  app.post("/api/vaultfront/win-fortune", fortuneRateLimit, (req, res) => {
-    const parsed = z
-      .object({
-        persistentId: z.string().max(64),
-        matchId: z.string().max(64),
-      })
-      .safeParse(req.body);
-    if (!parsed.success)
-      return res.status(400).json({ error: "Invalid request" });
-    const { item, alreadyOwned } = fortuneDeck.draw(
-      parsed.data.persistentId,
-      parsed.data.matchId,
-    );
-    return res.json({ ok: true, item, alreadyOwned });
-  });
+  app.post(
+    "/api/vaultfront/win-fortune",
+    fortuneRateLimit,
+    async (req, res) => {
+      const parsed = z
+        .object({
+          persistentId: z.string().max(64).optional(),
+          matchId: z.string().max(64),
+        })
+        .safeParse(req.body);
+      if (!parsed.success)
+        return res.status(400).json({ error: "Invalid request" });
+      const actor = await requireVaultFrontActor(req, res);
+      if (!actor || !acceptActorClaim(actor, parsed.data.persistentId, res))
+        return;
+      const { item, alreadyOwned } = fortuneDeck.draw(
+        actor.persistentId,
+        parsed.data.matchId,
+      );
+      return res.json({ ok: true, item, alreadyOwned });
+    },
+  );
 
   // ── Spectator Prediction League ───────────────────────────────────────────
   const predictionLeagueRateLimit = rateLimit({ windowMs: 30_000, max: 3 });
@@ -2741,19 +2902,22 @@ export async function startWorker() {
   app.post(
     "/api/vaultfront/prediction-league/predict",
     predictionLeagueRateLimit,
-    (req, res) => {
+    async (req, res) => {
       const parsed = z
         .object({
           gameId: z.string().max(64),
-          spectatorId: z.string().max(64),
+          spectatorId: z.string().max(64).optional(),
           outcome: z.enum(["intercept", "delivery"]),
         })
         .safeParse(req.body);
       if (!parsed.success)
         return res.status(400).json({ error: "Invalid request" });
+      const actor = await requireVaultFrontActor(req, res);
+      if (!actor || !acceptActorClaim(actor, parsed.data.spectatorId, res))
+        return;
       predictionLeagueStore.recordPrediction(
         parsed.data.gameId,
-        parsed.data.spectatorId,
+        actor.persistentId,
         parsed.data.outcome,
       );
       return res.json({ ok: true });
@@ -2801,6 +2965,16 @@ export async function startWorker() {
         .safeParse(req.body);
       if (!parsed.success)
         return res.status(400).json({ error: "Invalid request" });
+      const actor = await requireVaultFrontActor(req, res);
+      if (!actor) return;
+      if (
+        !canManageClan(
+          clanStore.getClan(parsed.data.challengerClanId),
+          actor.persistentId,
+        )
+      ) {
+        return res.status(403).json({ error: "Clan officer role required" });
+      }
       const war = clanWarStore.challenge(parsed.data);
       return res.json({ ok: true, war });
     },
@@ -2813,15 +2987,27 @@ export async function startWorker() {
       const parsed = z
         .object({
           warId: z.string().max(32),
-          byPersistentId: z.string().max(64),
+          byPersistentId: z.string().max(64).optional(),
         })
         .safeParse(req.body);
       if (!parsed.success)
         return res.status(400).json({ error: "Invalid request" });
-      const war = clanWarStore.accept(
-        parsed.data.warId,
-        parsed.data.byPersistentId,
-      );
+      const actor = await requireVaultFrontActor(req, res);
+      if (!actor || !acceptActorClaim(actor, parsed.data.byPersistentId, res))
+        return;
+      const pendingWar = clanWarStore.getWar(parsed.data.warId);
+      if (!pendingWar) return res.status(404).json({ error: "War not found" });
+      if (
+        !canManageClan(
+          clanStore.getClan(pendingWar.targetClanId),
+          actor.persistentId,
+        )
+      ) {
+        return res
+          .status(403)
+          .json({ error: "Target clan officer role required" });
+      }
+      const war = clanWarStore.accept(parsed.data.warId, actor.persistentId);
       if (!war)
         return res
           .status(404)
@@ -2839,6 +3025,20 @@ export async function startWorker() {
         .safeParse(req.body);
       if (!parsed.success)
         return res.status(400).json({ error: "Invalid request" });
+      const actor = await requireVaultFrontActor(req, res);
+      if (!actor) return;
+      const pendingWar = clanWarStore.getWar(parsed.data.warId);
+      if (!pendingWar) return res.status(404).json({ error: "War not found" });
+      if (
+        !canManageClan(
+          clanStore.getClan(pendingWar.targetClanId),
+          actor.persistentId,
+        )
+      ) {
+        return res
+          .status(403)
+          .json({ error: "Target clan officer role required" });
+      }
       const war = clanWarStore.decline(parsed.data.warId);
       if (!war) return res.status(404).json({ error: "War not found" });
       return res.json({ ok: true, war });
@@ -2880,16 +3080,19 @@ export async function startWorker() {
     async (req, res) => {
       const parsed = z
         .object({
-          persistentId: z.string().max(64),
+          persistentId: z.string().max(64).optional(),
           milestoneId: z.string().max(16),
         })
         .safeParse(req.body);
       if (!parsed.success)
         return res.status(400).json({ error: "Invalid request" });
+      const actor = await requireVaultFrontActor(req, res);
+      if (!actor || !acceptActorClaim(actor, parsed.data.persistentId, res))
+        return;
       const season = vaultSeasonScheduler.getStatus();
       const seasonId = `week-${season.weekNumber}`;
       const claimed = seasonMilestoneStore.claim(
-        parsed.data.persistentId,
+        actor.persistentId,
         seasonId,
         parsed.data.milestoneId,
       );
@@ -3068,10 +3271,12 @@ export async function startWorker() {
       .safeParse(req.body);
     if (!parsed.success)
       return res.status(400).json({ error: z.prettifyError(parsed.error) });
+    const actor = await requireVaultFrontActor(req, res);
+    if (!actor || !acceptActorClaim(actor, parsed.data.founderId, res)) return;
     const result = await clanStore.createClan(
       parsed.data.name,
       parsed.data.tag,
-      parsed.data.founderId,
+      actor.persistentId,
       parsed.data.description,
     );
     if ("error" in result) return res.status(409).json(result);
@@ -3100,9 +3305,12 @@ export async function startWorker() {
       .safeParse(req.body);
     if (!parsed.success)
       return res.status(400).json({ error: "Missing persistentId" });
+    const actor = await requireVaultFrontActor(req, res);
+    if (!actor || !acceptActorClaim(actor, parsed.data.persistentId, res))
+      return;
     const result = await clanStore.joinClan(
       req.params.clanId,
-      parsed.data.persistentId,
+      actor.persistentId,
     );
     if ("error" in result) return res.status(409).json(result);
     return res.json(result);
@@ -3114,7 +3322,10 @@ export async function startWorker() {
       .safeParse(req.body);
     if (!parsed.success)
       return res.status(400).json({ error: "Missing persistentId" });
-    const result = await clanStore.leaveClan(parsed.data.persistentId);
+    const actor = await requireVaultFrontActor(req, res);
+    if (!actor || !acceptActorClaim(actor, parsed.data.persistentId, res))
+      return;
+    const result = await clanStore.leaveClan(actor.persistentId);
     if (result && "error" in result) return res.status(409).json(result);
     return res.json({ ok: true });
   });
@@ -3126,29 +3337,35 @@ export async function startWorker() {
     return res.json(state);
   });
 
-  app.post("/api/tutorial/complete", (req, res) => {
+  app.post("/api/tutorial/complete", async (req, res) => {
     const parsed = z
       .object({
-        persistentId: z.string().min(1).max(64),
+        persistentId: z.string().min(1).max(64).optional(),
         step: z.string().min(1).max(64),
       })
       .safeParse(req.body);
     if (!parsed.success)
       return res.status(400).json({ error: "Missing fields" });
+    const actor = await requireVaultFrontActor(req, res);
+    if (!actor || !acceptActorClaim(actor, parsed.data.persistentId, res))
+      return;
     const state = tutorialOrchestrator.completeStep(
-      parsed.data.persistentId,
+      actor.persistentId,
       parsed.data.step,
     );
     return res.json(state);
   });
 
-  app.post("/api/tutorial/reset", (req, res) => {
+  app.post("/api/tutorial/reset", async (req, res) => {
     const parsed = z
-      .object({ persistentId: z.string().min(1).max(64) })
+      .object({ persistentId: z.string().min(1).max(64).optional() })
       .safeParse(req.body);
     if (!parsed.success)
-      return res.status(400).json({ error: "Missing persistentId" });
-    tutorialOrchestrator.resetProgress(parsed.data.persistentId);
+      return res.status(400).json({ error: "Invalid request" });
+    const actor = await requireVaultFrontActor(req, res);
+    if (!actor || !acceptActorClaim(actor, parsed.data.persistentId, res))
+      return;
+    tutorialOrchestrator.resetProgress(actor.persistentId);
     return res.json({ ok: true });
   });
   // ─────────────────────────────────────────────────────────────────────────
@@ -3167,7 +3384,12 @@ export async function startWorker() {
       .safeParse(req.body);
     if (!parsed.success)
       return res.status(400).json({ error: z.prettifyError(parsed.error) });
-    const t = await tournamentStore.create(parsed.data);
+    const actor = await requireVaultFrontActor(req, res);
+    if (!actor || !acceptActorClaim(actor, parsed.data.createdBy, res)) return;
+    const t = await tournamentStore.create({
+      ...parsed.data,
+      createdBy: actor.persistentId,
+    });
     return res.status(201).json(t);
   });
 
@@ -3204,9 +3426,12 @@ export async function startWorker() {
         .safeParse(req.body);
       if (!parsed.success)
         return res.status(400).json({ error: "Missing persistentId" });
+      const actor = await requireVaultFrontActor(req, res);
+      if (!actor || !acceptActorClaim(actor, parsed.data.persistentId, res))
+        return;
       const result = await tournamentStore.register(
         req.params.id,
-        parsed.data.persistentId,
+        actor.persistentId,
         parsed.data.eloRating ?? 1200,
       );
       if ("error" in result) return res.status(409).json(result);
@@ -3215,6 +3440,14 @@ export async function startWorker() {
   );
 
   app.post("/api/tournaments/:id/seed", tourneyRateLimit, async (req, res) => {
+    const actor = await requireVaultFrontActor(req, res);
+    if (!actor) return;
+    const tournament = await tournamentStore.get(req.params.id);
+    if (!canManageTournament(tournament, actor.persistentId)) {
+      return res
+        .status(403)
+        .json({ error: "Only the tournament creator can seed the bracket" });
+    }
     const result = await tournamentStore.seedBracket(req.params.id);
     if ("error" in result) return res.status(409).json(result);
     recordVaultFrontPlaytestPulse({
@@ -3233,8 +3466,17 @@ export async function startWorker() {
         .safeParse(req.body);
       if (!parsed.success)
         return res.status(400).json({ error: "Missing winnerId" });
+      const actor = await requireVaultFrontActor(req, res);
+      if (!actor) return;
+      const matchId = parseInt(req.params.matchId);
+      const tournament = await tournamentStore.getTournamentForMatch(matchId);
+      if (!canManageTournament(tournament, actor.persistentId)) {
+        return res
+          .status(403)
+          .json({ error: "Only the tournament creator can report results" });
+      }
       const result = await tournamentStore.reportResult(
-        parseInt(req.params.matchId),
+        matchId,
         parsed.data.winnerId,
       );
       if ("error" in result) return res.status(409).json(result);

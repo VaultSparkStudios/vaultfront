@@ -150,6 +150,9 @@ export default defineConfig(({ mode }) => {
     },
 
     build: {
+      // Vite warns on raw minified bytes; the stricter bundle gate enforces
+      // per-file gzip plus aggregate gzip/Brotli and media transfer budgets.
+      chunkSizeWarningLimit: 1800,
       outDir: "static", // Webpack outputs to 'static', assuming we want to keep this.
       emptyOutDir: true,
       assetsDir: "assets", // Sub-directory for assets
@@ -161,13 +164,10 @@ export default defineConfig(({ mode }) => {
               return "render-vendor";
             }
 
-            if (
-              normalized.includes("/src/core/") ||
-              normalized.includes("/src/client/graphics/") ||
-              normalized.includes("/src/client/components/")
-            ) {
-              return "game-ui";
+            if (normalized.includes("/src/core/")) {
+              return "game-core";
             }
+
             return undefined;
           },
         },

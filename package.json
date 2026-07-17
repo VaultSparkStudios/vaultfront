@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build-dev": "concurrently \"tsc --noEmit\" \"vite build --mode development\"",
-    "build-prod": "concurrently --kill-others-on-fail \"tsc --noEmit\" \"vite build\"",
+    "build-prod": "tsc --noEmit && vite build && node scripts/generate-release-evidence.mjs",
     "build:pages": "concurrently --kill-others-on-fail \"tsc --noEmit\" \"vite build\" && node scripts/postbuild-pages.mjs",
     "start:client": "vite",
     "start:server": "tsx src/server/Server.ts",

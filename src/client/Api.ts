@@ -642,15 +642,20 @@ export async function fetchVaultFrontContracts(): Promise<
   }
 }
 
+function vaultFrontTelemetryEventId(): string {
+  if (
+    typeof crypto !== "undefined" &&
+    typeof crypto.randomUUID === "function"
+  ) {
+    return crypto.randomUUID();
+  }
+  return `vf-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
 async function vaultFrontIdentityHeaders(): Promise<Record<string, string>> {
   const authHeader = await getAuthHeader();
-  if (authHeader) {
-    return {
-      Authorization: authHeader,
-    };
-  }
+  const playToken = authHeader ? null : await getPlayToken();
   return {
-    "x-vaultfront-client-id": await getPlayToken(),
+    Authorization: authHeader || `Bearer ${playToken}`,
   };
 }
 
@@ -683,7 +688,8 @@ export async function fetchVaultFrontDockAssignment(): Promise<
 export async function recordVaultFrontDockEvent(input: {
   event: string;
   variant?: "top" | "stack";
-  value?: number;
+  value?: 1;
+  eventId?: string;
 }): Promise<boolean> {
   try {
     const response = await fetch(
@@ -694,7 +700,11 @@ export async function recordVaultFrontDockEvent(input: {
           "Content-Type": "application/json",
           ...(await vaultFrontIdentityHeaders()),
         },
-        body: JSON.stringify(input),
+        body: JSON.stringify({
+          ...input,
+          value: 1,
+          eventId: input.eventId ?? vaultFrontTelemetryEventId(),
+        }),
       },
     );
     return response.ok;
@@ -758,7 +768,8 @@ export async function fetchVaultFrontRecapAssignment(): Promise<
 export async function recordVaultFrontRecapEvent(input: {
   event: string;
   variant?: "goal_focus" | "requeue_focus";
-  value?: number;
+  value?: 1;
+  eventId?: string;
 }): Promise<boolean> {
   try {
     const response = await fetch(
@@ -769,7 +780,11 @@ export async function recordVaultFrontRecapEvent(input: {
           "Content-Type": "application/json",
           ...(await vaultFrontIdentityHeaders()),
         },
-        body: JSON.stringify(input),
+        body: JSON.stringify({
+          ...input,
+          value: 1,
+          eventId: input.eventId ?? vaultFrontTelemetryEventId(),
+        }),
       },
     );
     return response.ok;
@@ -912,7 +927,8 @@ export async function recordVaultFrontRuntimeEvent(input: {
   event: string;
   rewardVariant?: "control" | "high_risk_high_reward";
   hudVariant?: "default" | "mobile_priority";
-  value?: number;
+  value?: 1;
+  eventId?: string;
 }): Promise<boolean> {
   try {
     const response = await fetch(
@@ -923,7 +939,11 @@ export async function recordVaultFrontRuntimeEvent(input: {
           "Content-Type": "application/json",
           ...(await vaultFrontIdentityHeaders()),
         },
-        body: JSON.stringify(input),
+        body: JSON.stringify({
+          ...input,
+          value: 1,
+          eventId: input.eventId ?? vaultFrontTelemetryEventId(),
+        }),
       },
     );
     return response.ok;
@@ -1564,9 +1584,10 @@ export async function postStyleHistory(
   matchId: string,
   style: PlayStyle,
 ): Promise<void> {
+  const headers = await vaultFrontIdentityHeaders();
   fetch(`${getApiBase()}/api/vaultfront/style-history`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...headers },
     body: JSON.stringify({ persistentId, matchId, style }),
   }).catch(() => undefined);
 }
@@ -1578,7 +1599,10 @@ export async function fetchWinFortune(
   try {
     const res = await fetch(`${getApiBase()}/api/vaultfront/win-fortune`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(await vaultFrontIdentityHeaders()),
+      },
       body: JSON.stringify({ persistentId, matchId }),
     });
     if (!res.ok) return null;
@@ -1598,7 +1622,9 @@ export async function fetchPrematchBrief(
     url.searchParams.set("persistentId", persistentId);
     url.searchParams.set("mapName", mapName);
     if (style) url.searchParams.set("style", style);
-    const res = await fetch(url.toString());
+    const res = await fetch(url.toString(), {
+      headers: await vaultFrontIdentityHeaders(),
+    });
     if (!res.ok) return null;
     const data = (await res.json()) as { brief?: string };
     return data.brief ?? null;
@@ -1650,7 +1676,10 @@ export async function fetchCoachDebrief(params: {
   try {
     const res = await fetch(`${getApiBase()}/api/vaultfront/coach-debrief`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(await vaultFrontIdentityHeaders()),
+      },
       body: JSON.stringify(params),
     });
     if (!res.ok) return null;
@@ -1671,7 +1700,10 @@ export async function postMatchRating(params: {
 }): Promise<void> {
   fetch(`${getApiBase()}/api/vaultfront/match-rating`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(await vaultFrontIdentityHeaders()),
+    },
     body: JSON.stringify(params),
   }).catch(() => undefined);
 }
@@ -1703,7 +1735,10 @@ export async function claimSeasonMilestone(
       `${getApiBase()}/api/vaultfront/season-progress/claim`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(await vaultFrontIdentityHeaders()),
+        },
         body: JSON.stringify({ persistentId, milestoneId }),
       },
     );

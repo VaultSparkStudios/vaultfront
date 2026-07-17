@@ -1,52 +1,55 @@
 <!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
-<!-- source-hash: 0a022aafcca2 -->
-<!-- generated-at: 2026-07-17T00:28:22.495Z -->
+<!-- source-hash: f47659481d18 -->
+<!-- generated-at: 2026-07-17T02:08:35.879Z -->
 
 # LATEST_HANDOFF (compact)
 
 SESSION
 
-- Number: 73
-- Date: 2026-07-16
+- Session 74 (2026-07-16)
 
-SHIPPED
+SHIPPED (S74)
 
-- All 12 items from AUDIT_2026-07-16.json plus 3 innovation-pack candidates
-- Alpha Gate authenticated source-labeled evidence; replay signature enforcement (fail closed)
-- Real private-lobby rematches; Vault Pressure; deterministic tactical coaching
-- Server-authoritative progression; remote-AI cost caps; readiness truth (declared vs verified)
-- CI ratchets, protocol provenance/canon repair, zero-vuln dependency train
-
-VERIFICATION
-
-- 697/697 tests, 107/107 Vitest files; Playwright 22/22 (CI profile)
-- Build/typecheck/lint/format/bundle/audit/canon/doctor pass
-- Doctor: overallPass true, 116/145, 29 advisory warnings, 0 failing/blocking
-- Semantic Release repaired via pinned Node 24; write-release still gated by SEMANTIC_RELEASE_ENABLED=true
+- 11 new audit findings + 3 second-order innovations; audit exhausted 23/23, innovations 3/3.
+- Server-authoritative actor/role checks on full mutation-route inventory.
+- Experiment, WebSocket, IPC, game-loop, remote-AI integrity policies (explicit + tested).
+- Runtime Integrity Passport + Release Evidence Manifest binding live/build posture to digests.
+- Project doctor, audit-derived Genius caching, executable exhaustion proof (anti phantom-green).
+- Warning-free production chunks; exact gzip/Brotli/media transfer budgets.
 
 CURRENT INTENT
 
-- Execute staging launch-evidence corridor, starting with authenticated three-human Alpha Gate
-- Keep project public-unlaunched / FORGE until all live-only gates evidenced
+- Post-closeout. Public launch NO-GO. Next phase: run external launch-evidence corridor once a real staging origin exists.
+
+VERIFICATION STATUS
+
+- 122/122 Vitest files, 762/762 tests; server repeat 25/25 files, 90/90 tests.
+- Playwright 22/22 desktop+mobile; ESLint, TypeScript, warning-free Vite build pass.
+- Budgets, sitemap 10/10, Canon zero gaps, doctor blockingFailing 0.
 
 NOW BUCKET (top 3)
 
-- Run authenticated three-human staging Alpha Gate sessions
-- Establish staging parity
-- Confirm project-domain Brevo inbound delivery
+1. Execute three-human Alpha Gate (authenticated, source-labeled) on real staging.
+2. Stand up staging origin with deploy parity.
+3. Verify Brevo inbound delivery on project domain.
 
 BLOCKERS (top 3)
 
-- Native Obelisk relying-party auth not yet live
-- Live CSP/HSTS/Core Web Vitals + theme screenshot evidence missing
-- Real revenue/supporter observation not yet captured
+1. Studio release-gate helper crashes on registry `testing` shape.
+2. Central metadata still calls VaultFront internal (should be corrected).
+3. No real staging origin exists yet; blocks all live-only evidence.
 
-HUMAN-BLOCKED (age: since S73, 2026-07-16)
+HUMAN-BLOCKED (age from S73→S74, ~1 session)
 
-- Authenticated evidence from 3+ distinct human staging sessions
-- Founder launch approval
-- Real revenue/supporter observation
+- Founder launch approval — pending, ~1 session.
+- Three distinct-human staging evidence sessions — pending, ~1 session.
+- Live security-header/CWV/theme proof, revenue signal — pending, ~1 session.
+- Native Obelisk relying-party auth — pending, ~1 session.
+
+TRUTH BOUNDARY
+
+- No staging evidence, deploy parity, Brevo delivery, Obelisk auth, live hardening/CWV/theme, revenue, or founder approval fabricated. Cost posture notional Max-plan/cost-neutral, no alarm semantics. Correction/bug reports route through Ark only.
 
 NEXT SESSION
 
-- Begin the authenticated three-human Alpha Gate to open the staging launch-evidence corridor.
+- Once staging origin is live, run launch-evidence corridor in order: Alpha Gate, Brevo, Obelisk, live hardening/CWV/theme, revenue, founder approval.

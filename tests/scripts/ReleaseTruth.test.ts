@@ -1,0 +1,102 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+
+const root = path.resolve(__dirname, "../..");
+const read = (file: string) => readFileSync(path.join(root, file), "utf8");
+
+function nginxLocationBlocks(source: string): string[] {
+  const blocks: string[] = [];
+  const pattern = /^\s*location\b[^\n{]*\{/gmu;
+  for (const match of source.matchAll(pattern)) {
+    const start = match.index ?? 0;
+    let depth = 0;
+    for (
+      let index = source.indexOf("{", start);
+      index < source.length;
+      index += 1
+    ) {
+      if (source[index] === "{") depth += 1;
+      if (source[index] === "}") depth -= 1;
+      if (depth === 0) {
+        blocks.push(source.slice(start, index + 1));
+        break;
+      }
+    }
+  }
+  return blocks;
+}
+
+describe("release truth boundary", () => {
+  it("re-applies the security policy in every location with local headers", () => {
+    const nginx = read("nginx.conf");
+    const headerLocations = nginxLocationBlocks(nginx).filter((block) =>
+      block.includes("add_header"),
+    );
+
+    expect(headerLocations.length).toBeGreaterThan(0);
+    for (const block of headerLocations) {
+      expect(block).toContain(
+        "include /etc/nginx/snippets/vaultfront-security-headers.conf;",
+      );
+    }
+
+    const policy = read("nginx-security-headers.conf");
+    for (const header of [
+      "Content-Security-Policy",
+      "Strict-Transport-Security",
+      "X-Content-Type-Options",
+      "X-Frame-Options",
+      "Referrer-Policy",
+      "Permissions-Policy",
+    ]) {
+      expect(policy).toContain(`add_header ${header}`);
+    }
+    expect(policy).toContain("https://sdk.crazygames.com");
+    expect(policy).toContain("https://www.googletagmanager.com");
+    expect(policy).toContain("https://static.cloudflareinsights.com");
+    expect(policy).toContain("https://cdn.intergient.com");
+  });
+
+  it("copies public launch files and image revision evidence into Docker", () => {
+    const dockerfile = read("Dockerfile");
+    expect(dockerfile).toContain("COPY public ./public");
+    expect(dockerfile).toContain("COPY nginx-security-headers.conf");
+    expect(dockerfile).toContain(
+      'LABEL org.opencontainers.image.revision="$GIT_COMMIT"',
+    );
+  });
+
+  it("verifies promotion by the image Git revision instead of its tag", () => {
+    const promote = read(".github/workflows/promote.yml");
+    expect(promote).toContain("org.opencontainers.image.revision");
+    expect(promote).toContain("EXPECTED_GIT_SHA");
+    expect(promote).toContain('!= "${EXPECTED_GIT_SHA}"');
+    expect(promote).not.toContain('commit.txt)" != "${{ inputs.image_tag }}"');
+  });
+
+  it("publishes unavailable runtime truth without dead public CTAs", () => {
+    const descriptor = JSON.parse(read("public/agents.json"));
+    expect(descriptor.availability).toMatchObject({
+      publicRuntime: "unavailable",
+    });
+    expect(descriptor.endpoints.landing).toBe(
+      "https://vaultsparkstudios.com/vaultfront/",
+    );
+    expect(read("pages-stub/index.html")).not.toContain(
+      "play-vaultfront.vaultsparkstudios.com",
+    );
+    expect(read("pages-stub/index.html")).toContain("Join Alpha");
+    expect(read("public/.well-known/llms.txt")).toContain(
+      "Public runtime: unavailable",
+    );
+  });
+
+  it("uses public-safe metadata defaults and avoids the circular game-ui chunk", () => {
+    const html = read("index.html");
+    expect(html).not.toContain("%VITE_CANONICAL_URL%");
+    expect(html).not.toContain("%VITE_OG_IMAGE_URL%");
+    expect(html).toContain("https://vaultsparkstudios.com/vaultfront/");
+    expect(read("vite.config.ts")).not.toContain('return "game-ui"');
+  });
+});

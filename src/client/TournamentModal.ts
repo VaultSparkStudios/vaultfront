@@ -14,6 +14,7 @@
 import { html, LitElement, nothing } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { getApiBase } from "./Api";
+import { getAuthHeader, getPlayToken } from "./Auth";
 
 interface Tournament {
   id: string;
@@ -125,7 +126,11 @@ export class TournamentModal extends LitElement {
         `${getApiBase()}/api/tournaments/${encodeURIComponent(tournamentId)}/register`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization:
+              (await getAuthHeader()) || `Bearer ${await getPlayToken()}`,
+          },
           body: JSON.stringify({
             persistentId: this.persistentId,
             eloRating: this.eloRating,
@@ -155,7 +160,11 @@ export class TournamentModal extends LitElement {
     try {
       const res = await fetch(`${getApiBase()}/api/tournaments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            (await getAuthHeader()) || `Bearer ${await getPlayToken()}`,
+        },
         body: JSON.stringify({
           name: this.createName.trim(),
           mapName: this.createMap.trim(),
@@ -186,7 +195,13 @@ export class TournamentModal extends LitElement {
     try {
       const res = await fetch(
         `${getApiBase()}/api/tournaments/${encodeURIComponent(tournamentId)}/seed`,
-        { method: "POST" },
+        {
+          method: "POST",
+          headers: {
+            Authorization:
+              (await getAuthHeader()) || `Bearer ${await getPlayToken()}`,
+          },
+        },
       );
       const data = await res.json();
       if (!res.ok) {
@@ -208,7 +223,11 @@ export class TournamentModal extends LitElement {
         `${getApiBase()}/api/tournaments/matches/${matchId}/report`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization:
+              (await getAuthHeader()) || `Bearer ${await getPlayToken()}`,
+          },
           body: JSON.stringify({ winnerId }),
         },
       );

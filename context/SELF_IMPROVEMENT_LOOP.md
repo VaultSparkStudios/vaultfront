@@ -4,12 +4,36 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 943/1000 | Velocity: 15↑ | Debt: ↓ | Velocity trend: ↑
-Avgs — 3: 980.3 | Momentum runway: release-evidence corridor | Intent rate: 100%
-Categories: Dev 96 | Align 97 | Momentum 100 | Engage 82 | Process 98 | Coherence 94 | Security 96 | Ecosystem 84 | Capital 99 | Automation 97
-Last session: 2026-07-16 Session 73 full recovery-to-arc mission
+Total: 968/1000 | Velocity: 14↑ | Debt: ↓ | Velocity trend: ↑
+Avgs — 3: 970.0 | Momentum runway: external launch-evidence corridor | Intent rate: 100%
+Categories: Dev 99 | Align 98 | Momentum 100 | Engage 86 | Process 99 | Coherence 97 | Security 99 | Ecosystem 91 | Capital 100 | Automation 99
+Last session: 2026-07-16 Session 74 saturated integrity arc
 
 <!-- rolling-status-end -->
+
+## Sprint: 2026-07-16 — Session 74 Saturated Integrity Arc (SIL: 968/1000)
+
+Shipped all 11 newly verified audit findings and all 3 second-order innovations in one continuous mission. The complete audit is exhausted at 23/23 and the innovation pack at 3/3. The pass established explicit mutation authority, integrity-aware experiments, bounded real-time transports, process-local health truth, audit-driven execution, release/transfer truth, and digest-bound runtime/release evidence.
+
+| Category              |        Score | Evidence                                                                                                                                                               |
+| --------------------- | -----------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev Health            |           99 | 762 unique tests, an independent 90-test server repeat, 22 browser tests, lint, typecheck, formatting, exact bundle budgets, and a warning-free production build pass. |
+| Creative Alignment    |           98 | Runtime Integrity Passport and release evidence deepen VaultFront's trust-and-command identity without introducing a generic side system.                              |
+| Momentum              |          100 | All 11 new findings, all 23 cumulative audit entries, and all 3 innovations are shipped; executable exhaustion reports no pending unblocked work.                      |
+| Engagement            |           86 | Authority and runtime reliability protect the game loop, but no human retention or delight evidence is invented.                                                       |
+| Process Quality       |           99 | Live-code premise checks, exact exit codes, audit-derived ranking, digest-bound evidence, and explicit deferrals make the arc independently reviewable.                |
+| Cross-Repo Coherence  |           97 | Registry correction and release-gate bug evidence travel through signed Ark cargo; central acceptance remains outside this repo.                                       |
+| Security Posture      |           99 | Mutation claims, payload/connection budgets, experiment integrity, shared headers, and fail-closed passports are covered; native Obelisk remains a launch gate.        |
+| Ecosystem Integration |           91 | Agent/public surfaces and signed Ark transport are present; staging, Brevo, Obelisk, and live web evidence remain open.                                                |
+| Capital Efficiency    |          100 | Remote-AI reservations are provider-bound and process-scoped; deterministic behavior remains useful and cost-neutral with Max-plan cost treated as notional.           |
+| Automation Coverage   |           99 | Doctor, work exhaustion, release manifest, runtime passport, browser concurrency, and transfer budgets are executable; live-only evidence cannot be automated locally. |
+| **Total**             | **968/1000** | Evidence-based score; no points awarded for absent live launch evidence.                                                                                               |
+
+**Delta: 943 → 968 (+25).** The increase comes from closing the concrete engineering and observability gaps identified by the live audit. It does not clear the launch corridor.
+
+**Top win:** authority, health, work state, and release identity now share deterministic contracts rather than relying on descriptive claims.
+
+**Top gap:** no real staging/human/email/identity/live-web/revenue/founder evidence exists yet; public launch remains NO-GO.
 
 ## Sprint: 2026-07-16 — Session 73 Full Recovery-to-Arc Mission (SIL recalibrated: 943/1000)
 

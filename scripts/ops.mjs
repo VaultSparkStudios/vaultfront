@@ -36,6 +36,7 @@ const SUBCOMMAND_MAP = {
   "innovation-pack": "innovation-pack.mjs",
   "write-session-lock": "write-session-lock.mjs",
   "check-secrets": "check-secrets.mjs",
+  doctor: "project-doctor.mjs",
 };
 
 if (!subcommand) {
@@ -44,13 +45,6 @@ if (!subcommand) {
     "Subcommands:",
     Object.keys(SUBCOMMAND_MAP).join(", "),
     ", doctor, compliance-velocity",
-  );
-  process.exit(0);
-}
-
-if (subcommand === "doctor") {
-  console.log(
-    "ops.mjs doctor: run node scripts/context-meter.mjs --json for health check",
   );
   process.exit(0);
 }

@@ -220,6 +220,15 @@ class TournamentStore {
     return this.tournaments.get(tournamentId) ?? null;
   }
 
+  async getTournamentForMatch(matchId: number): Promise<Tournament | null> {
+    for (const [tournamentId, matches] of this.matches) {
+      if (matches.some((match) => match.id === matchId)) {
+        return this.tournaments.get(tournamentId) ?? null;
+      }
+    }
+    return null;
+  }
+
   async list(): Promise<Tournament[]> {
     return [...this.tournaments.values()].sort(
       (a, b) => b.createdAt - a.createdAt,

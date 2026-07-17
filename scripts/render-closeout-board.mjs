@@ -23,6 +23,10 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { fileURLToPath } from "url";
+import {
+  readGeniusCache,
+  selectFirstPendingUnblocked,
+} from "./lib/genius-cache.mjs";
 import { spawnSync } from "./lib/safe-spawn.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -44,7 +48,11 @@ const REGISTRY_PATH = path.join(
   "portfolio",
   "PROJECT_REGISTRY.json",
 ); // always read from studio-ops
-const GENIUS_CACHE = path.join(PROJECT_ROOT, ".cache", "genius-list.json");
+const geniusCacheArgIdx = process.argv.indexOf("--genius-cache");
+const GENIUS_CACHE =
+  geniusCacheArgIdx >= 0 && process.argv[geniusCacheArgIdx + 1]
+    ? path.resolve(process.cwd(), process.argv[geniusCacheArgIdx + 1])
+    : path.join(PROJECT_ROOT, ".cache", "genius-list.json");
 const OUT_PATH = path.join(PROJECT_ROOT, "docs", "CLOSEOUT_STATUS_BOARD.md");
 
 const STDOUT_MODE = process.argv.includes("--stdout");
@@ -265,6 +273,17 @@ function gitChangeSummary() {
 }
 
 function agentMemoryRecentlyTouched() {
+  const cutoff = Date.now() - 24 * 3600_000;
+  const projectMemory = path.join(ROOT, "context", "BRAIN.md");
+  try {
+    if (
+      fs.existsSync(projectMemory) &&
+      fs.statSync(projectMemory).mtimeMs > cutoff
+    )
+      return true;
+  } catch {
+    /* best-effort */
+  }
   // Check whether agent memory (~/.claude/projects/<slug>/memory) has files
   // modified within the last 24h. Best-effort — cross-platform path resolution
   // varies; absence is reported as "·" rather than failing.
@@ -296,7 +315,7 @@ function writeBackCoverage() {
     "context/CURRENT_STATE.md",
     "context/TASK_BOARD.md",
     "context/LATEST_HANDOFF.md",
-    "logs/WORK_LOG.md",
+    "context/WORK_LOG.md",
     "context/DECISIONS.md",
     "context/SELF_IMPROVEMENT_LOOP.md",
     "docs/CREATIVE_DIRECTION_RECORD.md",
@@ -313,10 +332,19 @@ function writeBackCoverage() {
       if (file.endsWith(t)) touched.add(t);
     }
   }
+  const cutoff = Date.now() - 24 * 3600_000;
+  for (const target of TARGETS) {
+    try {
+      if (fs.statSync(path.join(ROOT, target)).mtimeMs > cutoff)
+        touched.add(target);
+    } catch {
+      /* missing files remain visibly incomplete */
+    }
+  }
   const result = TARGETS.map((t) => ({ file: t, touched: touched.has(t) }));
   // 10th item (per closeout spec): agent memory at ~/.claude/projects/<slug>/memory/
   result.push({
-    file: "agent memory (~/.claude/projects/<slug>/memory/)",
+    file: "agent memory (context/BRAIN.md or agent home)",
     touched: agentMemoryRecentlyTouched(),
   });
   return result;
@@ -359,14 +387,24 @@ function postSessionSignals(status) {
 }
 
 function nextSessionHint() {
-  const cache = readJson(GENIUS_CACHE);
-  const top = cache?.list?.ranked?.[0];
-  if (!top) return null;
-  return {
-    title: top.title || top.id,
-    rationale: top.rationale || "",
-    cmd: top.command || null,
-  };
+  try {
+    const cache = readGeniusCache(GENIUS_CACHE);
+    const top = selectFirstPendingUnblocked(cache);
+    if (!top) {
+      return {
+        title: "Unified Genius List exhausted",
+        rationale: "No pending unblocked audit item remains.",
+        cmd: null,
+      };
+    }
+    return {
+      title: top.title || top.id,
+      rationale: top.rationale || top.summary || top.why || top.recipe || "",
+      cmd: top.command || top.cmd || null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 function render() {
@@ -394,10 +432,10 @@ function render() {
   // 1. SESSION CLOSEOUT header (S114 — adds live URL one-click line per founder directive)
   lines.push(top(`SESSION CLOSEOUT · ${name} · S${session}`));
   const vel = status.silVelocity ?? status.velocity;
-  const velLabel =
-    vel != null ? `${vel}${status.silDebt ? " " + status.silDebt : ""}` : "—";
+  const velLabel = vel != null ? String(vel) : "—";
+  const debtLabel = status.silDebt ? `  ·  Debt: ${status.silDebt}` : "";
   lines.push(
-    row(`Date: ${date}  ·  SIL: ${sil}/${silMax}  ·  Velocity: ${velLabel}`),
+    row(`Date: ${date} · SIL: ${sil}/${silMax} · V:${velLabel}${debtLabel}`),
   );
   lines.push(
     row(
@@ -477,7 +515,9 @@ function render() {
     if (next.cmd) lines.push(row(`    ↳ ${next.cmd.slice(0, W - 6)}`));
   } else {
     lines.push(
-      row("(no genius cache — run `node scripts/cache-genius-list.mjs`)"),
+      row(
+        "(no readable genius cache — run `node scripts/cache-genius-list.mjs --write`)",
+      ),
     );
   }
   lines.push(bottom());

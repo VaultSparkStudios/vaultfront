@@ -10,3 +10,7 @@ Public-safe architecture notes only. Detailed implementation and operator reason
 - Remote AI is optional, default-off, feature-attributed, and bounded by an explicit positive hourly cap; deterministic local behavior remains the baseline.
 - Registry changes travel through signed Studio Ark cargo; local public-unlaunched truth remains authoritative until the control plane accepts a correction.
 - Release readiness distinguishes declared configuration from verified external evidence.
+- Every state-changing route must cross the shared verified-actor boundary; a client-supplied subject identifier never proves identity.
+- Runtime health is process-local and source-derived: HTTP, IPC freshness, game-loop freshness, transport budgets, and provider-bound AI reservations must expose scope explicitly.
+- A saturated arc is complete only when executable exhaustion proves no pending unblocked audit or innovation item remains; live-only deferrals stay visible.
+- Runtime Integrity Passport and Release Evidence Manifest digests are the durable operator proof surfaces; prose summaries are secondary.

@@ -14,7 +14,9 @@ export default defineConfig({
   testMatch: "**/*.spec.ts",
   timeout: 30_000,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // The game client is intentionally heavyweight; cap local concurrency so browser
+  // readiness assertions measure product behavior instead of CPU starvation.
+  workers: process.env.CI ? 1 : 2,
   reporter: process.env.CI ? "github" : "list",
 
   use: {

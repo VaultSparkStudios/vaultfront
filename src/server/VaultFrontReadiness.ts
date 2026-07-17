@@ -6,10 +6,29 @@ import {
 
 export type ReadinessEvidenceStatus = "declared" | "verified" | "missing";
 
+export interface RuntimeHealthEvidence {
+  scope: "process-local-worker" | "declared-only";
+  httpRequest: "responding" | "unverified";
+  ipcConnected: boolean | null;
+  ipcWatermark: {
+    healthy: boolean;
+    lastMasterMessageAt: number;
+    ageMs: number;
+    maxAgeMs: number;
+  } | null;
+  gameLoop: {
+    healthy: boolean;
+    lastTickCompletedAt: number;
+    ageMs: number;
+    maxAgeMs: number;
+  } | null;
+}
+
 export interface VaultFrontReadinessInput {
   healthy: boolean;
   processRole: "master" | "worker";
   workerId?: number;
+  healthEvidence?: RuntimeHealthEvidence;
   revenueSignal?: {
     status: "unverified" | "observed";
     observedAt?: string;
@@ -49,6 +68,7 @@ export interface VaultFrontReadinessPayload {
   generatedAt: string;
   processRole: "master" | "worker";
   workerId?: number;
+  healthEvidence: RuntimeHealthEvidence;
   checks: {
     serverHealth: "pass" | "fail";
     testSurfacesRegistered: "declared" | "verified";
@@ -109,6 +129,13 @@ export function buildVaultFrontReadiness(
   input: VaultFrontReadinessInput,
 ): VaultFrontReadinessPayload {
   const serverStatus = input.healthy ? "ready" : "degraded";
+  const healthEvidence = input.healthEvidence ?? {
+    scope: "declared-only" as const,
+    httpRequest: "unverified" as const,
+    ipcConnected: null,
+    ipcWatermark: null,
+    gameLoop: null,
+  };
   const pulseReady =
     input.playtestPulse?.status === "ready" &&
     (input.playtestPulse.alphaGate === undefined ||
@@ -193,6 +220,7 @@ export function buildVaultFrontReadiness(
     generatedAt: new Date().toISOString(),
     processRole: input.processRole,
     workerId: input.workerId,
+    healthEvidence,
     checks: {
       serverHealth: input.healthy ? "pass" : "fail",
       testSurfacesRegistered:

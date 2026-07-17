@@ -47,6 +47,11 @@ describe("RemoteAiPolicy", () => {
 
     expect(denied.allowed).toBe(false);
     expect(denied.posture.reason).toBe("cap-exhausted");
+    expect(denied.posture.enforcementScope).toBe("process-local-per-worker");
+    expect(denied.posture.windowStartedAt).toBe(1_000);
+    expect(denied.posture.callsByFeature).toEqual({ coach: 1, narrator: 1 });
+    expect(denied.posture.providerBoundReservations).toBe(2);
+    expect(denied.posture.deniedReservations).toBe(1);
     expect(remoteAiUsageByFeature()).toEqual({ coach: 1, narrator: 1 });
   });
 

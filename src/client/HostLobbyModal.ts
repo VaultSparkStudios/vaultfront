@@ -20,7 +20,7 @@ import {
   isValidGameID,
 } from "../core/Schemas";
 import { generateID } from "../core/Util";
-import { getPlayToken } from "./Auth";
+import { getAuthHeader, getPlayToken } from "./Auth";
 import "./components/baseComponents/Modal";
 import { BaseModal } from "./components/BaseModal";
 import "./components/CopyButton";
@@ -849,6 +849,8 @@ export class HostLobbyModal extends BaseModal {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization:
+            (await getAuthHeader()) || `Bearer ${await getPlayToken()}`,
         },
       },
     );

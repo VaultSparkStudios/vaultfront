@@ -4,8 +4,8 @@ import "./LanguageModal";
 import { LanguageModal } from "./LanguageModal";
 import { formatDebugTranslation } from "./Utils";
 
-import en from "../../resources/lang/en.json";
-import metadata from "../../resources/lang/metadata.json";
+import en from "../../resources/lang/en.json" with { type: "json" };
+import metadata from "../../resources/lang/metadata.json" with { type: "json" };
 
 type LanguageMetadata = {
   code: string;

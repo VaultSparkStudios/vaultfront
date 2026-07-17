@@ -22,6 +22,11 @@ export interface RemoteAiPosture {
   maxCallsPerHour: number;
   callsUsed: number;
   callsRemaining: number;
+  enforcementScope: "process-local-per-worker";
+  windowStartedAt: number;
+  callsByFeature: Readonly<Partial<Record<RemoteAiFeature, number>>>;
+  providerBoundReservations: number;
+  deniedReservations: number;
   costProfile: "cost-neutral" | "metered-hard-cap";
   reason: "disabled" | "missing-key" | "zero-cap" | "ready" | "cap-exhausted";
 }
@@ -29,12 +34,18 @@ export interface RemoteAiPosture {
 interface WindowState {
   startedAt: number;
   calls: number;
+  deniedReservations: number;
   byFeature: Partial<Record<RemoteAiFeature, number>>;
 }
 
 const HOUR_MS = 60 * 60 * 1000;
 const MAX_CONFIGURABLE_CALLS_PER_HOUR = 500;
-let state: WindowState = { startedAt: Date.now(), calls: 0, byFeature: {} };
+let state: WindowState = {
+  startedAt: Date.now(),
+  calls: 0,
+  deniedReservations: 0,
+  byFeature: {},
+};
 
 function configuredCap(env: NodeJS.ProcessEnv): number {
   const parsed = Number.parseInt(
@@ -47,7 +58,7 @@ function configuredCap(env: NodeJS.ProcessEnv): number {
 
 function refreshWindow(now: number): void {
   if (now - state.startedAt >= HOUR_MS || now < state.startedAt) {
-    state = { startedAt: now, calls: 0, byFeature: {} };
+    state = { startedAt: now, calls: 0, deniedReservations: 0, byFeature: {} };
   }
 }
 
@@ -74,6 +85,11 @@ export function remoteAiPosture(
     maxCallsPerHour,
     callsUsed: state.calls,
     callsRemaining,
+    enforcementScope: "process-local-per-worker",
+    windowStartedAt: state.startedAt,
+    callsByFeature: { ...state.byFeature },
+    providerBoundReservations: state.calls,
+    deniedReservations: state.deniedReservations,
     costProfile: available ? "metered-hard-cap" : "cost-neutral",
     reason,
   };
@@ -93,7 +109,10 @@ export function reserveRemoteAiCall(
   now = Date.now(),
 ): { allowed: boolean; posture: RemoteAiPosture } {
   const posture = remoteAiPosture(env, now);
-  if (posture.reason !== "ready") return { allowed: false, posture };
+  if (posture.reason !== "ready") {
+    state.deniedReservations += 1;
+    return { allowed: false, posture: remoteAiPosture(env, now) };
+  }
 
   state.calls += 1;
   state.byFeature[feature] = (state.byFeature[feature] ?? 0) + 1;
@@ -108,5 +127,5 @@ export function remoteAiUsageByFeature(): Readonly<
 
 /** Test-only reset; intentionally explicit so production code cannot refund calls. */
 export function resetRemoteAiPolicyForTests(now = Date.now()): void {
-  state = { startedAt: now, calls: 0, byFeature: {} };
+  state = { startedAt: now, calls: 0, deniedReservations: 0, byFeature: {} };
 }

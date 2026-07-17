@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-07-17T01:37:12.445Z",
+  "source": "scripts/innovation-pack.mjs",
+  "primarySource": "latest audit-backed Unified Genius List",
+  "items": [
+    {
+      "rank": 1,
+      "status": "shipped",
+      "id": "runtime-integrity-passport",
+      "title": "Ship a digestible process-local Runtime Integrity Passport",
+      "description": "Fuse live IPC/game-loop health, experiment rejection posture, remote-AI reservation truth, and bounded WebSocket policy into one admin-only, scope-labeled, SHA-256-digested contract.",
+      "complete": true,
+      "evidence": "RuntimeIntegrityPassport module, admin route, canonical digest and tamper-sensitive tests"
+    },
+    {
+      "rank": 2,
+      "status": "shipped",
+      "id": "release-evidence-manifest",
+      "title": "Emit a machine-readable Release Evidence Manifest after every build",
+      "description": "Bind Git revision/dirty state, launch mode, audit exhaustion, and exact transfer budgets into static/release-evidence.json so promotion and agents consume the same provenance.",
+      "complete": true,
+      "evidence": "post-build manifest generator, build wiring, and clean/dirty provenance tests"
+    },
+    {
+      "rank": 3,
+      "status": "shipped",
+      "id": "exhaustion-proof-gate",
+      "title": "Turn complete-all into a machine-enforced Exhaustion Proof gate",
+      "description": "Fail the doctor and closeout whenever the latest audit or innovation sidecar retains a pending unblocked item; emit counts and exact item IDs instead of relying on prose.",
+      "complete": true,
+      "evidence": "audit+innovation exhaustion checker, doctor probe, and pending/deferred fixtures"
+    }
+  ]
+}

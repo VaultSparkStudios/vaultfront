@@ -1,44 +1,65 @@
-<!-- generated-by: S73 verified closeout -->
-<!-- generated-at: 2026-07-16 -->
+<!-- generated-by: scripts/render-closeout-board.mjs v1.0 -->
+<!-- generated-at: 2026-07-17 (Session 74 closeout) -->
 
 # Closeout Status Board — VaultFront
 
-```text
-╔══ SESSION CLOSEOUT · VaultFront · S73 FULL ARC ═══════════════╗
-║  Date: 2026-07-16 · SIL: 943/1000 · Velocity: 15↑ · Debt: ↓  ║
-║  Mode: FOUNDER · Agent: codex · Lifecycle: FORGE              ║
+```
+╔══ SESSION CLOSEOUT · VaultFront · S74 ═════════════════════════╗
+║  Date: 2026-07-17 · SIL: 968/1000 · V:14  ·  Debt: down          ║
+║  Mode: FOUNDER  ·  Agent: codex                                  ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ WHAT SHIPPED ═══════════════════════════════════════════════╗
-║  ✓ 12/12 ranked audit items                                  ║
-║  ✓ 3/3 second-order innovation candidates                    ║
-║  ✓ Trusted Alpha evidence · replay · real rematch             ║
-║  ✓ Vault Pressure · deterministic coach · progression         ║
-║  ✓ Cost firewall · readiness truth · public/agent surfaces    ║
-║  ✓ CI ratchets · protocol repair · dependency security        ║
+╔══ WHAT SHIPPED ════════════════════════════════════════════════╗
+║  ✓ Server-authoritative actor and role checks now guard the com  ║
+║  ✓ Experiment, WebSocket, IPC, game-loop, and remote-AI integri  ║
+║  ✓ Runtime Integrity Passport and Release Evidence Manifest bin  ║
+║  ✓ Project doctor, audit-derived Genius caching, and executable  ║
+║  ✓ Warning-free production chunks and exact gzip/Brotli/media b  ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ SCORES · SIL 943/1000 ══════════════════════════════════════╗
-║  Dev 96 · Align 97 · Momentum 100 · Engagement 82             ║
-║  Process 98 · Coherence 94 · Security 96 · Ecosystem 84       ║
-║  Capital 99 · Automation 97                                  ║
+╔══ SCORES · SIL 968/1000 ═══════════════════════════════════════╗
+║    Dev Health         99   ██████████                            ║
+║    Alignment          98   ██████████                            ║
+║    Momentum           100  ██████████                            ║
+║    Engagement         86   █████████░                            ║
+║    Process Qual       99   ██████████                            ║
+║    Coherence          97   ██████████                            ║
+║    Security           99   ██████████                            ║
+║    Ecosystem          91   █████████░                            ║
+║    Capital            100  ██████████                            ║
+║    Automation         99   ██████████                            ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ VERIFICATION ═══════════════════════════════════════════════╗
-║  Tests: 697/697 · Coverage ratchet: pass                      ║
-║  Browser: 22/22 under exact CI profile                        ║
-║  Build/typecheck/lint/format/bundle: pass                     ║
-║  npm audit: 0 · supply-chain incidents: 0                     ║
-║  Sitemap: 10/10 · Canon gaps: 0                               ║
-║  Doctor: overallPass true · failing 0 · blockingFailing 0     ║
+╔══ WRITE-BACK STATUS ═══════════════════════════════════════════╗
+║  ✓ context/CURRENT_STATE.md                                      ║
+║  ✓ context/TASK_BOARD.md                                         ║
+║  ✓ context/LATEST_HANDOFF.md                                     ║
+║  ✓ context/WORK_LOG.md                                           ║
+║  ✓ context/DECISIONS.md                                          ║
+║  ✓ context/SELF_IMPROVEMENT_LOOP.md                              ║
+║  ✓ docs/CREATIVE_DIRECTION_RECORD.md                             ║
+║  ✓ context/TRUTH_AUDIT.md                                        ║
+║  ✓ context/PROJECT_STATUS.json                                   ║
+║  ✓ agent memory (context/BRAIN.md or agent home)                 ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ RECOVERY BOUNDARY ══════════════════════════════════════════╗
-║  ✓ S72 reconstructed, integrity-checked, and verified         ║
-║  ✓ Recovery checkpoint 62f22956 pushed before S73             ║
-║  ✓ No reset-hard or force-push used                           ║
+╔══ GIT STATUS ══════════════════════════════════════════════════╗
+║  Changes: 102 files  ·  M:73 A:0 D:0 ?:29                        ║
+║  Ahead: 0  ·  Behind: 0                                          ║
+║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ RELEASE POSTURE ════════════════════════════════════════════╗
-║  Public-unlaunched / FORGE                                    ║
-║  Next: three-human staging Alpha Gate → Brevo → Obelisk →     ║
-║        live web/theme evidence → revenue → founder approval   ║
+╔══ DEPLOYMENT ══════════════════════════════════════════════════╗
+║  Staging:  not configured  ·  type: —                            ║
+║  Live:     N/A — pre-deploy (FORGE)                              ║
+╚════════════════════════════════════════════════════════════════╝
+╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
+║  Doctor:        4/4                                              ║
+║  Compliance:    49/49                                            ║
+║  Tests:         762/762                                          ║
+║  IGNIS:         1d ago                                           ║
+║  Truth:         green                                            ║
+║  Sanitization:  0d ago                                           ║
+╚════════════════════════════════════════════════════════════════╝
+╔══ NEXT SESSION ════════════════════════════════════════════════╗
+║  #1: Unified Genius List exhausted                               ║
+║      No pending unblocked audit item remains.                    ║
 ╚════════════════════════════════════════════════════════════════╝
 ```
 
-_All green values above come from live commands; live-only release evidence is intentionally excluded._
+_Generated by `scripts/render-closeout-board.mjs v1.0`_

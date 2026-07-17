@@ -1,90 +1,426 @@
 {
   "schemaVersion": "1.0",
-  "generatedBy": "/audit skill v2 · dual release/game lens",
-  "generatedAt": "2026-07-16T18:35:00Z",
+  "generatedBy": "/audit skill v2 · Session 74 infrastructure rubric + app release/security lens",
+  "generatedAt": "2026-07-17T00:53:22.5157309Z",
   "project": {
     "slug": "vaultfront",
     "name": "VaultFront",
     "type": "game",
-    "registryType": "app",
+    "registryMedium": "game",
     "audience": "public-unlaunched",
-    "localAudience": "internal",
-    "stage": "FORGE"
+    "stage": "FORGE",
+    "stagingType": "local"
   },
-  "summary": "Premise-verified recovery audit: make CI truthful, replay/playtest evidence unforgeable, rematch real, the convoy loop decisive, public cost/launch surfaces consistent, and recovery probes deterministic.",
+  "summary": "Premise-verified Session 74 audit: secure caller identity and telemetry integrity, replace phantom health gates, make release/build surfaces honest, and harden bounded runtime/resource contracts without fabricating live evidence.",
   "axes": {
-    "featureDepth": 1.5,
+    "featureDepth": 1.0,
     "innovation": 1.5,
-    "ux": 2,
-    "feedbackLoop": 2,
-    "gamification": 3,
+    "ux": 1.0,
+    "feedbackLoop": 1.5,
+    "gamification": 0.5,
     "aiIntegration": 1.5,
-    "security": 1.5,
-    "speedOrganization": 1.5,
+    "security": 3.0,
+    "speedOrganization": 2.5,
     "tokenApiReduction": 1.5
   },
   "sample": {
-    "method": "manual capped survey",
-    "picked": 20,
-    "scanned": 1034,
-    "tokens": 29800,
-    "releaseLens": "app-release-gate",
-    "gameLens": "game-loop-review"
+    "method": "three in-process read-only audit lanes plus direct live verification",
+    "picked": 34,
+    "scanned": "live src/server, client, scripts, workflows, container/nginx/public surfaces",
+    "baseline": "lint 0; tsc 0; Vite build 0 with verified warnings; GitHub main CI green; sitemap 10/10; sanitization clean"
   },
   "evidenceBoundary": [
-    "Local unit/build green does not override the last five red main CI and E2E runs.",
-    "No human playtest ledger exists; synthetic tests prove paths, not player behavior.",
-    "Registry public-unlaunched posture remains authoritative until Studio Ops accepts correction cargo.",
-    "No staging deployment, launch approval, real revenue event, or native Obelisk relying-party contract is claimed."
+    "Local tests cannot satisfy real human alpha, revenue, DNS, email-delivery, Obelisk RP, staging parity, deployed-header, Core Web Vitals, or visual theme evidence.",
+    "Registry and local project status agree on public-unlaunched/game, but registry cost metadata remains internally contradictory.",
+    "No sibling repo tree will be edited; registry/protocol fixes travel as Ark cargo.",
+    "AGPL upstream obligations and VaultSpark-original rights posture remain unchanged."
   ],
-  "candidateSurvey": {
-    "featureDepth": [
-      "chosen progression spine",
-      "chosen Vault Pressure",
-      "rejected another isolated reward store"
-    ],
-    "innovation": [
-      "chosen evidence ledger",
-      "chosen Vault Pressure",
-      "chosen deterministic coach"
-    ],
-    "ux": [
-      "chosen rematch corridor",
-      "chosen public surface",
-      "rejected more WinModal cards"
-    ],
-    "feedbackLoop": [
-      "chosen evidence ledger",
-      "chosen readiness contract",
-      "chosen CI ratchet"
-    ],
-    "gamification": [
-      "chosen progression spine",
-      "chosen Vault Pressure",
-      "rejected new unwired badges"
-    ],
-    "aiIntegration": [
-      "chosen deterministic coach",
-      "chosen cost firewall",
-      "rejected fourteenth model endpoint"
-    ],
-    "security": [
-      "chosen replay enforcement",
-      "chosen dependency train",
-      "chosen evidence ledger"
-    ],
-    "speedOrganization": [
-      "chosen CI ratchet",
-      "chosen protocol repair",
-      "rejected wholesale Worker split before seam tests"
-    ],
-    "tokenApiReduction": [
-      "chosen deterministic coach",
-      "chosen cost firewall",
-      "chosen protocol repair"
-    ]
-  },
   "items": [
+    {
+      "id": 1,
+      "slug": "server-authoritative-mutation-boundary",
+      "tier": "🔥",
+      "axis": "security / correctness / architecture",
+      "effortHours": 8,
+      "impact": 10,
+      "innovation": 10,
+      "priority": 46.0,
+      "status": "shipped",
+      "title": "Make every progression, clan, tournament, and private-lobby mutation server-authoritative",
+      "why": "Multiple Worker routes trust caller-supplied persistentId/founderId/createdBy values, and any holder of a private game ID can start the lobby.",
+      "recipe": "Centralize verified bearer actor extraction; remove caller identity from mutation trust; enforce owner/admin roles for clan-war and tournament lifecycle; authenticate private-lobby start against creatorPersistentID; update clients and add negative authorization tests.",
+      "ladder": {
+        "L1": {
+          "effortHours": 3,
+          "recipe": "Protect the highest-risk tournament, clan, reward, and lobby-start routes."
+        },
+        "L2": {
+          "effortHours": 8,
+          "recipe": "Protect every identified mutation route, update clients, and test 401/403/owner paths."
+        },
+        "L3": {
+          "effortHours": 16,
+          "recipe": "Derive all rewards from signed server match outcomes and persist a full authorization audit ledger."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-17T01:31:24.9988559Z",
+          "status": "shipped",
+          "note": "Session 74 implemented and verified the full L2 recipe for server-authoritative-mutation-boundary."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "slug": "decision-grade-experiment-integrity",
+      "tier": "🔥",
+      "axis": "security / observability / feedback_loop",
+      "effortHours": 4,
+      "impact": 10,
+      "innovation": 9,
+      "priority": 43.0,
+      "status": "shipped",
+      "title": "Make A/B evidence assignment-owned, unit-weighted, and replay-safe",
+      "why": "Dock, recap, and runtime event routes accept client-selected variants and values up to 10,000, invalidating experiment decisions.",
+      "recipe": "Use server assignments only; require value=1 and verified decision-grade identity; add eventId idempotency and bounded rejection counters; expose integrity posture in admin summaries; extract a pure tested ledger from Worker.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1.5,
+          "recipe": "Ignore variant hints and force unit weights."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Add verified identity, event-id dedupe, rejection telemetry, pure ledger tests, and client updates."
+        },
+        "L3": {
+          "effortHours": 10,
+          "recipe": "Persist signed experiment events in a shared append-only store."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-17T01:31:24.9988559Z",
+          "status": "shipped",
+          "note": "Session 74 implemented and verified the full L2 recipe for decision-grade-experiment-integrity."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "slug": "websocket-ingress-backpressure-budget",
+      "tier": "🔥",
+      "axis": "security / performance / reliability",
+      "effortHours": 4,
+      "impact": 10,
+      "innovation": 9,
+      "priority": 41.0,
+      "status": "shipped",
+      "title": "Bound WebSocket payload, connection, and slow-consumer memory",
+      "why": "Three noServer WebSocket servers inherit a 100 MiB maxPayload and spectator fan-out has no bufferedAmount ceiling.",
+      "recipe": "Set explicit payload ceilings; enforce upgrade origin/IP budgets and handshake timeouts; cap spectator membership; close slow consumers above a buffer watermark; export rejection counters and adversarial tests.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Set maxPayload and close slow spectator consumers."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Add payload, upgrade-rate, connection, buffer, and spectator budgets with tests."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Add distributed connection admission and per-origin adaptive budgets."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-17T01:31:24.9988559Z",
+          "status": "shipped",
+          "note": "Session 74 implemented and verified the full L2 recipe for websocket-ingress-backpressure-budget."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "slug": "worker-health-scope-watermark",
+      "tier": "🔥",
+      "axis": "observability / reliability / truth",
+      "effortHours": 3,
+      "impact": 10,
+      "innovation": 9,
+      "priority": 40.0,
+      "status": "shipped",
+      "title": "Derive worker readiness from live IPC, HTTP, and game-loop watermarks",
+      "why": "Worker readiness currently passes healthy:true while experiment and alpha evidence are process-local and volatile.",
+      "recipe": "Track master IPC age, HTTP listening, process connectivity, and game-loop tick age; return 503 on serving-dependency failure; attach observedAt/scope/watermarks; warn that process-local evidence cannot satisfy durable launch proof.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Replace hardcoded healthy with server/IPC state."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Add typed health snapshot, watermarks, 503 behavior, evidence scope, and stale-path tests."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Add DB/exporter probes and signed multi-worker aggregation watermarks."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-17T01:31:24.9988559Z",
+          "status": "shipped",
+          "note": "Session 74 implemented and verified the full L2 recipe for worker-health-scope-watermark."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "slug": "truthful-project-doctor",
+      "tier": "🔥",
+      "axis": "process / automation / observability",
+      "effortHours": 3,
+      "impact": 10,
+      "innovation": 8,
+      "priority": 39.0,
+      "status": "shipped",
+      "title": "Replace the zero-exit doctor stub with a real project health contract",
+      "why": "scripts/ops.mjs doctor prints a context-meter hint and exits 0 without tests, probes, or blockingFailing.",
+      "recipe": "Run named public-safe probes through safe-spawn; capture source, observedAt, real exit codes, checks, warnings, and blockingFailing; support JSON/update-json; exit nonzero on blockers; regression-test a forced failing probe.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Make the stub fail honestly and delegate when Studio Ops is present."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Implement a self-contained project doctor plus bounded canonical delegation and failure fixtures."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Add signed doctor attestations and freshness contracts for every probe."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-17T01:31:24.9988559Z",
+          "status": "shipped",
+          "note": "Session 74 implemented and verified the full L2 recipe for truthful-project-doctor."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "slug": "audit-driven-genius-contract",
+      "tier": "🔥",
+      "axis": "process / ranking / continuity",
+      "effortHours": 2.5,
+      "impact": 9,
+      "innovation": 9,
+      "priority": 38.0,
+      "status": "shipped",
+      "title": "Drive the genius list and closeout hint from the latest audit schema",
+      "why": "The generator reads an obsolete hardcoded June audit and the closeout renderer reads cache.list.ranked while the generator writes top-level items.",
+      "recipe": "Add one versioned cache parser; ingest newest audit JSON pending/deferred items plus task evidence; select the first live unblocked item; reject unknown schemas; integration-test generator to closeout renderer.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.75,
+          "recipe": "Support both cache shapes in closeout."
+        },
+        "L2": {
+          "effortHours": 2.5,
+          "recipe": "Unify parser, dynamic audit ingestion, ranking provenance, and integration tests."
+        },
+        "L3": {
+          "effortHours": 5,
+          "recipe": "Add live premise revalidation and freshness reasons for every candidate."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-17T01:31:24.9988559Z",
+          "status": "shipped",
+          "note": "Session 74 implemented and verified the full L2 recipe for audit-driven-genius-contract."
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "slug": "release-truth-pipeline",
+      "tier": "🔥",
+      "axis": "security / release / dual_audience",
+      "effortHours": 5,
+      "impact": 10,
+      "innovation": 8,
+      "priority": 35.0,
+      "status": "shipped",
+      "title": "Make headers, public CTAs, container artifacts, and promotion provenance agree",
+      "why": "NXDOMAIN origins are advertised as playable, Nginx child add_header blocks drop CSP, Docker omits public launch files, and promote compares a version tag to a Git SHA.",
+      "recipe": "Apply one complete security-header policy at every response location; disable dead-runtime CTAs and mark endpoints unavailable; copy/smoke public files in the image; expose build metadata and verify Git SHA/tag/digest coherently in promotion.",
+      "ladder": {
+        "L1": {
+          "effortHours": 2,
+          "recipe": "Fix header inheritance and dead CTA truth."
+        },
+        "L2": {
+          "effortHours": 5,
+          "recipe": "Also repair container public parity and promotion build-metadata verification with tests."
+        },
+        "L3": {
+          "effortHours": 12,
+          "recipe": "Deploy staging, verify live headers/parity, then register canonical origins."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-17T01:31:24.9988559Z",
+          "status": "shipped",
+          "note": "Session 74 implemented and verified the full L2 recipe for release-truth-pipeline."
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "slug": "warning-free-build-boundary",
+      "tier": "⚡",
+      "axis": "dev_health / performance / release",
+      "effortHours": 3,
+      "impact": 8,
+      "innovation": 7,
+      "priority": 30.0,
+      "status": "shipped",
+      "title": "Eliminate production-build warning drift at the source",
+      "why": "The production build emits unset canonical/OG placeholders, inconsistent JSON import attributes, a circular manual-chunk dependency, and misleading chunk warnings.",
+      "recipe": "Provide public-safe metadata defaults; normalize JSON import attributes; replace circular manual chunk rules with cycle-free boundaries; set warning budgets from measured transfer truth; add a build-output warning ratchet.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Fix metadata and JSON attribute warnings."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Also remove circular chunking and enforce a zero-known-warning build ratchet."
+        },
+        "L3": {
+          "effortHours": 7,
+          "recipe": "Route-split game UI and preload only critical entry dependencies."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-17T01:31:24.9988559Z",
+          "status": "shipped",
+          "note": "Session 74 implemented and verified the full L2 recipe for warning-free-build-boundary."
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "slug": "observability-cardinality-transfer-budget",
+      "tier": "⚡",
+      "axis": "performance / observability / automation",
+      "effortHours": 3,
+      "impact": 8,
+      "innovation": 8,
+      "priority": 29.0,
+      "status": "shipped",
+      "title": "Budget what users and telemetry systems actually pay",
+      "why": "Metrics attach unbounded game IDs while the bundle gate checks chunks independently and ignores aggregate initial JS and giant media.",
+      "recipe": "Remove unique IDs from metric labels and enforce an attribute allowlist; parse the built entry graph for aggregate gzip/brotli budgets; add media budgets and shrink-only baselines; test high-cardinality and aggregate regressions.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Remove game.id labels and sum current entry chunks."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Add tested cardinality allowlist, entry/media budgets, and shrink-only baselines."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Add real-user transfer telemetry and adaptive route budgets."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-17T01:31:24.9988559Z",
+          "status": "shipped",
+          "note": "Session 74 implemented and verified the full L2 recipe for observability-cardinality-transfer-budget."
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "slug": "release-cost-truth-reconciliation",
+      "tier": "🔥",
+      "axis": "truth / capital_efficiency / ecosystem",
+      "effortHours": 1,
+      "impact": 9,
+      "innovation": 7,
+      "priority": 28.0,
+      "status": "shipped",
+      "title": "Block contradictory public-audience and exempt-internal release metadata",
+      "why": "The registry says public-unlaunched but freeTierCostStatus and audit note say exempt-internal, causing both cost gates to ALLOW falsely.",
+      "recipe": "Add a local contradiction probe and doctor gate; keep readiness cost evidence source-labeled; ship signed Ark correction cargo for Studio Ops to change registry cost status/note; never edit the sibling tree.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Detect and report the contradiction locally."
+        },
+        "L2": {
+          "effortHours": 1,
+          "recipe": "Gate doctor/readiness, test it, and ship signed correction cargo."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Make Studio release gates reject every audience/status contradiction centrally."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-17T01:31:24.9988559Z",
+          "status": "shipped",
+          "note": "Session 74 implemented and verified the full L2 recipe for release-cost-truth-reconciliation."
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "slug": "remote-ai-reservation-truth",
+      "tier": "🔥",
+      "axis": "security / capital_efficiency / ai_integration",
+      "effortHours": 4,
+      "impact": 9,
+      "innovation": 9,
+      "priority": 33.0,
+      "status": "shipped",
+      "title": "Reserve remote-AI budget only for validated provider-bound work",
+      "why": "Several routes reserve process-local budget before identity, validation, or cache lookup, and readiness labels the per-process ceiling as a global hard cap.",
+      "recipe": "Authenticate, validate, and check cache before reservation; reserve immediately before the SDK call; label scope as per-process; expose rejected/reserved/provider-call counters; add ordering and restart-scope tests.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1.5,
+          "recipe": "Correct the scope label and move reservations after validation/cache."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Repair every route ordering and add counters plus tests."
+        },
+        "L3": {
+          "effortHours": 10,
+          "recipe": "Back the cap with an atomic shared Studio gateway bucket."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-17T01:31:24.9988559Z",
+          "status": "shipped",
+          "note": "Session 74 implemented and verified the full L2 recipe for remote-ai-reservation-truth."
+        }
+      ]
+    },
     {
       "id": 1,
       "slug": "authenticated-alpha-evidence-ledger",
@@ -507,68 +843,47 @@
     }
   ],
   "totals": {
-    "count": 12,
-    "priority": 366.9,
+    "count": 11,
+    "priority": 402.0,
     "top3": [
-      "authenticated-alpha-evidence-ledger",
-      "signed-replay-consumption",
-      "real-rematch-corridor"
+      "server-authoritative-mutation-boundary",
+      "decision-grade-experiment-integrity",
+      "websocket-ingress-backpressure-budget"
     ]
   },
-  "innovationReserve": [
-    "authenticated-alpha-evidence-ledger",
-    "real-rematch-corridor",
-    "vault-pressure-breach-window",
-    "deterministic-tactical-coach",
-    "public-profile-cost-firewall",
-    "server-authoritative-progression-spine"
-  ],
   "skipped": [
     {
-      "slug": "declare-public-launch-ready",
-      "reason": "Rejected on verify: CI/E2E/staging/sitemap/identity gates are red."
-    },
-    {
-      "slug": "clear-human-playtest-gate",
-      "reason": "Automated/synthetic evidence cannot be relabeled as human behavior."
-    },
-    {
-      "slug": "clear-live-revenue-warning",
-      "reason": "No real checkout/supporter event exists."
+      "slug": "durable-multi-worker-evidence-ledger",
+      "reason": "Verified high-value architecture, but a shared PostgreSQL migration/backfill/retention rollout is external-state work; this arc will make process scope explicit and keep launch unready rather than ship a partial ledger."
     },
     {
       "slug": "deploy-staging-or-production",
-      "reason": "Not authorized by this local implementation arc and no staging contract exists."
+      "reason": "All declared runtime origins are NXDOMAIN and there is no successful runtime deploy evidence. Local staging is the registered gate; no production/SPARKED flip is authorized."
     },
     {
       "slug": "native-obelisk-login",
-      "reason": "Relying-party origin/callback/server contract is unavailable; preserve quarantine."
+      "reason": "Credential is READY, but no live staging origin exists to register and the generated React stub is incompatible with the Lit app. Keep quarantine and ship RP cargo only after origin exists."
     },
     {
-      "slug": "add-another-ai-endpoint",
-      "reason": "Internal-first review found thirteen existing call sites; governance/local intelligence are missing."
+      "slug": "brevo-inbound-delivery",
+      "reason": "Credential is READY, but the project domain is NXDOMAIN; delivery cannot be verified without DNS. Public copy stays explicitly unverified."
+    },
+    {
+      "slug": "human-alpha-and-live-revenue",
+      "reason": "No automation, synthetic event, or agent action can substitute for real human behavior or a real checkout/supporter event."
+    },
+    {
+      "slug": "full-source-coverage-all",
+      "reason": "Coverage ratchet exists and passes, but enabling all:true across a 3,760-line Worker before extraction would create an unusable gate. The selected security extraction/tests are the root-first step."
+    },
+    {
+      "slug": "immutable-container-supply-chain",
+      "reason": "Base-image/cloudflared digest and signature pinning requires a separate trust-gated artifact selection pass; container parity is selected now, mutable artifact pinning is retained as explicit debt."
+    },
+    {
+      "slug": "go-generator-binary-ci",
+      "reason": "Tracked binary and missing Go CI are verified debt but rank below exploitable mutation/WebSocket/release-truth defects in this infrastructure pass."
     }
   ],
-  "executionLog": [],
-  "notes": "Public launch remains NO-GO. This sidecar is the sole source for S73 /implement.",
-  "implementationResult": {
-    "completedAt": "2026-07-16T22:48:43.448Z",
-    "shippedItems": 12,
-    "innovationCandidatesImplemented": 3,
-    "verification": [
-      "697 unit/integration tests green",
-      "22/22 Playwright CI-profile tests green",
-      "npm audit: 0 vulnerabilities",
-      "all emitted JavaScript chunks under 500 kB gzip",
-      "local sitemap compliance: 10/10"
-    ],
-    "honestResidualGates": [
-      "authenticated human alpha evidence",
-      "staging deployment and parity",
-      "project-domain Brevo delivery verification",
-      "native Obelisk relying-party integration",
-      "live CSP/HSTS/Core Web Vitals/theme screenshot evidence",
-      "founder launch approval"
-    ]
-  }
+  "notes": "Public launch remains NO-GO. New pending items are the complete Session 74 implementation contract; prior shipped S73 items are retained for merge-mode provenance."
 }

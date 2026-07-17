@@ -15,6 +15,7 @@ COPY tsconfig.json ./
 COPY vite.config.ts ./
 COPY eslint.config.js ./
 COPY index.html ./
+COPY public ./public
 COPY resources ./resources
 COPY proprietary ./proprietary
 COPY src ./src
@@ -62,6 +63,7 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Copy Nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx-security-headers.conf /etc/nginx/snippets/vaultfront-security-headers.conf
 RUN rm -f /etc/nginx/sites-enabled/default
 
 # Copy and make executable the startup script
@@ -84,6 +86,7 @@ COPY src ./src
 
 
 ARG GIT_COMMIT=unknown
+LABEL org.opencontainers.image.revision="$GIT_COMMIT"
 RUN echo "$GIT_COMMIT" > static/commit.txt
 
 ENV GIT_COMMIT="$GIT_COMMIT"

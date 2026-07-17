@@ -79,3 +79,13 @@ Append chronological entries.
 - Files or systems touched: Core gameplay, client HUD/post-match surfaces, server evidence/progression/replay/rematch/readiness systems, CI/E2E/build tooling, public metadata/pages, protocol scripts/tests, audit and context ledgers.
 - Risks created or removed: Removed forgeable evidence, unsigned replay consumption, fake rematch telemetry, default-on remote AI exposure, 34 dependency findings, and phantom-green CI. Remaining launch gates are explicitly enumerated and unclaimed.
 - Recommended next move: Run the authenticated three-human staging Alpha Gate, then verify Brevo, Obelisk, live web hardening/theme evidence, and founder launch approval.
+
+---
+
+### 2026-07-16 — Session 74 saturated integrity arc
+
+- Goal: Run the complete agent-neutral arc continuously, exhaust the live-code Unified Genius List, implement second-order innovation, and close directly to main with honest gates.
+- What changed: Shipped 11 new audit findings and 3 innovations spanning mutation authorization, experiment integrity, WebSocket/worker health, doctor and exhaustion truth, release hardening, transfer/cardinality budgets, provider-bound remote-AI reservations, runtime integrity, and release evidence.
+- Files or systems touched: Server routes and health services, client auth callers, metrics/experiment/AI policy, Vite/nginx/Docker/promotion workflow, audit/Genius/innovation/doctor scripts, public surfaces, tests, and public-safe Studio ledgers.
+- Risks created or removed: Removed unauthenticated mutation paths, assignment spoofing/double counting, unbounded socket pressure, phantom-green readiness, stale audit ranking, high-cardinality labels, reservation-before-validation waste, and unverifiable release claims. Remaining live-only launch gates are explicit and unclaimed.
+- Recommended next move: Provision a real staging origin and collect the external evidence corridor in order; keep FORGE/public-unlaunched until every live gate and founder approval exists.

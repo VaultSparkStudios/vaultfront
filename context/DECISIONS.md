@@ -91,3 +91,23 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Rationale:** Keeps `BotExecution` lightweight; the `neighborPressure` heuristic matches NationExecution's proven pattern; vault-site bias in attack selection adds strategic depth without overcomplicating bot decision trees.
 
 ---
+
+---
+
+## 2026-07-16 — State mutation authority is explicit and claim-bound
+
+**Decision:** Every HTTP route that changes player, match, clan, tutorial, prediction, season, lobby, or tournament state must authenticate a verified bearer actor and authorize the requested subject/role before touching a store. Client-supplied identifiers are routing inputs, never proof of identity.
+
+**Why:** A broad collection of individually validated payloads still allowed identity substitution. One shared authorization contract is easier to audit, test, and extend than route-specific trust assumptions.
+
+## 2026-07-16 — Runtime and release evidence are digest-bound, scoped, and fail-closed
+
+**Decision:** Runtime health, experiment rejection posture, WebSocket budgets, mutation policy, and remote-AI scope are serialized into a canonical Runtime Integrity Passport. Production builds generate a separate Release Evidence Manifest binding Git state, launch mode, work exhaustion, and exact transfer budgets. Both expose honest process-local scope and fail when required evidence is unhealthy or incomplete.
+
+**Why:** Operator surfaces should be independently recomputable and tamper-sensitive, not prose snapshots that drift from the systems they describe.
+
+## 2026-07-16 — Exhaustion is a machine-checkable work state
+
+**Decision:** A saturated arc is complete only when the latest audit sidecar and innovation pack contain no pending unblocked entries. Deferred live/external evidence remains explicit but does not masquerade as locally executable work.
+
+**Why:** This separates genuine completion from stopping after one objective, while preserving honest deferral of evidence that cannot be created by code.

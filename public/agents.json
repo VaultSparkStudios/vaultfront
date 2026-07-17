@@ -7,10 +7,15 @@
   "archetype": "game",
   "capabilities": ["browser-game", "multiplayer", "single-player", "replays"],
   "endpoints": {
-    "landing": "https://vaultfront.vaultsparkstudios.com/",
-    "docs": "https://vaultfront.vaultsparkstudios.com/docs/",
-    "contact": "mailto:contact@vaultfront.vaultsparkstudios.com",
+    "landing": "https://vaultsparkstudios.com/vaultfront/",
+    "docs": "https://vaultsparkstudios.com/vaultfront/#how-to-play",
+    "contact": "mailto:founder@vaultsparkstudios.com?subject=VaultFront%20alpha%20interest",
     "source": "https://github.com/VaultSparkStudios/VaultFront"
+  },
+  "availability": {
+    "publicRuntime": "unavailable",
+    "joinAlpha": "mailto:founder@vaultsparkstudios.com?subject=VaultFront%20alpha%20interest",
+    "note": "No public gameplay origin is currently declared ready."
   },
   "agentInteractions": [],
   "authentication": {

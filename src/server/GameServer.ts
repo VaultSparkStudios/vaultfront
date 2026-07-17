@@ -120,6 +120,10 @@ export class GameServer {
     this.log = log_.child({ gameID: id });
   }
 
+  public isCreator(persistentId: string): boolean {
+    return this.creatorPersistentID === persistentId;
+  }
+
   private get lobbyCreatorID(): ClientID | undefined {
     return this.creatorPersistentID
       ? this.persistentIdToClientId.get(this.creatorPersistentID)

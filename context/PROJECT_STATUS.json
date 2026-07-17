@@ -4,16 +4,16 @@
   "name": "VaultFront",
   "status": "active",
   "health": "green",
-  "currentSession": 73,
+  "currentSession": 74,
   "lastAgent": "codex",
-  "currentFocus": "Session 73 full recovery-to-arc mission complete: all 12 ranked audit items and 3 second-order innovations shipped across trusted alpha evidence, replay/rematch integrity, Vault Pressure, deterministic coaching, authoritative progression, public/release truth, CI ratchets, and dependency security.",
-  "nextMilestone": "Collect authenticated evidence from at least three distinct human alpha sessions on staging, then verify project-domain email, native Obelisk relying-party auth, live web hardening/theme evidence, and founder launch approval before any SPARKED transition.",
+  "currentFocus": "Session 74 saturated integrity arc complete: 11 newly verified findings, all 23 cumulative audit entries, and all 3 innovations shipped across server authority, runtime health, release truth, and executable evidence.",
+  "nextMilestone": "Provision a real staging origin and collect the external launch-evidence corridor: three distinct human Alpha Gate sessions, Brevo delivery, native Obelisk auth, live web/theme proof, revenue observation, and founder approval.",
   "blockers": [],
   "lastUpdated": "2026-07-16",
   "lifecycle": "alpha",
   "audience": "public-unlaunched",
   "type": "game",
-  "entropyScore": 0.046,
+  "entropyScore": 0.048,
   "entropyStatus": "healthy",
   "entropyComputedAt": "2026-07-16",
   "entropyMethod": "Studio protocol entropy: context freshness, truth/IGNIS age, SIL skip pressure, stale human-action labels, and task-bucket pressure.",
@@ -23,21 +23,21 @@
       "status": "green",
       "label": "Unit and server regression",
       "command": "npm test",
-      "purpose": "Vitest core, client, server, and Studio protocol coverage. All 107 files / 697 tests pass in the broad coverage run as of Session 73."
+      "purpose": "Vitest core, client, server, and Studio protocol coverage. All 122 files / 762 unique tests pass; the 25-file / 90-test server subset also passes independently in Session 74."
     },
     {
       "type": "tests",
       "status": "green",
       "label": "Production build",
       "command": "npm run build-prod",
-      "purpose": "TypeScript no-emit plus Vite 7 production bundle; every emitted JavaScript chunk is below 500 kB gzip."
+      "purpose": "TypeScript no-emit plus warning-free Vite 7 production bundle, Release Evidence Manifest, and exact gzip/Brotli initial-entry plus media budgets."
     },
     {
       "type": "tests",
       "status": "green",
       "label": "E2E smoke",
       "command": "npm run e2e",
-      "purpose": "Playwright desktop/mobile homepage, settings, manifest, health, environment, and solo-flow smoke. Exact CI profile passes 22/22 serially."
+      "purpose": "Playwright desktop/mobile homepage, settings, manifest, health, environment, and solo-flow smoke. All 22 tests pass with two bounded local workers; CI remains single-worker."
     },
     {
       "type": "local",
@@ -56,20 +56,20 @@
   "silRubricVersion": "3.0",
   "silMax": 1000,
   "silScoreLegacy500": null,
-  "silScore": 943,
-  "testsPassing": 697,
-  "testsTotal": 697,
+  "silScore": 968,
+  "testsPassing": 762,
+  "testsTotal": 762,
   "silCategoriesV3": {
-    "devHealth": 96,
-    "creativeAlignment": 97,
+    "devHealth": 99,
+    "creativeAlignment": 98,
     "momentum": 100,
-    "engagement": 82,
-    "processQuality": 98,
-    "crossRepoCoherence": 94,
-    "securityPosture": 96,
-    "ecosystemIntegration": 84,
-    "capitalEfficiency": 99,
-    "automationCoverage": 97
+    "engagement": 86,
+    "processQuality": 99,
+    "crossRepoCoherence": 97,
+    "securityPosture": 99,
+    "ecosystemIntegration": 91,
+    "capitalEfficiency": 100,
+    "automationCoverage": 99
   },
   "silScoreV3MigratedAt": "2026-04-21",
   "modelTier": "T1_sonnet",
@@ -82,11 +82,11 @@
   "ignisLastComputed": "2026-07-16",
   "sessionMode": "founder",
   "sessionModeAutoShiftedAt": "2026-06-07T18:14:59.755Z",
-  "silAvg3": 980.3,
-  "silVelocity": 15,
+  "silAvg3": 970,
+  "silVelocity": 14,
   "silDebt": "down",
-  "silLastSession": 73,
-  "auditStatus": "12-of-12-shipped-plus-3-innovations",
+  "silLastSession": 74,
+  "auditStatus": "23-of-23-shipped-plus-3-of-3-innovations",
   "releaseGates": [
     "authenticated evidence from at least three distinct human alpha sessions",
     "staging deployment and parity verification",
@@ -95,5 +95,19 @@
     "live CSP/HSTS/Core Web Vitals and theme screenshot evidence",
     "founder launch approval"
   ],
-  "entropyLastComputed": "2026-07-16"
+  "entropyLastComputed": "2026-07-17",
+  "truthGenome": "24/25",
+  "doctorScore": {
+    "date": "2026-07-16",
+    "ranAt": "2026-07-17T01:55:22.405Z",
+    "passing": 4,
+    "warning": 0,
+    "failing": 0,
+    "total": 4,
+    "blockingFailing": 0,
+    "source": "scripts/project-doctor.mjs"
+  },
+  "complianceScore": 49,
+  "complianceTotal": 49,
+  "sanitizationLastCleared": "2026-07-17"
 }

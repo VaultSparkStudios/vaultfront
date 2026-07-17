@@ -13,6 +13,7 @@
 import { html, LitElement, nothing } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { getApiBase } from "./Api";
+import { getAuthHeader, getPlayToken } from "./Auth";
 
 interface Clan {
   id: string;
@@ -114,7 +115,11 @@ export class ClanModal extends LitElement {
     try {
       const res = await fetch(`${getApiBase()}/api/clans`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            (await getAuthHeader()) || `Bearer ${await getPlayToken()}`,
+        },
         body: JSON.stringify({
           name: this.createName.trim(),
           tag: this.createTag.trim(),
@@ -145,7 +150,11 @@ export class ClanModal extends LitElement {
         `${getApiBase()}/api/clans/${encodeURIComponent(this.joinId.trim())}/join`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization:
+              (await getAuthHeader()) || `Bearer ${await getPlayToken()}`,
+          },
           body: JSON.stringify({ persistentId: this.persistentId }),
         },
       );
@@ -166,7 +175,11 @@ export class ClanModal extends LitElement {
     try {
       const res = await fetch(`${getApiBase()}/api/clans/leave`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            (await getAuthHeader()) || `Bearer ${await getPlayToken()}`,
+        },
         body: JSON.stringify({ persistentId: this.persistentId }),
       });
       const data = await res.json();

@@ -17,6 +17,7 @@
 import { html, LitElement, nothing } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { getApiBase } from "./Api";
+import { getAuthHeader, getPlayToken } from "./Auth";
 
 interface TutorialState {
   persistentId: string;
@@ -108,7 +109,11 @@ export class TutorialOverlay extends LitElement {
     try {
       const res = await fetch(`${getApiBase()}/api/tutorial/complete`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization:
+            (await getAuthHeader()) || `Bearer ${await getPlayToken()}`,
+        },
         body: JSON.stringify({ persistentId: this.persistentId, step: stepId }),
       });
       if (res.ok) {

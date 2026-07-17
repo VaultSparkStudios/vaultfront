@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { gzipSync } from "node:zlib";
+import { brotliCompressSync, gzipSync } from "node:zlib";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -31,12 +31,103 @@ function walk(dir, prefix = "") {
   });
 }
 
+function htmlAttribute(tag, name) {
+  const match = new RegExp(
+    `\\b${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))`,
+    "iu",
+  ).exec(tag);
+  return match?.[1] ?? match?.[2] ?? match?.[3] ?? null;
+}
+
+export function extractInitialEntryAssetPaths(
+  html,
+  htmlPath = "static/index.html",
+) {
+  const normalizedHtmlPath = htmlPath.replaceAll("\\", "/");
+  const buildRoot = path.posix.dirname(normalizedHtmlPath);
+  const assets = new Set([normalizedHtmlPath]);
+
+  for (const match of html.matchAll(/<(script|link)\b[^>]*>/giu)) {
+    const tagName = match[1].toLowerCase();
+    const tag = match[0];
+    let reference = null;
+
+    if (
+      tagName === "script" &&
+      htmlAttribute(tag, "type")?.toLowerCase() === "module"
+    ) {
+      reference = htmlAttribute(tag, "src");
+    } else if (tagName === "link") {
+      const relations = (htmlAttribute(tag, "rel") ?? "")
+        .toLowerCase()
+        .split(/\s+/u);
+      if (relations.includes("modulepreload")) {
+        reference = htmlAttribute(tag, "href");
+      }
+    }
+
+    if (!reference || /^(?:[a-z][a-z\d+.-]*:|\/\/)/iu.test(reference)) {
+      continue;
+    }
+
+    const localReference = reference.split(/[?#]/u, 1)[0];
+    const candidate = path.posix.normalize(
+      localReference.startsWith("/")
+        ? path.posix.join(buildRoot, localReference.slice(1))
+        : path.posix.join(buildRoot, localReference),
+    );
+    if (candidate === buildRoot || candidate.startsWith(`${buildRoot}/`)) {
+      assets.add(candidate);
+    }
+  }
+
+  return [...assets];
+}
+
+export function measureCompressedAssets(projectRoot, assetPaths) {
+  return assetPaths.reduce(
+    (totals, assetPath) => {
+      const raw = fs.readFileSync(path.join(projectRoot, assetPath));
+      totals.gzipBytes += gzipSync(raw).byteLength;
+      totals.brotliBytes += brotliCompressSync(raw).byteLength;
+      return totals;
+    },
+    { gzipBytes: 0, brotliBytes: 0 },
+  );
+}
+
+export function measureMediaAssets(projectRoot, mediaRoot, extensions) {
+  const normalizedExtensions = new Set(
+    extensions.map((extension) => extension.toLowerCase()),
+  );
+  const files = walk(path.join(projectRoot, mediaRoot), mediaRoot).filter(
+    (file) => normalizedExtensions.has(path.extname(file).toLowerCase()),
+  );
+  const sizes = files.map((file) => ({
+    file,
+    bytes: fs.statSync(path.join(projectRoot, file)).size,
+  }));
+  return {
+    files: sizes,
+    totalBytes: sizes.reduce((sum, item) => sum + item.bytes, 0),
+    maxFileBytes: sizes.reduce(
+      (largest, item) => Math.max(largest, item.bytes),
+      0,
+    ),
+  };
+}
+
+function formatBytes(bytes) {
+  return `${(bytes / 1024).toFixed(2)} kB`;
+}
+
 export function runBundleBudget() {
   const config = JSON.parse(
     fs.readFileSync(path.join(root, ".bundlewatch.json"), "utf8"),
   );
   const files = walk(path.join(root, "static"), "static");
   const failures = [];
+
   for (const rule of config.files ?? []) {
     const matches = files.filter((file) => matchesGlob(file, rule.path));
     if (matches.length === 0) {
@@ -48,11 +139,61 @@ export function runBundleBudget() {
       const raw = fs.readFileSync(path.join(root, file));
       const size =
         rule.compression === "gzip" ? gzipSync(raw).byteLength : raw.byteLength;
-      const label = `${(size / 1024).toFixed(2)} kB / ${(limit / 1024).toFixed(2)} kB`;
+      const label = `${formatBytes(size)} / ${formatBytes(limit)}`;
       if (size > limit) failures.push(`${file}: ${label}`);
       else console.log(`bundle budget pass: ${file} (${label})`);
     }
   }
+
+  if (config.initialEntry) {
+    const htmlPath = config.initialEntry.html;
+    const html = fs.readFileSync(path.join(root, htmlPath), "utf8");
+    const assetPaths = extractInitialEntryAssetPaths(html, htmlPath);
+    const measured = measureCompressedAssets(root, assetPaths);
+    const checks = [
+      ["gzip", measured.gzipBytes, config.initialEntry.maxGzipBytes],
+      ["brotli", measured.brotliBytes, config.initialEntry.maxBrotliBytes],
+    ];
+    for (const [encoding, bytes, limit] of checks) {
+      const label = `${formatBytes(bytes)} (${bytes} bytes) / ${formatBytes(limit)} (${limit} bytes)`;
+      if (bytes > limit) {
+        failures.push(`initial entry ${encoding}: ${label}`);
+      } else {
+        console.log(
+          `bundle budget pass: initial entry ${encoding} (${label}; ${assetPaths.length} files)`,
+        );
+      }
+    }
+  }
+
+  if (config.media) {
+    const measured = measureMediaAssets(
+      root,
+      config.media.root,
+      config.media.extensions,
+    );
+    if (measured.files.length === 0) {
+      failures.push(`${config.media.root}: no media artifact matched`);
+    } else {
+      const totalLabel = `${formatBytes(measured.totalBytes)} / ${formatBytes(config.media.maxTotalBytes)}`;
+      const largestLabel = `${formatBytes(measured.maxFileBytes)} / ${formatBytes(config.media.maxFileBytes)}`;
+      if (measured.totalBytes > config.media.maxTotalBytes) {
+        failures.push(`media aggregate: ${totalLabel}`);
+      } else {
+        console.log(
+          `bundle budget pass: media aggregate (${totalLabel}; ${measured.files.length} files)`,
+        );
+      }
+      if (measured.maxFileBytes > config.media.maxFileBytes) {
+        failures.push(`largest media artifact: ${largestLabel}`);
+      } else {
+        console.log(
+          `bundle budget pass: largest media artifact (${largestLabel})`,
+        );
+      }
+    }
+  }
+
   if (failures.length > 0) {
     console.error("Bundle budget failed:");
     failures.forEach((failure) => console.error(`  - ${failure}`));

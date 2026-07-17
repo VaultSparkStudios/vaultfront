@@ -35,15 +35,18 @@ describe("public launch foundation", () => {
       releaseStatus: "public-unlaunched",
       agentInteractions: [],
       authentication: { status: "not-wired" },
+      availability: { publicRuntime: "unavailable" },
     });
     expect(descriptor.rights.code).toContain("AGPL-3.0");
   });
 
   it("lists every local public page in the sitemap and exposes AI discovery", () => {
     const sitemap = read("public/sitemap.xml");
+    expect(sitemap).toContain("https://vaultsparkstudios.com/vaultfront/");
+    expect(sitemap).not.toContain("vaultfront.vaultsparkstudios.com");
     for (const page of publicPages) {
-      expect(sitemap).toContain(
-        `https://vaultfront.vaultsparkstudios.com/${page}/`,
+      expect(read(`public/${page}/index.html`)).toContain(
+        'name="robots" content="noindex,follow"',
       );
     }
     expect(read("public/.well-known/llms.txt")).toContain(

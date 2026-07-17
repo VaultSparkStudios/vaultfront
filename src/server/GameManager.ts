@@ -11,10 +11,15 @@ import {
 import { GameConfig, GameID, PublicGameType } from "../core/Schemas";
 import { simpleHash } from "../core/Util";
 import { Client } from "./Client";
+import {
+  buildGameLoopHealthSnapshot,
+  type GameLoopHealthSnapshot,
+} from "./GameLoopHealth";
 import { GamePhase, GameServer } from "./GameServer";
 
 export class GameManager {
   private games: Map<GameID, GameServer> = new Map();
+  private lastTickCompletedAt = Date.now();
 
   constructor(
     private config: ServerConfig,
@@ -185,6 +190,13 @@ export class GameManager {
     return totalDesyncs;
   }
 
+  public healthSnapshot(
+    now = Date.now(),
+    maxAgeMs = 3_500,
+  ): GameLoopHealthSnapshot {
+    return buildGameLoopHealthSnapshot(this.lastTickCompletedAt, now, maxAgeMs);
+  }
+
   tick() {
     const active = new Map<GameID, GameServer>();
     for (const [id, game] of this.games) {
@@ -215,5 +227,6 @@ export class GameManager {
       }
     }
     this.games = active;
+    this.lastTickCompletedAt = Date.now();
   }
 }
