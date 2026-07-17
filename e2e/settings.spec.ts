@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.describe("Settings / Theme", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await page.waitForSelector("play-page", { timeout: 10_000 });
   });
 

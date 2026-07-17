@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test.describe("Single Player flow", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await page.waitForSelector("play-page", { timeout: 10_000 });
   });
 
@@ -11,11 +11,15 @@ test.describe("Single Player flow", () => {
     await soloButton.click();
 
     // The single-player modal should become visible
-    const modal = page.locator("single-player-modal, o-modal#singlePlayerModal");
+    const modal = page.locator(
+      "single-player-modal, o-modal#singlePlayerModal",
+    );
     await expect(modal).toBeVisible({ timeout: 5_000 });
   });
 
-  test("shows vault bot behavior hint for each difficulty", async ({ page }) => {
+  test("shows vault bot behavior hint for each difficulty", async ({
+    page,
+  }) => {
     const soloButton = page.getByRole("button", { name: /solo/i }).first();
     await soloButton.click();
 

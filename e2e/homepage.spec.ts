@@ -2,12 +2,12 @@ import { expect, test } from "@playwright/test";
 
 test.describe("Homepage / Play page", () => {
   test("loads and shows the VaultFront title", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page).toHaveTitle(/VaultFront/i);
   });
 
   test("shows the Solo play option", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     // Wait for the app to hydrate (Lit components)
     await page.waitForSelector("play-page", { timeout: 10_000 });
     // Solo button should be visible in the nav or main content
