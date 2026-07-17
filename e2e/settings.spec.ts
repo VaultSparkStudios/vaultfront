@@ -19,7 +19,7 @@ test.describe("Settings / Theme", () => {
     await page.evaluate(() => {
       localStorage.setItem("settings.brandTheme", "light");
     });
-    await page.reload();
+    await page.reload({ waitUntil: "domcontentloaded" });
     await page.waitForSelector("play-page", { timeout: 10_000 });
 
     await expect
@@ -36,7 +36,7 @@ test.describe("Settings / Theme", () => {
     await page.emulateMedia({ colorScheme: "dark" });
     // Clear saved theme to test default resolution
     await page.evaluate(() => localStorage.removeItem("settings.brandTheme"));
-    await page.reload();
+    await page.reload({ waitUntil: "domcontentloaded" });
     await page.waitForSelector("play-page", { timeout: 10_000 });
 
     const theme = await page.evaluate(() =>
