@@ -8,6 +8,7 @@ VaultFront recovered a cut-off session safely, checkpointed that boundary, then 
 - **Trust:** Alpha evidence is authenticated, pseudonymous, deduplicated, and source-labeled; replays fail closed when signatures are invalid; readiness separates declared from verified state.
 - **Cost/security:** deterministic local coaching is the baseline, remote AI is default-off and capped, and dependency remediation reduced 34 audit findings to zero.
 - **Delivery:** all 12 ranked audit items and all 3 second-order innovation candidates shipped.
+- **Remote closure:** CI, E2E, brief checks, and Dependabot runs are green. A real Semantic Release failure was traced to uninstalled configured plugins and repaired with an exact-pinned, zero-audit Node 24 toolchain; the write-capable release job remains disabled unless `SEMANTIC_RELEASE_ENABLED=true` is explicitly set.
 
 ## Verification
 
@@ -18,7 +19,7 @@ VaultFront recovered a cut-off session safely, checkpointed that boundary, then 
 - Security: `npm audit` zero vulnerabilities; Studio supply-chain scan zero matching incidents.
 - Public foundation: repository-side sitemap compliance 10/10.
 - Canon: 49 applicable, zero gaps, zero absolute gaps.
-- Studio doctor: `overallPass: true`; 112 passing; zero failing; `blockingFailing: 0`.
+- Studio doctor final rerun: `overallPass: true`; 116/145 passing, 29 advisory warnings, zero failing; `blockingFailing: 0`.
 
 ## Recovery ledger
 

@@ -5,15 +5,38 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 jobs:
-  release:
-    name: Release
+  verify:
+    name: Verify release toolchain
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.0
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - name: Load configured semantic-release plugins
+        run: node --input-type=module -e "for (const p of ['semantic-release','@semantic-release/commit-analyzer','@semantic-release/release-notes-generator','@semantic-release/changelog','@semantic-release/github']) await import(p)"
+
+  release:
+    name: Release
+    if: ${{ vars.SEMANTIC_RELEASE_ENABLED == 'true' }}
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -22,10 +45,10 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24.14.0
           cache: npm
 
-      - run: npm ci
+      - run: npm ci --ignore-scripts
 
       - name: Run semantic-release
         env:

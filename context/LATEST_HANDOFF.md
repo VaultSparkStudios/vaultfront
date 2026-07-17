@@ -10,7 +10,7 @@ This repo keeps only a public-safe two-session handoff. Detailed operational his
 
 **Impact:** The core convoy loop now has a decisive breach climax and a real post-match continuation/progression spine. Release evidence is substantially harder to forge or misread: human evidence cannot be replaced by tests, replay consumers fail closed, remote AI cannot silently create uncapped free-tier cost, and readiness distinguishes declared configuration from verified external state.
 
-**Verification:** 107/107 Vitest files and 697/697 tests pass; coverage ratchets pass; exact CI-profile Playwright passes 22/22; production TypeScript/Vite build, ESLint, formatting ratchet, per-chunk bundle budgets, npm audit, Studio supply-chain scan, sitemap compliance, Canon conformance, and Studio doctor pass. Doctor result: `overallPass: true`, `failing: 0`, `blockingFailing: 0`.
+**Verification:** 107/107 Vitest files and 697/697 tests pass; coverage ratchets pass; exact CI-profile Playwright passes 22/22; production TypeScript/Vite build, ESLint, formatting ratchet, per-chunk bundle budgets, npm audit, Studio supply-chain scan, sitemap compliance, Canon conformance, and Studio doctor pass. Final doctor: `overallPass: true`, 116/145 passing, 29 advisory warnings, `failing: 0`, `blockingFailing: 0`. Remote CI, E2E, brief checks, and Dependabot runs are green; the observed Semantic Release plugin-resolution failure was repaired with a pinned Node 24 toolchain, while the write-capable release job stays gated behind `SEMANTIC_RELEASE_ENABLED=true`.
 
 **Recovery boundary:** The prior interrupted work was separately committed and pushed as `62f22956 recover S72 closeout` before S73 implementation began.
 

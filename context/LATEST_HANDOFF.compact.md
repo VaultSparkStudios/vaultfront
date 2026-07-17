@@ -1,50 +1,52 @@
 <!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
-<!-- source-hash: d414da764272 -->
-<!-- generated-at: 2026-07-16T22:59:08.992Z -->
+<!-- source-hash: 0a022aafcca2 -->
+<!-- generated-at: 2026-07-17T00:28:22.495Z -->
 
 # LATEST_HANDOFF (compact)
 
-# Handoff Summary — Session 73 (2026-07-16)
+SESSION
 
-## Status
+- Number: 73
+- Date: 2026-07-16
 
-- Latest session: 73, following S72 recovery
-- Project state: public-unlaunched / FORGE until live gates evidenced
-
-## Shipped
+SHIPPED
 
 - All 12 items from AUDIT_2026-07-16.json plus 3 innovation-pack candidates
-- Authenticated source-labeled Alpha Gate evidence; replay signature enforcement
-- Real private-lobby rematches; Vault Pressure breach climax; deterministic tactical coaching
+- Alpha Gate authenticated source-labeled evidence; replay signature enforcement (fail closed)
+- Real private-lobby rematches; Vault Pressure; deterministic tactical coaching
 - Server-authoritative progression; remote-AI cost caps; readiness truth (declared vs verified)
-- CI ratchets; protocol provenance/canon repair; zero-vulnerability dependency train
+- CI ratchets, protocol provenance/canon repair, zero-vuln dependency train
 
-## Verification
+VERIFICATION
 
-- 107/107 Vitest files, 697/697 tests pass; coverage ratchets pass
-- CI-profile Playwright 22/22; build, lint, format, bundle budgets, npm audit, supply-chain scan, sitemap, Canon, doctor all pass
-- Doctor: overallPass true, failing 0, blockingFailing 0
-- Recovery boundary committed/pushed as 62f22956 before S73 work
+- 697/697 tests, 107/107 Vitest files; Playwright 22/22 (CI profile)
+- Build/typecheck/lint/format/bundle/audit/canon/doctor pass
+- Doctor: overallPass true, 116/145, 29 advisory warnings, 0 failing/blocking
+- Semantic Release repaired via pinned Node 24; write-release still gated by SEMANTIC_RELEASE_ENABLED=true
 
-## Current Intent
+CURRENT INTENT
 
-Execute staging launch-evidence corridor, starting with authenticated three-human Alpha Gate. Hold public-unlaunched/FORGE until every live-only gate is evidenced.
+- Execute staging launch-evidence corridor, starting with authenticated three-human Alpha Gate
+- Keep project public-unlaunched / FORGE until all live-only gates evidenced
 
-## Now Bucket (top 3)
+NOW BUCKET (top 3)
 
-1. Authenticated Alpha Gate across three distinct human staging sessions
-2. Staging parity verification
-3. Live CSP/HSTS/Core Web Vitals and theme screenshot evidence
+- Run authenticated three-human staging Alpha Gate sessions
+- Establish staging parity
+- Confirm project-domain Brevo inbound delivery
 
-## Blockers (top 3)
+BLOCKERS (top 3)
 
-1. Project-domain Brevo inbound delivery unverified
-2. Native Obelisk relying-party auth not live
-3. Real revenue/supporter observation not yet captured
+- Native Obelisk relying-party auth not yet live
+- Live CSP/HSTS/Core Web Vitals + theme screenshot evidence missing
+- Real revenue/supporter observation not yet captured
 
-## Human-Blocked
+HUMAN-BLOCKED (age: since S73, 2026-07-16)
 
-- Founder launch approval (pending; open since S73 close)
-- Three-human staging sessions required (pending; open since S73 close)
+- Authenticated evidence from 3+ distinct human staging sessions
+- Founder launch approval
+- Real revenue/supporter observation
 
-Next session: begin the staging launch-evidence corridor with the three-human Alpha Gate.
+NEXT SESSION
+
+- Begin the authenticated three-human Alpha Gate to open the staging launch-evidence corridor.

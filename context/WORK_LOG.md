@@ -75,7 +75,7 @@ Append chronological entries.
 ### 2026-07-16 — Session 73 full recovery-to-arc mission
 
 - Goal: Execute `/start → /audit → /implement → /closeout`, exhaust the 12-item ranked audit and implement second-order innovations.
-- What changed: Shipped trusted Alpha Gate/replay/rematch paths, Vault Pressure, deterministic coach, authoritative progression, remote-AI cost firewall, readiness truth, public surfaces, CI ratchets, protocol provenance guards, dependency remediation, and all three innovation-pack candidates.
+- What changed: Shipped trusted Alpha Gate/replay/rematch paths, Vault Pressure, deterministic coach, authoritative progression, remote-AI cost firewall, readiness truth, public surfaces, CI ratchets, protocol provenance guards, dependency remediation, and all three innovation-pack candidates. Remote closure also caught and repaired the Semantic Release workflow's missing plugin toolchain with exact Node 24-compatible pins and zero audit findings; the write-capable release path remains explicitly gated while VaultFront is FORGE.
 - Files or systems touched: Core gameplay, client HUD/post-match surfaces, server evidence/progression/replay/rematch/readiness systems, CI/E2E/build tooling, public metadata/pages, protocol scripts/tests, audit and context ledgers.
 - Risks created or removed: Removed forgeable evidence, unsigned replay consumption, fake rematch telemetry, default-on remote AI exposure, 34 dependency findings, and phantom-green CI. Remaining launch gates are explicitly enumerated and unclaimed.
 - Recommended next move: Run the authenticated three-human staging Alpha Gate, then verify Brevo, Obelisk, live web hardening/theme evidence, and founder launch approval.

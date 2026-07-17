@@ -2,6 +2,12 @@
 
 Public-safe decisions only. Detailed internal decision history is maintained privately.
 
+## 2026-07-16 — Semantic releases require an explicit launch switch
+
+**Decision:** Verify the exact-pinned Semantic Release toolchain on every main push with read-only permissions. Run the write-capable release job only when the repository variable `SEMANTIC_RELEASE_ENABLED` is explicitly `true`.
+
+**Why:** Repairing CI must not silently convert a FORGE/public-unlaunched implementation commit into a public GitHub release. The switch keeps release capability tested while preserving founder approval and launch-announcement gates.
+
 ## 2026-07-16 — Launch evidence is source-labeled and non-substitutable
 
 **Decision:** Human, agent, and test Alpha Gate evidence are separate classes. Automated or synthetic events may verify behavior but cannot satisfy the distinct-human launch gate; event IDs are deduplicated and actor identifiers remain pseudonymous.
