@@ -60,7 +60,7 @@
     {
       "command": "npm run build-prod",
       "status": "pass",
-      "evidence": "TypeScript and warning-free Vite build pass; release evidence reports transfer pass and exhausted=true."
+      "evidence": "TypeScript and warning-free Vite build pass; release evidence reports exhausted=true and transfer pass against exact baselines plus an explicit 1% cross-platform compression envelope."
     },
     {
       "command": "node scripts/check-bundle-budget.mjs",

@@ -4,6 +4,7 @@ import path from "node:path";
 import { brotliCompressSync, gzipSync } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  effectiveByteLimit,
   extractInitialEntryAssetPaths,
   matchesGlob,
   measureCompressedAssets,
@@ -24,6 +25,14 @@ describe("dependency-free bundle budget", () => {
     expect(parseByteLimit("500 kB")).toBe(500 * 1024);
     expect(parseByteLimit("1.8 MB")).toBe(1.8 * 1024 * 1024);
     expect(() => parseByteLimit("500")).toThrow("Invalid bundle limit");
+  });
+
+  it("keeps an exact baseline inside an explicit platform-variance envelope", () => {
+    expect(effectiveByteLimit(1_000, 1)).toBe(1_010);
+    expect(effectiveByteLimit(1_001, 0.5)).toBe(1_007);
+    expect(() => effectiveByteLimit(1_000, -1)).toThrow(
+      "Invalid cross-platform variance",
+    );
   });
 
   it("matches the single-star artifact patterns used by the budget", () => {

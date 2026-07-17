@@ -13,6 +13,16 @@ export function parseByteLimit(value) {
   return Number(match[1]) * multiplier;
 }
 
+export function effectiveByteLimit(baselineBytes, variancePercent = 0) {
+  if (!Number.isFinite(baselineBytes) || baselineBytes < 0) {
+    throw new Error(`Invalid byte baseline: ${baselineBytes}`);
+  }
+  if (!Number.isFinite(variancePercent) || variancePercent < 0) {
+    throw new Error(`Invalid cross-platform variance: ${variancePercent}`);
+  }
+  return Math.ceil(baselineBytes * (1 + variancePercent / 100));
+}
+
 export function matchesGlob(file, pattern) {
   const escaped = pattern
     .replaceAll("\\", "/")
@@ -150,12 +160,22 @@ export function runBundleBudget() {
     const html = fs.readFileSync(path.join(root, htmlPath), "utf8");
     const assetPaths = extractInitialEntryAssetPaths(html, htmlPath);
     const measured = measureCompressedAssets(root, assetPaths);
+    const variance = config.initialEntry.crossPlatformVariancePercent ?? 0;
+    const gzipBaseline =
+      config.initialEntry.baselineGzipBytes ?? config.initialEntry.maxGzipBytes;
+    const brotliBaseline =
+      config.initialEntry.baselineBrotliBytes ??
+      config.initialEntry.maxBrotliBytes;
     const checks = [
-      ["gzip", measured.gzipBytes, config.initialEntry.maxGzipBytes],
-      ["brotli", measured.brotliBytes, config.initialEntry.maxBrotliBytes],
+      ["gzip", measured.gzipBytes, gzipBaseline],
+      ["brotli", measured.brotliBytes, brotliBaseline],
     ];
-    for (const [encoding, bytes, limit] of checks) {
-      const label = `${formatBytes(bytes)} (${bytes} bytes) / ${formatBytes(limit)} (${limit} bytes)`;
+    for (const [encoding, bytes, baseline] of checks) {
+      const limit = effectiveByteLimit(baseline, variance);
+      const varianceLabel = variance
+        ? `; baseline ${baseline} bytes + ${variance}% platform variance`
+        : "";
+      const label = `${formatBytes(bytes)} (${bytes} bytes) / ${formatBytes(limit)} (${limit} bytes${varianceLabel})`;
       if (bytes > limit) {
         failures.push(`initial entry ${encoding}: ${label}`);
       } else {

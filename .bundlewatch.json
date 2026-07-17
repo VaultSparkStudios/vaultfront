@@ -13,8 +13,9 @@
   ],
   "initialEntry": {
     "html": "static/index.html",
-    "maxGzipBytes": 738885,
-    "maxBrotliBytes": 586751
+    "baselineGzipBytes": 738885,
+    "baselineBrotliBytes": 586751,
+    "crossPlatformVariancePercent": 1
   },
   "media": {
     "root": "static/assets",

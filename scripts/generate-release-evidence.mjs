@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  effectiveByteLimit,
   extractInitialEntryAssetPaths,
   measureCompressedAssets,
   measureMediaAssets,
@@ -107,6 +108,12 @@ export function generateReleaseEvidence(projectRoot = root) {
   const innovations = fs.existsSync(innovationPath)
     ? (JSON.parse(fs.readFileSync(innovationPath, "utf8")).items ?? [])
     : [];
+  const variance = config.initialEntry.crossPlatformVariancePercent ?? 0;
+  const baselineGzipBytes =
+    config.initialEntry.baselineGzipBytes ?? config.initialEntry.maxGzipBytes;
+  const baselineBrotliBytes =
+    config.initialEntry.baselineBrotliBytes ??
+    config.initialEntry.maxBrotliBytes;
   const evidence = buildReleaseEvidence({
     generatedAt: new Date().toISOString(),
     gitSha: git(["rev-parse", "HEAD"]),
@@ -117,8 +124,11 @@ export function generateReleaseEvidence(projectRoot = root) {
     transfer: {
       initial: {
         ...initial,
-        maxGzipBytes: config.initialEntry.maxGzipBytes,
-        maxBrotliBytes: config.initialEntry.maxBrotliBytes,
+        baselineGzipBytes,
+        baselineBrotliBytes,
+        crossPlatformVariancePercent: variance,
+        maxGzipBytes: effectiveByteLimit(baselineGzipBytes, variance),
+        maxBrotliBytes: effectiveByteLimit(baselineBrotliBytes, variance),
       },
       media: {
         totalBytes: media.totalBytes,
