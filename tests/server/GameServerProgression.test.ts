@@ -14,13 +14,20 @@ vi.mock("../../src/server/MatchProgression", () => ({
   matchProgressionSpine: { record: vi.fn().mockResolvedValue({}) },
 }));
 
+vi.mock("../../src/server/Archive", () => ({
+  archive: vi.fn(),
+  finalizeGameRecord: (record: unknown) => record,
+}));
+
 vi.mock("../../src/server/VaultSeasonScheduler", () => ({
   vaultSeasonScheduler: { getStatus: () => ({ weekNumber: 29 }) },
 }));
 
 import { GameType } from "../../src/core/game/Game";
+import { archive } from "../../src/server/Archive";
 import { GameServer } from "../../src/server/GameServer";
 import { matchProgressionSpine } from "../../src/server/MatchProgression";
+import { buildMatchResultCertificate } from "../../src/server/MatchResultCertificate";
 
 describe("GameServer progression wiring", () => {
   const logger = {
@@ -37,6 +44,7 @@ describe("GameServer progression wiring", () => {
 
   beforeEach(() => {
     vi.mocked(matchProgressionSpine.record).mockClear();
+    vi.mocked(archive).mockClear();
   });
 
   test("builds the authoritative envelope from the accepted winner vote", async () => {
@@ -63,28 +71,47 @@ describe("GameServer progression wiring", () => {
       ["client01", { persistentID: "p1" }],
       ["client02", { persistentID: "p2" }],
     ]);
-    (game as any).winner = {
-      type: "winner",
-      winner: ["player", "client01"],
-      allPlayersStats: {
-        client01: {
-          vaultfront: {
-            vaultCaptures: 2n,
-            vaultConvoysDelivered: 3n,
-            cleanExecutionStreaks: 1n,
-            surgeActivations: 1n,
+    const accepted = {
+      status: "accepted" as const,
+      resultDigest: "a".repeat(64),
+      result: {
+        type: "winner" as const,
+        winner: ["player", "client01"] as ["player", string],
+        allPlayersStats: {
+          client01: {
+            vaultfront: {
+              vaultCaptures: 2n,
+              vaultConvoysDelivered: 3n,
+              cleanExecutionStreaks: 1n,
+              surgeActivations: 1n,
+            },
+          },
+          client02: {
+            vaultfront: {
+              vaultCaptures: 1n,
+              vaultConvoysDelivered: 0n,
+              cleanExecutionStreaks: 0n,
+              surgeActivations: 0n,
+            },
           },
         },
-        client02: {
-          vaultfront: {
-            vaultCaptures: 1n,
-            vaultConvoysDelivered: 0n,
-            cleanExecutionStreaks: 0n,
-            surgeActivations: 0n,
-          },
-        },
-      },
+      } as any,
+      votes: 2,
+      activeUniqueIPs: 3,
     };
+    // Use the real digest produced for the complete result.
+    const { canonicalEvidenceDigest } =
+      await import("../../src/server/MatchResultCertificate");
+    accepted.resultDigest = canonicalEvidenceDigest({
+      winner: accepted.result.winner,
+      allPlayersStats: accepted.result.allPlayersStats,
+    });
+    (game as any).resultCertificate = buildMatchResultCertificate({
+      gameID: "game1234",
+      config: (game as any).gameStartInfo.config,
+      turns: [],
+      accepted,
+    });
 
     (game as any).recordProgressionOutcome();
     await Promise.resolve();
@@ -112,5 +139,38 @@ describe("GameServer progression wiring", () => {
         ],
       }),
     );
+
+    (game as any).archiveGame();
+    expect(archive).toHaveBeenCalledTimes(1);
+    expect(archive).toHaveBeenCalledWith(
+      expect.objectContaining({
+        telemetry: expect.objectContaining({
+          resultCertificate: expect.objectContaining({
+            certificateId: (game as any).resultCertificate.certificateId,
+          }),
+        }),
+      }),
+    );
+  });
+
+  test("ignores winner-shaped client state when no certificate exists", async () => {
+    const game = new GameServer(
+      "game1234",
+      logger as any,
+      Date.now(),
+      config as any,
+      { gameType: GameType.Private } as any,
+    );
+    (game as any)._startTime = Date.now() - 1_000;
+    (game as any).gameStartInfo = { config: {}, players: [] };
+    (game as any).winner = {
+      winner: ["player", "attacker"],
+      allPlayersStats: {},
+    };
+
+    (game as any).recordProgressionOutcome();
+    await Promise.resolve();
+
+    expect(matchProgressionSpine.record).not.toHaveBeenCalled();
   });
 });

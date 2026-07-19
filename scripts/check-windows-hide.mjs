@@ -31,14 +31,26 @@
 // Propagated studio-wide (CANON-016): every project ships this guard + safe-spawn.mjs
 // + windows-hide-shim.cjs so no agent, in any repo, can reintroduce the window-storm.
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 // Reuse the ONE canonical directory-walk ignore set — do NOT re-declare the literal
 // (policy-drift-lint discipline, S188; same pattern as lib/committed-state.mjs).
 import { WALK_IGNORE_DIRS } from "./lib/shared-policies.mjs";
 
-const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
+const ROOT = (() => {
+  try {
+    return resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  } catch {
+    // Vitest rewrites import.meta.url to its virtual module scheme.
+    return process.cwd();
+  }
+})();
+const OWNED_ROOTS = [
+  join(ROOT, "scripts"),
+  join(ROOT, "tests", "scripts"),
+  join(ROOT, "tests", "perf"),
+];
 
 // Directories to skip (no source spawns we own / vendored): canonical set + 'coverage'.
 const SKIP_DIRS = new Set([...WALK_IGNORE_DIRS, "coverage"]);
@@ -52,14 +64,19 @@ const RAW_CP_ALLOWLIST = new Set([
   "scripts/test/tier1-windows-hide-shim.mjs",
 ]);
 
-// A direct import/require of node:child_process (any quote/spacing, with or without node: prefix).
-const RAW_CP_RE = /(?:from\s*['"]|require\(\s*['"])(?:node:)?child_process['"]/;
+// Static imports, require(), and dynamic import() are all equivalent policy edges.
+const RAW_CP_RE =
+  /(?:from\s*['"]|require\(\s*['"]|import\(\s*['"])(?:node:)?child_process['"]/;
+
+function roots(value) {
+  return Array.isArray(value) ? value : [value];
+}
 
 // Scan a tree for scripts that import child_process directly instead of the hardened
 // wrapper. Pure file reads — no child spawns — safe to call in-process from a test.
-export function scanDirectChildProcessImports(root = join(ROOT, "scripts")) {
+export function scanDirectChildProcessImports(root = OWNED_ROOTS) {
   const violations = [];
-  for (const file of walk(root)) {
+  for (const file of roots(root).flatMap((entry) => walk(entry))) {
     const relPath = relative(ROOT, file).replace(/\\/g, "/");
     if (RAW_CP_ALLOWLIST.has(relPath)) continue;
     const src = readFileSync(file, "utf8");
@@ -74,12 +91,13 @@ export function scanDirectChildProcessImports(root = join(ROOT, "scripts")) {
 }
 
 function walk(dir, out = []) {
+  if (!existsSync(dir)) return out;
   for (const name of readdirSync(dir)) {
     if (SKIP_DIRS.has(name)) continue;
     const p = join(dir, name);
     const st = statSync(p);
     if (st.isDirectory()) walk(p, out);
-    else if (name.endsWith(".mjs") || name.endsWith(".js")) out.push(p);
+    else if (/\.(?:[cm]?[jt]s)$/.test(name)) out.push(p);
   }
   return out;
 }
@@ -94,9 +112,9 @@ const HIDE_RE = /windowsHide\s*:\s*true/;
 
 // Scan a tree for shell:true spawns missing windowsHide:true. Pure file reads —
 // no child spawns — so it is safe to call in-process from a test.
-export function scanWindowsHide(root = join(ROOT, "scripts")) {
+export function scanWindowsHide(root = OWNED_ROOTS) {
   const violations = [];
-  for (const file of walk(root)) {
+  for (const file of roots(root).flatMap((entry) => walk(entry))) {
     if (file.endsWith("check-windows-hide.mjs")) continue; // don't lint the guard's own pattern doc
     const src = readFileSync(file, "utf8");
     SHELL_RE.lastIndex = 0;
@@ -123,9 +141,9 @@ export function scanWindowsHide(root = join(ROOT, "scripts")) {
 const LITERAL_NODE_SPAWN_NEAR =
   /\b(spawnSync|spawn|execFileSync|execFile)\s*\(\s*['"]node['"]/;
 
-export function scanShellNodeSpawns(root = join(ROOT, "scripts")) {
+export function scanShellNodeSpawns(root = OWNED_ROOTS) {
   const violations = [];
-  for (const file of walk(root)) {
+  for (const file of roots(root).flatMap((entry) => walk(entry))) {
     if (file.endsWith("check-windows-hide.mjs")) continue;
     const src = readFileSync(file, "utf8")
       .replace(/\/\*[\s\S]*?\*\//g, "")

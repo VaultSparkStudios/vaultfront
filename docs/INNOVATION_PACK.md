@@ -1,5 +1,5 @@
 <!-- generated-by: scripts/innovation-pack.mjs -->
-<!-- generated-at: 2026-07-17T01:37:12.445Z -->
+<!-- generated-at: 2026-07-18T22:35:50.022Z -->
 
 # Second-Order Innovation Pack
 
@@ -8,3 +8,6 @@ Generated only after the audit-backed Unified Genius List was exhausted. Complet
 1. [x] **runtime-integrity-passport** — Ship a digestible process-local Runtime Integrity Passport. Fuse live IPC/game-loop health, experiment rejection posture, remote-AI reservation truth, and bounded WebSocket policy into one admin-only, scope-labeled, SHA-256-digested contract. Evidence: RuntimeIntegrityPassport module, admin route, canonical digest and tamper-sensitive tests.
 2. [x] **release-evidence-manifest** — Emit a machine-readable Release Evidence Manifest after every build. Bind Git revision/dirty state, launch mode, audit exhaustion, and exact transfer budgets into static/release-evidence.json so promotion and agents consume the same provenance. Evidence: post-build manifest generator, build wiring, and clean/dirty provenance tests.
 3. [x] **exhaustion-proof-gate** — Turn complete-all into a machine-enforced Exhaustion Proof gate. Fail the doctor and closeout whenever the latest audit or innovation sidecar retains a pending unblocked item; emit counts and exact item IDs instead of relying on prose. Evidence: audit+innovation exhaustion checker, doctor probe, and pending/deferred fixtures.
+4. [x] **certified-ai-response-receipts** — Bind every remote-AI answer to a verifiable response receipt. Extend canonical request evidence through validated provider output, exact model identity, timestamp, and a tamper-evident response digest so cached and fresh answers share one auditable provenance contract. Evidence: canonical AI response-receipt builder/verifier, live Worker wiring across oracle/coach/recap/debrief, cache preservation, and tamper tests.
+5. [x] **agent-capability-reachability** — Publish a fail-closed Human + Agent capability reachability contract. Cross-bind public capability claims to exact routes, client mounts, certificate consumers, policy middleware, and executable source tokens while preserving the honest public-unlaunched runtime posture. Evidence: agent-readable capability manifest, source-digested reachability checker, agents.json discovery link, doctor probe, and fail-closed fixtures.
+6. [x] **release-evidence-lineage-dag** — Turn release evidence into a self-verifying provenance DAG. Chain source, external gates, local surfaces, work exhaustion, transfer budgets, and the final decision into ordered SHA-256 receipts with a single root digest that fails on tamper or forward references. Evidence: canonical evidence DAG builder/verifier, release-manifest integration, root receipt, and tamper/ordering tests.

@@ -197,6 +197,16 @@ app.get("/api/health", (_req, res) => {
   }
 });
 
+// Canonical infrastructure probe used by staging and release gates.
+app.get("/_health", (_req, res) => {
+  const ready = lobbyService?.isHealthy() ?? false;
+  if (ready) {
+    res.json({ status: "ok", scope: "master" });
+  } else {
+    res.status(503).json({ status: "unavailable", scope: "master" });
+  }
+});
+
 app.get("/api/vaultfront/readiness", (_req, res) => {
   const healthy = lobbyService?.isHealthy() ?? false;
   res.status(healthy ? 200 : 503).json(

@@ -10,7 +10,8 @@
     "landing": "https://vaultsparkstudios.com/vaultfront/",
     "docs": "https://vaultsparkstudios.com/vaultfront/#how-to-play",
     "contact": "mailto:founder@vaultsparkstudios.com?subject=VaultFront%20alpha%20interest",
-    "source": "https://github.com/VaultSparkStudios/VaultFront"
+    "source": "https://github.com/VaultSparkStudios/VaultFront",
+    "capabilityManifest": "/capability-reachability.json"
   },
   "availability": {
     "publicRuntime": "unavailable",

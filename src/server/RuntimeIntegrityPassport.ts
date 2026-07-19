@@ -1,6 +1,9 @@
 import { createHash } from "node:crypto";
 import type { ExperimentIntegritySnapshot } from "./ExperimentIntegrity";
+import type { NarratorBus } from "./NarratorBus";
 import type { RemoteAiPosture } from "./RemoteAiPolicy";
+import type { StateScopeLedgerSnapshot } from "./StateScopeLedger";
+import type { StreamingBus } from "./StreamingBus";
 
 export interface RuntimeIntegrityPassportInput {
   workerId: number;
@@ -25,6 +28,11 @@ export interface RuntimeIntegrityPassportInput {
     maxSpectatorsPerGame: number;
     maxSpectatorsPerWorker: number;
   };
+  ssePolicy: {
+    streaming: ReturnType<StreamingBus["integritySnapshot"]>;
+    narrator: ReturnType<NarratorBus["integritySnapshot"]>;
+  };
+  stateScopeLedger: StateScopeLedgerSnapshot;
 }
 
 function canonicalize(value: unknown): unknown {
@@ -66,6 +74,28 @@ export function buildRuntimeIntegrityPassport(
   ) {
     failures.push("websocket-buffer-budget-exceeded");
   }
+  if (input.stateScopeLedger.summary.configuredDatabaseFailure) {
+    failures.push("configured-database-failed");
+  } else if (
+    input.stateScopeLedger.summary.releasePersistenceStatus === "warn"
+  ) {
+    warnings.push("release-critical-state-is-process-local");
+  }
+  const sseTransports = [input.ssePolicy.streaming, input.ssePolicy.narrator];
+  if (
+    sseTransports.some(
+      (transport) => transport.policy.maxQueuedBytesPerClient > 256 * 1024,
+    )
+  ) {
+    failures.push("sse-buffer-budget-exceeded");
+  }
+  if (
+    sseTransports.some(
+      (transport) => transport.counters.slowConsumerEvictions > 0,
+    )
+  ) {
+    warnings.push("sse-slow-consumers-evicted");
+  }
   const decisions =
     input.experimentIntegrity.accepted + input.experimentIntegrity.rejected;
   const rejectionRate =
@@ -85,6 +115,8 @@ export function buildRuntimeIntegrityPassport(
     },
     remoteAi: input.remoteAi,
     websocketPolicy: input.websocketPolicy,
+    ssePolicy: input.ssePolicy,
+    stateScopeLedger: input.stateScopeLedger,
     mutationBoundary: {
       version: "verified-actor-v1" as const,
       authority: "bearer-token-subject" as const,

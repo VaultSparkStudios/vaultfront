@@ -11,7 +11,7 @@ vi.mock("../../src/server/Logger", () => ({
 
 function response() {
   const emitter = new EventEmitter() as any;
-  emitter.write = vi.fn();
+  emitter.write = vi.fn().mockReturnValue(true);
   emitter.end = vi.fn();
   return emitter;
 }
@@ -25,7 +25,7 @@ describe("NarratorBus", () => {
     process.env.VAULTFRONT_REMOTE_AI_ENABLED = "true";
     process.env.VAULTFRONT_REMOTE_AI_MAX_CALLS_PER_HOUR = "10";
     const bus = new NarratorBus();
-    bus.subscribe("game-1", response());
+    bus.subscribe("game-1", response(), "ip:test");
 
     bus.queueEvent("game-1", "convoy intercepted");
     bus.queueEvent("game-1", "convoy intercepted");

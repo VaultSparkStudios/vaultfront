@@ -13,6 +13,7 @@
  */
 
 import type { Response } from "express";
+import { BoundedSseTransport, type SseAdmission } from "./BoundedSseTransport";
 import { logger as Logger } from "./Logger";
 
 export interface StreamSnapshot {
@@ -33,9 +34,18 @@ interface StreamState {
 
 const HEARTBEAT_MS = 5_000;
 const MAX_RECENT_EVENTS = 12;
+export const STREAMING_SSE_POLICY = {
+  maxSubscribersPerGame: 32,
+  maxSubscribersPerWorker: 256,
+  maxSubscribersPerIp: 8,
+  maxQueuedEventsPerClient: 24,
+  maxQueuedBytesPerClient: 64 * 1024,
+  drainTimeoutMs: 5_000,
+} as const;
 
 export class StreamingBus {
   private streams = new Map<string, StreamState>();
+  private readonly transport = new BoundedSseTransport(STREAMING_SSE_POLICY);
 
   private getOrCreate(gameId: string): StreamState {
     if (!this.streams.has(gameId)) {
@@ -52,30 +62,45 @@ export class StreamingBus {
     return this.streams.get(gameId)!;
   }
 
-  subscribe(gameId: string, res: Response): void {
-    const state = this.getOrCreate(gameId);
-    state.clients.add(res);
+  admit(gameId: string, clientKey: string): SseAdmission {
+    return this.transport.admit(gameId, clientKey);
+  }
 
-    res.on("close", () => {
+  subscribe(gameId: string, res: Response, clientKey: string): SseAdmission {
+    const state = this.getOrCreate(gameId);
+    const admission = this.transport.subscribe(gameId, clientKey, res, () => {
       state.clients.delete(res);
       if (state.clients.size === 0) this.cleanup(gameId);
     });
+    if (!admission.accepted) {
+      if (state.clients.size === 0) this.cleanup(gameId);
+      return admission;
+    }
+    state.clients.add(res);
 
-    res.write(`data: ${JSON.stringify({ type: "connected", gameId })}\n\n`);
+    this.transport.write(
+      res,
+      `data: ${JSON.stringify({ type: "connected", gameId })}\n\n`,
+    );
 
     // Send last snapshot immediately if available
     if (state.lastSnapshot) {
-      res.write(
+      this.transport.write(
+        res,
         `data: ${JSON.stringify({ type: "snapshot", ...state.lastSnapshot })}\n\n`,
       );
     }
     for (const event of state.recentEvents) {
-      res.write(`data: ${JSON.stringify({ type: "replay", event })}\n\n`);
+      this.transport.write(
+        res,
+        `data: ${JSON.stringify({ type: "replay", event })}\n\n`,
+      );
     }
 
     Logger.info(`StreamingBus: overlay client connected to ${gameId}`, {
       count: state.clients.size,
     });
+    return admission;
   }
 
   /** Push a game-state snapshot to all overlay clients. */
@@ -97,13 +122,7 @@ export class StreamingBus {
     const state = this.streams.get(gameId);
     if (!state) return;
     this.broadcast(state, { type: "game_over", gameId });
-    for (const res of state.clients) {
-      try {
-        res.end();
-      } catch {
-        // ignore
-      }
-    }
+    this.transport.closeGame(gameId);
     this.cleanup(gameId);
   }
 
@@ -116,15 +135,9 @@ export class StreamingBus {
   private broadcast(state: StreamState, payload: object): void {
     this.remember(state, payload);
     const line = `data: ${JSON.stringify(payload)}\n\n`;
-    const dead: Response[] = [];
     for (const res of state.clients) {
-      try {
-        res.write(line);
-      } catch {
-        dead.push(res);
-      }
+      this.transport.write(res, line);
     }
-    dead.forEach((r) => state.clients.delete(r));
   }
 
   private remember(state: StreamState, payload: object): void {
@@ -157,6 +170,10 @@ export class StreamingBus {
       subscribers: state?.clients.size ?? 0,
       recentEvents: state?.recentEvents.length ?? 0,
     };
+  }
+
+  integritySnapshot() {
+    return this.transport.snapshot();
   }
 }
 

@@ -23,6 +23,7 @@ import {
   renderTestItNow,
   renderTitleHeader,
 } from "./lib/brief-blocks.mjs";
+import { buildBriefSourceManifest } from "./lib/brief-freshness.mjs";
 import { loadPortfolioTaskBoards } from "./lib/cross-repo-tasks.mjs";
 import { isWarning } from "./lib/doctor-predicates.mjs";
 import { loadIgnisInsight } from "./lib/ignis-insight.mjs";
@@ -37,22 +38,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 const outputPath = path.join(root, "docs", "STARTUP_BRIEF.md");
 const node = process.execPath;
-
-// S120 #1 — brief-v5 promote opt-in. Set BRIEF_V5=1 or pass --v5 to delegate
-// to render-startup-brief-v5.mjs (71% token reduction, validated S117). Default
-// remains v3.1 until 3-session hash-stability monitoring completes.
-if (process.argv.includes("--v5") || process.env.BRIEF_V5 === "1") {
-  const { spawnSync } = await import("node:child_process");
-  const r = spawnSync(
-    node,
-    [
-      path.join(__dirname, "render-startup-brief-v5.mjs"),
-      ...process.argv.slice(2).filter((a) => a !== "--v5"),
-    ],
-    { stdio: "inherit", cwd: root },
-  );
-  process.exit(r.status ?? 0);
-}
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const W = 62; // inner box width (content between ║  and  ║)
@@ -1565,12 +1550,14 @@ const staleBanner = briefCoherent
 
 // ── Build the brief ───────────────────────────────────────────────────────────
 const pct = silTotal > 0 ? `${Math.round((silTotal / silMax) * 100)}%` : "?%";
+const briefSourceManifest = buildBriefSourceManifest(root);
 
 const lines = [
   `<!-- generated-by: scripts/render-startup-brief.mjs v3.1 -->`,
   `<!-- generated-at: ${today} (Session ${currentSession - 1} closeout) -->`,
   `<!-- fast-boot-valid-until: next session if within 24h -->`,
   `<!-- brief-coherent: ${briefCoherent} -->`,
+  `<!-- brief-sources: ${JSON.stringify(briefSourceManifest)} -->`,
   ``,
   `# Startup Brief — ${status.name || "Studio Ops"}`,
   ``,
@@ -1935,61 +1922,4 @@ try {
   process.stderr.write(
     `  ⚠ skill-cost-ledger record skipped: ${err.message}\n`,
   );
-}
-
-// ── Audit S119 #11: dual-render mode for measured v5 savings ────────────────
-// Set STUDIO_BRIEF_V5=compare to also emit v5 and log size delta. Use
-// STUDIO_BRIEF_V5=1 (or --v5) to promote v5 as the source of /start. Default
-// (no flag) keeps v3.1 — full cutover blocked on measured-comparable session.
-// S120 audit #12 — v5 now default when `.cache/brief-v5-canonical` flag file
-// exists (set once at promotion). Env override still honored.
-const v5FlagFile = path.join(root, ".cache", "brief-v5-canonical");
-const v5Mode =
-  process.env.STUDIO_BRIEF_V5 ||
-  (process.argv.includes("--v5") ? "1" : null) ||
-  (fs.existsSync(v5FlagFile) ? "1" : "off");
-if (v5Mode !== "off") {
-  try {
-    const v5Path = path.resolve(__dirname, "render-startup-brief-v5.mjs");
-    if (fs.existsSync(v5Path)) {
-      const res = spawnSync(node, [v5Path], { cwd: root, stdio: "inherit" });
-      if (res.status === 0) {
-        const v3Bytes = Buffer.byteLength(lines.join("\n"), "utf8");
-        const v5File = path.join(root, "docs", "STARTUP_BRIEF_V5.md");
-        if (fs.existsSync(v5File)) {
-          const v5Bytes = fs.statSync(v5File).size;
-          const reductionPct = Math.round(
-            ((v3Bytes - v5Bytes) / v3Bytes) * 100,
-          );
-          console.log(
-            `  ◆ brief-v5 compare: v3=${v3Bytes}b v5=${v5Bytes}b  (${reductionPct}% reduction)`,
-          );
-          if (v5Mode === "1" || v5Mode === "promote") {
-            // S209 [audit #2] — promotion guard. v5 must not overwrite the
-            // canonical brief unless it passes the same validator /start uses AND
-            // carries no unresolved computed-block stub. This is the safety net
-            // that stops a half-built v5 (e.g. an unwired SIGNALS/HUMAN PRESSURE
-            // resolver) from silently becoming the founder's primary surface.
-            const v5Text = fs.readFileSync(v5File, "utf8");
-            const hasStub = /\{"script":\s*"/.test(v5Text);
-            const valid = spawnSync(
-              node,
-              [path.join(__dirname, "validate-brief-format.mjs"), v5File],
-              { cwd: root },
-            );
-            if (hasStub || valid.status !== 0) {
-              console.error(
-                `  ⚠ brief-v5 promotion BLOCKED — ${hasStub ? "unresolved computed-block stub" : "failed validate-brief-format"}; keeping v3.1 canonical.`,
-              );
-            } else {
-              fs.copyFileSync(v5File, outputPath);
-              console.log(`  ◆ brief-v5 promoted → docs/STARTUP_BRIEF.md`);
-            }
-          }
-        }
-      }
-    }
-  } catch (err) {
-    process.stderr.write(`  ⚠ v5 dual-render skipped: ${err.message}\n`);
-  }
 }

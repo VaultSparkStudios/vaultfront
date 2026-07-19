@@ -11,7 +11,7 @@ vi.mock("../../src/server/Logger", () => ({
 
 function response() {
   const emitter = new EventEmitter() as any;
-  emitter.write = vi.fn();
+  emitter.write = vi.fn().mockReturnValue(true);
   emitter.end = vi.fn();
   return emitter;
 }
@@ -20,7 +20,7 @@ describe("StreamingBus", () => {
   test("replays recent stream events to reconnecting overlays", () => {
     const bus = new StreamingBus();
     const first = response();
-    bus.subscribe("game-1", first);
+    bus.subscribe("game-1", first, "ip:first");
 
     bus.pushSnapshot({
       gameId: "game-1",
@@ -30,7 +30,7 @@ describe("StreamingBus", () => {
     bus.pushCommentary("game-1", "Blue commander breaks the line.");
 
     const second = response();
-    bus.subscribe("game-1", second);
+    bus.subscribe("game-1", second, "ip:second");
 
     const writes = second.write.mock.calls
       .map(([line]: [string]) => line)

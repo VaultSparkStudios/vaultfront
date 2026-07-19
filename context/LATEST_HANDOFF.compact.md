@@ -1,55 +1,50 @@
 <!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
-<!-- source-hash: f47659481d18 -->
-<!-- generated-at: 2026-07-17T02:08:35.879Z -->
+<!-- source-hash: 6ff4c0e531c3 -->
+<!-- generated-at: 2026-07-19T20:08:52.251Z -->
 
 # LATEST_HANDOFF (compact)
 
-SESSION
+SESSION HANDOFF — Session 75 (2026-07-19)
 
-- Session 74 (2026-07-16)
+Current Intent
 
-SHIPPED (S74)
+- Deploy exact verified digest to a real staging origin, then collect launch-gate evidence in order.
 
-- 11 new audit findings + 3 second-order innovations; audit exhausted 23/23, innovations 3/3.
-- Server-authoritative actor/role checks on full mutation-route inventory.
-- Experiment, WebSocket, IPC, game-loop, remote-AI integrity policies (explicit + tested).
-- Runtime Integrity Passport + Release Evidence Manifest binding live/build posture to digests.
-- Project doctor, audit-derived Genius caching, executable exhaustion proof (anti phantom-green).
-- Warning-free production chunks; exact gzip/Brotli/media transfer budgets.
+Shipped (Session 75)
 
-CURRENT INTENT
+- 14 new findings + 3 second-order innovations; cumulative audit 37/37, innovation pack 6/6.
+- Match outcomes now require strict unique-IP-majority certificate over complete canonical roster.
+- One Match Result Certificate is sole authority for archive, progression, metrics, recap, coaching.
+- Command Center: meta systems reachable, truthful states, lazy-loaded behind explicit nav.
+- High-risk routes bind exact method/path/auth/evidence; AI/experiment ops use shared semantic auth.
+- Release evidence fails closed across 8 provenance gates with self-verifying decision lineage root.
 
-- Post-closeout. Public launch NO-GO. Next phase: run external launch-evidence corridor once a real staging origin exists.
+Now Bucket (top items)
 
-VERIFICATION STATUS
+1. Deploy exact verified digest to real staging origin.
+2. Collect staging parity evidence.
+3. Run three-human Alpha Gate.
 
-- 122/122 Vitest files, 762/762 tests; server repeat 25/25 files, 90/90 tests.
-- Playwright 22/22 desktop+mobile; ESLint, TypeScript, warning-free Vite build pass.
-- Budgets, sitemap 10/10, Canon zero gaps, doctor blockingFailing 0.
+Blockers (top 3)
 
-NOW BUCKET (top 3)
+1. No staging/parity evidence — nothing deployed to real origin yet.
+2. No three-human Alpha Gate completed.
+3. No Brevo delivery / Obelisk RP auth / live web-vitals proof.
 
-1. Execute three-human Alpha Gate (authenticated, source-labeled) on real staging.
-2. Stand up staging origin with deploy parity.
-3. Verify Brevo inbound delivery on project domain.
+Human-Blocked Items
 
-BLOCKERS (top 3)
+- Three-human Alpha Gate — pending (open since ≤S74).
+- Founder approval — pending (open since ≤S74).
+- Revenue event evidence — pending (open since ≤S74).
 
-1. Studio release-gate helper crashes on registry `testing` shape.
-2. Central metadata still calls VaultFront internal (should be corrected).
-3. No real staging origin exists yet; blocks all live-only evidence.
+Truth Boundary
 
-HUMAN-BLOCKED (age from S73→S74, ~1 session)
+- VaultFront = FORGE / public-unlaunched. No staging/parity, Alpha Gate, Brevo, native Obelisk auth, live security-header/CWV/theme proof, revenue, or founder approval claimed by local evidence.
 
-- Founder launch approval — pending, ~1 session.
-- Three distinct-human staging evidence sessions — pending, ~1 session.
-- Live security-header/CWV/theme proof, revenue signal — pending, ~1 session.
-- Native Obelisk relying-party auth — pending, ~1 session.
+Verification Snapshot
 
-TRUTH BOUNDARY
+- 134/134 Vitest files, 812/812 tests; independent server repeat 31 files/119 tests; Playwright 24/24; lint; TypeScript; prod build; budgets/ratchets pass; doctor 7/7, blockingFailing 0; audit 37/37, innovations 6/6.
 
-- No staging evidence, deploy parity, Brevo delivery, Obelisk auth, live hardening/CWV/theme, revenue, or founder approval fabricated. Cost posture notional Max-plan/cost-neutral, no alarm semantics. Correction/bug reports route through Ark only.
+Next Session Pointer
 
-NEXT SESSION
-
-- Once staging origin is live, run launch-evidence corridor in order: Alpha Gate, Brevo, Obelisk, live hardening/CWV/theme, revenue, founder approval.
+- Start with real staging deploy of verified digest, then gather parity → Alpha → Brevo → Obelisk → web/theme → revenue → founder evidence in that order.

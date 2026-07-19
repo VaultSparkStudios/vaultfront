@@ -6,6 +6,27 @@ Public-safe summary:
 - internal operational records were sanitized for public-repo safety on 2026-04-03
 - detailed internal state now lives in the private Studio OS / ops repository
 
+## 2026-07-19 — Session 75 Saturated Certificate-to-Release Arc Complete
+
+Completed one continuous `/start → /audit → /implement → /closeout` mission. Fourteen live-code findings shipped, exhausting the cumulative audit at 37/37, followed by three newly generated second-order innovations; the innovation pack is now 6/6.
+
+**Authoritative match and runtime truth shipped:**
+
+- Match completion now requires a strict majority of unique active network identities over one complete canonical roster/result and produces an immutable result certificate. Progression, archive, metrics, and post-match artificial intelligence consume certified server records rather than client projections.
+- Game creation requires an exact verified actor or admin token, rejects collisions, and enforces actor/IP and worker capacity with stable outcomes. Database posture, state scope, server-sent event pressure, and transport counters compile into readiness/runtime evidence.
+- High-risk create, readiness, experiment, and artificial-intelligence routes are bound to one exact-path policy manifest with executable authorization and startup drift assertions.
+
+**Product, evidence, and automation shipped:**
+
+- A responsive Command Center makes achievements, season progression, clans, tournaments, and experiment posture reachable with truthful locked/empty states. It lazy-loads behind navigation, preserving the exact initial gzip/Brotli budget; desktop and mobile E2E verify the route plus drawer accessibility.
+- Remote artificial-intelligence caches bind complete canonical inputs; provider output is schema-validated, deadline-bounded, and returned with a tamper-evident model/output receipt.
+- Release evidence now fails closed across eight provenance/freshness gates and chains source, external gates, local surfaces, work exhaustion, transfer budgets, and the final decision into a verifiable SHA-256 lineage root.
+- A public Human + Agent capability manifest proves checked-in route/client/mount reachability while explicitly declaring the public runtime unavailable. Deployment and automation use immutable staging evidence, digest promotion, bounded retention, health checks, rollback, and dry-run contracts.
+
+**Verification:** 134/134 main Vitest files and 812/812 tests pass; the server subset independently repeats 31 files / 119 tests; Playwright passes 24/24 across desktop and mobile; lint, TypeScript, production build, formatting ratchet, exact transfer/media budgets, deterministic performance benchmarks, Canon/startup checks, and project doctor pass. Doctor directly reports 7/7 probes and `blockingFailing: 0`; work exhaustion reports audit 37/37 and innovations 6/6.
+
+**Honesty boundary:** VaultFront remains FORGE / `public-unlaunched`. The Release Evidence Manifest is intentionally blocked on a real staging deployment/parity proof, project-domain Brevo delivery, native Obelisk relying-party authentication, live theme/web evidence, three distinct human Alpha Gate sessions, a real revenue event, and founder approval. Local tests did not substitute for any live gate.
+
 ## 2026-07-16 — Session 74 Saturated Integrity Arc Complete
 
 Completed one uninterrupted `/start → /audit → /implement → /closeout` mission against live code. Eleven newly verified findings shipped, every one of the 23 entries in `docs/AUDIT_2026-07-16.json` is now shipped, and all three evidence-derived second-order innovations are complete.

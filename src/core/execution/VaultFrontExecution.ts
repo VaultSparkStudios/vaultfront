@@ -87,6 +87,16 @@ export class VaultFrontExecution implements Execution {
   private active = true;
   private game!: Game;
   private random!: PseudoRandom;
+  private statusProjectionDirty = true;
+  private statusProjectionCritical = true;
+  private lastStatusProjectionTick = Number.NEGATIVE_INFINITY;
+  private lastStatusProjectionDigest: number | null = null;
+  private lastStatusProjectionSerialized: string | null = null;
+  private readonly statusProjectionCadenceTicks = 5;
+  private statusProjectionBuilds = 0;
+  private statusProjectionPublishes = 0;
+  private statusProjectionDeduplicated = 0;
+  private statusProjectionBuildSamplesMs: number[] = [];
 
   private vaultSites: VaultSite[] = [];
   private convoys: VaultConvoy[] = [];
@@ -335,7 +345,11 @@ export class VaultFrontExecution implements Execution {
 
     this.checkWarchestHunt(ticks);
     this.tickMapEvents(ticks);
-    this.publishStatusUpdate();
+    // Dynamic timers can advance every tick, but the user-facing projection is
+    // intentionally bounded to 2 Hz (at the canonical 100 ms tick). Critical
+    // activity bypasses the cadence and unchanged snapshots are suppressed.
+    this.statusProjectionDirty = true;
+    this.maybePublishStatusUpdate(ticks);
   }
 
   private createVaultSites(): void {
@@ -2437,6 +2451,8 @@ export class VaultFrontExecution implements Execution {
         return;
       }
     }
+    this.statusProjectionCritical = true;
+    this.statusProjectionDirty = true;
     this.game.addUpdate({
       type: GameUpdateType.VaultFrontActivity,
       activity,
@@ -2599,7 +2615,41 @@ export class VaultFrontExecution implements Execution {
     });
   }
 
-  private publishStatusUpdate(): void {
+  private maybePublishStatusUpdate(ticks: number): void {
+    if (!this.statusProjectionDirty) return;
+    const cadenceElapsed =
+      ticks - this.lastStatusProjectionTick >=
+      this.statusProjectionCadenceTicks;
+    if (!this.statusProjectionCritical && !cadenceElapsed) return;
+    this.publishStatusUpdate(ticks);
+  }
+
+  public statusProjectionPosture(): {
+    cadenceTicks: number;
+    builds: number;
+    publishes: number;
+    deduplicated: number;
+    p95BuildMs: number;
+    lastDigest: number | null;
+    buildSampleCount: number;
+  } {
+    const sorted = [...this.statusProjectionBuildSamplesMs].sort(
+      (a, b) => a - b,
+    );
+    const p95Index = Math.max(0, Math.ceil(sorted.length * 0.95) - 1);
+    return {
+      cadenceTicks: this.statusProjectionCadenceTicks,
+      builds: this.statusProjectionBuilds,
+      publishes: this.statusProjectionPublishes,
+      deduplicated: this.statusProjectionDeduplicated,
+      p95BuildMs: sorted[p95Index] ?? 0,
+      lastDigest: this.lastStatusProjectionDigest,
+      buildSampleCount: sorted.length,
+    };
+  }
+
+  private publishStatusUpdate(ticks = this.game.ticks()): void {
+    const buildStartedAt = performance.now();
     const statusUpdate: VaultFrontStatusUpdate = {
       type: GameUpdateType.VaultFrontStatus,
       weeklyMutator: this.weeklyMutator,
@@ -2683,6 +2733,30 @@ export class VaultFrontExecution implements Execution {
       squadObjectives: this.buildSquadObjectiveStates(),
       pressure: this.buildPressureStates(),
     };
+    this.statusProjectionBuilds += 1;
+    this.statusProjectionBuildSamplesMs.push(
+      performance.now() - buildStartedAt,
+    );
+    if (this.statusProjectionBuildSamplesMs.length > 64) {
+      this.statusProjectionBuildSamplesMs.shift();
+    }
+    const serialized = JSON.stringify(statusUpdate);
+    const digest = simpleHash(serialized);
+    this.lastStatusProjectionTick = ticks;
+    this.statusProjectionDirty = false;
+    this.statusProjectionCritical = false;
+    // The hash is useful low-cardinality posture, but equality also checks the
+    // canonical projection so a 32-bit collision can never suppress a change.
+    if (
+      digest === this.lastStatusProjectionDigest &&
+      serialized === this.lastStatusProjectionSerialized
+    ) {
+      this.statusProjectionDeduplicated += 1;
+      return;
+    }
+    this.lastStatusProjectionDigest = digest;
+    this.lastStatusProjectionSerialized = serialized;
+    this.statusProjectionPublishes += 1;
     this.game.addUpdate(statusUpdate);
     this.game.setVaultSiteControllerIDs(
       new Set(

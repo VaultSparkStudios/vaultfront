@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "owner": "VaultSpark Studios LLC",
+  "brandHref": "https://vaultsparkstudios.com",
+  "copyright": "© 2026 VaultSpark Studios LLC. All rights reserved.",
+  "requiredLinks": ["/privacy/", "/terms/", "/ip/"],
+  "pages": [
+    { "route": "/about/", "source": "public/about/index.html" },
+    { "route": "/contact/", "source": "public/contact/index.html" },
+    { "route": "/docs/", "source": "public/docs/index.html" },
+    { "route": "/ip/", "source": "public/ip/index.html" },
+    { "route": "/privacy/", "source": "public/privacy/index.html" },
+    { "route": "/terms/", "source": "public/terms/index.html" },
+    { "route": "/contact.html", "source": "public/contact.html" },
+    { "route": "/ip.html", "source": "public/ip.html" },
+    { "route": "/privacy.html", "source": "public/privacy.html" },
+    { "route": "/terms.html", "source": "public/terms.html" }
+  ]
+}

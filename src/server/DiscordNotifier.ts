@@ -11,6 +11,30 @@
 import { logger as Logger } from "./Logger";
 
 const webhookUrl = process.env.DISCORD_WEBHOOK_URL ?? "";
+const DELIVERY_TIMEOUT_MS = 3_500;
+const MAX_IN_FLIGHT = 4;
+
+export interface DiscordNotificationPosture {
+  enabled: boolean;
+  timeoutMs: number;
+  maxInFlight: number;
+  inFlight: number;
+  delivered: number;
+  failed: number;
+  dropped: number;
+  lastStatus: number | null;
+}
+
+const deliveryPosture: DiscordNotificationPosture = {
+  enabled: webhookUrl.length > 0,
+  timeoutMs: DELIVERY_TIMEOUT_MS,
+  maxInFlight: MAX_IN_FLIGHT,
+  inFlight: 0,
+  delivered: 0,
+  failed: 0,
+  dropped: 0,
+  lastStatus: null,
+};
 
 interface DiscordEmbed {
   title?: string;
@@ -21,20 +45,92 @@ interface DiscordEmbed {
   timestamp?: string;
 }
 
+function boundedText(value: unknown, maxLength: number): string {
+  const withoutControls = Array.from(String(value ?? ""), (character) => {
+    const code = character.charCodeAt(0);
+    return code <= 8 ||
+      code === 11 ||
+      code === 12 ||
+      (code >= 14 && code <= 31) ||
+      code === 127
+      ? " "
+      : character;
+  }).join("");
+  return withoutControls
+    .replace(/\s{3,}/g, "  ")
+    .trim()
+    .slice(0, maxLength);
+}
+
+export function normalizeDiscordEmbeds(embeds: DiscordEmbed[]): DiscordEmbed[] {
+  return embeds.slice(0, 10).map((embed) => ({
+    ...(embed.title ? { title: boundedText(embed.title, 256) } : {}),
+    ...(embed.description
+      ? { description: boundedText(embed.description, 2_048) }
+      : {}),
+    ...(embed.color !== undefined ? { color: embed.color } : {}),
+    ...(embed.fields
+      ? {
+          fields: embed.fields.slice(0, 25).map((field) => ({
+            name: boundedText(field.name, 256),
+            value: boundedText(field.value, 1_024),
+            ...(field.inline !== undefined ? { inline: field.inline } : {}),
+          })),
+        }
+      : {}),
+    ...(embed.footer
+      ? { footer: { text: boundedText(embed.footer.text, 2_048) } }
+      : {}),
+    ...(embed.timestamp ? { timestamp: embed.timestamp } : {}),
+  }));
+}
+
+export function discordNotificationPosture(): Readonly<DiscordNotificationPosture> {
+  return { ...deliveryPosture };
+}
+
 async function send(embeds: DiscordEmbed[]): Promise<void> {
   if (!webhookUrl) return;
+  if (deliveryPosture.inFlight >= MAX_IN_FLIGHT) {
+    deliveryPosture.dropped += 1;
+    Logger.warn("Discord webhook delivery dropped at concurrency limit");
+    return;
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), DELIVERY_TIMEOUT_MS);
+  deliveryPosture.inFlight += 1;
 
   try {
     const res = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ embeds }),
+      body: JSON.stringify({
+        embeds: normalizeDiscordEmbeds(embeds),
+        allowed_mentions: {
+          parse: [],
+          users: [],
+          roles: [],
+          replied_user: false,
+        },
+      }),
+      signal: controller.signal,
     });
+    deliveryPosture.lastStatus = res.status;
     if (!res.ok) {
+      deliveryPosture.failed += 1;
       Logger.warn(`Discord webhook returned ${res.status}`);
+    } else {
+      deliveryPosture.delivered += 1;
     }
-  } catch (err) {
-    Logger.warn("Discord webhook failed", { err });
+  } catch (error) {
+    deliveryPosture.failed += 1;
+    Logger.warn("Discord webhook failed", {
+      errorName: error instanceof Error ? error.name : "UnknownError",
+    });
+  } finally {
+    clearTimeout(timeout);
+    deliveryPosture.inFlight -= 1;
   }
 }
 

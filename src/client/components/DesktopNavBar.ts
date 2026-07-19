@@ -124,6 +124,12 @@ export class DesktopNavBar extends LitElement {
           data-page="page-leaderboard"
           data-i18n="main.leaderboard"
         ></button>
+        <button
+          class="nav-menu-item text-white/70 hover:text-amber-300 font-bold tracking-widest uppercase cursor-pointer transition-colors [&.active]:text-amber-300"
+          data-page="page-command-center"
+        >
+          Command
+        </button>
         <div class="relative">
           <button
             class="nav-menu-item text-white/70 hover:text-amber-300 font-bold tracking-widest uppercase cursor-pointer transition-colors [&.active]:text-amber-300"

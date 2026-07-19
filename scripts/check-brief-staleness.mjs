@@ -1,66 +1,48 @@
 #!/usr/bin/env node
-/**
- * check-brief-staleness.mjs (G12 S118)
- *
- * Exits non-zero when STARTUP_BRIEF.md is stale (age > 24h OR intent-shift).
- * Silent on fresh brief. Used by studio-start to gate brief regeneration.
- *
- * Usage:
- *   node scripts/check-brief-staleness.mjs
- *   node scripts/check-brief-staleness.mjs --json
- */
+/** Fail closed when the fast-boot brief is old or its canonical sources moved. */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { evaluateBriefSourceFreshness } from "./lib/brief-freshness.mjs";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
-const BRIEF_PATH = path.join(ROOT, "docs", "STARTUP_BRIEF.md");
-const LOCK_PATH = path.join(ROOT, "context", ".session-lock");
-const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
-const jsonMode = process.argv.includes("--json");
-
-function result(stale, reason, ageMs) {
-  if (jsonMode) {
-    console.log(JSON.stringify({ stale, reason, ageMs: ageMs ?? null }));
-  } else if (stale) {
-    console.log(`STALE: ${reason}`);
+export function checkBriefFreshness({
+  root = ROOT,
+  now = Date.now(),
+  maxAgeMs = MAX_AGE_MS,
+} = {}) {
+  const briefPath = path.join(root, "docs", "STARTUP_BRIEF.md");
+  if (!fs.existsSync(briefPath)) {
+    return { stale: true, reason: "STARTUP_BRIEF.md missing", ageMs: null };
   }
-  process.exit(stale ? 1 : 0);
+  const ageMs = now - fs.statSync(briefPath).mtimeMs;
+  if (ageMs > maxAgeMs) {
+    return {
+      stale: true,
+      reason: `age ${Math.round(ageMs / 3_600_000)}h > ${Math.round(maxAgeMs / 3_600_000)}h threshold`,
+      ageMs,
+    };
+  }
+  const brief = fs.readFileSync(briefPath, "utf8");
+  const coherence = evaluateBriefSourceFreshness(root, brief);
+  if (!coherence.fresh) {
+    return { stale: true, reason: coherence.reason, ageMs };
+  }
+  return { stale: false, reason: "fresh and source-coherent", ageMs };
 }
 
-if (!fs.existsSync(BRIEF_PATH)) {
-  result(true, "STARTUP_BRIEF.md missing", null);
+const direct =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (direct) {
+  const result = checkBriefFreshness();
+  if (process.argv.includes("--json")) {
+    console.log(JSON.stringify(result));
+  } else if (result.stale) {
+    console.log(`STALE: ${result.reason}`);
+  }
+  process.exit(result.stale ? 1 : 0);
 }
-
-const stat = fs.statSync(BRIEF_PATH);
-const ageMs = Date.now() - stat.mtimeMs;
-
-if (ageMs > MAX_AGE_MS) {
-  result(true, `age ${Math.round(ageMs / 3_600_000)}h > 24h threshold`, ageMs);
-}
-
-// Intent-shift check: compare session-lock intent with brief's embedded intent
-let intentShift = false;
-try {
-  const lockRaw = fs.existsSync(LOCK_PATH)
-    ? fs.readFileSync(LOCK_PATH, "utf8")
-    : "";
-  const lockIntent =
-    (lockRaw.match(/"intent"\s*:\s*"([^"]+)"/) || [])[1] ?? null;
-  const briefRaw = fs.readFileSync(BRIEF_PATH, "utf8");
-  const briefIntent =
-    (briefRaw.match(/Session intent[:\s]+(\w+)/i) || [])[1]?.toLowerCase() ??
-    null;
-  intentShift = lockIntent && briefIntent && lockIntent !== briefIntent;
-} catch {
-  // non-fatal
-}
-
-if (intentShift) {
-  result(true, "session intent shifted since brief was generated", ageMs);
-}
-
-result(false, "fresh", ageMs);

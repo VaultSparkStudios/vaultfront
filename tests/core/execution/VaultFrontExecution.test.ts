@@ -236,6 +236,75 @@ describe("VaultFrontExecution", () => {
       sourceTile: 9,
       destinationTile: 14,
     });
+
+    const updateCount = addUpdate.mock.calls.length;
+    execution.publishStatusUpdate();
+    expect(addUpdate).toHaveBeenCalledTimes(updateCount);
+    expect(execution.statusProjectionPosture()).toMatchObject({
+      cadenceTicks: 5,
+      builds: 2,
+      publishes: 1,
+      deduplicated: 1,
+      buildSampleCount: 2,
+    });
+    expect(execution.statusProjectionPosture().lastDigest).toEqual(
+      expect.any(Number),
+    );
+    expect(
+      execution.statusProjectionPosture().p95BuildMs,
+    ).toBeGreaterThanOrEqual(0);
+  });
+
+  test("status projection does not trust a colliding digest without canonical equivalence", () => {
+    const execution = new VaultFrontExecution() as any;
+    const addUpdate = vi.fn();
+    execution.game = {
+      ticks: () => 20,
+      addUpdate,
+      playerBySmallID: () => null,
+      setVaultSiteControllerIDs: vi.fn(),
+    };
+    execution.vaultSites = [];
+    execution.convoys = [];
+    execution.beacons = new Map();
+    execution.lastStatusProjectionDigest = 123;
+    execution.lastStatusProjectionSerialized = "different projection";
+    vi.spyOn(execution, "buildExecutionChainStates").mockReturnValue({});
+    vi.spyOn(execution, "buildSurgeStates").mockReturnValue({});
+    vi.spyOn(execution, "buildSquadObjectiveStates").mockReturnValue([]);
+    vi.spyOn(execution, "buildPressureStates").mockReturnValue({});
+
+    execution.publishStatusUpdate(20);
+
+    expect(addUpdate).toHaveBeenCalledOnce();
+    expect(execution.statusProjectionPosture()).toMatchObject({
+      publishes: 1,
+      deduplicated: 0,
+      buildSampleCount: 1,
+    });
+  });
+
+  test("status projection cadence bounds non-critical rebuilds", () => {
+    const execution = new VaultFrontExecution() as any;
+    const publish = vi
+      .spyOn(execution, "publishStatusUpdate")
+      .mockImplementation((tick: number) => {
+        execution.lastStatusProjectionTick = tick;
+        execution.statusProjectionDirty = false;
+        execution.statusProjectionCritical = false;
+      });
+
+    execution.maybePublishStatusUpdate(0);
+    execution.statusProjectionDirty = true;
+    execution.maybePublishStatusUpdate(1);
+    execution.maybePublishStatusUpdate(4);
+    expect(publish).toHaveBeenCalledTimes(1);
+
+    execution.maybePublishStatusUpdate(5);
+    execution.statusProjectionDirty = true;
+    execution.statusProjectionCritical = true;
+    execution.maybePublishStatusUpdate(6);
+    expect(publish).toHaveBeenCalledTimes(3);
   });
 
   test("rate limiter allows exactly 5 commands in a 10-tick window", () => {

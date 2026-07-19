@@ -36,6 +36,7 @@ export class AchievementToast extends LitElement {
   private queue: AchievementToastData[] = [];
   private dismissTimer: ReturnType<typeof setTimeout> | null = null;
   private animateInTimer: ReturnType<typeof setTimeout> | null = null;
+  private transitionTimer: ReturnType<typeof setTimeout> | null = null;
 
   static styles = css`
     :host {
@@ -161,7 +162,8 @@ export class AchievementToast extends LitElement {
     this.visible = false;
 
     // Wait for the CSS transition to finish before moving to the next toast
-    setTimeout(() => {
+    this.transitionTimer = setTimeout(() => {
+      this.transitionTimer = null;
       this._showNext();
     }, 350);
   }
@@ -170,6 +172,10 @@ export class AchievementToast extends LitElement {
     super.disconnectedCallback();
     if (this.dismissTimer !== null) clearTimeout(this.dismissTimer);
     if (this.animateInTimer !== null) clearTimeout(this.animateInTimer);
+    if (this.transitionTimer !== null) clearTimeout(this.transitionTimer);
+    this.dismissTimer = null;
+    this.animateInTimer = null;
+    this.transitionTimer = null;
   }
 
   // ---------------------------------------------------------------------------

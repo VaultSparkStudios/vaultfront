@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -7,6 +6,7 @@ import {
   parseGeniusCache,
   selectFirstPendingUnblocked,
 } from "../../scripts/lib/genius-cache.mjs";
+import { spawnSync } from "../../scripts/lib/safe-spawn.mjs";
 
 describe("versioned genius cache contract", () => {
   it("supports the current and legacy cache shapes", () => {

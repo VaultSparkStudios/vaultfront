@@ -1398,6 +1398,7 @@ export async function fetchMatchOracle(playerIds: string[]): Promise<{
     playerIds.forEach((id) => params.append("players", id));
     const res = await fetch(
       `${getApiBase()}/api/vaultfront/match-oracle?${params.toString()}`,
+      { headers: await vaultFrontIdentityHeaders() },
     );
     if (!res.ok) return null;
     return (await res.json()) as {
@@ -1640,13 +1641,15 @@ export async function fetchMatchRecap(
   durationSec: number,
 ): Promise<string | null> {
   try {
-    const url = new URL(
-      `${getApiBase()}/api/vaultfront/match-recap/${encodeURIComponent(gameId)}`,
-    );
-    url.searchParams.set("winner", winner);
-    url.searchParams.set("events", events);
-    url.searchParams.set("durationSec", String(durationSec));
-    const res = await fetch(url.toString());
+    // Legacy callers still provide client projections, but certified recap
+    // evidence is deliberately server-owned and ignores all three values.
+    void winner;
+    void events;
+    void durationSec;
+    const url = `${getApiBase()}/api/vaultfront/match-recap/${encodeURIComponent(gameId)}`;
+    const res = await fetch(url, {
+      headers: await vaultFrontIdentityHeaders(),
+    });
     if (!res.ok) return null;
     const data = (await res.json()) as { recap?: string };
     return data.recap ?? null;

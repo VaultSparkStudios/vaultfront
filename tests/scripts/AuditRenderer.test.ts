@@ -1,4 +1,3 @@
-import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -7,6 +6,7 @@ import {
   appendExecution,
   mergeAudit,
 } from "../../scripts/lib/audit-sidecar.mjs";
+import { spawnSync } from "../../scripts/lib/safe-spawn.mjs";
 
 const tempDirs: string[] = [];
 const script = path.resolve(__dirname, "../../scripts/render-audit-md.mjs");

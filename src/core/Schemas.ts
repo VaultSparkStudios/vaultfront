@@ -702,6 +702,33 @@ export const ClientSendWinnerSchema = z.object({
   allPlayersStats: AllPlayersStatsSchema,
 });
 
+const Sha256DigestSchema = z.string().regex(/^[a-f0-9]{64}$/);
+
+/** Server-issued evidence tying an attested result to one config and turn log. */
+export const MatchResultCertificateSchema = z.object({
+  schemaVersion: z.literal("1.0"),
+  certificateId: Sha256DigestSchema,
+  gameID: ID,
+  config: z.object({ digest: Sha256DigestSchema }),
+  turns: z.object({
+    digest: Sha256DigestSchema,
+    count: z.number().int().nonnegative(),
+    lastHash: z.number().nullable(),
+  }),
+  result: z.object({
+    digest: Sha256DigestSchema,
+    winner: WinnerSchema,
+    allPlayersStats: AllPlayersStatsSchema,
+  }),
+  quorum: z.object({
+    acceptedUniqueIPs: z.number().int().positive(),
+    activeUniqueIPs: z.number().int().positive(),
+  }),
+});
+export type MatchResultCertificate = z.infer<
+  typeof MatchResultCertificateSchema
+>;
+
 export const ClientHashSchema = z.object({
   type: z.literal("hash"),
   hash: z.number(),
@@ -804,6 +831,7 @@ export const GameRecordSchema = AnalyticsRecordSchema.extend({
         z.enum(["early", "mid", "late"]),
         z.record(z.string(), z.number().int().nonnegative()),
       ),
+      resultCertificate: MatchResultCertificateSchema.optional(),
     })
     .optional(),
   replay: z
@@ -830,6 +858,7 @@ export const PartialGameRecordSchema = PartialAnalyticsRecordSchema.extend({
         z.enum(["early", "mid", "late"]),
         z.record(z.string(), z.number().int().nonnegative()),
       ),
+      resultCertificate: MatchResultCertificateSchema.optional(),
     })
     .optional(),
   replay: z

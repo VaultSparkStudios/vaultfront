@@ -14,3 +14,9 @@ Public-safe architecture notes only. Detailed implementation and operator reason
 - Runtime health is process-local and source-derived: HTTP, IPC freshness, game-loop freshness, transport budgets, and provider-bound AI reservations must expose scope explicitly.
 - A saturated arc is complete only when executable exhaustion proves no pending unblocked audit or innovation item remains; live-only deferrals stay visible.
 - Runtime Integrity Passport and Release Evidence Manifest digests are the durable operator proof surfaces; prose summaries are secondary.
+- Client winner/stat reports are attestations only; one quorum-backed Match Result Certificate is the sole archive, progression, metrics, and post-match AI authority.
+- Canonical AI evidence continues through the validated output: every remote answer carries a provider/model/output receipt, and cached responses preserve the same receipt.
+- High-risk routes are executable policy entries, not documentation; exact method/path/auth/evidence bindings must fail startup or tests on drift.
+- Human + Agent capability claims remain `implemented-local-unlaunched` until a live runtime exists and must pass source-digested reachability checks.
+- Release evidence is an ordered provenance DAG whose decision root binds source, external gates, local gates, exhaustion, and transfer budgets.
+- Heavy meta surfaces belong behind intent-time lazy boundaries; exact gzip/Brotli budgets decide whether an import may remain initial.

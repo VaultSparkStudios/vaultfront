@@ -13,7 +13,16 @@ export function initNavigation() {
     }
   };
 
-  const showPage = (pageId: string) => {
+  const showPage = async (pageId: string) => {
+    // Command Center composes the heaviest meta-progression surfaces. Keep it
+    // out of the initial play bundle while awaiting the exact navigation that
+    // makes it reachable; custom-element upgrade is complete before reveal.
+    if (
+      pageId === "page-command-center" &&
+      !customElements.get("command-center")
+    ) {
+      await import("./CommandCenter");
+    }
     window.currentPageId = pageId;
 
     // Close mobile sidebar if a nav item was clicked
@@ -76,7 +85,7 @@ export function initNavigation() {
     );
     if (target) {
       const pageId = (target as HTMLElement).dataset.page;
-      if (pageId) showPage(pageId);
+      if (pageId) void showPage(pageId);
     }
   });
 
@@ -115,7 +124,7 @@ export function initNavigation() {
               }
               openModal.close();
             } else {
-              showPage("page-play");
+              void showPage("page-play");
             }
           }
         }
@@ -124,5 +133,5 @@ export function initNavigation() {
   });
 
   // Ensure Play is the default visible/active page on load.
-  showPage("page-play");
+  void showPage("page-play");
 }

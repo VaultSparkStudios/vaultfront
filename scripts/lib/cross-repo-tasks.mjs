@@ -8,31 +8,17 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { extractSection, parseUnifiedItems } from "./task-board.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STUDIO_ROOT = path.resolve(__dirname, "..", "..");
 
-function readText(p) {
-  try {
-    return fs.readFileSync(p, "utf8");
-  } catch {
-    return "";
-  }
-}
 function readJson(p, fb) {
   try {
     return JSON.parse(fs.readFileSync(p, "utf8"));
   } catch {
     return fb;
   }
-}
-
-function extractSection(content, heading) {
-  const parts = content.split(/^## /m);
-  const match = parts.find((p) => p.startsWith(heading));
-  if (!match) return "";
-  const nl = match.indexOf("\n");
-  return nl === -1 ? "" : match.slice(nl + 1);
 }
 
 function tierFromCell(cell) {
@@ -44,31 +30,39 @@ function tierFromCell(cell) {
 }
 
 export function parseTaskBoard(content) {
+  return parseTaskBoardResult(content).items;
+}
+
+export function parseTaskBoardResult(content) {
+  const source = String(content ?? "");
   const items = [];
   const unifiedSection = extractSection(content, "Unified Genius List");
   if (unifiedSection) {
-    const rows = unifiedSection
-      .split(/\r?\n/)
-      .filter((l) => /^\|\s*[\d.]+\s*\|/.test(l));
-    for (const row of rows) {
-      const cells = row.split("|").map((c) => c.trim());
-      if (cells.length < 7) continue;
-      const [, rank, tierCell, cat, status, effort, item] = cells;
-      const tier = tierFromCell(tierCell);
-      const titleMatch = item.match(/\*\*(.+?)\*\*/);
-      const title = (titleMatch ? titleMatch[1] : item).slice(0, 120);
-      const isDone =
-        /done/i.test(status) || /^done/i.test(status) || /✅/.test(tierCell);
+    for (const item of parseUnifiedItems(source)) {
+      const tier = tierFromCell(item.tier);
+      const isDone = /done|shipped/i.test(item.status) || /✅/.test(item.tier);
       items.push({
-        rank: parseFloat(rank),
+        rank: item.rankNumber,
         tier,
-        cat: (cat || "").toLowerCase(),
-        status: (status || "").toLowerCase(),
-        effort,
-        title,
+        cat: (item.category || "").toLowerCase(),
+        status: (item.status || "").toLowerCase(),
+        effort: item.effort,
+        title: item.title.slice(0, 120),
         source: "unified",
         done: isDone,
       });
+    }
+    const candidateRows = unifiedSection
+      .split(/\r?\n/)
+      .filter((line) => /^\s*(?:\|\s*[\d.]+\s*\||-\s*\[[^\]]+\])/.test(line));
+    if (candidateRows.length > 0 && items.length === 0) {
+      return {
+        state: "parse-error",
+        errors: [
+          "Unified Genius List contains task-like rows but none match the canonical table or bullet schema.",
+        ],
+        items: [],
+      };
     }
   }
 
@@ -112,7 +106,17 @@ export function parseTaskBoard(content) {
     );
   }
 
-  return items;
+  const hasSupportedSection =
+    Boolean(unifiedSection) ||
+    Boolean(extractSection(source, "Now")) ||
+    Boolean(extractSection(source, "Next"));
+  return {
+    state: hasSupportedSection ? "ok" : "unsupported",
+    errors: hasSupportedSection
+      ? []
+      : ["No Unified Genius List or legacy Now/Next task section was found."],
+    items,
+  };
 }
 
 function classifyStatus(s) {
@@ -132,9 +136,33 @@ export function loadProjectTaskBoard(project) {
   if (!project?.localPath) return null;
   const tbPath = path.join(project.localPath, "context", "TASK_BOARD.md");
   if (!fs.existsSync(tbPath))
-    return { slug: project.slug, name: project.name, present: false };
-  const content = readText(tbPath);
-  const items = parseTaskBoard(content).filter((i) => !i.done);
+    return {
+      slug: project.slug,
+      name: project.name,
+      present: false,
+      parseState: "missing",
+      parseErrors: [],
+    };
+  let content;
+  try {
+    content = fs.readFileSync(tbPath, "utf8");
+  } catch (error) {
+    return {
+      slug: project.slug,
+      name: project.name,
+      present: true,
+      parseState: "read-error",
+      parseErrors: [error.message],
+      remaining: 0,
+      unblocked: 0,
+      blocked: 0,
+      critical: 0,
+      high: 0,
+      items: [],
+    };
+  }
+  const parsed = parseTaskBoardResult(content);
+  const items = parsed.items.filter((i) => !i.done);
   let unblocked = 0,
     blocked = 0,
     critical = 0,
@@ -154,6 +182,8 @@ export function loadProjectTaskBoard(project) {
     vaultStatus: project.vaultStatus || "forge",
     audience: project.audience,
     present: true,
+    parseState: parsed.state,
+    parseErrors: parsed.errors,
     remaining: items.length,
     unblocked,
     blocked,
@@ -180,7 +210,8 @@ export function loadPortfolioTaskBoards(options = {}) {
     totalHigh = 0;
   let projectsWithWork = 0,
     projectsScanned = 0,
-    projectsMissing = 0;
+    projectsMissing = 0,
+    projectsErrored = 0;
 
   for (const project of registry.projects ?? []) {
     if (!project.localPath) continue;
@@ -193,6 +224,7 @@ export function loadPortfolioTaskBoards(options = {}) {
       byProject.push(loaded);
       continue;
     }
+    if (loaded.parseState !== "ok") projectsErrored++;
     if (loaded.remaining > 0) projectsWithWork++;
     totalRemaining += loaded.remaining;
     totalUnblocked += loaded.unblocked;
@@ -214,6 +246,7 @@ export function loadPortfolioTaskBoards(options = {}) {
     generatedAt: new Date().toISOString(),
     projectsScanned,
     projectsMissing,
+    projectsErrored,
     projectsWithWork,
     totals: {
       remaining: totalRemaining,
@@ -238,7 +271,7 @@ if (
     process.exit(0);
   }
   console.log(
-    `Portfolio task-board scan — ${result.projectsScanned} repos (${result.projectsMissing} missing TASK_BOARD, ${result.projectsWithWork} with open work)`,
+    `Portfolio task-board scan — ${result.projectsScanned} repos (${result.projectsMissing} missing TASK_BOARD, ${result.projectsErrored} unsupported/unreadable, ${result.projectsWithWork} with open work)`,
   );
   console.log(
     `Totals: ${result.totals.remaining} remaining · ${result.totals.unblocked} unblocked · ${result.totals.blocked} blocked · 🔥 ${result.totals.critical} · ⚡ ${result.totals.high}`,

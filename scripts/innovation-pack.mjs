@@ -56,6 +56,50 @@ const candidates = [
     evidence:
       "audit+innovation exhaustion checker, doctor probe, and pending/deferred fixtures",
   },
+  {
+    id: "certified-ai-response-receipts",
+    title: "Bind every remote-AI answer to a verifiable response receipt",
+    description:
+      "Extend canonical request evidence through validated provider output, exact model identity, timestamp, and a tamper-evident response digest so cached and fresh answers share one auditable provenance contract.",
+    complete:
+      has(
+        "src/server/CanonicalAiEvidence.ts",
+        /buildCanonicalAiResponseReceipt/,
+      ) &&
+      has("src/server/Worker.ts", /receipt: buildCanonicalAiResponseReceipt/) &&
+      has("tests/server/CanonicalAiEvidence.test.ts", /tamper-evident receipt/),
+    evidence:
+      "canonical AI response-receipt builder/verifier, live Worker wiring across oracle/coach/recap/debrief, cache preservation, and tamper tests",
+  },
+  {
+    id: "agent-capability-reachability",
+    title:
+      "Publish a fail-closed Human + Agent capability reachability contract",
+    description:
+      "Cross-bind public capability claims to exact routes, client mounts, certificate consumers, policy middleware, and executable source tokens while preserving the honest public-unlaunched runtime posture.",
+    complete:
+      has(
+        "public/capability-reachability.json",
+        /implemented-local-unlaunched/,
+      ) &&
+      has("scripts/check-capability-reachability.mjs", /sourceDigest/) &&
+      has("scripts/project-doctor.mjs", /capability-reachability/) &&
+      has("tests/scripts/CapabilityReachability.test.ts", /fails closed/),
+    evidence:
+      "agent-readable capability manifest, source-digested reachability checker, agents.json discovery link, doctor probe, and fail-closed fixtures",
+  },
+  {
+    id: "release-evidence-lineage-dag",
+    title: "Turn release evidence into a self-verifying provenance DAG",
+    description:
+      "Chain source, external gates, local surfaces, work exhaustion, transfer budgets, and the final decision into ordered SHA-256 receipts with a single root digest that fails on tamper or forward references.",
+    complete:
+      has("scripts/lib/evidence-lineage.mjs", /verifyEvidenceLineage/) &&
+      has("scripts/generate-release-evidence.mjs", /release-decision/) &&
+      has("tests/scripts/EvidenceLineage.test.ts", /forward references/),
+    evidence:
+      "canonical evidence DAG builder/verifier, release-manifest integration, root receipt, and tamper/ordering tests",
+  },
 ];
 
 const payload = {

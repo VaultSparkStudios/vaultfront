@@ -2,6 +2,24 @@
 
 Public-safe decisions only. Detailed internal decision history is maintained privately.
 
+## 2026-07-19 — One certificate is the only match-outcome authority
+
+**Decision:** Archive, progression, metrics, recap, and coaching consume one strict-majority, complete-roster, tamper-evident match result certificate. Client winner/stat payloads remain attestations and cannot independently mint downstream state.
+
+**Why:** Multiple near-equivalent winner paths create irreconcilable truth. One certificate makes every downstream consumer idempotent, auditable, and resistant to incomplete rosters, duplicate network votes, and client-supplied artificial-intelligence context.
+
+## 2026-07-19 — Reachability and release decisions are executable evidence graphs
+
+**Decision:** Human/agent capability claims must name checked-in route/client/mount evidence and pass the capability reachability probe. Release decisions must carry an ordered SHA-256 lineage from source and individual gates to the final decision.
+
+**Why:** A feature list or release report can drift while remaining persuasive prose. Exact source tokens, scoped availability, per-node receipts, and a root digest make omission and tamper visible without claiming a live deployment.
+
+## 2026-07-19 — Meta surfaces load at intent time, not startup time
+
+**Decision:** Command Center and its heavy progression surfaces load only after explicit navigation, and the production transfer ratchet remains authoritative over convenience imports.
+
+**Why:** The initial implementation exceeded the Brotli budget by 2.6 kB. An awaited custom-element navigation boundary preserves immediate play startup while keeping every meta feature reachable and E2E-proven on desktop and mobile.
+
 ## 2026-07-16 — Semantic releases require an explicit launch switch
 
 **Decision:** Verify the exact-pinned Semantic Release toolchain on every main push with read-only permissions. Run the write-capable release job only when the repository variable `SEMANTIC_RELEASE_ENABLED` is explicitly `true`.

@@ -22,7 +22,6 @@ export class Footer extends LitElement {
         </a>
         <p class="text-xs">
           © 2026 VaultSpark Studios LLC. All rights reserved.
-          <span class="sr-only" data-i18n="main.copyright"></span>
         </p>
         <nav
           aria-label="Project information"

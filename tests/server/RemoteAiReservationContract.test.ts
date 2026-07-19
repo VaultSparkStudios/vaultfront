@@ -28,8 +28,9 @@ const contracts = [
   {
     route: "/api/vaultfront/match-oracle",
     order: [
-      "playerIds.length < 2",
-      "aiCacheGet",
+      "requireVaultFrontActor",
+      "uniquePlayerIds.length < 2",
+      "oracleEvidenceCache.get",
       "reserveRemoteAiCall",
       "anthropic.messages.create",
     ],
@@ -37,9 +38,12 @@ const contracts = [
   {
     route: "/api/vaultfront/match-coach",
     order: [
-      "resolveVaultFrontIdentity",
+      "requireVaultFrontActor",
+      "safeParse(req.body)",
+      "loadCertifiedAiContext",
+      "matchCoachCache.get",
       "reserveRemoteAiCall",
-      "anthropic.messages.stream",
+      "anthropic.messages.create",
     ],
   },
   {
@@ -71,6 +75,8 @@ const contracts = [
   {
     route: "/api/vaultfront/match-recap/:gameId",
     order: [
+      "requireVaultFrontActor",
+      "loadCertifiedAiContext",
       "matchRecapCache.get",
       "reserveRemoteAiCall",
       "anthropic.messages.create",
@@ -80,6 +86,7 @@ const contracts = [
     route: "/api/vaultfront/coach-debrief",
     order: [
       "requireVaultFrontActor",
+      "loadCertifiedAiContext",
       "coachDebriefCache.get",
       "reserveRemoteAiCall",
       "anthropic.messages.create",

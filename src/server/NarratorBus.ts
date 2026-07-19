@@ -11,6 +11,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import type { Response } from "express";
+import { BoundedSseTransport, type SseAdmission } from "./BoundedSseTransport";
 import { logger as Logger } from "./Logger";
 import { canAttemptRemoteAi, reserveRemoteAiCall } from "./RemoteAiPolicy";
 
@@ -37,6 +38,14 @@ const PERSONA_PROMPTS: Record<NarratorPersona, string> = {
 const RATE_LIMIT_MS = 15_000; // 15s minimum between calls per game
 const MAX_PENDING_EVENTS = 12;
 const MAX_COMMENTARY_CHARS = 140;
+export const NARRATOR_SSE_POLICY = {
+  maxSubscribersPerGame: 48,
+  maxSubscribersPerWorker: 384,
+  maxSubscribersPerIp: 8,
+  maxQueuedEventsPerClient: 16,
+  maxQueuedBytesPerClient: 32 * 1024,
+  drainTimeoutMs: 5_000,
+} as const;
 
 function computeBlendMode(
   ctx: NarratorContextSnapshot,
@@ -81,6 +90,7 @@ export interface NarratorContextSnapshot {
 
 export class NarratorBus {
   private games = new Map<string, GameNarratorState>();
+  private readonly transport = new BoundedSseTransport(NARRATOR_SSE_POLICY);
 
   private getOrCreate(gameId: string): GameNarratorState {
     if (!this.games.has(gameId)) {
@@ -96,25 +106,35 @@ export class NarratorBus {
     return this.games.get(gameId)!;
   }
 
+  admit(gameId: string, clientKey: string): SseAdmission {
+    return this.transport.admit(gameId, clientKey);
+  }
+
   subscribe(
     gameId: string,
     res: Response,
+    clientKey: string,
     persona: NarratorPersona = "hype",
-  ): void {
+  ): SseAdmission {
     const state = this.getOrCreate(gameId);
+    const admission = this.transport.subscribe(gameId, clientKey, res, () => {
+      state.clients.delete(res);
+      if (state.clients.size === 0) this.cleanup(gameId);
+    });
+    if (!admission.accepted) {
+      if (state.clients.size === 0) this.cleanup(gameId);
+      return admission;
+    }
     state.clients.set(res, persona);
 
-    res.on("close", () => {
-      state.clients.delete(res);
-      if (state.clients.size === 0) {
-        this.cleanup(gameId);
-      }
-    });
-
-    res.write(`data: ${JSON.stringify({ type: "connected", persona })}\n\n`);
+    this.transport.write(
+      res,
+      `data: ${JSON.stringify({ type: "connected", persona })}\n\n`,
+    );
     const lastCommentary = state.lastCommentaryByPersona.get(persona);
     if (lastCommentary) {
-      res.write(
+      this.transport.write(
+        res,
         `data: ${JSON.stringify({ type: "commentary", text: lastCommentary, persona, replay: true })}\n\n`,
       );
     }
@@ -122,6 +142,7 @@ export class NarratorBus {
       count: state.clients.size,
       persona,
     });
+    return admission;
   }
 
   /** Queue an activity event for narration. */
@@ -241,16 +262,10 @@ export class NarratorBus {
     payload: object,
   ): void {
     const line = `data: ${JSON.stringify(payload)}\n\n`;
-    const dead: Response[] = [];
     for (const [res, clientPersona] of state.clients) {
       if (clientPersona !== persona) continue;
-      try {
-        res.write(line);
-      } catch {
-        dead.push(res);
-      }
+      this.transport.write(res, line);
     }
-    dead.forEach((r) => state.clients.delete(r));
   }
 
   /** Broadcast a raw payload to ALL subscribers for a game (any persona). */
@@ -258,15 +273,9 @@ export class NarratorBus {
     const state = this.games.get(gameId);
     if (!state) return;
     const line = `data: ${JSON.stringify(payload)}\n\n`;
-    const dead: Response[] = [];
     for (const [res] of state.clients) {
-      try {
-        res.write(line);
-      } catch {
-        dead.push(res);
-      }
+      this.transport.write(res, line);
     }
-    dead.forEach((r) => state.clients.delete(r));
   }
 
   closeGame(gameId: string): void {
@@ -274,14 +283,8 @@ export class NarratorBus {
     if (!state) return;
     if (state.timer) clearTimeout(state.timer);
     const end = `data: ${JSON.stringify({ type: "game_over" })}\n\n`;
-    for (const [res] of state.clients) {
-      try {
-        res.write(end);
-        res.end();
-      } catch {
-        // ignore
-      }
-    }
+    for (const [res] of state.clients) this.transport.write(res, end);
+    this.transport.closeGame(gameId);
     this.games.delete(gameId);
   }
 
@@ -302,6 +305,10 @@ export class NarratorBus {
       pendingEvents: state?.pendingEvents.length ?? 0,
       hasLastCommentary: state?.lastCommentaryByPersona.size !== 0,
     };
+  }
+
+  integritySnapshot() {
+    return this.transport.snapshot();
   }
 }
 

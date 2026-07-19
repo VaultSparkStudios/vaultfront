@@ -255,6 +255,7 @@
       id="sidebar-menu"
       class="peer [.in-game_&]:hidden z-[40001] fixed left-0 top-0 h-full flex flex-col justify-start overflow-visible bg-black/70 backdrop-blur-xl border-r border-white/10 transition-transform duration-500 ease-out transform -translate-x-full w-[70%] [&.open]:translate-x-0 lg:hidden"
       role="dialog"
+      aria-hidden="true"
       data-i18n-aria-label="main.menu"
     ></mobile-nav-bar>
 
@@ -315,6 +316,11 @@
           inline
           class="hidden w-full h-full page-content"
         ></leaderboard-modal>
+        <command-center
+          id="page-command-center"
+          inline
+          class="hidden w-full h-full page-content"
+        ></command-center>
         <troubleshooting-modal
           id="page-troubleshooting"
           inline
@@ -359,6 +365,7 @@
 
     <!-- Game components -->
     <div id="app"></div>
+    <achievement-toast aria-live="polite"></achievement-toast>
 
     <div
       class="fixed left-0 bottom-0 min-[1200px]:left-4 min-[1200px]:bottom-4 w-full flex flex-col sm:flex-row sm:items-end z-50 pointer-events-none"

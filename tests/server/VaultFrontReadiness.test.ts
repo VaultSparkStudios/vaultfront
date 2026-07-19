@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { canonicalReleaseGateNames } from "../../src/server/ReleaseEvidenceContract";
 import { buildVaultFrontReadiness } from "../../src/server/VaultFrontReadiness";
 
 describe("buildVaultFrontReadiness", () => {
@@ -180,6 +181,20 @@ describe("buildVaultFrontReadiness", () => {
           passLabel: "Alpha gate passed.",
           nextCheck: "Preserve freshness.",
         },
+      },
+      releaseEvidence: {
+        now: Date.parse("2026-07-16T12:15:00.000Z"),
+        observations: Object.fromEntries(
+          canonicalReleaseGateNames.map((gate) => [
+            gate,
+            {
+              status: "verified" as const,
+              observedAt: "2026-07-16T12:10:00.000Z",
+              source: `test:${gate}`,
+              digest: `sha256:${gate}`,
+            },
+          ]),
+        ),
       },
     });
 

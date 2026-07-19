@@ -19,6 +19,7 @@ export class AchievementsPanel extends LitElement {
   @state() private metaChains: MetaChainProgress[] = [];
   @state() private loading = false;
   @state() private persistentId = "";
+  private knownUnlockedIds: Set<string> | null = null;
 
   static styles = css`
     :host {
@@ -147,6 +148,33 @@ export class AchievementsPanel extends LitElement {
     this.loading = true;
     const data = await fetchAchievements(persistentId);
     if (data) {
+      const unlockedIds = new Set(
+        data.achievements
+          .filter((achievement) => achievement.unlockedAt !== null)
+          .map((achievement) => achievement.id),
+      );
+      if (this.knownUnlockedIds !== null) {
+        for (const achievement of data.achievements) {
+          if (
+            achievement.unlockedAt !== null &&
+            !this.knownUnlockedIds.has(achievement.id)
+          ) {
+            document.dispatchEvent(
+              new CustomEvent("vaultfront-achievement-unlocked", {
+                detail: {
+                  name: achievement.id
+                    .split("_")
+                    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                    .join(" "),
+                  description: achievement.progressLabel,
+                  iconEmoji: "🏆",
+                },
+              }),
+            );
+          }
+        }
+      }
+      this.knownUnlockedIds = unlockedIds;
       this.achievements = data.achievements;
       this.metaChains = data.metaChains;
     }

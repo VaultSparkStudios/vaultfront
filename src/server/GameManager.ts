@@ -11,6 +11,7 @@ import {
 import { GameConfig, GameID, PublicGameType } from "../core/Schemas";
 import { simpleHash } from "../core/Util";
 import { Client } from "./Client";
+import { gameAllocationDecision } from "./GameCreationAdmission";
 import {
   buildGameLoopHealthSnapshot,
   type GameLoopHealthSnapshot,
@@ -20,11 +21,21 @@ import { GamePhase, GameServer } from "./GameServer";
 export class GameManager {
   private games: Map<GameID, GameServer> = new Map();
   private lastTickCompletedAt = Date.now();
+  private readonly maxGamesPerWorker: number;
 
   constructor(
     private config: ServerConfig,
     private log: Logger,
+    options?: { maxGamesPerWorker?: number },
   ) {
+    const configuredLimit = Number(
+      options?.maxGamesPerWorker ??
+        process.env.VAULTFRONT_MAX_GAMES_PER_WORKER ??
+        512,
+    );
+    this.maxGamesPerWorker = Number.isFinite(configuredLimit)
+      ? Math.max(1, Math.min(5_000, Math.floor(configuredLimit)))
+      : 512;
     setInterval(() => this.tick(), 1000);
   }
 
@@ -76,6 +87,20 @@ export class GameManager {
     startsAt?: number,
     publicGameType?: PublicGameType,
   ) {
+    const allocation = gameAllocationDecision(
+      this.games.has(id),
+      this.games.size,
+      this.maxGamesPerWorker,
+    );
+    if (allocation === "collision") {
+      throw new GameAllocationError("collision", `game ${id} already exists`);
+    }
+    if (allocation === "capacity") {
+      throw new GameAllocationError(
+        "capacity",
+        `worker game capacity ${this.maxGamesPerWorker} reached`,
+      );
+    }
     const runtimeAssignment = this.assignVaultRuntimeExperiment(id);
     const mergedConfig = {
       donateGold: false,
@@ -174,6 +199,18 @@ export class GameManager {
     return this.games.size;
   }
 
+  allocationSnapshot(): {
+    activeGames: number;
+    maxGamesPerWorker: number;
+    availableSlots: number;
+  } {
+    return {
+      activeGames: this.games.size,
+      maxGamesPerWorker: this.maxGamesPerWorker,
+      availableSlots: Math.max(0, this.maxGamesPerWorker - this.games.size),
+    };
+  }
+
   activeClients(): number {
     let totalClients = 0;
     this.games.forEach((game: GameServer) => {
@@ -228,5 +265,15 @@ export class GameManager {
     }
     this.games = active;
     this.lastTickCompletedAt = Date.now();
+  }
+}
+
+export class GameAllocationError extends Error {
+  constructor(
+    readonly code: "collision" | "capacity",
+    message: string,
+  ) {
+    super(message);
+    this.name = "GameAllocationError";
   }
 }

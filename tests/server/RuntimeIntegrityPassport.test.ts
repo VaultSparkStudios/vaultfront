@@ -1,5 +1,35 @@
 import { describe, expect, it } from "vitest";
 import { buildRuntimeIntegrityPassport } from "../../src/server/RuntimeIntegrityPassport";
+import { buildStateScopeLedger } from "../../src/server/StateScopeLedger";
+
+const sseSnapshot = {
+  scope: "process-local-worker" as const,
+  policy: {
+    maxSubscribersPerGame: 32,
+    maxSubscribersPerWorker: 256,
+    maxSubscribersPerIp: 8,
+    maxQueuedEventsPerClient: 16,
+    maxQueuedBytesPerClient: 32 * 1024,
+    drainTimeoutMs: 5_000,
+  },
+  live: {
+    subscribers: 0,
+    games: 0,
+    blockedSubscribers: 0,
+    queuedEvents: 0,
+    queuedBytes: 0,
+  },
+  counters: {
+    accepted: 0,
+    rejectedPerGame: 0,
+    rejectedPerWorker: 0,
+    rejectedPerIp: 0,
+    backpressureSignals: 0,
+    queuedEvents: 0,
+    slowConsumerEvictions: 0,
+    writeFailures: 0,
+  },
+};
 
 const base = {
   workerId: 2,
@@ -41,6 +71,16 @@ const base = {
     maxSpectatorsPerGame: 128,
     maxSpectatorsPerWorker: 1_024,
   },
+  ssePolicy: { streaming: sseSnapshot, narrator: sseSnapshot },
+  stateScopeLedger: buildStateScopeLedger({
+    configured: true,
+    state: "ready",
+    observedAt: "2026-07-17T01:00:00.000Z",
+    connectedAt: "2026-07-17T00:59:00.000Z",
+    failureCode: null,
+    fallbackAllowed: false,
+    scope: "process-local-worker",
+  }),
 };
 
 describe("Runtime Integrity Passport", () => {
@@ -52,10 +92,32 @@ describe("Runtime Integrity Passport", () => {
       health: { ...base.health, ipc: { ...base.health.ipc, ageMs: 101 } },
     });
 
-    expect(first.status).toBe("pass");
+    expect(first.status).toBe("warn");
+    expect(first.warnings).toContain("release-critical-state-is-process-local");
     expect(first.evidenceDigest).toMatch(/^[a-f0-9]{64}$/);
     expect(repeat.evidenceDigest).toBe(first.evidenceDigest);
     expect(tampered.evidenceDigest).not.toBe(first.evidenceDigest);
+  });
+
+  it("fails a configured database outage and reports bounded SSE evidence", () => {
+    const failed = buildRuntimeIntegrityPassport({
+      ...base,
+      stateScopeLedger: buildStateScopeLedger({
+        configured: true,
+        state: "failed",
+        observedAt: "2026-07-17T01:00:00.000Z",
+        connectedAt: null,
+        failureCode: "ConnectionError",
+        fallbackAllowed: false,
+        scope: "process-local-worker",
+      }),
+    });
+
+    expect(failed.status).toBe("fail");
+    expect(failed.failures).toContain("configured-database-failed");
+    expect(failed.ssePolicy.streaming.policy.maxQueuedBytesPerClient).toBe(
+      32 * 1024,
+    );
   });
 
   it("fails stale serving watermarks and warns on elevated rejection rate", () => {

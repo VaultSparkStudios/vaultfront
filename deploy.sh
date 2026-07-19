@@ -1,166 +1,112 @@
-#!/bin/bash
-# deploy.sh - Deploy application to Hetzner server
-# This script:
-# 1. Copies the update script to Hetzner server
-# 2. Executes the update script on the Hetzner server
+#!/usr/bin/env bash
+# Canonical immutable deployment transport. Set DEPLOY_DRY_RUN=1 for validation only.
+set -euo pipefail
 
-set -e # Exit immediately if a command exits with a non-zero status
+if [[ $# -ne 4 ]]; then
+    echo "Usage: $0 <staging|prod> <host_label> <sha256:digest> <subdomain>" >&2
+    exit 2
+fi
 
-# Function to print section headers
-print_header() {
-    echo "======================================================"
-    echo "🚀 $1"
-    echo "======================================================"
+ENVIRONMENT="$1"
+HOST_LABEL="$2"
+IMAGE_DIGEST="$3"
+SUBDOMAIN="$4"
+
+[[ "$ENVIRONMENT" =~ ^(staging|prod)$ ]] || {
+    echo "Invalid environment" >&2
+    exit 2
+}
+[[ "$HOST_LABEL" =~ ^[a-z0-9-]+$ ]] || {
+    echo "Invalid host label" >&2
+    exit 2
+}
+[[ "$SUBDOMAIN" =~ ^[a-z0-9-]+$ ]] || {
+    echo "Invalid subdomain" >&2
+    exit 2
+}
+[[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]] || {
+    echo "Deployment requires an immutable sha256 digest" >&2
+    exit 2
 }
 
-# Check command line arguments
-if [ $# -ne 4 ]; then
-    echo "Error: Please specify environment, host, version tag, and subdomain"
-    echo "Usage: $0 [prod|staging] [host_label] [version_tag] [subdomain]"
-    exit 1
+: "${GHCR_USERNAME:?GHCR_USERNAME is required}"
+: "${GHCR_REPO:?GHCR_REPO is required}"
+: "${DEPLOY_HEALTH_URL:?DEPLOY_HEALTH_URL is required}"
+[[ "$DEPLOY_HEALTH_URL" =~ ^https://[^[:space:]]+$ ]] || {
+    echo "DEPLOY_HEALTH_URL must be an https URL" >&2
+    exit 2
+}
+
+if [[ "$ENVIRONMENT" == "prod" ]]; then
+    : "${DEPLOY_STAGING_ATTESTATION:?Production requires the verified staging digest}"
+    [[ "$DEPLOY_STAGING_ATTESTATION" == "$IMAGE_DIGEST" ]] || {
+        echo "Production digest does not match staging attestation" >&2
+        exit 2
+    }
 fi
 
-# Validate first argument (environment)
-if [ "$1" != "prod" ] && [ "$1" != "staging" ]; then
-    echo "Error: First argument must be either 'prod' or 'staging'"
-    echo "Usage: $0 [prod|staging] [host_label] [version_tag] [subdomain]"
-    exit 1
+IMAGE_RETENTION_COUNT="${DEPLOY_IMAGE_RETENTION:-5}"
+[[ "$IMAGE_RETENTION_COUNT" =~ ^[0-9]+$ ]] \
+    && ((IMAGE_RETENTION_COUNT >= 2 && IMAGE_RETENTION_COUNT <= 20)) || {
+    echo "DEPLOY_IMAGE_RETENTION must be between 2 and 20" >&2
+    exit 2
+}
+
+GHCR_IMAGE="${GHCR_USERNAME}/${GHCR_REPO}@${IMAGE_DIGEST}"
+if [[ "${DEPLOY_DRY_RUN:-0}" == "1" ]]; then
+    printf 'deploy-contract ok environment=%s host=%s subdomain=%s image=%s health=%s retention=%s\n' \
+        "$ENVIRONMENT" "$HOST_LABEL" "$SUBDOMAIN" "$GHCR_IMAGE" "$DEPLOY_HEALTH_URL" "$IMAGE_RETENTION_COUNT"
+    exit 0
 fi
 
-# Validate second argument (host label)
-if [ -z "$2" ]; then
-    echo "Error: Second argument must be a non-empty host label"
-    echo "Usage: $0 [prod|staging] [host_label] [version_tag] [subdomain]"
-    exit 1
+: "${SSH_KEY:?SSH_KEY is required}"
+SERVER_HOST="${DEPLOY_SERVER_HOST:-}"
+if [[ -z "$SERVER_HOST" ]]; then
+    case "$HOST_LABEL" in
+        staging) SERVER_HOST="${SERVER_HOST_STAGING:-}" ;;
+        nbg1) SERVER_HOST="${SERVER_HOST_NBG1:-}" ;;
+        masters) SERVER_HOST="${SERVER_HOST_MASTERS:-}" ;;
+        falk2) SERVER_HOST="${SERVER_HOST_FALK2:-}" ;;
+        *) SERVER_HOST="${SERVER_HOST_FALK1:-}" ;;
+    esac
 fi
+[[ -n "$SERVER_HOST" ]] || {
+    echo "No server configured for $HOST_LABEL" >&2
+    exit 2
+}
 
-ENV=$1
-HOST=$2
-VERSION_TAG=$3
-SUBDOMAIN=$4
-
-# Set subdomain - use the provided subdomain
-echo "Using subdomain: $SUBDOMAIN"
-
-# Load common environment variables first
-if [ -f .env ]; then
-    echo "Loading common configuration from .env file..."
-    export $(grep -v '^#' .env | xargs)
-fi
-
-# Load environment-specific variables
-if [ -f .env.$ENV ]; then
-    echo "Loading $ENV-specific configuration from .env.$ENV file..."
-    export $(grep -v '^#' .env.$ENV | xargs)
-fi
-
-# Check required environment variables for deployment
-if [ -z "$GHCR_USERNAME" ] || [ -z "$GHCR_REPO" ]; then
-    echo "Error: GHCR_USERNAME or GHCR_REPO not defined in .env file or environment"
-    exit 1
-fi
-
-if [[ "$VERSION_TAG" == sha256:* ]]; then
-    GHCR_IMAGE="${GHCR_USERNAME}/${GHCR_REPO}@${VERSION_TAG}"
-else
-    GHCR_IMAGE="${GHCR_USERNAME}/${GHCR_REPO}:${VERSION_TAG}"
-fi
-
-if [ -n "$DEPLOY_SERVER_HOST" ]; then
-    print_header "DEPLOYING TO CONFIGURED HOST"
-    SERVER_HOST=$DEPLOY_SERVER_HOST
-elif [ "$HOST" == "staging" ]; then
-    print_header "DEPLOYING TO STAGING HOST"
-    SERVER_HOST=$SERVER_HOST_STAGING
-elif [ "$HOST" == "nbg1" ]; then
-    print_header "DEPLOYING TO NBG1 HOST"
-    SERVER_HOST=$SERVER_HOST_NBG1
-elif [ "$HOST" == "masters" ]; then
-    print_header "DEPLOYING TO MASTERS HOST"
-    SERVER_HOST=$SERVER_HOST_MASTERS
-elif [ "$HOST" == "falk2" ]; then
-    print_header "DEPLOYING TO FALK2 HOST"
-    SERVER_HOST=$SERVER_HOST_FALK2
-else
-    print_header "DEPLOYING TO FALK1 HOST"
-    SERVER_HOST=$SERVER_HOST_FALK1
-fi
-
-# Check required environment variables
-if [ -z "$SERVER_HOST" ]; then
-    echo "Error: ${HOST} not defined in .env file or environment"
-    exit 1
-fi
-
-# Configuration
-UPDATE_SCRIPT="./update.sh" # Path to your update script
 REMOTE_USER="${DEPLOY_REMOTE_USER:-vaultfront}"
 APP_NAME="${APP_NAME:-vaultfront}"
-REMOTE_UPDATE_PATH="/home/$REMOTE_USER"
-REMOTE_UPDATE_SCRIPT="${DEPLOY_REMOTE_SCRIPT_PATH:-$REMOTE_UPDATE_PATH/update-${APP_NAME}.sh}" # Where to place the script on server
+REMOTE_DIR="/home/${REMOTE_USER}"
+REMOTE_SCRIPT="${DEPLOY_REMOTE_SCRIPT_PATH:-${REMOTE_DIR}/update-${APP_NAME}.sh}"
+REMOTE_ENV="${REMOTE_DIR}/${APP_NAME}-${SUBDOMAIN}-${RANDOM}.env"
+LOCAL_ENV="$(mktemp)"
+trap 'rm -f "$LOCAL_ENV"' EXIT
 
-# Check if update script exists
-if [ ! -f "$UPDATE_SCRIPT" ]; then
-    echo "Error: Update script $UPDATE_SCRIPT not found!"
-    exit 1
-fi
+write_env() { printf '%s=%q\n' "$1" "$2" >> "$LOCAL_ENV"; }
+write_env GAME_ENV "$ENVIRONMENT"
+write_env ENV "$ENVIRONMENT"
+write_env HOST "$HOST_LABEL"
+write_env GHCR_IMAGE "$GHCR_IMAGE"
+write_env GHCR_USERNAME "$GHCR_USERNAME"
+write_env GHCR_REPO "$GHCR_REPO"
+write_env APP_NAME "$APP_NAME"
+write_env DEPLOY_ALWAYS_RESTART "${DEPLOY_ALWAYS_RESTART:-}"
+write_env DEPLOY_HEALTH_URL "$DEPLOY_HEALTH_URL"
+write_env DEPLOY_IMAGE_RETENTION "$IMAGE_RETENTION_COUNT"
+write_env GHCR_TOKEN "${GHCR_TOKEN:-}"
+write_env CF_ACCOUNT_ID "${CF_ACCOUNT_ID:-}"
+write_env CF_API_TOKEN "${CF_API_TOKEN:-}"
+write_env TURNSTILE_SECRET_KEY "${TURNSTILE_SECRET_KEY:-}"
+write_env API_KEY "${API_KEY:-}"
+write_env DOMAIN "${DOMAIN:-}"
+write_env SUBDOMAIN "$SUBDOMAIN"
+write_env OTEL_EXPORTER_OTLP_ENDPOINT "${OTEL_EXPORTER_OTLP_ENDPOINT:-}"
+write_env OTEL_AUTH_HEADER "${OTEL_AUTH_HEADER:-}"
 
-# Display deployment information
-print_header "DEPLOYMENT INFORMATION"
-echo "Environment: ${ENV}"
-echo "Host: ${HOST}"
-echo "Subdomain: ${SUBDOMAIN}"
-echo "Image: $GHCR_IMAGE"
-echo "Target Server: $SERVER_HOST"
+scp -i "$SSH_KEY" ./update.sh "$LOCAL_ENV" \
+    "${REMOTE_USER}@${SERVER_HOST}:${REMOTE_DIR}/"
+ssh -i "$SSH_KEY" "${REMOTE_USER}@${SERVER_HOST}" \
+    "mv '${REMOTE_DIR}/update.sh' '$REMOTE_SCRIPT' && mv '${REMOTE_DIR}/$(basename "$LOCAL_ENV")' '$REMOTE_ENV' && chmod 700 '$REMOTE_SCRIPT' && chmod 600 '$REMOTE_ENV' && '$REMOTE_SCRIPT' '$REMOTE_ENV'"
 
-# Copy update script to Hetzner server
-print_header "COPYING UPDATE SCRIPT TO SERVER"
-echo "Target: $REMOTE_USER@$SERVER_HOST"
-
-# Make sure the update script is executable
-chmod +x $UPDATE_SCRIPT
-
-# Copy the update script to the server
-scp -i $SSH_KEY $UPDATE_SCRIPT $REMOTE_USER@$SERVER_HOST:$REMOTE_UPDATE_SCRIPT
-
-if [ $? -ne 0 ]; then
-    echo "❌ Failed to copy update script to server. Stopping deployment."
-    exit 1
-fi
-
-# Generate a random filename for the environment file to prevent conflicts
-# when multiple deployments are happening at the same time.
-ENV_FILE="${REMOTE_UPDATE_PATH}/${SUBDOMAIN}-${RANDOM}.env"
-
-print_header "EXECUTING UPDATE SCRIPT ON SERVER"
-
-ssh -i $SSH_KEY $REMOTE_USER@$SERVER_HOST "chmod +x $REMOTE_UPDATE_SCRIPT && \
-cat > $ENV_FILE << 'EOL'
-GAME_ENV=$ENV
-ENV=$ENV
-HOST=$HOST
-GHCR_IMAGE=$GHCR_IMAGE
-APP_NAME=$APP_NAME
-DEPLOY_ALWAYS_RESTART=${DEPLOY_ALWAYS_RESTART:-}
-GHCR_TOKEN=$GHCR_TOKEN
-CF_ACCOUNT_ID=$CF_ACCOUNT_ID
-CF_API_TOKEN=$CF_API_TOKEN
-TURNSTILE_SECRET_KEY=$TURNSTILE_SECRET_KEY
-API_KEY=$API_KEY
-DOMAIN=$DOMAIN
-SUBDOMAIN=$SUBDOMAIN
-OTEL_EXPORTER_OTLP_ENDPOINT=$OTEL_EXPORTER_OTLP_ENDPOINT
-OTEL_AUTH_HEADER=$OTEL_AUTH_HEADER
-EOL
-chmod 600 $ENV_FILE && \
-$REMOTE_UPDATE_SCRIPT $ENV_FILE"
-
-if [ $? -ne 0 ]; then
-    echo "❌ Failed to execute update script on server."
-    exit 1
-fi
-
-print_header "DEPLOYMENT COMPLETED SUCCESSFULLY"
-echo "✅ New version deployed to ${ENV} environment in ${HOST} with subdomain ${SUBDOMAIN}!"
-echo "🌐 Check your server to verify the deployment."
-echo "======================================================="
+echo "Deployment command completed; live evidence remains the workflow health/commit verification."

@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "1.0",
+  "project": "vaultfront",
+  "releasePosture": "implemented-local-unlaunched",
+  "truthRule": "A capability is reachable only when every checked-in source token below is present; this manifest never claims a live public runtime.",
+  "capabilities": [
+    {
+      "id": "command-center",
+      "audience": "human-player",
+      "evidence": [
+        {
+          "path": "src/client/Navigation.ts",
+          "includes": [
+            "await import(\"./CommandCenter\")",
+            "pageId === \"page-command-center\""
+          ]
+        },
+        {
+          "path": "index.html",
+          "includes": ["id=\"page-command-center\"", "<command-center"]
+        },
+        {
+          "path": "src/client/FeatureLiveness.ts",
+          "includes": ["featureLivenessGraph", "page-command-center"]
+        }
+      ]
+    },
+    {
+      "id": "certified-match-outcomes",
+      "audience": "human-player",
+      "evidence": [
+        {
+          "path": "src/server/MatchResultCertificate.ts",
+          "includes": ["MatchResultQuorum", "verifyMatchResultCertificate"]
+        },
+        {
+          "path": "src/server/GameServer.ts",
+          "includes": [
+            "resultCertificate = buildMatchResultCertificate",
+            "this.recordProgressionOutcome()",
+            "this.archiveGame()"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "canonical-ai-receipts",
+      "audience": "human-and-agent",
+      "evidence": [
+        {
+          "path": "src/server/CanonicalAiEvidence.ts",
+          "includes": [
+            "buildCanonicalAiResponseReceipt",
+            "verifyCanonicalAiResponseReceipt"
+          ]
+        },
+        {
+          "path": "src/server/Worker.ts",
+          "includes": [
+            "loadCertifiedAiContext",
+            "receipt: buildCanonicalAiResponseReceipt"
+          ]
+        },
+        {
+          "path": "src/client/Api.ts",
+          "includes": [
+            "match-oracle",
+            "vaultFrontIdentityHeaders()",
+            "match-recap"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "policy-bound-mutations",
+      "audience": "operator",
+      "evidence": [
+        {
+          "path": "src/server/RoutePolicyManifest.ts",
+          "includes": [
+            "experiment-${experiment}-event",
+            "actor-or-admin",
+            "certificate-actor"
+          ]
+        },
+        {
+          "path": "src/server/Worker.ts",
+          "includes": [
+            "experiment-dock-event",
+            "experiment-recap-event",
+            "experiment-runtime-event"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runtime-integrity",
+      "audience": "operator-and-agent",
+      "evidence": [
+        {
+          "path": "src/server/Worker.ts",
+          "includes": [
+            "/api/admin/vaultfront/runtime-integrity-passport",
+            "app.get(\"/_health\""
+          ]
+        },
+        {
+          "path": "src/server/RuntimeIntegrityPassport.ts",
+          "includes": ["evidenceDigest", "stateScopeLedger", "ssePolicy"]
+        }
+      ]
+    },
+    {
+      "id": "release-evidence-lineage",
+      "audience": "operator-and-agent",
+      "evidence": [
+        {
+          "path": "scripts/generate-release-evidence.mjs",
+          "includes": ["buildEvidenceLineage", "release-decision"]
+        },
+        {
+          "path": "scripts/lib/evidence-lineage.mjs",
+          "includes": ["verifyEvidenceLineage", "sha256-canonical-json-dag-v1"]
+        }
+      ]
+    }
+  ]
+}

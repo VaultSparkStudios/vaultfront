@@ -52,6 +52,22 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 
 ## Follow-ups
 
+## Completed (2026-07-19 — Session 75 complete saturated arc)
+
+All 14 newly premise-verified findings in `docs/AUDIT_2026-07-16.json` shipped, exhausting the cumulative audit at 37/37. The session then generated and shipped three new second-order candidates, bringing `docs/INNOVATION_PACK.json` to 6/6.
+
+Key outcomes: quorum-attested match certificates; exact game-create authority and capacity; database/state-scope readiness; bounded server-sent events; certificate-grounded artificial intelligence inputs and response receipts; an accessible lazy-loaded Command Center with feature-liveness proof; privacy-safe notifications; digest-deduplicated status projection; an executable high-risk route policy manifest; coherent task/brief provenance; closed Windows spawn bypasses; immutable deployment contracts; a Human + Agent capability reachability manifest; and a self-verifying release-evidence lineage graph.
+
+Verification: 134/134 main Vitest files and 812/812 tests plus an independent 31-file / 119-test server repeat; 24/24 desktop/mobile Playwright; lint; typecheck; production build; formatting, exact gzip/Brotli/media bundle budgets, deterministic performance benchmarks, Canon/startup protocol checks, and project doctor `blockingFailing: 0`. Audit 37/37 and innovations 6/6 are shipped.
+
+- [release-evidence] Deploy the exact verified digest to a real staging origin and verify parity.
+- [release-evidence] Collect authenticated evidence from at least three distinct human Alpha Gate sessions; test or agent events cannot substitute.
+- [release-evidence] Configure and verify project-domain Brevo delivery to the studio inbox.
+- [release-evidence] Wire and verify native Obelisk relying-party authentication.
+- [release-evidence] Verify live Content Security Policy / HTTP Strict Transport Security, Core Web Vitals, and every theme with screenshots.
+- [release-evidence] Observe a real checkout/supporter event before changing revenue status.
+- [release-evidence] Obtain founder approval before any SPARKED transition or public announcement.
+
 ## Completed (2026-07-16 — Session 74 saturated integrity arc)
 
 All 11 newly verified findings in `docs/AUDIT_2026-07-16.json` shipped; the complete audit is exhausted at 23/23, followed by all 3/3 second-order innovation candidates in `docs/INNOVATION_PACK.json`.

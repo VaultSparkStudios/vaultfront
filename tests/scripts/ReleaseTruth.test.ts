@@ -71,7 +71,8 @@ describe("release truth boundary", () => {
     const promote = read(".github/workflows/promote.yml");
     expect(promote).toContain("org.opencontainers.image.revision");
     expect(promote).toContain("EXPECTED_GIT_SHA");
-    expect(promote).toContain('!= "${EXPECTED_GIT_SHA}"');
+    expect(promote).toContain('== "$EXPECTED_GIT_SHA"');
+    expect(promote).toContain("Promotion revision verification timed out");
     expect(promote).not.toContain('commit.txt)" != "${{ inputs.image_tag }}"');
   });
 

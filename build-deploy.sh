@@ -1,79 +1,29 @@
-#!/bin/bash
-# build-deploy.sh - Wrapper script that runs build.sh and deploy.sh in sequence
-# This script maintains backward compatibility with the original build-deploy.sh
+#!/usr/bin/env bash
+# Canonical build -> immutable-digest deploy entrypoint. Production uses promote.yml.
+set -euo pipefail
 
-set -e # Exit immediately if a command exits with a non-zero status
-
-# Function to print section headers
-print_header() {
-    echo "======================================================"
-    echo "🚀 $1"
-    echo "======================================================"
-}
-
-print_header "BUILD AND DEPLOY WRAPPER"
-echo "This script will run build.sh and deploy.sh in sequence."
-echo "You can also run them separately:"
-echo "  ./build.sh [prod|staging] [version_tag]"
-echo "  ./deploy.sh [prod|staging] [host_label] [version_tag] [subdomain]"
-echo ""
-
-# Check command line arguments
-if [ $# -lt 3 ] || [ $# -gt 5 ]; then
-    echo "Error: Please specify environment, host, and subdomain"
-    echo "Usage: $0 [prod|staging] [host_label] [subdomain]"
-    exit 1
+if [[ $# -ne 3 ]]; then
+    echo "Usage: $0 staging <host_label> <subdomain>" >&2
+    exit 2
 fi
 
-# Validate first argument (environment)
-if [ "$1" != "prod" ] && [ "$1" != "staging" ]; then
-    echo "Error: First argument must be either 'prod' or 'staging'"
-    echo "Usage: $0 [prod|staging] [host_label] [subdomain]"
-    exit 1
-fi
-
-# Validate second argument (host label)
-if [ -z "$2" ]; then
-    echo "Error: Second argument must be a non-empty host label"
-    echo "Usage: $0 [prod|staging] [host_label] [subdomain]"
-    exit 1
-fi
-
-# Validate third argument (subdomain)
-if [ -z "$3" ]; then
-    echo "Error: Subdomain is required"
-    echo "Usage: $0 [prod|staging] [falk1|falk2|nbg1|staging|masters] [subdomain]"
-    exit 1
-fi
-
-# Generate version tag
-VERSION_TAG=$(date +"%Y%m%d-%H%M%S")
-echo "Generated version tag: $VERSION_TAG"
-
-# Extract arguments
-ENV="$1"
-HOST="$2"
+ENVIRONMENT="$1"
+HOST_LABEL="$2"
 SUBDOMAIN="$3"
+if [[ "$ENVIRONMENT" != "staging" ]]; then
+    echo "build-deploy.sh only builds staging; promote the verified digest to production" >&2
+    exit 2
+fi
 
-# Step 1: Run build.sh
-echo "Step 1: Running build.sh..."
-./build.sh "$ENV" "$VERSION_TAG"
+VERSION_TAG="sha-$(git rev-parse --short=12 HEAD)"
+METADATA_FILE="$(mktemp)"
+trap 'rm -f "$METADATA_FILE"' EXIT
 
-if [ $? -ne 0 ]; then
-    echo "❌ Build failed. Stopping deployment."
+./build.sh "$ENVIRONMENT" "$VERSION_TAG" "" "" "$METADATA_FILE"
+IMAGE_DIGEST="$(jq -r '."containerimage.digest" // empty' "$METADATA_FILE")"
+if [[ ! "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+    echo "Build did not produce a valid immutable image digest" >&2
     exit 1
 fi
 
-echo ""
-echo "Step 2: Running deploy.sh"
-./deploy.sh "$ENV" "$HOST" "$VERSION_TAG" "$SUBDOMAIN"
-
-if [ $? -ne 0 ]; then
-    echo "❌ Deploy failed."
-    exit 1
-fi
-
-print_header "BUILD AND DEPLOY COMPLETED SUCCESSFULLY"
-echo "✅ Both build and deploy operations completed successfully!"
-echo "Version tag used: $VERSION_TAG"
-echo "======================================================="
+./deploy.sh "$ENVIRONMENT" "$HOST_LABEL" "$IMAGE_DIGEST" "$SUBDOMAIN"

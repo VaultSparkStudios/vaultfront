@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
-  "generatedBy": "/audit skill v2 · Session 74 infrastructure rubric + app release/security lens",
-  "generatedAt": "2026-07-17T00:53:22.5157309Z",
+  "generatedBy": "/audit skill v2 · Session 75 infrastructure rubric override + app release/security/game-depth lenses",
+  "generatedAt": "2026-07-18T20:06:28.557Z",
   "project": {
     "slug": "vaultfront",
     "name": "VaultFront",
@@ -11,23 +11,23 @@
     "stage": "FORGE",
     "stagingType": "local"
   },
-  "summary": "Premise-verified Session 74 audit: secure caller identity and telemetry integrity, replace phantom health gates, make release/build surfaces honest, and harden bounded runtime/resource contracts without fabricating live evidence.",
+  "summary": "Premise-verified Session 75 audit: replace client-authored match truth with attested result evidence, make release and persistence posture fail closed, close transport and process-safety blind spots, restore reachable product depth, and remove false-green workflow and parsing surfaces without fabricating external evidence.",
   "axes": {
-    "featureDepth": 1.0,
+    "featureDepth": 1,
     "innovation": 1.5,
-    "ux": 1.0,
+    "ux": 1,
     "feedbackLoop": 1.5,
     "gamification": 0.5,
     "aiIntegration": 1.5,
-    "security": 3.0,
+    "security": 3,
     "speedOrganization": 2.5,
     "tokenApiReduction": 1.5
   },
   "sample": {
-    "method": "three in-process read-only audit lanes plus direct live verification",
-    "picked": 34,
-    "scanned": "live src/server, client, scripts, workflows, container/nginx/public surfaces",
-    "baseline": "lint 0; tsc 0; Vite build 0 with verified warnings; GitHub main CI green; sitemap 10/10; sanitization clean"
+    "method": "three in-process read-only audit lanes plus direct main-agent live verification",
+    "picked": 61,
+    "scanned": "result/progression, stores, Worker routes, SSE and AI paths, client reachability, scripts, workflows, deploy chain, public surfaces, and release gates",
+    "baseline": "doctor blockingFailing 0; GitHub main CI green; focused release tests green; sitemap 10/10; launch NO-GO"
   },
   "evidenceBoundary": [
     "Local tests cannot satisfy real human alpha, revenue, DNS, email-delivery, Obelisk RP, staging parity, deployed-header, Core Web Vitals, or visual theme evidence.",
@@ -37,6 +37,496 @@
   ],
   "items": [
     {
+      "id": 24,
+      "slug": "quorum-attested-match-notary",
+      "tier": "🔥",
+      "axis": "security / correctness / gamification / innovation",
+      "effortHours": 10,
+      "impact": 10,
+      "innovation": 10,
+      "priority": 41.8,
+      "status": "shipped",
+      "title": "Make one canonical result certificate the only input to progression, telemetry, and archives",
+      "why": "GameServer accepts client-supplied winner and allPlayersStats at a non-strict 50% IP quorum, then advances durable systems from the first matching payload.",
+      "recipe": "Canonicalize and hash the complete result; require a strict active-IP majority; validate winner membership and a bounded complete roster; emit an immutable config/turn/result certificate; route archive and progression through it; test splits, tamper, duplicate IPs, incomplete rosters, and idempotency.",
+      "ladder": {
+        "L1": {
+          "effortHours": 4,
+          "recipe": "Require strict majority and validate the roster."
+        },
+        "L2": {
+          "effortHours": 10,
+          "recipe": "Ship the certificate and route all local result consumers through it."
+        },
+        "L3": {
+          "effortHours": 18,
+          "recipe": "Replay the turn log server-side and sign a derived final-state certificate."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Strict unique-IP quorum, immutable SHA-256 result certificate, certificate-gated archive/progression, and tamper/idempotency tests."
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "slug": "game-create-authorization-capacity",
+      "tier": "🔥",
+      "axis": "security / reliability",
+      "effortHours": 3,
+      "impact": 10,
+      "innovation": 5,
+      "priority": 27.8,
+      "status": "shipped",
+      "title": "Close the private-game creation authorization and allocation bypass",
+      "why": "Any non-empty admin header authorizes private creation without a bearer actor, and GameManager replaces or allocates IDs without collision or worker-cap protection.",
+      "recipe": "Require verified actor or exact admin token for every create path; reject existing IDs; add per-actor/IP and worker capacity; return stable 401/403/409/429/503 outcomes; test adversarial paths.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Require exact authorization and reject collisions."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Add quotas, capacity, outcomes, and tests."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Persist signed allocation receipts across workers."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Exact actor/admin authorization, collision and capacity guards, bounded admission, stable status codes, and adversarial tests."
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "slug": "release-evidence-completeness",
+      "tier": "🔥",
+      "axis": "truth / release / ux / ecosystem",
+      "effortHours": 5,
+      "impact": 10,
+      "innovation": 8,
+      "priority": 35.6,
+      "status": "shipped",
+      "title": "Model every canonical release gate and make footer and health evidence executable",
+      "why": "Readiness can report ready without staging, parity, Brevo, Obelisk, live web/theme proof, or approval; missing alphaGate passes; leaf footers are incomplete; no footer manifest exists; protocol health path is absent.",
+      "recipe": "Add a provenance/freshness gate contract that fails closed; require alphaGate ready; expose /_health; complete leaf footers; add a canonical manifest and wire its probe into doctor, release evidence, and CI; keep external gates red until observed.",
+      "ladder": {
+        "L1": {
+          "effortHours": 2,
+          "recipe": "Fail closed and expose /_health."
+        },
+        "L2": {
+          "effortHours": 5,
+          "recipe": "Add provenance plus footer probe and release wiring."
+        },
+        "L3": {
+          "effortHours": 9,
+          "recipe": "Ingest signed staging, email, identity, browser, and approval receipts."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Eight-gate provenance/freshness contract, dual live /_health routes, executable footer manifest, doctor integration, and honestly blocked external evidence."
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "slug": "state-scope-ledger-database-readiness",
+      "tier": "🔥",
+      "axis": "reliability / observability / ecosystem / innovation",
+      "effortHours": 6,
+      "impact": 9,
+      "innovation": 9,
+      "priority": 34,
+      "status": "shipped",
+      "title": "Turn hidden process-local persistence into a state-scope ledger and fail-closed database posture",
+      "why": "PostgreSQL logs fallback while pool remains non-null after failure, readiness ignores persistence, and advertised persistent features use process-local maps.",
+      "recipe": "Create awaited disabled/connecting/ready/failed database state; block configured failure; declare durability, replication, retention, recovery, and probe ownership for each store; compile the State Scope Ledger into readiness and runtime integrity.",
+      "ladder": {
+        "L1": {
+          "effortHours": 2,
+          "recipe": "Fix pool state and surface posture."
+        },
+        "L2": {
+          "effortHours": 6,
+          "recipe": "Compile the ledger into runtime and release checks."
+        },
+        "L3": {
+          "effortHours": 11,
+          "recipe": "Migrate all meta stores to one transactional durable repository."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Awaited database posture and fail-closed configured persistence plus a scope/durability/recovery ledger compiled into readiness and runtime evidence."
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "slug": "route-manifest-composition-root",
+      "tier": "⚡",
+      "axis": "organization / security / token_efficiency",
+      "effortHours": 6,
+      "impact": 8,
+      "innovation": 7,
+      "priority": 20.3,
+      "status": "shipped",
+      "title": "Turn Worker route sprawl into a typed testable route manifest",
+      "why": "Worker is roughly 4,000 lines with dozens of inline schemas and routes, while authorization tests scan strings and can pass without semantic enforcement.",
+      "recipe": "Extract high-risk create, readiness, experiment, and AI route groups behind shared actor/schema middleware; register typed method/path/auth/mutation/rate/evidence policy; derive semantic contract tests and client typing.",
+      "ladder": {
+        "L1": {
+          "effortHours": 2,
+          "recipe": "Manifest routes and replace marker tests."
+        },
+        "L2": {
+          "effortHours": 6,
+          "recipe": "Extract high-risk groups and derive semantic tests."
+        },
+        "L3": {
+          "effortHours": 11,
+          "recipe": "Generate OpenAPI/client contracts and split every router."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Executable exact-path policy manifest for create/readiness/runtime/three experiment mutations/all AI routes, shared semantic authorization, startup drift assertions, typed client auth, and contract tests."
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "slug": "deploy-contract-hardening",
+      "tier": "⚡",
+      "axis": "reliability / release / automation",
+      "effortHours": 5,
+      "impact": 8,
+      "innovation": 5,
+      "priority": 16.9,
+      "status": "shipped",
+      "title": "Make the stale shell deployment chain dry-runnable immutable and cleanup-bounded",
+      "why": "The active deployment wrapper calls an unproven March-era SSH chain with no successful Deploy history, while the updater prunes every unused image without retention budget.",
+      "recipe": "Consolidate one entrypoint for deploy and promote; add dry-run tests, immutable digest validation, bounded image retention, explicit health/staging inputs, and shell syntax checks; do not claim deploy evidence.",
+      "ladder": {
+        "L1": {
+          "effortHours": 2,
+          "recipe": "Add dry-run, digest validation, and bounded cleanup."
+        },
+        "L2": {
+          "effortHours": 5,
+          "recipe": "Consolidate entrypoints and add contract tests."
+        },
+        "L3": {
+          "effortHours": 9,
+          "recipe": "Exercise signed canary to staging to production promotion."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Consolidated immutable staging/promote entrypoints, digest validation, health checks, dry run, rollback, bounded retention, shell syntax and doctor contracts without fabricated deployment evidence."
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "slug": "spawn-hygiene-closure",
+      "tier": "🔥",
+      "axis": "reliability / developer_experience / security",
+      "effortHours": 3,
+      "impact": 9,
+      "innovation": 6,
+      "priority": 23.8,
+      "status": "shipped",
+      "title": "Close every Windows spawn-policy blind spot and remove the broken v5 renderer branch",
+      "why": "Doctor reports green while a dynamic raw child_process import lacks windowsHide, its v5 target is missing, and TypeScript test and perf spawners sit outside the scanner.",
+      "recipe": "Route all spawns through safe-spawn with process.execPath and argv; remove the dead v5 branch; scan dynamic imports plus owned TS/test/perf roots; add fixtures for every former bypass; retain doctor enforcement.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Remove raw and dead paths and fix perf."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Expand the scanner and regression suite."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Move execution behind a typed command manifest."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Owned JS/TS/test/perf dynamic-spawn scanning, safe-spawn routing, dead v5 removal, bypass fixtures, and doctor enforcement."
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "slug": "privacy-safe-notification-boundary",
+      "tier": "⚡",
+      "axis": "security / privacy / observability",
+      "effortHours": 3,
+      "impact": 8,
+      "innovation": 6,
+      "priority": 21.1,
+      "status": "shipped",
+      "title": "Stop client identity and chat leakage and bound outbound notification delivery",
+      "why": "ChatModal logs sender and recipient objects plus message keys, while Discord embeds accept user content, permit mentions, lack timeout, and expose no posture.",
+      "recipe": "Remove content-bearing logs; normalize and truncate webhook fields; disable mention parsing; enforce abort timeout; record bounded privacy-safe posture; test injection, timeout, and no-content logging.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Remove sensitive logs and disable mentions."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Add bounded delivery, sanitization, posture, and tests."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Emit signed privacy-safe notification receipts."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Content-bearing log removal, bounded/sanitized webhook payloads, mention suppression, timeout/concurrency/drop posture, and privacy tests."
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "slug": "automation-aware-pr-and-release-workflows",
+      "tier": "🔥",
+      "axis": "automation / security / process",
+      "effortHours": 4,
+      "impact": 9,
+      "innovation": 6,
+      "priority": 22.6,
+      "status": "shipped",
+      "title": "Remove Dependabot red noise and disable the dormant upstream release path",
+      "why": "The last ten PR-description runs failed because trusted automation is forced through human prose and milestone gates, while a dormant workflow can target hard-coded OpenFront infrastructure.",
+      "recipe": "Give trusted automation a machine-verifiable PR contract while preserving substantive CI; use attributable names; disable or replace legacy fan-out with immutable VaultFront promotion; add workflow contract tests.",
+      "ladder": {
+        "L1": {
+          "effortHours": 2,
+          "recipe": "Exempt trusted automation and disable legacy triggers."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Add machine PR validation and promotion tests."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Auto-batch compatible dependency trains behind staging."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Machine-verifiable automation attribution, preserved CI, removed legacy fan-out, immutable promotion contract, and workflow tests."
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "slug": "vault-status-delta-projection",
+      "tier": "⚡",
+      "axis": "performance / feedback_loop / architecture",
+      "effortHours": 5,
+      "impact": 8,
+      "innovation": 8,
+      "priority": 24,
+      "status": "shipped",
+      "title": "Replace 100 ms full VaultFront projection broadcasts with invalidation-driven deltas",
+      "why": "Every tick rebuilds sites, convoys, five route previews, structure scans, and a full payload even when objective state is unchanged, with no dedicated benchmark.",
+      "recipe": "Separate static and dynamic projections; invalidate on objective, convoy, and structure changes; emit digest-deduplicated snapshots at bounded UI cadence with immediate critical events; add payload/tick p95 and equivalence tests.",
+      "ladder": {
+        "L1": {
+          "effortHours": 2,
+          "recipe": "Dedupe unchanged payloads and throttle."
+        },
+        "L2": {
+          "effortHours": 5,
+          "recipe": "Add invalidation, caching, cadence controls, and perf tests."
+        },
+        "L3": {
+          "effortHours": 9,
+          "recipe": "Ship typed binary deltas with reconciliation."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Bounded cadence, immediate critical invalidation, collision-safe digest plus canonical equality, p95/build/publish/dedupe posture, and equivalence tests."
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "slug": "bounded-sse-transport",
+      "tier": "🔥",
+      "axis": "security / reliability / performance",
+      "effortHours": 4,
+      "impact": 9,
+      "innovation": 7,
+      "priority": 26.6,
+      "status": "shipped",
+      "title": "Extend bounded transport policy from WebSockets to both Server-Sent Event buses",
+      "why": "StreamingBus and NarratorBus accept unbounded subscribers and ignore response backpressure, retaining slow consumers outside the claimed transport posture.",
+      "recipe": "Add per-game/per-worker/IP ceilings, bounded buffered events, drain timeouts, slow-consumer eviction, counters, and deterministic tests; include SSE policy and live counts in the runtime passport.",
+      "ladder": {
+        "L1": {
+          "effortHours": 2,
+          "recipe": "Cap clients and evict failed writes."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Add queues, timeouts, counters, tests, and passport evidence."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Move fan-out to a shared durable event stream."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Per-game, per-worker, and per-client admission; bounded buffers; drain timeouts; slow-consumer eviction; counters; runtime-passport evidence; deterministic tests."
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "slug": "canonical-ai-input-cache",
+      "tier": "🔥",
+      "axis": "ai_integration / security / correctness / cost",
+      "effortHours": 5,
+      "impact": 9,
+      "innovation": 8,
+      "priority": 30,
+      "status": "shipped",
+      "title": "Bind AI outputs and caches to authenticated canonical match evidence",
+      "why": "Oracle caches player-specific predictions by player-count bucket, while recap and coach accept unverified narratives that can poison confident game-key output.",
+      "recipe": "Key caches by canonical input digest; authenticate evidence routes; derive winner, events, and stats from result certificates; validate provider output with Zod; add abort deadlines, bounded retention, and poison/malformed-output tests.",
+      "ladder": {
+        "L1": {
+          "effortHours": 2,
+          "recipe": "Digest complete inputs and validate outputs."
+        },
+        "L2": {
+          "effortHours": 5,
+          "recipe": "Ground recap, coach, and oracle in certificate evidence with deadlines."
+        },
+        "L3": {
+          "effortHours": 9,
+          "recipe": "Build a replay-grounded coaching corpus with signed provenance."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Certified archived inputs, requester binding, canonical digest cache keys, bounded TTL/LRU caches, provider deadlines, strict Zod output validation, and poison/tamper tests."
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "slug": "feature-liveness-command-center",
+      "tier": "🔥",
+      "axis": "feature_depth / ux / gamification / innovation",
+      "effortHours": 7,
+      "impact": 9,
+      "innovation": 9,
+      "priority": 31.3,
+      "status": "shipped",
+      "title": "Make the shipped meta game reachable through a coherent Command Center and prove liveness",
+      "why": "Achievements, season pass, clans, tournaments, experiment dashboard, and achievement toasts exist but are not imported, mounted, navigable, or exercised end to end.",
+      "recipe": "Mount a responsive accessible Command Center using existing truthful data; add a Feature Liveness Graph mapping route to API to custom element to mount to E2E journey; fail exhaustion for unreachable shipped features.",
+      "ladder": {
+        "L1": {
+          "effortHours": 3,
+          "recipe": "Mount player-facing meta components."
+        },
+        "L2": {
+          "effortHours": 7,
+          "recipe": "Add responsive polish, liveness graph, agent contract, and E2E proof."
+        },
+        "L3": {
+          "effortHours": 13,
+          "recipe": "Personalize from signed progression and experiments."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Responsive accessible Command Center, route/API/element/mount liveness graph, global achievement lifecycle, truthful empty/locked states, and desktop/mobile reachability tests."
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "slug": "task-parser-and-brief-coherence",
+      "tier": "🔥",
+      "axis": "observability / process / token_efficiency",
+      "effortHours": 4,
+      "impact": 9,
+      "innovation": 7,
+      "priority": 26.6,
+      "status": "shipped",
+      "title": "Unify task parsing and make startup brief freshness source-coherent",
+      "why": "The shared parser finds six live Genius items while cross-repo aggregation returns zero, errors collapse to empty counts, and age-only staleness accepted a Session 73 brief after Session 74 landed.",
+      "recipe": "Reuse the shared parser and status policy with explicit unsupported/parse-error states; compare brief source, session, and hash markers to project status, SIL, handoff, and Genius inputs; add bullet, table, error, and session-drift fixtures.",
+      "ladder": {
+        "L1": {
+          "effortHours": 2,
+          "recipe": "Reuse shared parsing and compare session truth."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Add source hashes, parse failures, and startup fixtures."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Extract a pure versioned brief snapshot pipeline."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-18T20:06:28.557Z",
+          "status": "shipped",
+          "note": "Shared task parser, explicit parse states, source/session/hash freshness contract, dead branch removal, and bullet/table/session-drift fixtures."
+        }
+      ]
+    },
+    {
       "id": 1,
       "slug": "server-authoritative-mutation-boundary",
       "tier": "🔥",
@@ -44,7 +534,7 @@
       "effortHours": 8,
       "impact": 10,
       "innovation": 10,
-      "priority": 46.0,
+      "priority": 46,
       "status": "shipped",
       "title": "Make every progression, clan, tournament, and private-lobby mutation server-authoritative",
       "why": "Multiple Worker routes trust caller-supplied persistentId/founderId/createdBy values, and any holder of a private game ID can start the lobby.",
@@ -79,7 +569,7 @@
       "effortHours": 4,
       "impact": 10,
       "innovation": 9,
-      "priority": 43.0,
+      "priority": 43,
       "status": "shipped",
       "title": "Make A/B evidence assignment-owned, unit-weighted, and replay-safe",
       "why": "Dock, recap, and runtime event routes accept client-selected variants and values up to 10,000, invalidating experiment decisions.",
@@ -114,7 +604,7 @@
       "effortHours": 4,
       "impact": 10,
       "innovation": 9,
-      "priority": 41.0,
+      "priority": 41,
       "status": "shipped",
       "title": "Bound WebSocket payload, connection, and slow-consumer memory",
       "why": "Three noServer WebSocket servers inherit a 100 MiB maxPayload and spectator fan-out has no bufferedAmount ceiling.",
@@ -149,7 +639,7 @@
       "effortHours": 3,
       "impact": 10,
       "innovation": 9,
-      "priority": 40.0,
+      "priority": 40,
       "status": "shipped",
       "title": "Derive worker readiness from live IPC, HTTP, and game-loop watermarks",
       "why": "Worker readiness currently passes healthy:true while experiment and alpha evidence are process-local and volatile.",
@@ -184,7 +674,7 @@
       "effortHours": 3,
       "impact": 10,
       "innovation": 8,
-      "priority": 39.0,
+      "priority": 39,
       "status": "shipped",
       "title": "Replace the zero-exit doctor stub with a real project health contract",
       "why": "scripts/ops.mjs doctor prints a context-meter hint and exits 0 without tests, probes, or blockingFailing.",
@@ -219,7 +709,7 @@
       "effortHours": 2.5,
       "impact": 9,
       "innovation": 9,
-      "priority": 38.0,
+      "priority": 38,
       "status": "shipped",
       "title": "Drive the genius list and closeout hint from the latest audit schema",
       "why": "The generator reads an obsolete hardcoded June audit and the closeout renderer reads cache.list.ranked while the generator writes top-level items.",
@@ -254,7 +744,7 @@
       "effortHours": 5,
       "impact": 10,
       "innovation": 8,
-      "priority": 35.0,
+      "priority": 35,
       "status": "shipped",
       "title": "Make headers, public CTAs, container artifacts, and promotion provenance agree",
       "why": "NXDOMAIN origins are advertised as playable, Nginx child add_header blocks drop CSP, Docker omits public launch files, and promote compares a version tag to a Git SHA.",
@@ -289,7 +779,7 @@
       "effortHours": 3,
       "impact": 8,
       "innovation": 7,
-      "priority": 30.0,
+      "priority": 30,
       "status": "shipped",
       "title": "Eliminate production-build warning drift at the source",
       "why": "The production build emits unset canonical/OG placeholders, inconsistent JSON import attributes, a circular manual-chunk dependency, and misleading chunk warnings.",
@@ -324,7 +814,7 @@
       "effortHours": 3,
       "impact": 8,
       "innovation": 8,
-      "priority": 29.0,
+      "priority": 29,
       "status": "shipped",
       "title": "Budget what users and telemetry systems actually pay",
       "why": "Metrics attach unbounded game IDs while the bundle gate checks chunks independently and ignores aggregate initial JS and giant media.",
@@ -359,7 +849,7 @@
       "effortHours": 1,
       "impact": 9,
       "innovation": 7,
-      "priority": 28.0,
+      "priority": 28,
       "status": "shipped",
       "title": "Block contradictory public-audience and exempt-internal release metadata",
       "why": "The registry says public-unlaunched but freeTierCostStatus and audit note say exempt-internal, causing both cost gates to ALLOW falsely.",
@@ -394,7 +884,7 @@
       "effortHours": 4,
       "impact": 9,
       "innovation": 9,
-      "priority": 33.0,
+      "priority": 33,
       "status": "shipped",
       "title": "Reserve remote-AI budget only for validated provider-bound work",
       "why": "Several routes reserve process-local budget before identity, validation, or cache lookup, and readiness labels the per-process ceiling as a global hard cap.",
@@ -843,12 +1333,12 @@
     }
   ],
   "totals": {
-    "count": 11,
-    "priority": 402.0,
+    "count": 14,
+    "priority": 382.4,
     "top3": [
-      "server-authoritative-mutation-boundary",
-      "decision-grade-experiment-integrity",
-      "websocket-ingress-backpressure-budget"
+      "quorum-attested-match-notary",
+      "release-evidence-completeness",
+      "state-scope-ledger-database-readiness"
     ]
   },
   "skipped": [
@@ -883,7 +1373,55 @@
     {
       "slug": "go-generator-binary-ci",
       "reason": "Tracked binary and missing Go CI are verified debt but rank below exploitable mutation/WebSocket/release-truth defects in this infrastructure pass."
+    },
+    {
+      "slug": "deterministic-server-replay-notary-l3",
+      "reason": "L2 removes first-payload and 50% quorum defects; replay needs a validated engine, not a false-authority claim."
+    },
+    {
+      "slug": "durable-multi-worker-store-migration-l3",
+      "reason": "The scope ledger makes promises explicit; provisioning, backfill, and failover need live PostgreSQL evidence."
+    },
+    {
+      "slug": "external-launch-evidence",
+      "reason": "Staging, human sessions, Brevo, Obelisk, live web/theme evidence, revenue, and founder approval cannot be fabricated."
+    },
+    {
+      "slug": "registry-cost-profile-correction",
+      "reason": "The control-plane fix must travel by signed Ark cargo, never a sibling-tree edit."
+    },
+    {
+      "slug": "major-dependency-train",
+      "reason": "Major upgrades require per-package trust and compatibility trains; selected fixes require no install."
+    },
+    {
+      "slug": "full-worker-router-extraction-l3",
+      "reason": "Typed manifest and high-risk extraction are safer than a one-shot composition-root rewrite."
+    },
+    {
+      "slug": "deterministic-server-replay-notary-l3",
+      "reason": "L2 removes first-payload and 50% quorum defects; replay needs a validated engine, not a false-authority claim."
+    },
+    {
+      "slug": "durable-multi-worker-store-migration-l3",
+      "reason": "The scope ledger makes promises explicit; provisioning, backfill, and failover need live PostgreSQL evidence."
+    },
+    {
+      "slug": "external-launch-evidence",
+      "reason": "Staging, human sessions, Brevo, Obelisk, live web/theme evidence, revenue, and founder approval cannot be fabricated."
+    },
+    {
+      "slug": "registry-cost-profile-correction",
+      "reason": "The control-plane fix must travel by signed Ark cargo, never a sibling-tree edit."
+    },
+    {
+      "slug": "major-dependency-train",
+      "reason": "Major upgrades require per-package trust and compatibility trains; selected fixes require no install."
+    },
+    {
+      "slug": "full-worker-router-extraction-l3",
+      "reason": "Typed manifest and high-risk extraction are safer than a one-shot composition-root rewrite."
     }
   ],
-  "notes": "Public launch remains NO-GO. New pending items are the complete Session 74 implementation contract; prior shipped S73 items are retained for merge-mode provenance."
+  "notes": "Public launch remains NO-GO. Fourteen Session 75 items are the complete local implementation contract; external evidence and L3 migrations remain explicit honest deferrals."
 }

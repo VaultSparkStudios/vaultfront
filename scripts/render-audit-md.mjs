@@ -66,7 +66,7 @@ export function renderAudit(audit, date) {
       lines.push("");
     }
   }
-  return lines.join("\n") + "\n";
+  return `${lines.join("\n").trimEnd()}\n`;
 }
 
 const args = process.argv.slice(2);

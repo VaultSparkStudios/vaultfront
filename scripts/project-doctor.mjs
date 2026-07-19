@@ -69,6 +69,29 @@ export function runProjectDoctor({
         args: [path.join(defaultRoot, "scripts", "check-windows-hide.mjs")],
       },
       {
+        id: "release-workflow-contract",
+        command: process.execPath,
+        args: [path.join(defaultRoot, "scripts", "check-deploy-contract.mjs")],
+      },
+      {
+        id: "public-footer-manifest",
+        command: process.execPath,
+        args: [path.join(defaultRoot, "scripts", "check-footer-manifest.mjs")],
+      },
+      {
+        id: "capability-reachability",
+        command: process.execPath,
+        args: [
+          path.join(
+            defaultRoot,
+            "scripts",
+            "check-capability-reachability.mjs",
+          ),
+          "--root",
+          root,
+        ],
+      },
+      {
         id: "work-exhaustion",
         command: process.execPath,
         args: [

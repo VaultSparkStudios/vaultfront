@@ -34,10 +34,21 @@ export function initLayout() {
       backdrop.classList.toggle("open", open);
       document.documentElement.classList.toggle("overflow-hidden", open);
       hb.setAttribute("aria-expanded", open ? "true" : "false");
+      sidebar.setAttribute("aria-hidden", open ? "false" : "true");
+      backdrop.setAttribute("aria-hidden", open ? "false" : "true");
+      if (open) {
+        sidebar.setAttribute("aria-modal", "true");
+      } else {
+        sidebar.removeAttribute("aria-modal");
+      }
     };
 
     const closeMenu = () => setMenuState(false);
     const openMenu = () => setMenuState(true);
+
+    // Synchronize the DOM and accessibility state before accepting input. The
+    // off-canvas host must not remain in the accessibility tree while closed.
+    setMenuState(false);
 
     const toggle = (e: Event) => {
       e.stopPropagation();

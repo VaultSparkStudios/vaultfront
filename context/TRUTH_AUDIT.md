@@ -2,6 +2,19 @@
 
 # Truth Audit
 
+## 2026-07-19 — Session 75
+
+- Audit truth: all 14 newly verified findings are shipped; the cumulative JSON sidecar is 37/37 shipped and Markdown is derived from it. The regenerated innovation pack is 6/6 with three new candidates implemented after primary exhaustion.
+- Test truth: direct `npm test` passes 134 main files / 812 tests and independently repeats 31 server files / 119 tests. Playwright passes 24/24 desktop/mobile tests, including lazy Command Center loading and mobile drawer accessibility.
+- Build truth: lint and TypeScript pass. Production build passes after Command Center was split into an 11.23 kB on-demand chunk; exact initial gzip is 740,285 bytes and Brotli is 588,036 bytes, both below enforced variance limits. Formatting and media/per-chunk budgets pass.
+- Match truth: progression, archive, metrics, and certified post-match AI derive from one strict unique-IP-majority result certificate. No client projection substitutes for the certificate.
+- AI truth: oracle inputs come from server-owned rating history; post-match inputs come from archived certified records. Provider output is schema-validated, deadline-bounded, cache-bounded, and receipt-digested with exact model identity.
+- Release truth: the generated artifact is blocked, not ready. Eight canonical gates require fresh source/digest provenance; local footer/health/transfer/work gates pass, while staging, parity, Brevo, Obelisk, live themes, human Alpha evidence, and founder approval remain absent. The working-tree blocker is expected until the closeout commit.
+- Agent truth: six capabilities are reachable in checked-in source and published as `implemented-local-unlaunched`; `public/agents.json` still declares `publicRuntime: unavailable` and advertises no executable live agent interactions.
+- Doctor truth: direct process exit is 0 with 7/7 probes passing, no warnings, and `blockingFailing: 0`. Work exhaustion is audit 37/37 and innovation 6/6.
+- Cost truth: remote AI remains optional/default-off and bounded under the notional flat-rate plan posture; no spend alarm or fabricated cost event was introduced.
+- Launch truth: no staging deployment, human session, email delivery, relying-party auth, live web/theme evidence, revenue event, or founder approval is claimed.
+
 Overall status: green
 Last reviewed: 2026-07-16
 Public-safe summary only. Sensitive verification notes are maintained privately.

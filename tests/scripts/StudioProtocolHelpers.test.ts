@@ -1,8 +1,8 @@
-import { spawnSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { spawnSync } from "../../scripts/lib/safe-spawn.mjs";
 import {
   checkTileBudgets,
   enforceTileBudgets,
@@ -160,6 +160,83 @@ describe("public protocol compatibility", () => {
         "# Handoff\n\n## Where We Left Off — today\n\n**Session Intent:** Ship the recovery arc.\n",
       ),
     ).toBe("Ship the recovery arc.");
+  });
+
+  it("uses one task parser for bullet, table, and explicit parse-error states", async () => {
+    const { parseTaskBoardResult } =
+      await import("../../scripts/lib/cross-repo-tasks.mjs");
+    const bullet = parseTaskBoardResult(
+      "## Unified Genius List\n\n- [pending] 🔥 reliability · 2h · Source coherence — verify\n",
+    );
+    const table = parseTaskBoardResult(
+      "## Unified Genius List\n\n| 1 | ⚡ | release | pending | 1h | **Digest gate** — verify |\n",
+    );
+    const malformed = parseTaskBoardResult(
+      "## Unified Genius List\n\n- [pending] not-canonical\n",
+    );
+
+    expect(bullet).toMatchObject({
+      state: "ok",
+      items: [{ title: "Source coherence" }],
+    });
+    expect(table).toMatchObject({
+      state: "ok",
+      items: [{ title: "Digest gate" }],
+    });
+    expect(malformed).toMatchObject({ state: "parse-error", items: [] });
+  });
+
+  it("invalidates a young brief when any canonical source hash moves", async () => {
+    const fixture = tempSecretsDir();
+    mkdirSync(path.join(fixture, "context"), { recursive: true });
+    mkdirSync(path.join(fixture, "docs"), { recursive: true });
+    const files: Record<string, string> = {
+      "context/PROJECT_STATUS.json": JSON.stringify({ currentSession: 9 }),
+      "context/TASK_BOARD.md": "## Unified Genius List (Session 9)\n",
+      "context/LATEST_HANDOFF.md": "## Session 9\n",
+      "context/SELF_IMPROVEMENT_LOOP.md": "## Session 9\n",
+      "docs/GENIUS_LIST.md": "# Genius\n",
+    };
+    for (const [relative, body] of Object.entries(files)) {
+      writeFileSync(path.join(fixture, relative), body);
+    }
+    const { buildBriefSourceManifest } =
+      await import("../../scripts/lib/brief-freshness.mjs");
+    const { checkBriefFreshness } =
+      await import("../../scripts/check-brief-staleness.mjs");
+    const marker = JSON.stringify(buildBriefSourceManifest(fixture));
+    writeFileSync(
+      path.join(fixture, "docs/STARTUP_BRIEF.md"),
+      `<!-- brief-sources: ${marker} -->\n`,
+    );
+    expect(checkBriefFreshness({ root: fixture }).stale).toBe(false);
+    writeFileSync(
+      path.join(fixture, "context/LATEST_HANDOFF.md"),
+      "## Session 10\n",
+    );
+    expect(checkBriefFreshness({ root: fixture })).toMatchObject({
+      stale: true,
+      reason: expect.stringMatching(/session drift|hash drift/),
+    });
+  });
+
+  it("scans dynamic TypeScript child-process imports and the live deploy contract", async () => {
+    const fixture = tempSecretsDir();
+    const file = path.join(fixture, "dynamic.ts");
+    const rawModule = ["node", "child_process"].join(":");
+    writeFileSync(file, `const cp = await import("${rawModule}");\n`);
+    const { scanDirectChildProcessImports } =
+      await import("../../scripts/check-windows-hide.mjs");
+    expect(scanDirectChildProcessImports(fixture)).toHaveLength(1);
+    const contract = spawnSync(
+      process.execPath,
+      ["scripts/check-deploy-contract.mjs"],
+      {
+        cwd: root,
+        encoding: "utf8",
+      },
+    );
+    expect(contract.status).toBe(0);
   });
 
   it("classifies lint-staged residue without treating it as committed work", async () => {

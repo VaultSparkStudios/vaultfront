@@ -12,6 +12,7 @@ import {
   GameInfo,
   GameStartInfo,
   GameStartInfoSchema,
+  MatchResultCertificate,
   PlayerRecord,
   PublicGameType,
   ServerDesyncSchema,
@@ -27,6 +28,10 @@ import { createPartialGameRecord, getClanTag } from "../core/Util";
 import { archive, finalizeGameRecord } from "./Archive";
 import { Client } from "./Client";
 import { matchProgressionSpine } from "./MatchProgression";
+import {
+  buildMatchResultCertificate,
+  MatchResultQuorum,
+} from "./MatchResultCertificate";
 import { narratorBus } from "./NarratorBus";
 import { replayStore } from "./ReplayStore";
 import { spectatorBus } from "./SpectatorBus";
@@ -80,7 +85,7 @@ export class GameServer {
 
   private lastPingUpdate = 0;
 
-  private winner: ClientSendWinnerMessage | null = null;
+  private resultCertificate: MatchResultCertificate | null = null;
 
   // Note: This can be undefined if accessed before the game starts.
   private gameStartInfo!: GameStartInfo;
@@ -96,10 +101,7 @@ export class GameServer {
 
   private websockets: Set<WebSocket> = new Set();
 
-  private winnerVotes: Map<
-    string,
-    { winner: ClientSendWinnerMessage; ips: Set<string> }
-  > = new Map();
+  private readonly resultQuorum = new MatchResultQuorum();
 
   private _hasEnded = false;
 
@@ -948,7 +950,7 @@ export class GameServer {
         this.log.info("no clients joined, not archiving game", {
           gameID: this.id,
         });
-      } else if (this.winner !== null) {
+      } else if (this.resultCertificate !== null) {
         this.log.info("game already archived", {
           gameID: this.id,
         });
@@ -1144,15 +1146,17 @@ export class GameServer {
   }
 
   private archiveGame() {
+    const certifiedResult = this.resultCertificate?.result;
     this.log.info("archiving game", {
       gameID: this.id,
-      winner: this.winner?.winner,
+      winner: certifiedResult?.winner,
+      resultCertificateId: this.resultCertificate?.certificateId,
     });
 
     // Players must stay in the same order as the game start info.
     const playerRecords: PlayerRecord[] = this.gameStartInfo.players.map(
       (player) => {
-        const stats = this.winner?.allPlayersStats[player.clientID];
+        const stats = certifiedResult?.allPlayersStats[player.clientID];
         if (stats === undefined) {
           this.log.warn(`Unable to find stats for clientID ${player.clientID}`);
         }
@@ -1176,22 +1180,23 @@ export class GameServer {
           this.turns,
           this._startTime ?? 0,
           Date.now(),
-          this.winner?.winner,
+          certifiedResult?.winner,
           this.createdAt,
           {
             intentFunnel: this.intentFunnel,
+            resultCertificate: this.resultCertificate ?? undefined,
           },
         ),
       ),
     );
 
     // Aggregate vault-specific stats across all players and record to OTel.
-    if (this.winner?.allPlayersStats) {
+    if (certifiedResult?.allPlayersStats) {
       let vaultCaptures = 0;
       let convoyDeliveries = 0;
       let executionChains = 0;
       let surgeActivations = 0;
-      for (const stats of Object.values(this.winner.allPlayersStats)) {
+      for (const stats of Object.values(certifiedResult.allPlayersStats)) {
         const vf = stats?.vaultfront;
         if (!vf) continue;
         vaultCaptures += Number(vf.vaultCaptures ?? 0n);
@@ -1209,13 +1214,14 @@ export class GameServer {
   }
 
   private progressionWinnerClientIDs(): Set<string> {
-    const winner = this.winner?.winner;
+    const winner = this.resultCertificate?.result.winner;
     if (!winner || winner[0] === "nation") return new Set();
     return new Set(winner[0] === "player" ? [winner[1]] : winner.slice(2));
   }
 
   private recordProgressionOutcome(): void {
-    if (!this.winner || !this._startTime) return;
+    const certifiedResult = this.resultCertificate?.result;
+    if (!certifiedResult || !this._startTime) return;
     const winnerIDs = this.progressionWinnerClientIDs();
     const toCount = (value: bigint | undefined): number => {
       const numeric = Number(value ?? 0n);
@@ -1224,7 +1230,8 @@ export class GameServer {
     const players = this.gameStartInfo.players.flatMap((player) => {
       const persistentId = this.allClients.get(player.clientID)?.persistentID;
       if (!persistentId) return [];
-      const vault = this.winner?.allPlayersStats[player.clientID]?.vaultfront;
+      const vault =
+        certifiedResult.allPlayersStats[player.clientID]?.vaultfront;
       return [
         {
           persistentId,
@@ -1364,43 +1371,51 @@ export class GameServer {
     if (
       this.outOfSyncClients.has(client.clientID) ||
       this.isKicked(client.clientID) ||
-      this.winner !== null ||
+      this.resultCertificate !== null ||
       client.reportedWinner !== null
     ) {
       return;
     }
-    client.reportedWinner = clientMsg.winner;
-
-    // Add client vote
-    const winnerKey = JSON.stringify(clientMsg.winner);
-    if (!this.winnerVotes.has(winnerKey)) {
-      this.winnerVotes.set(winnerKey, { ips: new Set(), winner: clientMsg });
-    }
-    const potentialWinner = this.winnerVotes.get(winnerKey)!;
-    potentialWinner.ips.add(client.ip);
-
     const activeUniqueIPs = new Set(this.activeClients.map((c) => c.ip));
-
-    const ratio = `${potentialWinner.ips.size}/${activeUniqueIPs.size}`;
-    this.log.info(
-      `received winner vote ${clientMsg.winner}, ${ratio} votes for this winner`,
-      {
+    const attestation = this.resultQuorum.attest({
+      ip: client.ip,
+      result: clientMsg,
+      expectedClientIDs: this.gameStartInfo.players.map(
+        (player) => player.clientID,
+      ),
+      activeIPs: activeUniqueIPs,
+    });
+    if (attestation.status === "rejected") {
+      this.log.warn("rejected winner attestation", {
         clientID: client.clientID,
-      },
-    );
-
-    if (potentialWinner.ips.size * 2 < activeUniqueIPs.size) {
+        reason: attestation.reason,
+      });
       return;
     }
+    client.reportedWinner = clientMsg.winner;
+    this.log.info("received complete result attestation", {
+      clientID: client.clientID,
+      resultDigest: attestation.resultDigest,
+      votes: attestation.votes,
+      required:
+        attestation.status === "pending"
+          ? attestation.required
+          : Math.floor(attestation.activeUniqueIPs / 2) + 1,
+    });
+    if (attestation.status === "pending") return;
 
-    // Vote succeeded
-    this.winner = potentialWinner.winner;
-    this.log.info(
-      `Winner determined by ${potentialWinner.ips.size}/${activeUniqueIPs.size} active IPs`,
-      {
-        winnerKey: winnerKey,
-      },
-    );
+    this.resultCertificate = buildMatchResultCertificate({
+      gameID: this.id,
+      config: this.gameStartInfo.config,
+      turns: this.turns,
+      accepted: attestation,
+    });
+    this.log.info("match result certified by strict active-IP majority", {
+      certificateId: this.resultCertificate.certificateId,
+      resultDigest: this.resultCertificate.result.digest,
+      acceptedUniqueIPs: attestation.votes,
+      activeUniqueIPs: attestation.activeUniqueIPs,
+    });
     this.recordProgressionOutcome();
     this.archiveGame();
   }

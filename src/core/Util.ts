@@ -199,6 +199,7 @@ export function createPartialGameRecord(
   lobbyCreatedAt?: number,
   telemetry?: {
     intentFunnel: Record<"early" | "mid" | "late", Record<string, number>>;
+    resultCertificate?: import("./Schemas").MatchResultCertificate;
   },
 ): PartialGameRecord {
   const duration = Math.floor((end - start) / 1000);

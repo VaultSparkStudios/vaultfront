@@ -1,8 +1,14 @@
+import {
+  evaluateCanonicalReleaseEvidence,
+  type CanonicalReleaseEvidence,
+  type CanonicalReleaseEvidenceInput,
+} from "./ReleaseEvidenceContract";
 import { remoteAiPosture, type RemoteAiPosture } from "./RemoteAiPolicy";
 import {
   getReplayIntegrityPosture,
   type ReplayIntegrityPosture,
 } from "./ReplayStore";
+import type { StateScopeLedgerSnapshot } from "./StateScopeLedger";
 
 export type ReadinessEvidenceStatus = "declared" | "verified" | "missing";
 
@@ -57,6 +63,8 @@ export interface VaultFrontReadinessInput {
       nextCheck: string;
     };
   };
+  persistence?: StateScopeLedgerSnapshot;
+  releaseEvidence?: CanonicalReleaseEvidenceInput;
 }
 
 export interface VaultFrontReadinessPayload {
@@ -78,6 +86,8 @@ export interface VaultFrontReadinessPayload {
     playtestPulse: "pass" | "warn";
     replayIntegrity: "pass" | "warn" | "fail";
     rightsProvenance: "pass" | "warn" | "fail";
+    persistence: "pass" | "warn" | "fail";
+    canonicalRelease: "pass" | "fail";
   };
   evidence: {
     declared: string[];
@@ -99,6 +109,8 @@ export interface VaultFrontReadinessPayload {
   }>;
   playtestPulse?: VaultFrontReadinessInput["playtestPulse"];
   remoteAi: RemoteAiPosture;
+  persistence?: StateScopeLedgerSnapshot;
+  canonicalRelease: CanonicalReleaseEvidence;
 }
 
 const declaredTestSurfaces = [
@@ -143,6 +155,12 @@ export function buildVaultFrontReadiness(
   const revenueObserved = input.revenueSignal?.status === "observed";
   const replayPosture = input.replayIntegrity ?? getReplayIntegrityPosture();
   const aiPosture = input.remoteAi ?? remoteAiPosture();
+  const canonicalRelease = evaluateCanonicalReleaseEvidence({
+    ...input.releaseEvidence,
+    alphaGateStatus:
+      input.releaseEvidence?.alphaGateStatus ??
+      input.playtestPulse?.alphaGate?.status,
+  });
 
   const rights = input.rightsEvidence ?? {
     status: "declared" as const,
@@ -181,6 +199,18 @@ export function buildVaultFrontReadiness(
     releaseWarnings.push("No live supporter/revenue observation is attached.");
   if (!pulseReady)
     releaseWarnings.push("Authenticated human alpha evidence is not ready.");
+  releaseBlockers.push(
+    ...canonicalRelease.blockers.map(
+      (blocker) => `Canonical release evidence — ${blocker}`,
+    ),
+  );
+  if (input.persistence?.summary.configuredDatabaseFailure) {
+    releaseBlockers.push("Configured database connection failed.");
+  } else if (input.persistence?.summary.releasePersistenceStatus === "warn") {
+    releaseWarnings.push(
+      `Release-critical stores are process-local: ${input.persistence.summary.volatileReleaseCriticalStores.join(", ")}.`,
+    );
+  }
 
   const releaseStatus =
     releaseBlockers.length > 0
@@ -241,6 +271,11 @@ export function buildVaultFrontReadiness(
           : rights.status === "declared"
             ? "warn"
             : "fail",
+      persistence:
+        input.persistence?.summary.releasePersistenceStatus === "block"
+          ? "fail"
+          : (input.persistence?.summary.releasePersistenceStatus ?? "warn"),
+      canonicalRelease: canonicalRelease.status === "ready" ? "pass" : "fail",
     },
     evidence: { declared, verified, missing },
     releaseBlockers,
@@ -283,6 +318,13 @@ export function buildVaultFrontReadiness(
         evidence: replayPosture.evidence,
       },
       {
+        gate: "state-scope-ledger",
+        status: input.persistence?.summary.releasePersistenceStatus ?? "warn",
+        evidence: input.persistence
+          ? `${input.persistence.summary.stores} stores declared; ${input.persistence.summary.volatileStores} are process-local and ${input.persistence.summary.volatileReleaseCriticalStores.length} are release-critical.`
+          : "No State Scope Ledger is attached to this process.",
+      },
+      {
         gate: "free-tier-cost",
         status: "pass",
         evidence:
@@ -312,8 +354,15 @@ export function buildVaultFrontReadiness(
           ? `Pulse ${input.playtestPulse.status} at score ${input.playtestPulse.score}; alpha gate ${input.playtestPulse.alphaGate?.status ?? "not attached"}${input.playtestPulse.alphaGate?.passLabel ? ` (${input.playtestPulse.alphaGate.passLabel})` : ""}; latest event ${input.playtestPulse.freshness.lastEventAt ?? "not recorded"}. Next: ${input.playtestPulse.alphaGate?.nextCheck ?? input.playtestPulse.actionInsights?.[0] ?? "Run a focused authenticated internal playtest."}`
           : "No authenticated human playtest pulse is attached to this process.",
       },
+      ...canonicalRelease.gates.map((gate) => ({
+        gate: `canonical-${gate.gate}`,
+        status: gate.status,
+        evidence: `${gate.detail}${gate.source ? ` Source: ${gate.source}.` : ""}${gate.observedAt ? ` Observed: ${gate.observedAt}.` : ""}`,
+      })),
     ],
     playtestPulse: input.playtestPulse,
     remoteAi: aiPosture,
+    persistence: input.persistence,
+    canonicalRelease,
   };
 }

@@ -19,6 +19,7 @@ import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
 import { GameType } from "../core/game/Game";
 import { UserSettings } from "../core/game/UserSettings";
 import "./AccountModal";
+import "./AchievementToast";
 import { getUserMe } from "./Api";
 import { userAuth } from "./Auth";
 import {
