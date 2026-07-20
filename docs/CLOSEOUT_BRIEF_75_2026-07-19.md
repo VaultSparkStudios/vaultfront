@@ -15,7 +15,8 @@ The continuous arc completed. All 14 new live-code findings shipped, the cumulat
 
 ## Verification
 
-- Vitest: 134 files / 812 tests; independent server repeat: 31 files / 119 tests.
+- Vitest: 134 files / 814 tests; independent server repeat: 31 files / 119 tests.
+- The CI coverage ratchet directly exercises both configured-database failure and explicit process-local persistence postures.
 - Playwright: 24/24 desktop/mobile.
 - ESLint, TypeScript, production build, formatting ratchet, exact transfer/media budgets, and deterministic performance benchmarks: pass.
 - Project doctor: 7/7 probes, `blockingFailing: 0`.

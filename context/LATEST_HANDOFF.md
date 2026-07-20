@@ -14,7 +14,7 @@ This repo keeps only a public-safe two-session handoff. Detailed operational his
 - Release evidence fails closed across eight fresh provenance gates and carries a self-verifying decision lineage root.
 - Human + Agent capability claims are source-digested and remain explicitly `implemented-local-unlaunched`.
 
-**Verification:** 134/134 main Vitest files and 812/812 tests; independent 31-file / 119-test server repeat; Playwright 24/24 desktop/mobile; lint; TypeScript; production build; formatting ratchet; exact gzip/Brotli/per-chunk/media budgets; deterministic performance benchmarks; doctor 7/7 with `blockingFailing: 0`; exhaustion audit 37/37 and innovations 6/6.
+**Verification:** 134/134 main Vitest files and 814/814 tests; independent 31-file / 119-test server repeat; Playwright 24/24 desktop/mobile; lint; TypeScript; production build; formatting ratchet; exact gzip/Brotli/per-chunk/media budgets; deterministic performance benchmarks; doctor 7/7 with `blockingFailing: 0`; exhaustion audit 37/37 and innovations 6/6.
 
 **Truth boundary:** VaultFront remains FORGE / `public-unlaunched`. No staging/parity, three-human Alpha Gate, Brevo delivery, native Obelisk relying-party authentication, live security-header/Core Web Vitals/theme proof, revenue event, or founder approval is claimed by local evidence.
 

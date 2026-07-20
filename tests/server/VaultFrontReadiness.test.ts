@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canonicalReleaseGateNames } from "../../src/server/ReleaseEvidenceContract";
+import { buildStateScopeLedger } from "../../src/server/StateScopeLedger";
 import { buildVaultFrontReadiness } from "../../src/server/VaultFrontReadiness";
 
 describe("buildVaultFrontReadiness", () => {
@@ -68,6 +69,50 @@ describe("buildVaultFrontReadiness", () => {
     expect(payload.status).toBe("degraded");
     expect(payload.workerId).toBe(2);
     expect(payload.checks.serverHealth).toBe("fail");
+  });
+
+  it("blocks a configured database failure instead of claiming durable state", () => {
+    const persistence = buildStateScopeLedger({
+      configured: true,
+      state: "failed",
+      observedAt: "2026-07-20T01:00:00.000Z",
+      connectedAt: null,
+      failureCode: "ECONNREFUSED",
+      fallbackAllowed: false,
+      scope: "process-local-worker",
+    });
+    const payload = buildVaultFrontReadiness({
+      healthy: true,
+      processRole: "worker",
+      persistence,
+    });
+
+    expect(payload.releaseBlockers).toContain(
+      "Configured database connection failed.",
+    );
+    expect(payload.checks.persistence).toBe("fail");
+  });
+
+  it("warns when release-critical state is explicitly process-local", () => {
+    const persistence = buildStateScopeLedger({
+      configured: false,
+      state: "disabled",
+      observedAt: "2026-07-20T01:00:00.000Z",
+      connectedAt: null,
+      failureCode: null,
+      fallbackAllowed: true,
+      scope: "process-local-worker",
+    });
+    const payload = buildVaultFrontReadiness({
+      healthy: true,
+      processRole: "worker",
+      persistence,
+    });
+
+    expect(payload.releaseWarnings).toContain(
+      "Release-critical stores are process-local: player-stats-and-style-history, achievements, clans, tournaments, playtest-pulse.",
+    );
+    expect(payload.checks.persistence).toBe("warn");
   });
 
   it("passes the playtest pulse gate when recent alpha signal is attached", () => {

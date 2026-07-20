@@ -230,7 +230,7 @@ capitalEfficiency +7 (oracle/prophecy cache eliminates >80% redundant Haiku call
 
 | SIL v3 category       |        Score | Evidence                                                                                                                    |
 | --------------------- | -----------: | --------------------------------------------------------------------------------------------------------------------------- |
-| Dev Health            |          100 | 812 main tests, 119-test server repeat, lint/type/build/format/bundle/perf/E2E all green.                                   |
+| Dev Health            |          100 | 814 main tests, 119-test server repeat, lint/type/build/format/bundle/perf/E2E all green.                                   |
 | Creative Alignment    |           99 | Command Center, certificate corridor, and evidence graphs deepen VaultFront without diluting its convoy-heist identity.     |
 | Momentum              |          100 | Fourteen verified findings plus three newly generated innovations shipped in one uninterrupted mission.                     |
 | Engagement            |           90 | Progression/meta surfaces and immediate achievement feedback are reachable; real-human Alpha evidence remains absent.       |

@@ -23,7 +23,7 @@
       "status": "green",
       "label": "Unit and server regression",
       "command": "npm test",
-      "purpose": "Vitest core, client, server, and Studio protocol coverage. All 134 main files / 812 tests pass; the 31-file / 119-test server subset also passes independently in Session 75."
+      "purpose": "Vitest core, client, server, and Studio protocol coverage. All 134 main files / 814 tests pass; the 31-file / 119-test server subset also passes independently in Session 75."
     },
     {
       "type": "tests",
@@ -57,8 +57,8 @@
   "silMax": 1000,
   "silScoreLegacy500": null,
   "silScore": 979,
-  "testsPassing": 812,
-  "testsTotal": 812,
+  "testsPassing": 814,
+  "testsTotal": 814,
   "silCategoriesV3": {
     "devHealth": 100,
     "creativeAlignment": 99,

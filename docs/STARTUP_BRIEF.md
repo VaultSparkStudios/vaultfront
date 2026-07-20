@@ -54,7 +54,7 @@
 
 ╔══ WHERE WE LEFT OFF  ·  Session 75 ════════════════════════════╗
 ║  Shipped:  see LATEST_HANDOFF.md                                 ║
-║  Tests:    812/812 passing  ·  Deploy: N/A                       ║
+║  Tests:    814/814 passing  ·  Deploy: N/A                       ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ CONTEXT METER ═══════════════════════════════════════════════╗
@@ -65,7 +65,7 @@
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ SIGNALS ═════════════════════════════════════════════════════╗
-║  ✓  Tests         812/812 passing                                ║
+║  ✓  Tests         814/814 passing                                ║
 ║  ✓  Velocity      11 ↑  ·  Debt: ↓                               ║
 ║  ✓  Runway        external launch-evidence corridor              ║
 ║  ⛔  Context age   ?d                                             ║

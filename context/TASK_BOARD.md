@@ -58,7 +58,7 @@ All 14 newly premise-verified findings in `docs/AUDIT_2026-07-16.json` shipped, 
 
 Key outcomes: quorum-attested match certificates; exact game-create authority and capacity; database/state-scope readiness; bounded server-sent events; certificate-grounded artificial intelligence inputs and response receipts; an accessible lazy-loaded Command Center with feature-liveness proof; privacy-safe notifications; digest-deduplicated status projection; an executable high-risk route policy manifest; coherent task/brief provenance; closed Windows spawn bypasses; immutable deployment contracts; a Human + Agent capability reachability manifest; and a self-verifying release-evidence lineage graph.
 
-Verification: 134/134 main Vitest files and 812/812 tests plus an independent 31-file / 119-test server repeat; 24/24 desktop/mobile Playwright; lint; typecheck; production build; formatting, exact gzip/Brotli/media bundle budgets, deterministic performance benchmarks, Canon/startup protocol checks, and project doctor `blockingFailing: 0`. Audit 37/37 and innovations 6/6 are shipped.
+Verification: 134/134 main Vitest files and 814/814 tests plus an independent 31-file / 119-test server repeat; 24/24 desktop/mobile Playwright; lint; typecheck; production build; formatting, exact gzip/Brotli/media bundle budgets, deterministic performance benchmarks, Canon/startup protocol checks, and project doctor `blockingFailing: 0`. Audit 37/37 and innovations 6/6 are shipped.
 
 - [release-evidence] Deploy the exact verified digest to a real staging origin and verify parity.
 - [release-evidence] Collect authenticated evidence from at least three distinct human Alpha Gate sessions; test or agent events cannot substitute.
