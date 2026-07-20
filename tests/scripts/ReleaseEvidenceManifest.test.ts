@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildReleaseEvidence,
@@ -154,20 +157,73 @@ describe("Release Evidence Manifest", () => {
     });
   });
 
-  it("the live generator reports blocked when external proof is absent", () => {
-    const { evidence } = generateReleaseEvidence(process.cwd());
-    expect(evidence.status).toBe("blocked");
-    expect(evidence.launch.status).toBe("blocked");
-    expect(evidence.source.observationBundle.state).toBe("missing");
-    expect(evidence.launch.gates).toContainEqual(
-      expect.objectContaining({
-        gate: "founderApproval",
-        status: "block",
-        evidenceStatus: "missing",
-      }),
+  it("reports blocked without external proof in an isolated unbuilt fixture", () => {
+    const fixture = fs.mkdtempSync(
+      path.join(os.tmpdir(), "vaultfront-release-evidence-"),
     );
-    expect(evidence.launch.gates).toContainEqual(
-      expect.objectContaining({ gate: "footerManifest", status: "pass" }),
-    );
+    try {
+      fs.mkdirSync(path.join(fixture, "static", "assets"), {
+        recursive: true,
+      });
+      fs.mkdirSync(path.join(fixture, "src", "server"), { recursive: true });
+      fs.mkdirSync(path.join(fixture, "public"), { recursive: true });
+      fs.writeFileSync(
+        path.join(fixture, ".bundlewatch.json"),
+        JSON.stringify({
+          initialEntry: {
+            html: "static/index.html",
+            baselineGzipBytes: 1_024,
+            baselineBrotliBytes: 1_024,
+            crossPlatformVariancePercent: 0,
+          },
+          media: {
+            root: "static/assets",
+            extensions: [".png"],
+            maxTotalBytes: 1_024,
+            maxFileBytes: 1_024,
+          },
+        }),
+      );
+      fs.writeFileSync(
+        path.join(fixture, "static", "index.html"),
+        "<!doctype html><html><head></head><body></body></html>",
+      );
+      for (const source of ["Master.ts", "Worker.ts"]) {
+        fs.writeFileSync(
+          path.join(fixture, "src", "server", source),
+          'app.get("/_health", handler);\n',
+        );
+      }
+      fs.writeFileSync(
+        path.join(fixture, "public", "footer-manifest.json"),
+        JSON.stringify({
+          brandHref: "https://vaultsparkstudios.com",
+          copyright: "© 2026 VaultSpark Studios LLC. All rights reserved.",
+          requiredLinks: ["/privacy/", "/terms/"],
+          pages: [{ route: "/", source: "public/index.html" }],
+        }),
+      );
+      fs.writeFileSync(
+        path.join(fixture, "public", "index.html"),
+        '<nav></nav><footer><a href="https://vaultsparkstudios.com">VaultSpark Studios</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a>© 2026 VaultSpark Studios LLC. All rights reserved.</footer>',
+      );
+
+      const { evidence } = generateReleaseEvidence(fixture);
+      expect(evidence.status).toBe("blocked");
+      expect(evidence.launch.status).toBe("blocked");
+      expect(evidence.source.observationBundle.state).toBe("missing");
+      expect(evidence.launch.gates).toContainEqual(
+        expect.objectContaining({
+          gate: "founderApproval",
+          status: "block",
+          evidenceStatus: "missing",
+        }),
+      );
+      expect(evidence.launch.gates).toContainEqual(
+        expect.objectContaining({ gate: "footerManifest", status: "pass" }),
+      );
+    } finally {
+      fs.rmSync(fixture, { recursive: true, force: true });
+    }
   }, 15_000);
 });
