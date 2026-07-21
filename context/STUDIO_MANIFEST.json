@@ -8,8 +8,8 @@
     "repo": "VaultSparkStudios/vaultfront",
     "owner": "VaultSpark Studios",
     "type": "game",
-    "lifecycle": "concept",
-    "audience": "internal",
+    "lifecycle": "alpha",
+    "audience": "public-unlaunched",
     "vaultStatus": "FORGE"
   },
   "studioOs": {
@@ -17,17 +17,17 @@
     "templateVersion": "3.2",
     "complianceVersion": "1.5",
     "sessionModeDefault": "builder",
-    "requiredFilesPresent": false
+    "requiredFilesPresent": true
   },
   "listingMetadata": {
-    "canonicalSummary": "Browser RTS — AGPL fork of OpenFrontIO. VaultSpark-specific gameplay divergence in progress.",
-    "tagline": "Establishing VaultSpark-specific fork divergence.",
-    "tags": ["game", "incubating", "concept"],
-    "categories": ["game", "internal"],
-    "hubDescription": "Establishing VaultSpark-specific fork divergence.",
-    "websiteDescription": "Browser RTS — AGPL fork of OpenFrontIO. VaultSpark-specific gameplay divergence in progress.",
-    "socialDescription": "Browser RTS — AGPL fork of OpenFrontIO. VaultSpark-specific gameplay divergence in progress.",
-    "brandingLabel": "Powered by VaultSpark Studios"
+    "canonicalSummary": "Browser strategy game — AGPL fork of OpenFrontIO with VaultSpark-specific convoy, vault, progression, and integrity systems.",
+    "tagline": "Convoys make the front line move.",
+    "tags": ["game", "alpha", "public-unlaunched"],
+    "categories": ["game", "public-unlaunched"],
+    "hubDescription": "A public-unlaunched browser strategy alpha centered on vault capture, convoy delivery, tactical pressure, and certified outcomes.",
+    "websiteDescription": "VaultFront is a public-unlaunched browser strategy alpha built from OpenFrontIO with VaultSpark-original convoy-heist systems.",
+    "socialDescription": "VaultFront is a public-unlaunched convoy strategy alpha from VaultSpark Studios.",
+    "brandingLabel": "A VaultSpark Studios production"
   },
   "surfaces": {
     "local": [
@@ -67,7 +67,7 @@
       "mode": "private"
     },
     "website": {
-      "enabled": false,
+      "enabled": true,
       "mode": "public-safe"
     },
     "socialDashboard": {
@@ -106,11 +106,11 @@
     "notes": ""
   },
   "publicMetadata": {
-    "privateByDefault": true,
+    "privateByDefault": false,
     "publicReady": false,
-    "publicRepoSanitized": false,
-    "brandingRequired": false,
-    "brandingCompliant": null,
+    "publicRepoSanitized": true,
+    "brandingRequired": true,
+    "brandingCompliant": true,
     "footerAttribution": "A VaultSpark Studios Game",
     "websiteListingRequired": true
   },

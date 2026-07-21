@@ -34,6 +34,10 @@ describe("Release Evidence Manifest", () => {
       auditSource: "docs/AUDIT_2026-07-16.json",
       auditItems: [{ slug: "done", status: "shipped" }],
       innovationItems: [{ id: "innovation", status: "shipped" }],
+      projectTruth: {
+        evaluation: { ok: true, contradictionIds: [] },
+        fingerprint: `sha256:${"c".repeat(64)}`,
+      },
       transfer,
     };
     const clean = buildReleaseEvidence(base);
@@ -52,6 +56,15 @@ describe("Release Evidence Manifest", () => {
     const tampered = structuredClone(clean);
     tampered.work.exhausted = false;
     expect(verifyReleaseEvidenceLineage(tampered)).toBe(false);
+    const truthTampered = structuredClone(clean);
+    truthTampered.projectTruth.fingerprint = `sha256:${"d".repeat(64)}`;
+    expect(verifyReleaseEvidenceLineage(truthTampered)).toBe(false);
+    expect(clean.lineage.nodes).toContainEqual(
+      expect.objectContaining({
+        id: "project-truth",
+        kind: "cross-surface-truth",
+      }),
+    );
   });
 
   it("keeps pending work and over-budget transfer evidence red", () => {
@@ -197,15 +210,24 @@ describe("Release Evidence Manifest", () => {
       fs.writeFileSync(
         path.join(fixture, "public", "footer-manifest.json"),
         JSON.stringify({
+          schemaVersion: 2,
           brandHref: "https://vaultsparkstudios.com",
           copyright: "© 2026 VaultSpark Studios LLC. All rights reserved.",
+          headerLinks: [{ href: "/", label: "Play" }],
+          footerLinks: [
+            { href: "/", label: "Play" },
+            { href: "/privacy/", label: "Privacy" },
+            { href: "/terms/", label: "Terms" },
+          ],
+          footerOnly: ["/privacy/", "/terms/"],
+          legalPages: ["/privacy/", "/terms/"],
           requiredLinks: ["/privacy/", "/terms/"],
           pages: [{ route: "/", source: "public/index.html" }],
         }),
       );
       fs.writeFileSync(
         path.join(fixture, "public", "index.html"),
-        '<nav></nav><footer><a href="https://vaultsparkstudios.com">VaultSpark Studios</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a>© 2026 VaultSpark Studios LLC. All rights reserved.</footer>',
+        '<nav><a href="/">Play</a></nav><footer><a href="https://vaultsparkstudios.com">VaultSpark Studios</a><a href="/">Play</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a>© 2026 VaultSpark Studios LLC. All rights reserved.</footer>',
       );
 
       const { evidence } = generateReleaseEvidence(fixture);

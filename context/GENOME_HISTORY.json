@@ -52,6 +52,23 @@
       },
       "delta": 0,
       "cause": "Session 75 saturated certificate-to-release arc complete: 14 new findings, cumulative audit 37/37, and innovations 6/6 s"
+    },
+    {
+      "date": "2026-07-21",
+      "session": 76,
+      "total": 24,
+      "maxTotal": 25,
+      "overallStatus": "green",
+      "lastReviewed": "2026-07-16",
+      "dimensions": {
+        "schema_alignment": 5,
+        "prompt_template_alignment": 5,
+        "derived_view_freshness": 5,
+        "handoff_continuity": 5,
+        "contradiction_density": 4
+      },
+      "delta": 0,
+      "cause": "Session 76 truth-contract arc complete: audit 5/5 and innovation pack 9/9 shipped across context arithmetic, SIL forecas"
     }
   ]
 }

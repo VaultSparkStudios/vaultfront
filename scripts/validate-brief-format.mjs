@@ -147,7 +147,36 @@ export function validateStartupBrief(body) {
     forbiddenHits: [],
     bodyShape: null,
     staleBrief: null,
+    semanticContradictions: [],
   };
+
+  // A visually polished brief is still invalid when adjacent source-of-truth
+  // values contradict each other. Keep this local and deterministic: the
+  // validator recomputes claims from the values printed in the artifact.
+  const contextMatch = body.match(
+    /([\d.]+)% used[\s\S]{0,220}?([\d,]+)\s*\/\s*([\d,]+) tok/,
+  );
+  if (contextMatch) {
+    const renderedPercent = Number(contextMatch[1]);
+    const usedTokens = Number(contextMatch[2].replaceAll(",", ""));
+    const tokenLimit = Number(contextMatch[3].replaceAll(",", ""));
+    const derivedPercent = (usedTokens / tokenLimit) * 100;
+    if (
+      !Number.isFinite(derivedPercent) ||
+      Math.abs(renderedPercent - derivedPercent) > 0.6
+    ) {
+      findings.semanticContradictions.push(
+        `CONTEXT METER says ${renderedPercent}% but token arithmetic yields ${derivedPercent.toFixed(2)}%.`,
+      );
+    }
+  }
+
+  const forecastMatch = body.match(/Projected:\s*(\d+)\/1000/);
+  if (forecastMatch && Number(forecastMatch[1]) === 0) {
+    findings.semanticContradictions.push(
+      "SIL FORECAST reports 0/1000; refuse a numeric forecast without parsed SIL evidence.",
+    );
+  }
 
   // S142 audit item 2 — brief integrity self-assertion. The renderer stamps
   // `<!-- brief-coherent: true|false -->` after a three-way check (SIL log vs
@@ -190,7 +219,8 @@ export function validateStartupBrief(body) {
       findings.missingRequired.length === 0 &&
       findings.forbiddenHits.length === 0 &&
       findings.bodyShape === null &&
-      findings.staleBrief === null,
+      findings.staleBrief === null &&
+      findings.semanticContradictions.length === 0,
     ...findings,
   };
 }
@@ -417,6 +447,7 @@ if (IS_DIRECT_RUN) {
           forbiddenHits: result.forbiddenHits,
           bodyShape: result.bodyShape,
           staleBrief: result.staleBrief,
+          semanticContradictions: result.semanticContradictions,
           budget: {
             sizeBytes,
             warnBytes: BUDGET_WARN,
@@ -435,6 +466,12 @@ if (IS_DIRECT_RUN) {
     console.log("─".repeat(Math.min(72, header.length + 8)));
     if (result.staleBrief) {
       console.log(`  ⛔  STALE BRIEF: ${result.staleBrief}`);
+    }
+    if (result.semanticContradictions.length > 0) {
+      console.log(`  ⛔  semantic contradictions:`);
+      for (const contradiction of result.semanticContradictions) {
+        console.log(`       - ${contradiction}`);
+      }
     }
     if (result.bodyShape) {
       console.log(`  ⛔  ${result.bodyShape}`);

@@ -1,8 +1,25 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "owner": "VaultSpark Studios LLC",
   "brandHref": "https://vaultsparkstudios.com",
   "copyright": "© 2026 VaultSpark Studios LLC. All rights reserved.",
+  "headerLinks": [
+    { "href": "/", "label": "Play" },
+    { "href": "/about/", "label": "About" },
+    { "href": "/docs/", "label": "How to play" },
+    { "href": "/contact/", "label": "Contact" }
+  ],
+  "footerLinks": [
+    { "href": "/", "label": "Play" },
+    { "href": "/about/", "label": "About" },
+    { "href": "/docs/", "label": "How to play" },
+    { "href": "/contact/", "label": "Contact" },
+    { "href": "/privacy/", "label": "Privacy" },
+    { "href": "/terms/", "label": "Terms" },
+    { "href": "/ip/", "label": "Rights & attribution" }
+  ],
+  "footerOnly": ["/privacy/", "/terms/", "/ip/"],
+  "legalPages": ["/privacy/", "/terms/", "/ip/"],
   "requiredLinks": ["/privacy/", "/terms/", "/ip/"],
   "pages": [
     { "route": "/about/", "source": "public/about/index.html" },

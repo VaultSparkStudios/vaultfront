@@ -13,9 +13,13 @@ const BASH =
 const read = (relativePath) =>
   fs.readFileSync(path.join(ROOT, relativePath), "utf8");
 const failures = [];
-const requireText = (body, pattern, message) => {
-  if (!pattern.test(body)) failures.push(message);
+let checks = 0;
+const check = (condition, message) => {
+  checks += 1;
+  if (!condition) failures.push(message);
 };
+const requireText = (body, pattern, message) =>
+  check(pattern.test(body), message);
 
 const deploy = read("deploy.sh");
 const update = read("update.sh");
@@ -23,56 +27,95 @@ const buildDeploy = read("build-deploy.sh");
 const deployWorkflow = read(".github/workflows/deploy.yml");
 const promoteWorkflow = read(".github/workflows/promote.yml");
 const prWorkflow = read(".github/workflows/pr-description.yml");
+const runbook = read("docs/DEPLOY_RUNTIME_RUNBOOK.md");
 
-if (fs.existsSync(path.join(ROOT, ".github/workflows/release.yml"))) {
-  failures.push("dormant legacy release.yml still exists");
-}
+check(
+  !fs.existsSync(path.join(ROOT, ".github/workflows/release.yml")),
+  "dormant legacy release.yml still exists",
+);
 for (const [name, body] of [
   ["deploy workflow", deployWorkflow],
   ["promote workflow", promoteWorkflow],
 ]) {
-  if (/openfront|falk2|deploy-alpha|deploy-beta/i.test(body)) {
-    failures.push(`${name} retains an upstream infrastructure target`);
-  }
+  check(
+    !/openfront|falk2|deploy-alpha|deploy-beta/iu.test(body),
+    `${name} retains an upstream infrastructure target`,
+  );
 }
-requireText(deploy, /DEPLOY_DRY_RUN/, "deploy.sh has no dry-run path");
+requireText(deploy, /DEPLOY_DRY_RUN/u, "deploy.sh has no dry-run path");
 requireText(
   deploy,
-  /\^sha256:\[0-9a-f\]\{64\}\$/,
+  /\^sha256:\[0-9a-f\]\{64\}\$/u,
   "deploy.sh does not validate immutable digests",
 );
 requireText(
   deploy,
-  /DEPLOY_STAGING_ATTESTATION/,
+  /DEPLOY_STAGING_ATTESTATION/u,
   "production has no staging attestation gate",
 );
 requireText(
   buildDeploy,
-  /containerimage\.digest/,
+  /containerimage\.digest/u,
   "build wrapper does not consume the build digest",
 );
 requireText(
   update,
-  /DEPLOY_IMAGE_RETENTION/,
+  /DEPLOY_IMAGE_RETENTION/u,
   "remote updater has no bounded retention input",
 );
-if (/docker\s+image\s+prune\s+-a/.test(update)) {
-  failures.push("remote updater still prunes every unused image");
-}
+check(
+  !/docker\s+image\s+prune\s+-a/u.test(update),
+  "remote updater still prunes every unused image",
+);
 requireText(
   prWorkflow,
-  /dependabot\[bot\]/,
+  /dependabot\[bot\]/u,
   "PR workflow lacks a trusted automation identity contract",
 );
 requireText(
   prWorkflow,
-  /pulls\.listFiles/,
+  /pulls\.listFiles/u,
   "automation PRs are not restricted by changed-file scope",
 );
 requireText(
   promoteWorkflow,
-  /staging_evidence_digest/,
+  /staging_evidence_digest/u,
   "promotion lacks explicit staging evidence",
+);
+
+requireText(
+  runbook,
+  /Deploy staging\*\* workflow is staging-only/iu,
+  "runbook does not state that deploy.yml is staging-only",
+);
+requireText(
+  runbook,
+  /`image_digest`/u,
+  "runbook omits the immutable promotion image_digest input",
+);
+requireText(
+  runbook,
+  /`staging_evidence_digest`/u,
+  "runbook omits the matching staging evidence input",
+);
+requireText(
+  runbook,
+  /`dry_run`: `true`/u,
+  "runbook does not require dry-run-first promotion",
+);
+check(
+  !/`image_tag`/u.test(runbook),
+  "runbook still documents the obsolete mutable image_tag input",
+);
+requireText(
+  runbook,
+  /\/_health/u,
+  "runbook omits canonical health verification",
+);
+requireText(
+  runbook,
+  /### Rollback receipt/u,
+  "runbook has no auditable rollback receipt contract",
 );
 
 for (const script of ["build-deploy.sh", "deploy.sh", "update.sh"]) {
@@ -80,9 +123,10 @@ for (const script of ["build-deploy.sh", "deploy.sh", "update.sh"]) {
     cwd: ROOT,
     encoding: "utf8",
   });
-  if (syntax.status !== 0) {
-    failures.push(`${script} failed bash -n: ${String(syntax.stderr).trim()}`);
-  }
+  check(
+    syntax.status === 0,
+    `${script} failed bash -n: ${String(syntax.stderr).trim()}`,
+  );
 }
 
 const digest = `sha256:${"0".repeat(64)}`;
@@ -98,37 +142,43 @@ const dryRun = spawnSync(
   ["deploy.sh", "staging", "staging", digest, "staging"],
   { cwd: ROOT, encoding: "utf8", env: baseEnv },
 );
-if (dryRun.status !== 0 || !/deploy-contract ok/.test(String(dryRun.stdout))) {
-  failures.push(`staging dry-run failed: ${String(dryRun.stderr).trim()}`);
-}
+check(
+  dryRun.status === 0 && /deploy-contract ok/u.test(String(dryRun.stdout)),
+  `staging dry-run failed: ${String(dryRun.stderr).trim()}`,
+);
 const mutable = spawnSync(
   BASH,
   ["deploy.sh", "staging", "staging", "latest", "staging"],
   { cwd: ROOT, encoding: "utf8", env: baseEnv },
 );
-if (mutable.status === 0)
-  failures.push("mutable image tag passed deploy validation");
+check(mutable.status !== 0, "mutable image tag passed deploy validation");
 const mismatch = spawnSync(
   BASH,
   ["deploy.sh", "prod", "primary", digest, "main"],
   {
     cwd: ROOT,
     encoding: "utf8",
-    env: { ...baseEnv, DEPLOY_STAGING_ATTESTATION: `sha256:${"1".repeat(64)}` },
+    env: {
+      ...baseEnv,
+      DEPLOY_STAGING_ATTESTATION: `sha256:${"1".repeat(64)}`,
+    },
   },
 );
-if (mismatch.status === 0)
-  failures.push("production accepted mismatched staging evidence");
+check(mismatch.status !== 0, "production accepted mismatched staging evidence");
 
 const report = {
   ok: failures.length === 0,
   source: "scripts/check-deploy-contract.mjs",
-  checks: 16,
+  checks,
   failures,
 };
-if (process.argv.includes("--json"))
+if (process.argv.includes("--json")) {
   console.log(JSON.stringify(report, null, 2));
-else if (report.ok)
-  console.log("PASS immutable deploy/workflow contract (16 checks)");
-else failures.forEach((failure) => console.error(`FAIL ${failure}`));
+} else if (report.ok) {
+  console.log(
+    `PASS immutable deploy/workflow/runbook contract (${checks} checks)`,
+  );
+} else {
+  failures.forEach((failure) => console.error(`FAIL ${failure}`));
+}
 process.exit(report.ok ? 0 : 1);

@@ -24,6 +24,7 @@ import {
   renderTitleHeader,
 } from "./lib/brief-blocks.mjs";
 import { buildBriefSourceManifest } from "./lib/brief-freshness.mjs";
+import { deriveContextUsage } from "./lib/context-verdicts.mjs";
 import { loadPortfolioTaskBoards } from "./lib/cross-repo-tasks.mjs";
 import { isWarning } from "./lib/doctor-predicates.mjs";
 import { loadIgnisInsight } from "./lib/ignis-insight.mjs";
@@ -370,14 +371,13 @@ function loadLiveContextMeter() {
 }
 
 const meter = loadLiveContextMeter();
-const meterUsed = meter.usedTokens;
-const meterRemaining = Math.max(0, meter.limit - meterUsed);
-const meterRemainingPct = Math.round((meterRemaining / meter.limit) * 100);
-// context-meter returns pctUsed in percentage form (0-100), not 0-1. Normalize.
-const meterUsedPctRaw = meter.pctUsed > 1 ? meter.pctUsed : meter.pctUsed * 100;
-const meterUsedPct = Math.max(0, Math.min(100, Math.round(meterUsedPctRaw)));
-// pctUsedFraction is 0-1 for bar rendering math
-const meterUsedFrac = meterUsedPctRaw / 100;
+// The producer's pctUsed field has existed in both fraction and percentage
+// shapes. Tokens + limit are the unambiguous source of truth.
+const meterUsage = deriveContextUsage(meter);
+const meterUsed = meterUsage.usedTokens;
+const meterRemaining = meterUsage.remainingTokens;
+const meterUsedPct = meterUsage.roundedPercent;
+const meterUsedFrac = meterUsage.fraction;
 const estimatedItemsFit = Math.max(0, Math.floor(meterRemaining / 100000));
 
 // ── Parse Rolling Status ──────────────────────────────────────────────────────
@@ -1826,8 +1826,13 @@ const lines = [
       if (!sessions.length) return [];
       const f = forecastNext(sessions, {
         velocity,
-        blockerPressure: 87,
-        contextAge: 0,
+        blockerPressure: Number(
+          topPressure?.pressure ?? topPressure?.score ?? 0,
+        ),
+        contextAge: Math.max(
+          0,
+          daysBetween(status.lastUpdated ?? today, today),
+        ),
       });
       if (!f) return [];
       const diff = f.totalPredicted - sessions[0].total;

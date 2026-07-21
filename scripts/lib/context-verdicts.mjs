@@ -1,25 +1,11 @@
-// context-verdicts.mjs — single source of truth for the context-meter verdict
-// vocabulary + their process exit codes.
+// context-verdicts.mjs — single source of truth for context-meter routing and
+// usage arithmetic shared by producers, renderers, hooks, and tests.
 //
-// WHY THIS EXISTS (S198): the verdict set drifted. `context-meter.mjs` grew a 4th
-// verdict (`WARN_COMPACT_SOON`, added for proactive-autosave) but its contract test
-// (`tier1-context-meter-gate`) still hardcoded the original 3, so the suite went red
-// whenever the meter emitted the new verdict. Worse, the meter intentionally exits
-// non-zero (2/3) to let hooks/skills route on the verdict — and the test used
-// `execSync`, which THROWS on any non-zero exit, so the test silently failed 3/4
-// assertions whenever measured context was high enough to recommend CLOSEOUT.
-//
-// Both producer (context-meter.mjs) and contract test now import from here, so the
-// vocabulary and exit codes can never drift apart again (coherent-by-construction).
-//
-// Exit-code contract (consumed by ~/.claude hooks + closeout skills):
+// Exit-code contract (consumed by hooks + closeout skills):
 //   CONTINUE          → 0   keep working
-//   WARN_COMPACT_SOON → 0   soft warn; compaction predicted soon, autosave but continue
+//   WARN_COMPACT_SOON → 0   soft warn; compaction predicted soon
 //   CONSIDER_CLOSEOUT → 2   wrap up soon
-//   CLOSEOUT          → 3   stop now; continuation risks truncation
-//
-// A non-zero exit is a ROUTING SIGNAL, not a failure — callers that only want the
-// JSON must read stdout regardless of exit status (spawnSync, not execSync).
+//   CLOSEOUT          → 3   stop now
 
 export const VERDICTS = Object.freeze([
   "CONTINUE",
@@ -35,10 +21,38 @@ export const VERDICT_EXITS = Object.freeze({
   CLOSEOUT: 3,
 });
 
-export function isValidVerdict(v) {
-  return VERDICTS.includes(v);
+export function isValidVerdict(value) {
+  return VERDICTS.includes(value);
 }
 
-export function exitForVerdict(v) {
-  return VERDICT_EXITS[v] ?? 0;
+export function exitForVerdict(value) {
+  return VERDICT_EXITS[value] ?? 0;
+}
+
+/**
+ * Derive usage from the two unambiguous source values.
+ *
+ * `pctUsed` has existed in both 0..1 and 0..100 shapes across propagated
+ * context-meter versions. Consumers must never guess which shape they received;
+ * token count and model limit are the canonical inputs.
+ */
+export function deriveContextUsage({ usedTokens = 0, limit = 0 } = {}) {
+  const safeUsed = Number.isFinite(Number(usedTokens))
+    ? Math.max(0, Number(usedTokens))
+    : 0;
+  const safeLimit = Number.isFinite(Number(limit))
+    ? Math.max(0, Number(limit))
+    : 0;
+  const rawFraction = safeLimit > 0 ? safeUsed / safeLimit : 0;
+  const fraction = Math.max(0, Math.min(1, rawFraction));
+  const percent = fraction * 100;
+
+  return Object.freeze({
+    usedTokens: safeUsed,
+    limit: safeLimit,
+    remainingTokens: Math.max(0, safeLimit - safeUsed),
+    fraction,
+    percent,
+    roundedPercent: Math.round(percent),
+  });
 }

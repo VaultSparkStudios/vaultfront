@@ -100,6 +100,45 @@ const candidates = [
     evidence:
       "canonical evidence DAG builder/verifier, release-manifest integration, root receipt, and tamper/ordering tests",
   },
+  {
+    id: "startup-brief-semantic-sentinel",
+    title: "Make the startup brief prove its own arithmetic",
+    description:
+      "Recompute context utilization and reject numeric SIL forecasts with zero parsed evidence so adjacent source-of-truth values cannot contradict one another behind a polished status tile.",
+    complete:
+      has("scripts/validate-brief-format.mjs", /semanticContradictions/) &&
+      has("tests/scripts/StudioProtocolHelpers.test.ts", /token arithmetic/) &&
+      has("tests/scripts/StudioProtocolHelpers.test.ts", /parsed SIL evidence/),
+    evidence:
+      "semantic brief validator, contradiction diagnostics, and adversarial context/SIL fixtures",
+  },
+  {
+    id: "release-truth-fingerprint",
+    title: "Bind cross-surface project truth into release provenance",
+    description:
+      "Fingerprint status identity, generated manifest posture, footer topology, and immutable deployment sources, then make that receipt a first-class parent of the release decision.",
+    complete:
+      has("scripts/lib/project-truth.mjs", /buildProjectTruthFingerprint/) &&
+      has("scripts/generate-release-evidence.mjs", /cross-surface-truth/) &&
+      has("tests/scripts/ProjectDoctor.test.ts", /tamper-sensitively/),
+    evidence:
+      "canonical project-truth fingerprint, source digests, release-lineage node, and mutation-sensitive tests",
+  },
+  {
+    id: "operator-rollback-receipt-contract",
+    title: "Turn rollback prose into an executable receipt contract",
+    description:
+      "Require immutable image and staging-evidence digests, dry-run-first promotion, canonical health verification, and a retained rollback receipt so recovery instructions cannot drift from workflow inputs.",
+    complete:
+      has("docs/DEPLOY_RUNTIME_RUNBOOK.md", /staging_evidence_digest/) &&
+      has("scripts/check-deploy-contract.mjs", /rollback receipt/) &&
+      has(
+        "tests/scripts/StudioProtocolHelpers.test.ts",
+        /check-deploy-contract/,
+      ),
+    evidence:
+      "digest-addressed operator runbook, 25-check deploy contract gate, and protocol regression execution",
+  },
 ];
 
 const payload = {

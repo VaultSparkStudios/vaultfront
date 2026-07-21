@@ -1,0 +1,242 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "/audit skill v2 · Session 76 founder-requested infrastructure rubric + public app/game release lens",
+  "generatedAt": "2026-07-20T22:45:00Z",
+  "project": {
+    "slug": "vaultfront",
+    "name": "VaultFront",
+    "type": "game",
+    "registryType": "app",
+    "audience": "public-unlaunched",
+    "stage": "FORGE",
+    "stagingType": "local"
+  },
+  "summary": "Premise-verified Session 76 infrastructure audit: eliminate arithmetic and parser-based false observability, make project/release metadata fail closed across generated surfaces, enforce complete footer navigation, and bind operator documentation to the immutable staging-to-promotion contract without fabricating live launch evidence.",
+  "axes": {
+    "featureDepth": 1,
+    "innovation": 1,
+    "ux": 1,
+    "feedbackLoop": 1,
+    "gamification": 1,
+    "aiIntegration": 1.5,
+    "security": 1.5,
+    "speedOrganization": 2,
+    "tokenApiReduction": 2
+  },
+  "sample": {
+    "method": "main-agent live verification plus one read-only app-release-gate lane; no candidate accepted from prose alone",
+    "picked": 20,
+    "scanned": "startup meter and SIL forecast, project/status/manifest truth, doctor probes, release evidence, footer leaves and manifests, deploy/promote workflows, operator runbook, CI, TODO markers, and control-plane release gate",
+    "baseline": "tree began clean and one commit ahead; doctor 7/7 blockingFailing 0; 814/814 recorded tests; local release evidence blocked; canonical control-plane release checker falsely ready"
+  },
+  "evidenceBoundary": [
+    "Local tests cannot satisfy real staging, parity, distinct-human Alpha, Brevo delivery, Obelisk relying-party, live header/Core Web Vitals/theme, revenue, or founder-approval gates.",
+    "Registry and generated manifest metadata disagree with local PROJECT_STATUS; sibling source files will not be edited, and central corrections must travel as Ark cargo.",
+    "The current local release evidence is correctly blocked; the defect is split-brain metadata and a canonical checker that accepts incomplete gate models.",
+    "No package installation or license change is required. AGPL upstream obligations and VaultSpark-original rights posture remain unchanged."
+  ],
+  "items": [
+    {
+      "id": 38,
+      "slug": "context-usage-source-contract",
+      "tier": "🔥",
+      "axis": "speed / organization / observability / token",
+      "effortHours": 1.5,
+      "impact": 9,
+      "innovation": 6,
+      "priority": 59.8,
+      "status": "shipped",
+      "title": "Derive brief context usage from tokens and limit instead of an ambiguous percentage field",
+      "why": "render-startup-brief treats context-meter pctUsed=0.8 as a fraction and multiplies it to 80 even though the producer documents pctUsed as percentage points; the same brief prints 8,331/1,000,000 beside the false 80% claim.",
+      "coreLoopStep": "operator input → trustworthy continuation fantasy → saturated-work reward → clean closeout progression",
+      "recipe": "Create one pure usage derivation contract from usedTokens/limit, import it into the renderer, cover percentage-point and fraction-shaped fixtures, regenerate the brief, and assert the rendered arithmetic cannot drift.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Replace the normalization formula."
+        },
+        "L2": {
+          "effortHours": 1.5,
+          "recipe": "Add a pure shared helper, unit tests, and live brief verification."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Add semantic brief validation that rejects token/percent contradictions."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-21T03:09:50.9837053Z",
+          "status": "shipped",
+          "evidence": "Pure token/limit derivation, renderer integration, semantic brief sentinel, adversarial unit tests, and live 3% brief arithmetic."
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "slug": "project-manifest-split-brain-guard",
+      "tier": "🔥",
+      "axis": "security / truth / ecosystem / release",
+      "effortHours": 3,
+      "impact": 10,
+      "innovation": 9,
+      "priority": 58.1,
+      "status": "shipped",
+      "title": "Make generated project identity disagree loudly and remove the false-ready release posture",
+      "why": "PROJECT_STATUS says game/public-unlaunched/alpha while STUDIO_MANIFEST says game/internal/concept, privateByDefault=true, brandingRequired=false, and publicRepoSanitized=false; the canonical release checker consumes that shape and returns ready despite seven explicit blocked gates.",
+      "coreLoopStep": "release evidence input → trustworthy command fantasy → honest gate reward → FORGE-to-SPARKED progression",
+      "recipe": "Extend project-truth evaluation to compare status and manifest identity/public metadata, repair the local manifest to current public-safe truth, add adversarial fixtures, rerun doctor and the canonical release check, and ship signed Ark correction cargo for the registry/checker source rather than editing the sibling tree.",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Align local manifest identity fields."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Add fail-closed cross-surface truth checks, fixtures, local repair, and Ark evidence."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Bind a canonical identity fingerprint into release evidence and control-plane admission."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-21T03:09:50.9837053Z",
+          "status": "shipped",
+          "evidence": "Cross-surface truth evaluator, repaired public-unlaunched manifest, tamper-sensitive fingerprint, release-lineage binding, focused doctor tests, and Ark correction queued for the canonical source."
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "slug": "sil-forecast-parser-honesty",
+      "tier": "🔥",
+      "axis": "speed / organization / observability",
+      "effortHours": 2,
+      "impact": 8,
+      "innovation": 6,
+      "priority": 48.0,
+      "status": "shipped",
+      "title": "Parse every current SIL header/table shape and refuse zero-evidence forecasts",
+      "why": "sil-forecaster recognizes only one legacy heading and indexed table rows; Session 75 uses a pipe Total heading and non-indexed category rows, so the forecast aggregates zero categories into 0/1000 while claiming all categories are stable.",
+      "coreLoopStep": "SIL evidence input → credible next-session fantasy → prioritized-work reward → capability progression",
+      "recipe": "Parse Sprint and pipe-Total headings, support indexed and non-indexed category tables, sort by actual session recency, return null when no categories exist, and test current plus legacy shapes before regenerating the brief.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.75,
+          "recipe": "Patch the heading and row regexes."
+        },
+        "L2": {
+          "effortHours": 2,
+          "recipe": "Use structural row parsing, recency sorting, no-evidence refusal, and regression fixtures."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Schema-version SIL entries and derive forecasts from structured JSON."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-21T03:09:50.9837053Z",
+          "status": "shipped",
+          "evidence": "Current and legacy SIL structural parsing, recency ordering, null-on-no-evidence behavior, regression tests, and live 983/1000 brief forecast."
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "slug": "deploy-runbook-workflow-contract",
+      "tier": "🔥",
+      "axis": "security / reliability / process",
+      "effortHours": 2,
+      "impact": 9,
+      "innovation": 5,
+      "priority": 33.8,
+      "status": "shipped",
+      "title": "Make the operator runbook executable against the immutable staging and promotion workflows",
+      "why": "DEPLOY_RUNTIME_RUNBOOK tells operators to deploy production from Deploy and rollback with image_tag, while deploy.yml is staging-only and promote.yml requires image_digest plus staging_evidence_digest and defaults to dry_run.",
+      "coreLoopStep": "verified staging digest input → safe-promotion fantasy → rollback-confidence reward → release progression",
+      "recipe": "Rewrite deploy/promotion/rollback steps around exact digests, matching staging evidence, dry-run-first behavior, commit verification, and rollback drill receipts; extend check-deploy-contract so obsolete input names or workflow-incompatible instructions fail CI/doctor.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.75,
+          "recipe": "Correct the obsolete workflow input names."
+        },
+        "L2": {
+          "effortHours": 2,
+          "recipe": "Replace the full operator sequence and make documentation tokens executable in the contract checker."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Generate an attested rollback receipt and rehearse it on staging."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-21T03:09:50.9837053Z",
+          "status": "shipped",
+          "evidence": "Digest-addressed staging/promotion/rollback runbook and executable 25-check workflow/document contract."
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "slug": "public-footer-route-parity",
+      "tier": "⚡",
+      "axis": "ux / release / legal / feedback loop",
+      "effortHours": 2,
+      "impact": 9,
+      "innovation": 7,
+      "priority": 31.5,
+      "status": "shipped",
+      "title": "Make every public leaf footer a complete route map and reject vacuous manifests",
+      "why": "leaf headers expose Play/About/How to play/Contact while footers expose only legal links; the local checker searches whole HTML, and the canonical checker accepts the incompatible manifest as a zero-header/zero-footer pass.",
+      "coreLoopStep": "visitor navigation input → discoverable game fantasy → trust/contact reward → alpha-conversion progression",
+      "recipe": "Adopt the canonical headerLinks/footerLinks/footerOnly/legalPages schema, require non-empty sets, extract nav and footer scopes separately, enforce footer ⊇ header ∪ footer-only on every leaf, update all ten leaves, and add a header-only false-pass fixture.",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.75,
+          "recipe": "Add missing destinations to all footers."
+        },
+        "L2": {
+          "effortHours": 2,
+          "recipe": "Ship canonical schema, scoped parser, exhaustive leaves, and adversarial tests."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Generate the route graph from one source and visually verify every theme on staging."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-21T03:09:50.9837053Z",
+          "status": "shipped",
+          "evidence": "Schema v2 non-vacuous route contract, scoped nav/footer parser, ten complete public leaves, canonical checker pass, and false-pass fixtures."
+        }
+      ]
+    }
+  ],
+  "premiseRejections": [
+    {
+      "candidate": "worker-game-id-random-loop",
+      "status": "skipped",
+      "evidence": "generateGameIdForWorker is bounded to 1,000 attempts and validates config.workerIndex for every candidate; current worker counts make exhaustion negligible, and create admission already rejects collision/capacity. No live failure evidence exists."
+    },
+    {
+      "candidate": "leaderboard-materialized-view",
+      "status": "skipped",
+      "evidence": "schema explicitly defers the view until DATABASE_URL is confirmed in production; staging and database evidence are absent, so migration now would be speculative and cannot clear a gate."
+    },
+    {
+      "candidate": "user-me-client-cache",
+      "status": "skipped",
+      "evidence": "the TODO surrounds one authenticated getUserMe call during client startup, not a repeated hot path; no request-volume or latency evidence supports infrastructure priority."
+    },
+    {
+      "candidate": "synthesize-live-release-evidence",
+      "status": "skipped",
+      "evidence": "staging, parity, Brevo, Obelisk, live theme/header/Core Web Vitals, distinct-human Alpha, revenue, and founder approval are explicitly non-substitutable; fabricating them would violate CANON-031."
+    }
+  ]
+}

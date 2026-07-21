@@ -4,16 +4,16 @@
   "name": "VaultFront",
   "status": "active",
   "health": "green",
-  "currentSession": 75,
+  "currentSession": 76,
   "lastAgent": "codex",
-  "currentFocus": "Session 75 saturated certificate-to-release arc complete: 14 new findings, cumulative audit 37/37, and innovations 6/6 shipped across match authority, runtime pressure, product liveness, AI receipts, capability reachability, and release lineage.",
-  "nextMilestone": "Deploy the exact verified digest to staging, then collect parity, three distinct human Alpha Gate sessions, Brevo delivery, native Obelisk auth, live web/theme evidence, revenue observation, and founder approval.",
+  "currentFocus": "Session 76 truth-contract arc complete: audit 5/5 and innovation pack 9/9 shipped across context arithmetic, SIL forecast honesty, project identity fingerprinting, footer route parity, and immutable promotion/rollback.",
+  "nextMilestone": "Deploy the exact verified digest to staging and collect fresh parity, Brevo, Obelisk, live theme, three-human Alpha, revenue, and founder-approval evidence without weakening gates.",
   "blockers": [],
-  "lastUpdated": "2026-07-19",
+  "lastUpdated": "2026-07-20",
   "lifecycle": "alpha",
   "audience": "public-unlaunched",
   "type": "game",
-  "entropyScore": 0.065,
+  "entropyScore": 0.089,
   "entropyStatus": "healthy",
   "entropyComputedAt": "2026-07-16",
   "entropyMethod": "Studio protocol entropy: context freshness, truth/IGNIS age, SIL skip pressure, stale human-action labels, and task-bucket pressure.",
@@ -23,21 +23,21 @@
       "status": "green",
       "label": "Unit and server regression",
       "command": "npm test",
-      "purpose": "Vitest core, client, server, and Studio protocol coverage. All 134 main files / 814 tests pass; the 31-file / 119-test server subset also passes independently in Session 75."
+      "purpose": "Vitest core, client, server, and Studio protocol coverage. All 134 main files / 822 tests pass; the 31-file / 121-test server subset also passes independently in Session 76."
     },
     {
       "type": "tests",
       "status": "green",
       "label": "Production build",
       "command": "npm run build-prod",
-      "purpose": "TypeScript no-emit plus Vite production bundle, Release Evidence Manifest lineage, and exact gzip/Brotli initial-entry plus media budgets."
+      "purpose": "TypeScript no-emit plus Vite production bundle, complete-source Release Evidence Manifest truth fingerprint/lineage, and exact transfer/media budgets."
     },
     {
       "type": "tests",
       "status": "green",
       "label": "E2E smoke",
       "command": "npm run e2e",
-      "purpose": "Playwright desktop/mobile homepage, settings, Command Center lazy-load/accessibility, manifest, health, environment, and solo-flow smoke. All 24 tests pass."
+      "purpose": "Playwright desktop/mobile homepage, settings, Command Center lazy-load/accessibility, manifest, health, environment, and solo-flow smoke. All 24 tests pass in Session 76."
     },
     {
       "type": "local",
@@ -52,22 +52,22 @@
   "readinessEndpoint": "/api/vaultfront/readiness",
   "playtestPulseEndpoint": "/api/vaultfront/playtest-pulse/summary",
   "truthAuditStatus": "green",
-  "truthAuditLastRun": "2026-07-19",
+  "truthAuditLastRun": "2026-07-20",
   "silRubricVersion": "3.0",
   "silMax": 1000,
   "silScoreLegacy500": null,
-  "silScore": 979,
-  "testsPassing": 814,
-  "testsTotal": 814,
+  "silScore": 981,
+  "testsPassing": 822,
+  "testsTotal": 822,
   "silCategoriesV3": {
     "devHealth": 100,
     "creativeAlignment": 99,
     "momentum": 100,
     "engagement": 90,
     "processQuality": 100,
-    "crossRepoCoherence": 97,
+    "crossRepoCoherence": 98,
     "securityPosture": 100,
-    "ecosystemIntegration": 93,
+    "ecosystemIntegration": 94,
     "capitalEfficiency": 100,
     "automationCoverage": 100
   },
@@ -82,11 +82,11 @@
   "ignisLastComputed": "2026-07-16",
   "sessionMode": "founder",
   "sessionModeAutoShiftedAt": "2026-06-07T18:14:59.755Z",
-  "silAvg3": 963,
-  "silVelocity": 11,
+  "silAvg3": 976,
+  "silVelocity": 8,
   "silDebt": "down",
-  "silLastSession": 75,
-  "auditStatus": "37-of-37-shipped-plus-6-of-6-innovations",
+  "silLastSession": 76,
+  "auditStatus": "5-of-5-shipped-plus-9-of-9-innovations",
   "releaseGates": [
     "staging deployment and exact-digest parity verification",
     "authenticated evidence from at least three distinct human alpha sessions",
@@ -96,7 +96,7 @@
     "real checkout/supporter revenue observation",
     "founder launch approval"
   ],
-  "entropyLastComputed": "2026-07-19",
+  "entropyLastComputed": "2026-07-21",
   "truthGenome": "24/25",
   "doctorScore": {
     "passing": 7,
@@ -106,22 +106,23 @@
     "warnings": 0,
     "failing": 0,
     "blockingFailing": 0,
-    "date": "2026-07-19",
-    "observedAt": "2026-07-19T23:41:22.359Z",
+    "date": "2026-07-21",
+    "observedAt": "2026-07-21T03:27:06.521Z",
     "source": "scripts/project-doctor.mjs",
     "checks": [
       {
         "id": "release-metadata-truth",
         "status": "pass",
         "source": "C:\\Program Files\\nodejs\\node.exe C:\\Users\\p4cka\\Documents\\Development\\VaultFront\\scripts\\check-project-truth.mjs --root C:\\Users\\p4cka\\Documents\\Development\\VaultFront --json",
-        "observedAt": "2026-07-19T23:41:19.841Z",
+        "observedAt": "2026-07-21T03:27:04.319Z",
         "exitCode": 0,
-        "detail": "{\n  \"ok\": true,\n  \"audience\": \"public-unlaunched\",\n  \"contradictions\": [],\n  \"observedAt\": \"2026-07-19T23:41:19.963Z\",\n  \"source\": \"scripts/check-project-truth.mjs\",\n  \"warnings\": []\n}",
+        "detail": "{\n  \"ok\": true,\n  \"audience\": \"public-unlaunched\",\n  \"manifestAudience\": \"public-unlaunched\",\n  \"contradictions\": [],\n  \"observedAt\": \"2026-07-21T03:27:04.480Z\",\n  \"source\": \"scripts/check-project-truth.mjs\",\n  \"warnings\": []\n}",
         "data": {
           "ok": true,
           "audience": "public-unlaunched",
+          "manifestAudience": "public-unlaunched",
           "contradictions": [],
-          "observedAt": "2026-07-19T23:41:19.963Z",
+          "observedAt": "2026-07-21T03:27:04.480Z",
           "source": "scripts/check-project-truth.mjs",
           "warnings": []
         }
@@ -130,7 +131,7 @@
         "id": "task-id-integrity",
         "status": "pass",
         "source": "C:\\Program Files\\nodejs\\node.exe C:\\Users\\p4cka\\Documents\\Development\\VaultFront\\scripts\\validate-task-ids.mjs",
-        "observedAt": "2026-07-19T23:41:19.973Z",
+        "observedAt": "2026-07-21T03:27:04.477Z",
         "exitCode": 0,
         "detail": "✓ TASK_BOARD ID integrity — 0 unique IDs, no duplicates.",
         "data": null
@@ -139,7 +140,7 @@
         "id": "windows-spawn-hygiene",
         "status": "pass",
         "source": "C:\\Program Files\\nodejs\\node.exe C:\\Users\\p4cka\\Documents\\Development\\VaultFront\\scripts\\check-windows-hide.mjs",
-        "observedAt": "2026-07-19T23:41:20.133Z",
+        "observedAt": "2026-07-21T03:27:04.627Z",
         "exitCode": 0,
         "detail": "✓ windows-hide: all spawns route through lib/safe-spawn.mjs and set windowsHide:true (no window-storm / no SuspExec heuristic)",
         "data": null
@@ -148,23 +149,25 @@
         "id": "release-workflow-contract",
         "status": "pass",
         "source": "C:\\Program Files\\nodejs\\node.exe C:\\Users\\p4cka\\Documents\\Development\\VaultFront\\scripts\\check-deploy-contract.mjs",
-        "observedAt": "2026-07-19T23:41:20.402Z",
+        "observedAt": "2026-07-21T03:27:04.821Z",
         "exitCode": 0,
-        "detail": "PASS immutable deploy/workflow contract (16 checks)",
+        "detail": "PASS immutable deploy/workflow/runbook contract (25 checks)",
         "data": null
       },
       {
         "id": "public-footer-manifest",
         "status": "pass",
         "source": "C:\\Program Files\\nodejs\\node.exe C:\\Users\\p4cka\\Documents\\Development\\VaultFront\\scripts\\check-footer-manifest.mjs",
-        "observedAt": "2026-07-19T23:41:21.817Z",
+        "observedAt": "2026-07-21T03:27:06.039Z",
         "exitCode": 0,
-        "detail": "{\n  \"ok\": true,\n  \"checkedAt\": \"2026-07-19T23:41:21.979Z\",\n  \"manifest\": \"public/footer-manifest.json\",\n  \"pageCount\": 10,\n  \"errors\": []\n}",
+        "detail": "{\n  \"ok\": true,\n  \"checkedAt\": \"2026-07-21T03:27:06.197Z\",\n  \"manifest\": \"public/footer-manifest.json\",\n  \"pageCount\": 10,\n  \"headerLinkCount\": 4,\n  \"footerLinkCount\": 7,\n  \"errors\": []\n}",
         "data": {
           "ok": true,
-          "checkedAt": "2026-07-19T23:41:21.979Z",
+          "checkedAt": "2026-07-21T03:27:06.197Z",
           "manifest": "public/footer-manifest.json",
           "pageCount": 10,
+          "headerLinkCount": 4,
+          "footerLinkCount": 7,
           "errors": []
         }
       },
@@ -172,16 +175,16 @@
         "id": "capability-reachability",
         "status": "pass",
         "source": "C:\\Program Files\\nodejs\\node.exe C:\\Users\\p4cka\\Documents\\Development\\VaultFront\\scripts\\check-capability-reachability.mjs --root C:\\Users\\p4cka\\Documents\\Development\\VaultFront",
-        "observedAt": "2026-07-19T23:41:21.995Z",
+        "observedAt": "2026-07-21T03:27:06.196Z",
         "exitCode": 0,
-        "detail": "{\n  \"ok\": true,\n  \"checkedAt\": \"2026-07-19T23:41:22.161Z\",\n  \"releasePosture\": \"implemented-local-unlaunched\",\n  \"publicRuntime\": \"unavailable\",\n  \"manifest\": \"public/capability-reachability.json\",\n  \"sourceDigest\": \"sha256:e82e3af6fac7ab8d7272b04f38e6e7de921cf99e78731bcc3819dd7de331cf1b\",\n  \"capabilities\": [\n    {\n      \"id\": \"command-center\",\n      \"audience\": \"human-player\",\n      \"status\": \"reachable-in-source\",\n      \"errors\": []\n    },\n    {\n      \"id\": \"certified-match-outcomes\",\n      \"audience\": \"human-player\",\n      \"status\": \"reachable-in-source\",\n      \"errors\": []\n    },\n    {\n      \"id\": \"canonical-ai-receipts\",\n      \"audience\": \"human-and-agent\",\n      \"status\": \"reachable-in-source\",\n      \"errors\": []\n    },\n    {\n      \"id\": \"policy-bound-mutations\",\n      \"audience\": \"operator\",\n      \"status\": \"reachable-in-source\",\n      \"errors\": []\n    },\n    {\n      \"id\": \"runtime-integrity\",\n      \"audience\": \"operator-and-agent\",\n      \"status\": \"reachable-in-source\",\n      \"errors\": []\n    },\n    {\n      \"id\": \"release-evidence-lineage\",\n      \"audience\": \"operator-and-agent\",\n      \"status\": \"reachable-in-source\",\n      \"errors\": []\n    }\n  ],\n  \"errors\": []\n}",
+        "detail": "{\n  \"ok\": true,\n  \"checkedAt\": \"2026-07-21T03:27:06.359Z\",\n  \"releasePosture\": \"implemented-local-unlaunched\",\n  \"publicRuntime\": \"unavailable\",\n  \"manifest\": \"public/capability-reachability.json\",\n  \"sourceDigest\": \"sha256:e8975f696baa19553519e97ee9c9f93fb4ba0e9ac3ed09a402c1ebd2f27c7e2e\",\n  \"capabilities\": [\n    {\n      \"id\": \"command-center\",\n      \"audience\": \"human-player\",\n      \"status\": \"reachable-in-source\",\n      \"errors\": []\n    },\n    {\n      \"id\": \"certified-match-outcomes\",\n      \"audience\": \"human-player\",\n      \"status\": \"reachable-in-source\",\n      \"errors\": []\n    },\n    {\n      \"id\": \"canonical-ai-receipts\",\n      \"audience\": \"human-and-agent\",\n      \"status\": \"reachable-in-source\",\n      \"errors\": []\n    },\n    {\n      \"id\": \"policy-bound-mutations\",\n      \"audience\": \"operator\",\n      \"status\": \"reachable-in-source\",\n      \"errors\": []\n    },\n    {\n      \"id\": \"runtime-integrity\",\n      \"audience\": \"operator-and-agent\",\n      \"status\": \"reachable-in-source\",\n      \"errors\": []\n    },\n    {\n      \"id\": \"release-evidence-lineage\",\n      \"audience\": \"operator-and-agent\",\n      \"status\": \"reachable-in-source\",\n      \"errors\": []\n    }\n  ],\n  \"errors\": []\n}",
         "data": {
           "ok": true,
-          "checkedAt": "2026-07-19T23:41:22.161Z",
+          "checkedAt": "2026-07-21T03:27:06.359Z",
           "releasePosture": "implemented-local-unlaunched",
           "publicRuntime": "unavailable",
           "manifest": "public/capability-reachability.json",
-          "sourceDigest": "sha256:e82e3af6fac7ab8d7272b04f38e6e7de921cf99e78731bcc3819dd7de331cf1b",
+          "sourceDigest": "sha256:e8975f696baa19553519e97ee9c9f93fb4ba0e9ac3ed09a402c1ebd2f27c7e2e",
           "capabilities": [
             {
               "id": "command-center",
@@ -227,23 +230,23 @@
         "id": "work-exhaustion",
         "status": "pass",
         "source": "C:\\Program Files\\nodejs\\node.exe C:\\Users\\p4cka\\Documents\\Development\\VaultFront\\scripts\\check-work-exhaustion.mjs --root C:\\Users\\p4cka\\Documents\\Development\\VaultFront --json",
-        "observedAt": "2026-07-19T23:41:22.182Z",
+        "observedAt": "2026-07-21T03:27:06.361Z",
         "exitCode": 0,
-        "detail": "{\n  \"ok\": true,\n  \"pendingUnblocked\": [],\n  \"audit\": {\n    \"source\": \"docs/AUDIT_2026-07-16.json\",\n    \"total\": 37,\n    \"pending\": 0\n  },\n  \"innovations\": {\n    \"source\": \"docs/INNOVATION_PACK.json\",\n    \"total\": 6,\n    \"pending\": 0\n  },\n  \"observedAt\": \"2026-07-19T23:41:22.346Z\",\n  \"source\": \"scripts/check-work-exhaustion.mjs\"\n}",
+        "detail": "{\n  \"ok\": true,\n  \"pendingUnblocked\": [],\n  \"audit\": {\n    \"source\": \"docs/AUDIT_2026-07-20.json\",\n    \"total\": 5,\n    \"pending\": 0\n  },\n  \"innovations\": {\n    \"source\": \"docs/INNOVATION_PACK.json\",\n    \"total\": 9,\n    \"pending\": 0\n  },\n  \"observedAt\": \"2026-07-21T03:27:06.526Z\",\n  \"source\": \"scripts/check-work-exhaustion.mjs\"\n}",
         "data": {
           "ok": true,
           "pendingUnblocked": [],
           "audit": {
-            "source": "docs/AUDIT_2026-07-16.json",
-            "total": 37,
+            "source": "docs/AUDIT_2026-07-20.json",
+            "total": 5,
             "pending": 0
           },
           "innovations": {
             "source": "docs/INNOVATION_PACK.json",
-            "total": 6,
+            "total": 9,
             "pending": 0
           },
-          "observedAt": "2026-07-19T23:41:22.346Z",
+          "observedAt": "2026-07-21T03:27:06.526Z",
           "source": "scripts/check-work-exhaustion.mjs"
         }
       }

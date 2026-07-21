@@ -3,7 +3,10 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { evaluateProjectTruth } from "../../scripts/lib/project-truth.mjs";
+import {
+  buildProjectTruthFingerprint,
+  evaluateProjectTruth,
+} from "../../scripts/lib/project-truth.mjs";
 import { spawnSync } from "../../scripts/lib/safe-spawn.mjs";
 
 const root = path.resolve(
@@ -85,6 +88,120 @@ describe("truthful project doctor", () => {
     expect(JSON.parse(result.stdout)).toMatchObject({
       ok: true,
       audience: "internal",
+      contradictions: [],
+    });
+  });
+});
+
+describe("project manifest coherence", () => {
+  it("fails closed when generated identity and public posture drift", () => {
+    const result = evaluateProjectTruth({
+      status: {
+        type: "game",
+        lifecycle: "alpha",
+        audience: "public-unlaunched",
+        freeTierCostStatus: "cost-neutral",
+      },
+      studioManifest: {
+        identity: {
+          type: "app",
+          lifecycle: "concept",
+          audience: "internal",
+        },
+        listingMetadata: { categories: ["game", "internal"] },
+        publicMetadata: {
+          privateByDefault: true,
+          publicReady: false,
+          publicRepoSanitized: false,
+          brandingRequired: false,
+        },
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.contradictions.map(({ id }) => id)).toEqual(
+      expect.arrayContaining([
+        "project-manifest-identity-mismatch",
+        "public-manifest-private-posture",
+        "public-manifest-branding-disabled",
+        "public-manifest-sanitization-stale",
+        "public-manifest-internal-category",
+      ]),
+    );
+  });
+
+  it("fingerprints cross-surface release truth deterministically and tamper-sensitively", () => {
+    const input = {
+      status: {
+        type: "game",
+        lifecycle: "alpha",
+        audience: "public-unlaunched",
+        stage: "FORGE",
+      },
+      studioManifest: {
+        identity: {
+          type: "game",
+          lifecycle: "alpha",
+          audience: "public-unlaunched",
+        },
+        publicMetadata: {
+          privateByDefault: false,
+          publicReady: false,
+          publicRepoSanitized: true,
+          brandingRequired: true,
+        },
+      },
+      footerManifest: {
+        schemaVersion: 2,
+        pages: [{ route: "/" }],
+        headerLinks: [{ href: "/" }],
+        footerLinks: [{ href: "/" }],
+      },
+      sourceDigests: {
+        deployment: `sha256:${"a".repeat(64)}`,
+        footer: `sha256:${"b".repeat(64)}`,
+        identity: `sha256:${"c".repeat(64)}`,
+      },
+    };
+
+    const original = buildProjectTruthFingerprint(input);
+    const reordered = buildProjectTruthFingerprint({
+      ...input,
+      sourceDigests: {
+        identity: input.sourceDigests.identity,
+        footer: input.sourceDigests.footer,
+        deployment: input.sourceDigests.deployment,
+      },
+    });
+    const tampered = buildProjectTruthFingerprint({
+      ...input,
+      status: { ...input.status, lifecycle: "production" },
+    });
+
+    expect(original.evaluation.ok).toBe(true);
+    expect(original.fingerprint).toMatch(/^sha256:[0-9a-f]{64}$/);
+    expect(reordered.fingerprint).toBe(original.fingerprint);
+    expect(tampered.fingerprint).not.toBe(original.fingerprint);
+
+    const incomplete = buildProjectTruthFingerprint({
+      ...input,
+      sourceDigests: { ...input.sourceDigests, deployment: null },
+    });
+    expect(incomplete.evaluation.ok).toBe(false);
+    expect(incomplete.evaluation.contradictionIds).toContain(
+      "project-truth-source-missing:deployment",
+    );
+  });
+
+  it("accepts the checked-in public-unlaunched manifest snapshot", async () => {
+    const { readProjectTruthInputs } =
+      await import("../../scripts/lib/project-truth.mjs");
+    const result = evaluateProjectTruth(readProjectTruthInputs(root));
+
+    expect(result).toMatchObject({
+      ok: true,
+      audience: "public-unlaunched",
+      manifestAudience: "public-unlaunched",
       contradictions: [],
     });
   });

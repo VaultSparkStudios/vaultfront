@@ -15,6 +15,7 @@ import {
   buildEvidenceLineage,
   verifyEvidenceLineage,
 } from "./lib/evidence-lineage.mjs";
+import { buildProjectTruthFingerprint } from "./lib/project-truth.mjs";
 import { spawnSync } from "./lib/safe-spawn.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -48,6 +49,21 @@ function digestFiles(projectRoot, relativePaths) {
     hash.update("\0");
   }
   return `sha256:${hash.digest("hex")}`;
+}
+
+function readJsonIfPresent(projectRoot, relativePath, fallback = null) {
+  const target = path.join(projectRoot, relativePath);
+  return fs.existsSync(target)
+    ? JSON.parse(fs.readFileSync(target, "utf8"))
+    : fallback;
+}
+
+function digestAvailableFiles(projectRoot, relativePaths) {
+  return relativePaths.every((relativePath) =>
+    fs.existsSync(path.join(projectRoot, relativePath)),
+  )
+    ? digestFiles(projectRoot, relativePaths)
+    : null;
 }
 
 function statusCounts(items = []) {
@@ -241,6 +257,7 @@ export function buildReleaseEvidence({
       detail: "Local health-route evidence was not supplied.",
     },
   },
+  projectTruth = null,
   maxEvidenceAgeMs = DEFAULT_MAX_AGE_MS,
 }) {
   const audit = statusCounts(auditItems);
@@ -274,6 +291,11 @@ export function buildReleaseEvidence({
     releaseBlockers.push(`work: ${pendingWork.length} pending item(s)`);
   if (budgetStatus !== "pass") releaseBlockers.push("transfer: budget failed");
   if (dirty) releaseBlockers.push("source: working tree is dirty");
+  if (projectTruth && !projectTruth.evaluation?.ok) {
+    releaseBlockers.push(
+      `projectTruth: ${projectTruth.evaluation.contradictionIds.length} contradiction(s)`,
+    );
+  }
 
   const evidenceCore = {
     schemaVersion: "2.0",
@@ -297,6 +319,7 @@ export function buildReleaseEvidence({
       ...launchGates,
     },
     localSurface: localSurfaceEvidence,
+    projectTruth,
     work: {
       auditSource,
       audit,
@@ -310,6 +333,7 @@ export function buildReleaseEvidence({
     source: evidenceCore.source,
     launch: evidenceCore.launch,
     "local-surface": evidenceCore.localSurface,
+    "project-truth": evidenceCore.projectTruth,
     work: evidenceCore.work,
     transfer: evidenceCore.transfer,
     "release-decision": {
@@ -336,6 +360,12 @@ export function buildReleaseEvidence({
       evidence: lineageEvidence["local-surface"],
     },
     {
+      id: "project-truth",
+      kind: "cross-surface-truth",
+      parents: ["source"],
+      evidence: lineageEvidence["project-truth"],
+    },
+    {
       id: "work",
       kind: "exhaustion",
       parents: ["source"],
@@ -350,7 +380,7 @@ export function buildReleaseEvidence({
     {
       id: "release-decision",
       kind: "decision",
-      parents: ["launch", "local-surface", "work", "transfer"],
+      parents: ["launch", "local-surface", "project-truth", "work", "transfer"],
       evidence: lineageEvidence["release-decision"],
     },
   ]);
@@ -366,6 +396,7 @@ export function verifyReleaseEvidenceLineage(evidence) {
     source: evidence.source,
     launch: evidence.launch,
     "local-surface": evidence.localSurface,
+    "project-truth": evidence.projectTruth,
     work: evidence.work,
     transfer: evidence.transfer,
     "release-decision": {
@@ -417,6 +448,48 @@ export function generateReleaseEvidence(projectRoot = root) {
     projectRoot,
     generatedAt,
   );
+  const status = readJsonIfPresent(
+    projectRoot,
+    "context/PROJECT_STATUS.json",
+    {},
+  );
+  const studioManifest = readJsonIfPresent(
+    projectRoot,
+    "context/STUDIO_MANIFEST.json",
+    null,
+  );
+  const footerManifest = readJsonIfPresent(
+    projectRoot,
+    "public/footer-manifest.json",
+    null,
+  );
+  const footerSources = footerManifest
+    ? [
+        "public/footer-manifest.json",
+        ...(footerManifest.pages ?? []).map((page) => page.source),
+      ]
+    : [];
+  const projectTruth = buildProjectTruthFingerprint({
+    status,
+    studioManifest,
+    footerManifest,
+    sourceDigests: {
+      footer:
+        footerSources.length > 0
+          ? digestAvailableFiles(projectRoot, footerSources)
+          : null,
+      deployment: digestAvailableFiles(projectRoot, [
+        ".github/workflows/deploy.yml",
+        ".github/workflows/promote.yml",
+        "docs/DEPLOY_RUNTIME_RUNBOOK.md",
+        "scripts/check-deploy-contract.mjs",
+      ]),
+      identity: digestAvailableFiles(projectRoot, [
+        "context/PROJECT_STATUS.json",
+        "context/STUDIO_MANIFEST.json",
+      ]),
+    },
+  });
   const releaseObservations = {
     ...observationBundle.observations,
     footerManifest: localSurfaceEvidence.footerManifest,
@@ -436,6 +509,7 @@ export function generateReleaseEvidence(projectRoot = root) {
     },
     releaseObservations,
     localSurfaceEvidence,
+    projectTruth,
     transfer: {
       initial: {
         ...initial,

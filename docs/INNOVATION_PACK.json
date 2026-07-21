@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-07-18T22:35:50.022Z",
+  "generatedAt": "2026-07-21T03:09:26.516Z",
   "source": "scripts/innovation-pack.mjs",
   "primarySource": "latest audit-backed Unified Genius List",
   "items": [
@@ -57,6 +57,33 @@
       "description": "Chain source, external gates, local surfaces, work exhaustion, transfer budgets, and the final decision into ordered SHA-256 receipts with a single root digest that fails on tamper or forward references.",
       "complete": true,
       "evidence": "canonical evidence DAG builder/verifier, release-manifest integration, root receipt, and tamper/ordering tests"
+    },
+    {
+      "rank": 7,
+      "status": "shipped",
+      "id": "startup-brief-semantic-sentinel",
+      "title": "Make the startup brief prove its own arithmetic",
+      "description": "Recompute context utilization and reject numeric SIL forecasts with zero parsed evidence so adjacent source-of-truth values cannot contradict one another behind a polished status tile.",
+      "complete": true,
+      "evidence": "semantic brief validator, contradiction diagnostics, and adversarial context/SIL fixtures"
+    },
+    {
+      "rank": 8,
+      "status": "shipped",
+      "id": "release-truth-fingerprint",
+      "title": "Bind cross-surface project truth into release provenance",
+      "description": "Fingerprint status identity, generated manifest posture, footer topology, and immutable deployment sources, then make that receipt a first-class parent of the release decision.",
+      "complete": true,
+      "evidence": "canonical project-truth fingerprint, source digests, release-lineage node, and mutation-sensitive tests"
+    },
+    {
+      "rank": 9,
+      "status": "shipped",
+      "id": "operator-rollback-receipt-contract",
+      "title": "Turn rollback prose into an executable receipt contract",
+      "description": "Require immutable image and staging-evidence digests, dry-run-first promotion, canonical health verification, and a retained rollback receipt so recovery instructions cannot drift from workflow inputs.",
+      "complete": true,
+      "evidence": "digest-addressed operator runbook, 25-check deploy contract gate, and protocol regression execution"
     }
   ]
 }

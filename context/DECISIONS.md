@@ -129,3 +129,15 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Decision:** A saturated arc is complete only when the latest audit sidecar and innovation pack contain no pending unblocked entries. Deferred live/external evidence remains explicit but does not masquerade as locally executable work.
 
 **Why:** This separates genuine completion from stopping after one objective, while preserving honest deferral of evidence that cannot be created by code.
+
+## 2026-07-20 — Generated observability must validate adjacent claims, not only render them
+
+**Decision:** Startup and release surfaces recompute any claim that can be derived from values already present in the artifact. Context percentage comes only from used tokens and limit; SIL forecasts are absent without parsed category evidence; the release decision carries a canonical fingerprint over status identity, generated manifest posture, footer topology, and immutable deployment sources.
+
+**Why:** A polished surface can still lie when each field is individually plausible but mutually inconsistent. Self-validation turns contradictions into failing evidence instead of founder-facing confidence.
+
+## 2026-07-20 — Operator recovery is part of the immutable promotion contract
+
+**Decision:** Production promotion and rollback require an exact image digest, its matching staging-evidence digest, dry-run-first execution, canonical /_health revision verification, and a retained receipt. Mutable image tags and undocumented workflow inputs are not acceptable recovery paths.
+
+**Why:** A rollback instruction that cannot be executed against the live workflow is false safety. Binding documentation to checked inputs makes recovery rehearsable without weakening launch gates.

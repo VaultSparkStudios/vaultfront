@@ -64,6 +64,38 @@ describe("Studio protocol helper regressions", () => {
     expect(result.staleBrief).toContain("brief-coherent: false");
   });
 
+  it("rejects arithmetic contradictions and zero-evidence SIL forecasts", () => {
+    const body = [
+      "<!-- brief-coherent: true -->",
+      "╔══ SCORE ═══════════════════════════════════════════════════════╗",
+      "║ ok                                                           ║",
+      "╚═══════════════════════════════════════════════════════════════╝",
+      "╔══ SIGNALS ═════════════════════════════════════════════════════╗",
+      "║ ok                                                           ║",
+      "╚═══════════════════════════════════════════════════════════════╝",
+      "╔══ WHERE WE LEFT OFF ═══════════════════════════════════════════╗",
+      "║ ok                                                           ║",
+      "╚═══════════════════════════════════════════════════════════════╝",
+      "╔══ CONTEXT METER ═══════════════════════════════════════════════╗",
+      "║  80% used                                                    ║",
+      "║  8,331 / 1,000,000 tok                                       ║",
+      "╚═══════════════════════════════════════════════════════════════╝",
+      "╔══ SIL FORECAST (next session) ═════════════════════════════════╗",
+      "║  Projected: 0/1000                                           ║",
+      "╚═══════════════════════════════════════════════════════════════╝",
+      "╔══ GENIUS HIT LIST ═════════════════════════════════════════════╗",
+      "║ ok                                                           ║",
+      "╚═══════════════════════════════════════════════════════════════╝",
+    ].join("\n");
+
+    const result = validateStartupBrief(body);
+
+    expect(result.ok).toBe(false);
+    expect(result.semanticContradictions).toHaveLength(2);
+    expect(result.semanticContradictions[0]).toContain("token arithmetic");
+    expect(result.semanticContradictions[1]).toContain("parsed SIL evidence");
+  });
+
   it("attributes oversized brief tiles and trims them explicitly", () => {
     const hugeTile = [
       "╔══ GENIUS HIT LIST ═════════════════════════════════════════════╗",
@@ -271,5 +303,84 @@ describe("public protocol compatibility", () => {
       corrupt: true,
       unresolvedMergeMarkers: ["prompts/start.md"],
     });
+  });
+});
+
+describe("startup observability contracts", () => {
+  it("derives context usage from tokens and limit instead of pctUsed shape", async () => {
+    const { deriveContextUsage } =
+      await import("../../scripts/lib/context-verdicts.mjs");
+
+    expect(
+      deriveContextUsage({
+        usedTokens: 8_331,
+        limit: 1_000_000,
+        pctUsed: 0.8,
+      }),
+    ).toMatchObject({
+      fraction: 0.008331,
+      percent: 0.8331,
+      roundedPercent: 1,
+      remainingTokens: 991_669,
+    });
+    expect(
+      deriveContextUsage({ usedTokens: 1_500, limit: 1_000 }),
+    ).toMatchObject({ fraction: 1, percent: 100, remainingTokens: 0 });
+  });
+
+  it("parses current and legacy SIL shapes by actual session recency", async () => {
+    const { forecastNext, parseSilHistory } =
+      await import("../../scripts/lib/sil-forecaster.mjs");
+    const ledger = [
+      "## Sprint: 2026-07-16 — Session 74 Saturated Arc (SIL: 968/1000)",
+      "| Category | Score | Evidence |",
+      "| Dev Health | 99 | green |",
+      "| Creative Alignment | 98 | aligned |",
+      "| Momentum | 100 | shipped |",
+      "| Engagement | 86 | honest |",
+      "| Process Quality | 99 | verified |",
+      "| Cross-Repo Coherence | 97 | cargo |",
+      "| Security Posture | 99 | guarded |",
+      "| Ecosystem Integration | 91 | partial |",
+      "| Capital Efficiency | 100 | bounded |",
+      "| Automation Coverage | 99 | automated |",
+      "| **Total** | **968/1000** | exact |",
+      "",
+      "## 2026-07-19 — Session 75 | Total: 979/1000 | Velocity: 11",
+      "| SIL v3 category | Score | Evidence |",
+      "| Dev Health | 100 | green |",
+      "| Creative Alignment | 99 | aligned |",
+      "| Momentum | 100 | shipped |",
+      "| Engagement | 90 | honest |",
+      "| Process Quality | 100 | verified |",
+      "| Cross-Repo Coherence | 97 | cargo |",
+      "| Security Posture | 100 | guarded |",
+      "| Ecosystem Integration | 93 | partial |",
+      "| Capital Efficiency | 100 | bounded |",
+      "| Automation Coverage | 100 | automated |",
+      "| **Total** | **979/1000** | exact |",
+      "",
+      "## 2026-06-01 — Session 10 | Total: 700/1000",
+      "| 1 | Dev Health | 70 | legacy |",
+    ].join("\n");
+
+    const sessions = parseSilHistory(ledger);
+    expect(
+      sessions.slice(0, 2).map(({ session, total }) => ({ session, total })),
+    ).toEqual([
+      { session: 75, total: 979 },
+      { session: 74, total: 968 },
+    ]);
+    expect(sessions[0].categories).toMatchObject({
+      "Dev Health": 100,
+      "Cross-Repo Coher": 97,
+      "Automation Cover": 100,
+    });
+    expect(
+      forecastNext(sessions, { velocity: 11 })?.totalPredicted,
+    ).toBeGreaterThan(950);
+    expect(
+      forecastNext([{ session: 1, total: 100, categories: {} }]),
+    ).toBeNull();
   });
 });

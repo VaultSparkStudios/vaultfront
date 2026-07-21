@@ -1,50 +1,49 @@
 <!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
-<!-- source-hash: 6ff4c0e531c3 -->
-<!-- generated-at: 2026-07-19T20:08:52.251Z -->
+<!-- source-hash: 4a81a0344536 -->
+<!-- generated-at: 2026-07-21T03:24:23.884Z -->
 
 # LATEST_HANDOFF (compact)
 
-SESSION HANDOFF — Session 75 (2026-07-19)
+SESSION
 
-Current Intent
+- Session 76 (2026-07-20)
 
-- Deploy exact verified digest to a real staging origin, then collect launch-gate evidence in order.
+SHIPPED
 
-Shipped (Session 75)
+- Audit 5/5 and Innovation Pack 9/9 complete.
+- Context usage derived only from printed token counts; brief validation rejects arithmetic contradictions and zero-evidence SIL forecasts.
+- SIL ledgers (current + legacy) parse structurally, sort by real recency, return no forecast when history absent.
+- Deterministic project-truth fingerprint across status, manifest, footer topology, immutable deploy sources.
+- Ten public leaf pages pass scoped route contract (4 header, 7 footer, all legal).
+- Deploy/promotion/rollback docs now require exact image + staging-evidence digests, dry-run-first, canonical /_health, retained rollback receipts.
 
-- 14 new findings + 3 second-order innovations; cumulative audit 37/37, innovation pack 6/6.
-- Match outcomes now require strict unique-IP-majority certificate over complete canonical roster.
-- One Match Result Certificate is sole authority for archive, progression, metrics, recap, coaching.
-- Command Center: meta systems reachable, truthful states, lazy-loaded behind explicit nav.
-- High-risk routes bind exact method/path/auth/evidence; AI/experiment ops use shared semantic auth.
-- Release evidence fails closed across 8 provenance gates with self-verifying decision lineage root.
+VERIFICATION
 
-Now Bucket (top items)
+- 134/134 Vitest files, 822/822 tests; independent 31-file/121-test server repeat; lint; TypeScript; prod build.
+- Playwright 24/24; deploy contract 25/25; footer 10/10; doctor 7/7, blockingFailing 0; audit 5/5; innovations 9/9.
 
-1. Deploy exact verified digest to real staging origin.
-2. Collect staging parity evidence.
-3. Run three-human Alpha Gate.
+CURRENT INTENT
 
-Blockers (top 3)
+- Turn verified local evidence into first real staging observation bundle without weakening any gate.
 
-1. No staging/parity evidence — nothing deployed to real origin yet.
-2. No three-human Alpha Gate completed.
-3. No Brevo delivery / Obelisk RP auth / live web-vitals proof.
+NOW BUCKET
 
-Human-Blocked Items
+- Create first real staging observation bundle from exact verified digest.
+- Collect parity + Brevo project-domain delivery evidence.
+- Collect Obelisk relying-party auth + live theme verification evidence.
 
-- Three-human Alpha Gate — pending (open since ≤S74).
-- Founder approval — pending (open since ≤S74).
-- Revenue event evidence — pending (open since ≤S74).
+BLOCKERS
 
-Truth Boundary
+- No real staging observation/parity bundle exists; release manifest correctly blocked.
+- Deploy pending; no production deploy or SPARKED/public announcement attempted.
+- VaultFront remains FORGE / public-unlaunched.
 
-- VaultFront = FORGE / public-unlaunched. No staging/parity, Alpha Gate, Brevo, native Obelisk auth, live security-header/CWV/theme proof, revenue, or founder approval claimed by local evidence.
+HUMAN-BLOCKED (age)
 
-Verification Snapshot
+- Three distinct human Alpha sessions: outstanding since S75 (1 session).
+- Real revenue event: outstanding since S75 (1 session).
+- Founder approval: outstanding since S75 (1 session).
 
-- 134/134 Vitest files, 814/814 tests; independent server repeat 31 files/119 tests; Playwright 24/24; lint; TypeScript; prod build; budgets/ratchets pass; doctor 7/7, blockingFailing 0; audit 37/37, innovations 6/6.
+NEXT SESSION
 
-Next Session Pointer
-
-- Start with real staging deploy of verified digest, then gather parity → Alpha → Brevo → Obelisk → web/theme → revenue → founder evidence in that order.
+- Start staging observation bundle from verified digest, then gather parity/Brevo/Obelisk/theme/Alpha/revenue/approval evidence.

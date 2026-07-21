@@ -142,3 +142,25 @@ All 3 items from `docs/AUDIT_2026-06-14.md` shipped: `alpha-gate-operator-runboo
 ## Deferred to Project Agents
 
 - cross-repo item owned by another repo agent:
+
+## Completed (2026-07-20 — Session 76 truth-contract arc)
+
+All 5 premise-verified infrastructure findings in docs/AUDIT_2026-07-20.json shipped, followed by 3 new second-order candidates; docs/INNOVATION_PACK.json is now 9/9 shipped.
+
+- [done] Context-meter arithmetic derives from used tokens / limit and the brief rejects contradictory percentages.
+- [done] SIL parsing covers current and legacy formats, orders by session recency, and refuses numeric forecasts without evidence.
+- [done] Project/status/manifest truth is fail-closed and bound into release evidence through a deterministic fingerprint.
+- [done] All 10 public leaves pass the non-vacuous scoped 4-header / 7-footer route contract.
+- [done] Deploy, promotion, and rollback documentation passes a 25-check immutable workflow contract.
+- [done] Signed Ark correction and pattern cargos shipped without editing a sibling implementation tree.
+- [done] Full proof: 134 files / 822 tests, 31-file / 121-test server repeat, lint, build, 24/24 E2E, and doctor blockingFailing 0.
+
+## Next
+
+- [ ] [release-evidence] Deploy the exact verified immutable digest to a real staging origin, then produce a fresh parity observation bundle.
+- [ ] [release-evidence] Verify project-domain Brevo delivery, native Obelisk relying-party authentication, and live multi-theme readability from staging.
+- [ ] [release-evidence] Collect three distinct authenticated human Alpha sessions and a real revenue observation; obtain founder approval only after every prior gate passes.
+- [ ] [ecosystem] Confirm Studio Ops receipt of Ark cargo 01JU1AEATS46E1C7F5DD9AE41C and verify the canonical registry/release-checker/startup-regex/signature fixes propagate back through Ark.
+
+- [ ] [SIL:1] Generate the public nav/footer route graph from one source, preserve the scoped checker as the invariant, and attach desktop/mobile theme screenshots once staging exists.
+- [ ] [SIL:2] Verify Ark cargo 01JU1AEATS46E1C7F5DD9AE41C is accepted and the canonical release admission consumes the same complete project-truth fingerprint rather than private/public heuristics.

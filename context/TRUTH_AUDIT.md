@@ -150,3 +150,16 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 - `docs/AUDIT_2026-05-18.md` matches shipped code/test changes.
 - Startup brief regenerated successfully after helper repair.
 - Full lint/build are not green yet due unrelated pre-existing blockers; focused modified-file checks passed.
+
+## 2026-07-20 — Session 76 truth audit
+
+- docs/AUDIT_2026-07-20.json is the latest audit source: 5 total, 5 shipped, 0 pending.
+- docs/INNOVATION_PACK.json is evidence-derived and reports 9 total, 9 shipped, 0 pending.
+- Startup context usage is derived from tokens/limit; the live brief prints approximately 3%, not the former contradictory 80%.
+- SIL history parses five current sessions and produces a nonzero evidence-backed forecast; the validator rejects a 0/1000 numeric claim.
+- context/PROJECT_STATUS.json and context/STUDIO_MANIFEST.json agree on game / alpha / public-unlaunched. Their identity, public metadata, footer topology, and immutable deploy sources are represented by static/release-evidence.json projectTruth.fingerprint.
+- Footer truth is scoped and non-vacuous: 10 pages, 4 header destinations, 7 footer destinations, with every header/footer-only/legal route present in each leaf footer.
+- Deployment truth is staging-only plus explicit digest promotion; scripts/check-deploy-contract.mjs passes 25 checks including rollback receipt requirements.
+- Release evidence is exhausted and transfer-budget green but remains blocked on absent staging/parity, Brevo, Obelisk, live theme, founder approval, and distinct-human Alpha evidence. Dirty source remains a blocker until the closeout commit.
+- Verification observed directly: 134 Vitest files / 822 tests, independent 31-file / 121-test server repeat, lint green, production build green, Playwright 24/24, and project doctor 7/7 with blockingFailing: 0.
+- Signed Ark cargos 01JU1AEATS46E1C7F5DD9AE41C and 01JU1AF6P1EF704DF81B654BAB carry the canonical correction request and reusable pattern. No sibling implementation tree was edited.
