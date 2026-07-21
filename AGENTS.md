@@ -138,6 +138,8 @@ Don't know the command? Check capabilities before declaring anything unknown or 
 
 **Before building any tool, check the reuse-registry (CANON-039 · Internal-First):** `vaultspark-studio-ops/docs/INTERNAL_TOOLS.md` is the studio-wide registry of already-built internal tools (arc/guard/propagation/secrets/Ark/doctor and more). Reuse an existing internal tool before researching OSS or building new; only build when the registry has no fit and OSS research comes up short. Record a new reusable tool back to the registry so the next project finds it.
 
+**Frontier capability currency (CANON-049):** at every `/start`, run `node ../vaultspark-studio-ops/scripts/frontier-capability-radar.mjs --refresh-if-stale --write --json` (use the repo-local path inside studio-ops). It checks official OpenAI/ChatGPT/Codex, Anthropic/Claude, and critical-tool sources and refreshes only when the last complete scan exceeds seven days. A failed source stays unknown/degraded. Changed fingerprints create scored review candidates; never silently install, enable a beta, spend API funds, broaden data access, or promise adoption.
+
 ## Public-facing project requirements
 
 For `audience: public-*` projects:
@@ -222,6 +224,7 @@ It reads the **live** `STUDIO_CANON.md` (always current) and maintains `context/
 - **CANON-049** · Continuous evolution: the studio + every project is never static
 - **CANON-050** · Atlas: the foundation that carries the ecosystem — and the standard it is held to
 - **CANON-051** · Web Hardening: every public surface meets the edge-security + standard-files baseline
+- **CANON-052** · Project Lifecycle Ladder: FORGE/SPARKED/VAULTED with sub-stages, gated transitions, and a single write path
 
 <!-- canon-index:end -->
 

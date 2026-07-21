@@ -1,29 +1,29 @@
 <!-- generated-by: scripts/render-closeout-board.mjs v1.0 -->
-<!-- generated-at: 2026-07-19 (Session 75 closeout) -->
+<!-- generated-at: 2026-07-21 (Session 77 closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
-╔══ SESSION CLOSEOUT · VaultFront · S75 ═════════════════════════╗
-║  Date: 2026-07-19 · SIL: 979/1000 · V:11  ·  Debt: down          ║
+╔══ SESSION CLOSEOUT · VaultFront · S77 ═════════════════════════╗
+║  Date: 2026-07-21 · SIL: 981/1000 · V:8  ·  Debt: down           ║
 ║  Mode: FOUNDER  ·  Agent: codex                                  ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ WHAT SHIPPED ════════════════════════════════════════════════╗
-║  ✓ One Match Result Certificate is the authority for archive, p  ║
-║  ✓ Command Center makes meta systems reachable with truthful st  ║
-║  ✓ High-risk routes bind exact method/path/auth/evidence policy  ║
-║  ✓ Release evidence fails closed across eight fresh provenance   ║
-║  ✓ Human + Agent capability claims are source-digested and rema  ║
+╔══ WHAT SHIPPED · last 5 commits ═══════════════════════════════╗
+║  ✓ feat(release): make project truth self-validating             ║
+║  ✓ feat(auth): add Obelisk Passport scaffold                     ║
+║  ✓ test: cover persistence readiness postures                    ║
+║  ✓ test: isolate release evidence fixture                        ║
+║  ✓ feat: certify match truth and release evidence                ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ SCORES · SIL 979/1000 ═══════════════════════════════════════╗
+╔══ SCORES · SIL 981/1000 ═══════════════════════════════════════╗
 ║    Dev Health         100  ██████████                            ║
 ║    Alignment          99   ██████████                            ║
 ║    Momentum           100  ██████████                            ║
 ║    Engagement         90   █████████░                            ║
 ║    Process Qual       100  ██████████                            ║
-║    Coherence          97   ██████████                            ║
+║    Coherence          98   ██████████                            ║
 ║    Security           100  ██████████                            ║
-║    Ecosystem          93   █████████░                            ║
+║    Ecosystem          94   █████████░                            ║
 ║    Capital            100  ██████████                            ║
 ║    Automation         100  ██████████                            ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -31,16 +31,16 @@
 ║  ✓ context/CURRENT_STATE.md                                      ║
 ║  ✓ context/TASK_BOARD.md                                         ║
 ║  ✓ context/LATEST_HANDOFF.md                                     ║
-║  ✓ context/WORK_LOG.md                                           ║
+║  · context/WORK_LOG.md                                           ║
 ║  ✓ context/DECISIONS.md                                          ║
 ║  ✓ context/SELF_IMPROVEMENT_LOOP.md                              ║
-║  · docs/CREATIVE_DIRECTION_RECORD.md                             ║
+║  ✓ docs/CREATIVE_DIRECTION_RECORD.md                             ║
 ║  ✓ context/TRUTH_AUDIT.md                                        ║
 ║  ✓ context/PROJECT_STATUS.json                                   ║
-║  ✓ agent memory (context/BRAIN.md or agent home)                 ║
+║  · agent memory (context/BRAIN.md or agent home)                 ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 118 files  ·  M:88 A:0 D:1 ?:29                        ║
+║  Changes: 11 files  ·  M:10 A:0 D:0 ?:1                          ║
 ║  Ahead: 0  ·  Behind: 0                                          ║
 ║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -51,10 +51,10 @@
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
 ║  Doctor:        7/7                                              ║
 ║  Compliance:    49/49                                            ║
-║  Tests:         814/814                                          ║
-║  IGNIS:         4d ago                                           ║
+║  Tests:         822/822                                          ║
+║  IGNIS:         6d ago                                           ║
 ║  Truth:         green                                            ║
-║  Sanitization:  3d ago                                           ║
+║  Sanitization:  5d ago                                           ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ NEXT SESSION ════════════════════════════════════════════════╗
 ║  #1: Unified Genius List exhausted                               ║

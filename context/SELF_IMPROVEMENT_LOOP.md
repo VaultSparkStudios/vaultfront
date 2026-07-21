@@ -289,3 +289,38 @@ capitalEfficiency +7 (oracle/prophecy cache eliminates >80% redundant Haiku call
 - [SIL:2] Confirm the signed Ark correction lands and canonical release admission adopts complete fingerprint semantics.
 
 **Honest refusals:** Rejected worker-ID rework, a premature database materialized view, unsupported client caching, and fabricated live release evidence after checking their live premises. Those were successful audit outcomes, not silent omissions.
+
+## 2026-07-21 — Session 77 | Total: 981/1000 | Velocity: 0
+
+| SIL v3 category       |        Score | Evidence                                                                                                                                     |
+| --------------------- | -----------: | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev Health            |          100 | Direct full rerun passed 134/134 files and 822/822 tests plus 31/31 server files and 121/121 tests after isolating one timing timeout.       |
+| Creative Alignment    |           99 | Recovery preserved the existing VaultFront identity and introduced no speculative product changes.                                           |
+| Momentum              |          100 | The interrupted boundary was reconstructed, verified, and checkpointed without losing the requested continuous mission.                      |
+| Engagement            |           90 | No human playtest evidence was created during recovery; the score remains honestly capped.                                                   |
+| Process Quality       |          100 | Provenance, full diff, structured integrity, config guard, direct exits, committed/uncommitted separation, and doctor evidence were checked. |
+| Cross-Repo Coherence  |           98 | Propagated Canon guidance was retained locally; no sibling implementation tree was edited.                                                   |
+| Security Posture      |          100 | No secret/config corruption or unsafe Git recovery occurred; no reset-hard, force-push, or hook bypass was used.                             |
+| Ecosystem Integration |           94 | Canon adoption advanced to the live 52-entry index; live Obelisk/Brevo/staging evidence remains absent.                                      |
+| Capital Efficiency    |          100 | Recovery added no dependency, paid call, or variable-cost surface.                                                                           |
+| Automation Coverage   |          100 | Recovery classifier, JSON guard, full suite, isolated regression, and seven doctor probes all executed.                                      |
+| **Total**             | **981/1000** | Exact sum; score held because this was a continuity recovery, not new product evidence.                                                      |
+
+**Rolling data:** Avg3 980.3 · Avg5 970.4 · velocity 0 · debt → · sparkline █████.
+
+**Top win:** The session boundary is now evidence-backed: committed Session 76 behavior is distinct from Session 77 startup artifacts, and a transient timeout could not become either a phantom-red or a phantom-green.
+
+**Top gap:** The first real staging observation/parity bundle still does not exist.
+
+### Brainstorm
+
+1. Make recovery classification emit a compact committed-versus-uncommitted ledger suitable for closeout artifacts.
+2. Add measured timeout diagnostics to slow spawn-based contract tests so resource contention is visible before the fixed ceiling fires.
+3. Preserve a recovery checkpoint fingerprint in the next startup brief so interrupted-session provenance remains self-verifying.
+
+### Commitments
+
+- [SIL:1] Audit spawn-based test timeout budgets against measured cold/full-suite latency instead of raising them blindly.
+- [SIL:2] Carry recovery provenance into the final Session 78 closeout honesty ledger.
+
+**Honest refusal:** No runtime or launch claim was refreshed merely because Session 76 was already green; recovery reran the actual gates first.

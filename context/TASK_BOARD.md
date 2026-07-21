@@ -52,6 +52,12 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 
 ## Follow-ups
 
+## Completed (2026-07-21 — Session 77 interrupted-start recovery)
+
+- Reconstructed Session 77 as cut off during `/start`, not during implementation or closeout.
+- Verified Session 76 product work is committed at `22c2b3a6`; separated it from Session 77's uncommitted protocol/Canon refresh.
+- Proved structured/config integrity, classified the one timing timeout with isolated and full reruns, and restored a direct green suite plus doctor `blockingFailing: 0` without weakening a gate.
+
 ## Completed (2026-07-19 — Session 75 complete saturated arc)
 
 All 14 newly premise-verified findings in `docs/AUDIT_2026-07-16.json` shipped, exhausting the cumulative audit at 37/37. The session then generated and shipped three new second-order candidates, bringing `docs/INNOVATION_PACK.json` to 6/6.

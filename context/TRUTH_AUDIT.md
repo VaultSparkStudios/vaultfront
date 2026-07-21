@@ -163,3 +163,12 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 - Release evidence is exhausted and transfer-budget green but remains blocked on absent staging/parity, Brevo, Obelisk, live theme, founder approval, and distinct-human Alpha evidence. Dirty source remains a blocker until the closeout commit.
 - Verification observed directly: 134 Vitest files / 822 tests, independent 31-file / 121-test server repeat, lint green, production build green, Playwright 24/24, and project doctor 7/7 with blockingFailing: 0.
 - Signed Ark cargos 01JU1AEATS46E1C7F5DD9AE41C and 01JU1AF6P1EF704DF81B654BAB carry the canonical correction request and reusable pattern. No sibling implementation tree was edited.
+
+## 2026-07-21 — Session 77 recovery truth audit
+
+- `classify-recovery-provenance.mjs` reports no corruption, unresolved merge markers, or lint-staged backup ambiguity.
+- Session 76's product/runtime closeout is committed at `22c2b3a6`; Session 77 contained only uncommitted startup/protocol state before recovery verification.
+- There were no untracked files and no changed JSON/NDJSON inputs before doctor refreshed `PROJECT_STATUS.json`; the refreshed JSON parses.
+- `~/.claude.json` passes native JSON parsing, and the canonical guard reports zero corruption events in the prior 24 hours.
+- The first `npm test` red was one fixed-timeout failure, not an assertion mismatch. The exact test passed alone in 0.9 seconds and the next direct full run passed 134/134 files, 822/822 tests, 31/31 server files, and 121/121 server tests.
+- Project doctor directly passed seven executable checks with `blockingFailing: 0`.

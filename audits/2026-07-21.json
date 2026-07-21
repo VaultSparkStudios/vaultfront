@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.3",
+  "project": "vaultfront",
+  "date": "2026-07-21",
+  "session": 77,
+  "agent": "codex",
+  "kind": "interrupted-start-recovery-closeout",
+  "mission": "Phase 0 recovery checkpoint before a fresh full arc",
+  "sil": {
+    "score": 981,
+    "max": 1000,
+    "delta": 0,
+    "note": "Score held because recovery verified continuity and protocol freshness without adding product or live evidence."
+  },
+  "recovery": {
+    "classifiedPhase": "start",
+    "priorProductCommit": "22c2b3a6",
+    "corruption": false,
+    "mergeMarkers": 0,
+    "untrackedFiles": 0,
+    "committedWorkSeparated": true
+  },
+  "verification": [
+    {
+      "command": "npm test",
+      "status": "pass-after-classified-flake",
+      "evidence": "First run: one 5-second timeout. Isolated test: 4/4 in 0.9 seconds. Direct rerun: 134/134 files and 822/822 tests plus 31/31 server files and 121/121 tests."
+    },
+    {
+      "command": "node scripts/ops.mjs doctor --update-json",
+      "status": "pass",
+      "evidence": "7/7 executable checks; blockingFailing=0."
+    },
+    {
+      "command": "claude-json-guard --status",
+      "status": "pass",
+      "evidence": "Claude config valid; zero corruption events in the preceding 24 hours."
+    }
+  ],
+  "releaseGate": {
+    "status": "unchanged-no-go",
+    "fabricatedEvidence": false
+  },
+  "next": [
+    "Create a fresh Session 78 lock and execute /start → /audit → /implement → /closeout.",
+    "Pursue live staging evidence without substituting local test output."
+  ]
+}

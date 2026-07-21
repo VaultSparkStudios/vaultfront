@@ -2,6 +2,13 @@
 
 Append-only. Each session appends one entry. Never edit prior entries.
 
+## 2026-07-21 — Session 77 interrupted-start recovery closeout
+
+- Goal: Recover the cut-off Session 77, prove its boundary and prior claims against live state, checkpoint it independently, then hand off to a fresh full arc.
+- What changed: Preserved the propagated agent/Canon refresh, regenerated Canon adoption and compact handoff, recorded recovery provenance, refreshed doctor evidence, and reconciled public-safe state without claiming deployable behavior changes.
+- Verification: No merge markers, untracked debris, changed malformed JSON/NDJSON, or Claude configuration corruption. One 5-second test timeout passed alone in 0.9 seconds; the direct full rerun passed 134/134 files and 822/822 tests plus 31/31 server files and 121/121 tests. Doctor passed 7/7 with `blockingFailing: 0`.
+- Recommended next move: Start a fresh locked Session 78 and execute the saturated full arc through closeout.
+
 ---
 
 ## 2026-07-16 — Session 72 interrupted-state recovery closeout

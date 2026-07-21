@@ -2,6 +2,20 @@
 
 This repo keeps only a public-safe two-session handoff. Detailed operational history is maintained privately.
 
+## Where We Left Off — 2026-07-21 — Session 77 recovery checkpoint
+
+**Session intent:** Recover the cut-off prior session before beginning a fresh complete `/arc`, prove its claims against live gates, checkpoint the boundary, then continue automatically.
+
+**Recovered:** Session 77 died during `/start` after propagated agent/Canon refresh, Canon-adoption regeneration, compact-handoff refresh, and intent logging. It had not entered audit or changed deployable behavior. Session 76's runtime work and closeout were already committed at `22c2b3a6`.
+
+**Integrity:** Recovery provenance reported no corruption or merge markers; there were no untracked files or changed JSON/NDJSON inputs. Native parsing and the Studio guard confirm `~/.claude.json` is valid with zero corruption events in the preceding 24 hours.
+
+**Verification:** The first full suite run exposed one 5-second timing timeout. The exact test passed alone in 0.9 seconds, then a direct full rerun passed 134/134 files and 822/822 tests plus the independent 31-file/121-test server repeat. Project doctor passed 7/7 with `blockingFailing: 0`.
+
+**Suggested next focus:** Begin a fresh locked session and run the requested saturated `/start → /audit → /implement → /closeout` arc, using real staging/live evidence where available and preserving every launch truth boundary.
+
+---
+
 ## Where We Left Off — 2026-07-20 — Session 76
 
 **Session intent:** Run one continuous /start → /audit → /implement → /closeout infrastructure mission, verify every premise against live code, exhaust the full Unified Genius List, generate and implement second-order innovation, and close directly to main with truthful evidence.
@@ -22,15 +36,3 @@ This repo keeps only a public-safe two-session handoff. Detailed operational his
 **Truth boundary:** Local evidence does not substitute for staging/parity, Brevo project-domain delivery, native Obelisk relying-party authentication, live theme verification, three distinct human Alpha sessions, a real revenue event, or founder approval. The release manifest remains blocked by those absent observations; cost is not treated as an alarm under the flat-rate plan.
 
 **Suggested next focus:** Use the exact verified digest to create the first real staging observation bundle, then collect parity, Brevo, Obelisk, live theme, distinct-human Alpha, revenue, and founder-approval evidence without weakening any gate.
-
----
-
-## Where We Left Off — 2026-07-19 — Session 75
-
-**Session intent:** Execute one saturated /start → /audit → /implement → /closeout mission, exhaust every live-verified item, generate and implement second-order innovation, and push an evidence-backed direct-main closeout.
-
-**Shipped:** Fourteen new findings and three new second-order innovations. The cumulative audit reached 37/37 and the innovation pack 6/6. Match completion, game creation, persistence, route policy, artificial-intelligence receipts, Command Center reachability, capability evidence, and release lineage became bounded and executable.
-
-**Verification:** 134/134 main Vitest files and 814/814 tests; 31-file / 119-test server repeat; Playwright 24/24; lint; TypeScript; production build; exact transfer/media budgets; doctor 7/7 with blockingFailing: 0.
-
-**Truth boundary:** VaultFront remained FORGE / public-unlaunched; no live launch evidence was fabricated.
