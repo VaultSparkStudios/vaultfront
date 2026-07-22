@@ -317,7 +317,7 @@ function writeBackCoverage() {
     "context/CURRENT_STATE.md",
     "context/TASK_BOARD.md",
     "context/LATEST_HANDOFF.md",
-    "context/WORK_LOG.md",
+    "logs/WORK_LOG.md",
     "context/DECISIONS.md",
     "context/SELF_IMPROVEMENT_LOOP.md",
     "docs/CREATIVE_DIRECTION_RECORD.md",
