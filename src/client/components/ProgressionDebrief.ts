@@ -8,6 +8,11 @@ import {
   fetchVaultFrontContracts,
 } from "../Api";
 import { getPersistentID } from "../Auth";
+import {
+  persistConvoyMastery,
+  readConvoyMastery,
+  selectConvoyMastery,
+} from "../ConvoyMastery";
 import type { Layer } from "../graphics/layers/Layer";
 
 @customElement("progression-debrief")
@@ -19,6 +24,8 @@ export class ProgressionDebrief extends LitElement implements Layer {
   @state() private eloText = "";
   @state() private milestoneText = "";
   @state() private achievementText = "";
+  @state() private masteryText = "";
+  @state() private masteryEvidence = "";
 
   private requested = false;
   private refreshTimer: ReturnType<typeof setTimeout> | null = null;
@@ -74,6 +81,16 @@ export class ProgressionDebrief extends LitElement implements Layer {
       this.achievementText =
         unlocked + "/" + achievements!.achievements.length + " achievements";
     }
+    const saved = readConvoyMastery();
+    const mastery = selectConvoyMastery({
+      savedGoal: saved ? { text: saved.text, goalKey: saved.goalKey } : null,
+      milestones: season?.milestones,
+      achievements: achievements?.achievements,
+      contracts,
+    });
+    persistConvoyMastery(mastery);
+    this.masteryText = mastery.text;
+    this.masteryEvidence = mastery.evidence;
     this.loading = false;
   }
 
@@ -112,10 +129,29 @@ export class ProgressionDebrief extends LitElement implements Layer {
             ? html`<div class="mt-2 text-sm text-slate-300">
                 Finalizing match rewards…
               </div>`
-            : html`<div class="mt-2 grid gap-1 text-sm sm:grid-cols-3">
-                <div>${this.eloText || "Rating unchanged"}</div>
-                <div>${this.milestoneText || "Season track ready"}</div>
-                <div>${this.achievementText || "Achievements ready"}</div>
+            : html`<div class="mt-2">
+                <div
+                  class="rounded border border-cyan-300/30 bg-cyan-950/25 p-2"
+                >
+                  <div
+                    class="text-xs font-bold uppercase tracking-wide text-cyan-200"
+                  >
+                    Convoy Mastery
+                  </div>
+                  <div class="mt-1 text-sm font-semibold text-white">
+                    ${this.masteryText}
+                  </div>
+                  <div class="mt-0.5 text-xs text-cyan-100/75">
+                    ${this.masteryEvidence}
+                  </div>
+                </div>
+                <div
+                  class="mt-2 grid gap-1 text-xs text-slate-300 sm:grid-cols-3"
+                >
+                  <div>${this.eloText || "Rating unchanged"}</div>
+                  <div>${this.milestoneText || "Season track ready"}</div>
+                  <div>${this.achievementText || "Achievements ready"}</div>
+                </div>
               </div>`
         }
       </aside>

@@ -1,51 +1,50 @@
 <!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
-<!-- source-hash: b0b1d25b28f8 -->
-<!-- generated-at: 2026-07-21T19:48:11.002Z -->
+<!-- source-hash: 60b1031f86d7 -->
+<!-- generated-at: 2026-07-22T03:47:48.409Z -->
 
 # LATEST_HANDOFF (compact)
 
-SESSION
+SESSION HANDOFF SUMMARY
 
-- Session 77 (recovery checkpoint), dated 2026-07-21.
+Session
 
-WHAT SHIPPED
+- Number: 78 (saturated closeout)
+- Boundary committed to main; prior S77 recovery checkpoint at 9688d4a6
 
-- Session 77: no deployable change; died during /start after agent/Canon refresh, regeneration, handoff refresh, intent logging. Never entered audit.
-- Session 76 (already committed at 22c2b3a6): all 5/5 audit items and 9/9 innovation-pack items.
-  - Context usage derived from printed token counts; brief validation rejects arithmetic contradictions and zero-evidence SIL forecasts.
-  - SIL ledgers (current+legacy) parse, sort by recency, return no forecast when history absent.
-  - Project-truth fingerprint from status/manifest/footer/deploy sources; identity/posture disagreements flagged loudly.
-  - 10 public leaf pages pass scoped route contract (4 header, 7 footer, all legal routes).
-  - Deploy/promotion/rollback docs require exact image+staging digests, dry-run-first, /_health check, retained rollback receipts.
-  - Signed Ark cargo + broadcast issued; no sibling tree edited.
+Shipped
 
-CURRENT INTENT
+- 7 locally executable audit items in docs/AUDIT_2026-07-21.json; second-order pack 11/11
+- Certified match progression: resolves spectator predictions once from deterministic convoy evidence, returns typed receipt
+- First Extraction quest owns first-run vocabulary; advanced coaching gated on completion; two unmounted tutorial paths removed
+- Convoy Mastery selects one cross-match prescription from certified recap/season/achievement/rating evidence
+- Startup activity age uses strict ISO dates; Avg3 uses newest scored entries; semantic validation rejects impossible age
+- Bounded manifest generator owns nav/footer for ten public leaves; doctor detects drift
+- Local Playwright evidence: three themes desktop/mobile, contrast exceeds WCAG AA; receipt local-only, 30-day expiry
+- Work exhaustion recognizes evidenced externally-blocked status without hiding it
 
-- Begin fresh locked session; run saturated /start → /audit → /implement → /closeout arc using real staging/live evidence, preserving all launch-truth boundaries.
+Current Intent
 
-INTEGRITY / VERIFICATION
+- Establish real staging contract after Studio Ops registry reply, then exercise external parity, delivery, identity, live metrics, human Alpha sessions, revenue, founder approval
 
-- Recovery clean: no corruption, no merge markers, no untracked files, no changed JSON/NDJSON. ~/.claude.json valid, zero corruption events in 24h.
-- Full suite passed on rerun: 134/134 files, 822/822 tests; independent 31-file/121-test server repeat passed; doctor 7/7, blockingFailing 0.
+Now Bucket (top 3)
 
-NOW BUCKET (top 3)
+- Receive Studio Ops registry-profile reply and deliberately establish staging contract
+- Exercise exact-digest parity and project-domain Brevo delivery on staging
+- Run native Obelisk relying-party identity plus live headers/Core Web Vitals/themes
 
-- Create first real staging observation bundle using the exact verified digest.
-- Collect parity + Brevo project-domain delivery evidence.
-- Collect Obelisk native relying-party auth and live theme verification.
+Blockers (top 3)
 
-BLOCKERS (top 3)
+- Browser screenshot viewer unavailable: Windows DPAPI sandbox failed; only automated capture claimed, no visual inspection
+- No external staging target: registry specifies local staging; local proof is not staging parity
+- No launch authorization; founder approval required last
 
-- Release manifest correctly blocked: no real staging observation/parity bundle exists.
-- Missing Brevo delivery, Obelisk auth, live theme evidence.
-- No revenue event or three distinct-human Alpha sessions yet.
+Human-Blocked Items
 
-HUMAN-BLOCKED
+- Studio Ops registry-profile reply, Ark follow-up 01JU3RL522793F2F1D15EC71D6 requests registry correction receipt (opened S78, ~0 days)
+- Two external corridors (Cloudflare deploy, Brevo) READY but blocked pending staging contract
 
-- Founder approval required for release (pending, age ~1 day since Session 76 closeout 2026-07-20).
-- Three distinct human Alpha sessions (pending).
-- Real revenue event (pending).
+Verification
 
-NEXT SESSION
+- 139/139 main Vitest files, 840/840 tests; 32/32 server files, 124/124 tests; TypeScript; prod Vite build; two Playwright theme-matrix projects (6 cells/12 screenshots); audit 9/9; innovation 11/11; doctor 8/8, blockingFailing 0
 
-- Start fresh locked session, run the full /start→/audit→/implement→/closeout arc, and build the first staging bundle from the verified digest.
+Next session: Await Studio Ops registry reply, then establish and exercise the staging parity contract.

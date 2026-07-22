@@ -149,3 +149,15 @@ Append-only. Each session appends one entry. Never edit prior entries.
 - Risks created or removed: Removes the alpha measurement blind spot and makes tournament playtests operator-readable. Broad `npm test` still has 3 residual failures outside this pass; parallel local E2E remains flaky, while serial CI-style E2E passes.
 - Recommended next move: Repair the broad Vitest residuals, then surface playtest pulse in startup/operator views and connect it to live playtest sessions.
 - 2026-07-20 · Session 76 · Shipped 5/5 premise-verified truth-contract findings plus 3 second-order innovations (pack 9/9); 822 tests + 121 server repeat + lint/build + 24 E2E + doctor 7/7 green; signed Ark correction/broadcast sent; release honestly remains blocked on live evidence.
+
+---
+
+## 2026-07-21 — Session 78 saturated product-truth closeout
+
+- Goal: Continue from the verified Session 77 recovery checkpoint through a complete product-specific audit, full implementation, second-order innovation, and direct-to-main closeout.
+- What changed: Closed certified Prediction League resolution; converged onboarding on First Extraction; added cross-match Convoy Mastery; fixed startup chronology and scoped process timing; generated ten public shells from one manifest; added local three-theme desktop/mobile proof; made external-block taxonomy and theme-proof freshness self-checking.
+- Files or systems touched: progression/prediction server spine, onboarding/debrief/HUD client surfaces, public HTML generator and leaves, startup/doctor/exhaustion scripts, Playwright proof, audit/innovation artifacts, and public-safe context truth.
+- Verification: 139 main Vitest files / 840 tests; independent 32 server files / 124 tests; TypeScript; production Vite build; six-cell Playwright theme proof; Prettier ratchet; audit 9/9; innovations 11/11; doctor 8/8 with `blockingFailing: 0`.
+- Risks removed: unreachable prediction history, fragmented onboarding, parallel meta hierarchy, impossible startup age, hand-copied public shell drift, non-expiring local theme evidence, and false exhaustion failure for evidenced external blockers.
+- Remaining boundary: release remains NO-GO until approved staging/parity, Brevo, Obelisk, live web/theme, distinct-human Alpha, revenue, and founder evidence exist.
+- Closeout incident: three sibling Studio Ops helpers executed despite `--help`; likely state-vector/status writes were reported through signed Ark cargo `01JU3V1GUP49DF58394CEE8244`. No direct sibling repair was attempted; VaultFront refreshes used explicit `--project .` afterward.

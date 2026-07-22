@@ -82,6 +82,7 @@ describe("GameServer progression wiring", () => {
             vaultfront: {
               vaultCaptures: 2n,
               vaultConvoysDelivered: 3n,
+              vaultConvoysIntercepted: 1n,
               cleanExecutionStreaks: 1n,
               surgeActivations: 1n,
             },
@@ -90,6 +91,7 @@ describe("GameServer progression wiring", () => {
             vaultfront: {
               vaultCaptures: 1n,
               vaultConvoysDelivered: 0n,
+              vaultConvoysIntercepted: 2n,
               cleanExecutionStreaks: 0n,
               surgeActivations: 0n,
             },
@@ -129,6 +131,7 @@ describe("GameServer progression wiring", () => {
             displayName: "Winner",
             won: true,
             convoyDeliveries: 3,
+            convoyIntercepts: 1,
           }),
           expect.objectContaining({
             persistentId: "p2",

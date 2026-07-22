@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { checkFooterManifest } from "../../scripts/check-footer-manifest.mjs";
+import { generatePublicShell } from "../../scripts/generate-public-shell.mjs";
 
 const fixtures: string[] = [];
 
@@ -61,10 +62,10 @@ describe("public footer manifest", () => {
       ].join(""),
     );
 
-    expect(checkFooterManifest(root)).toMatchObject({
-      ok: false,
-      errors: ["/leaf/: footer missing /"],
-    });
+    expect(checkFooterManifest(root)).toMatchObject({ ok: false });
+    expect(checkFooterManifest(root).errors).toEqual(
+      expect.arrayContaining(["/leaf/: footer missing /"]),
+    );
   });
 
   it("rejects the prior vacuous zero-link manifest shape", () => {
@@ -79,6 +80,40 @@ describe("public footer manifest", () => {
         "manifest: footerLinks must be non-empty",
         "manifest: footerLinks missing /privacy/",
       ]),
+    );
+  });
+
+  it("writes an idempotent manifest-owned shell and detects later drift", () => {
+    const root = fixtureRoot(
+      base,
+      '<main><nav><a href="/">Old</a></nav><h1>Leaf</h1></main><footer>Old</footer>',
+    );
+    expect(generatePublicShell(root, true)).toMatchObject({
+      ok: true,
+      changed: ["public/leaf/index.html"],
+    });
+    expect(generatePublicShell(root, false)).toMatchObject({
+      ok: true,
+      changed: [],
+    });
+    expect(checkFooterManifest(root)).toMatchObject({ ok: true, errors: [] });
+  });
+
+  it("rejects duplicate routes and sources outside the project root", () => {
+    const duplicateRoot = fixtureRoot(
+      { ...base, pages: [...base.pages, ...base.pages] },
+      "<nav></nav><footer></footer>",
+    );
+    expect(() => generatePublicShell(duplicateRoot, false)).toThrow(
+      "duplicate route",
+    );
+
+    const escapingRoot = fixtureRoot(
+      { ...base, pages: [{ route: "/escape/", source: "../escape.html" }] },
+      "<nav></nav><footer></footer>",
+    );
+    expect(() => generatePublicShell(escapingRoot, false)).toThrow(
+      "escapes project root",
     );
   });
 });

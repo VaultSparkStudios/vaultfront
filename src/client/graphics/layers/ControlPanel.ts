@@ -15,6 +15,12 @@ import {
   fetchVaultFrontRuntimeAssignment,
   recordVaultFrontRuntimeEvent,
 } from "../../Api";
+import { clearConvoyMastery, readConvoyMastery } from "../../ConvoyMastery";
+import {
+  FIRST_EXTRACTION_STEPS,
+  FIRST_EXTRACTION_TITLE,
+  firstExtractionComplete,
+} from "../../FirstExtractionQuest";
 import { AttackRatioEvent } from "../../InputHandler";
 import {
   SendDefenseFactoryCommandIntentEvent,
@@ -284,9 +290,13 @@ export class ControlPanel extends LitElement implements Layer {
     this.uiState.attackRatio = this.attackRatio;
     this.onboardingDismissed =
       localStorage.getItem(ControlPanel.ONBOARDING_DISMISS_KEY) === "1";
-    this.nextMatchGoal = localStorage.getItem("vaultfront.nextMatchGoal") ?? "";
+    const mastery = readConvoyMastery();
+    this.nextMatchGoal =
+      mastery?.text ?? localStorage.getItem("vaultfront.nextMatchGoal") ?? "";
     this.nextMatchGoalKey =
-      localStorage.getItem("vaultfront.nextMatchGoalKey") ?? "";
+      mastery?.goalKey ??
+      localStorage.getItem("vaultfront.nextMatchGoalKey") ??
+      "";
     this.loadHudLayout();
     applyGlobalHudScale(this.hudScale);
     if (typeof window !== "undefined" && "matchMedia" in window) {
@@ -719,8 +729,7 @@ export class ControlPanel extends LitElement implements Layer {
 
     if (completed) {
       this.nextMatchGoalCompleted = true;
-      localStorage.removeItem("vaultfront.nextMatchGoal");
-      localStorage.removeItem("vaultfront.nextMatchGoalKey");
+      clearConvoyMastery();
     }
   }
 
@@ -756,11 +765,7 @@ export class ControlPanel extends LitElement implements Layer {
 
   private onboardingChainCompleted(): boolean {
     const progress = this.onboardingProgress;
-    const completed =
-      progress.focusSet &&
-      progress.vaultCaptured &&
-      progress.convoyAction &&
-      progress.pulseTriggered;
+    const completed = firstExtractionComplete(progress);
     if (
       this.tutorialLockActive &&
       progress.vaultCaptured &&
@@ -1866,7 +1871,8 @@ export class ControlPanel extends LitElement implements Layer {
   }
 
   private activeCoachmark(): "shield" | "reroute" | "jamBreaker" | null {
-    if (!this.coachmarksEnabled) return null;
+    if (!this.coachmarksEnabled || !this.onboardingChainCompleted())
+      return null;
     if (!this.coachmarkProgress.shield) return "shield";
     if (!this.coachmarkProgress.reroute) return "reroute";
     if (!this.coachmarkProgress.jamBreaker) return "jamBreaker";
@@ -1886,7 +1892,12 @@ export class ControlPanel extends LitElement implements Layer {
   }
 
   private markCoachmarkComplete(key: keyof CoachmarkProgress): void {
-    if (!this.coachmarksEnabled || this.coachmarkProgress[key]) return;
+    if (
+      !this.coachmarksEnabled ||
+      !this.onboardingChainCompleted() ||
+      this.coachmarkProgress[key]
+    )
+      return;
     this.coachmarkProgress = {
       ...this.coachmarkProgress,
       [key]: true,
@@ -2760,7 +2771,7 @@ export class ControlPanel extends LitElement implements Layer {
       <div
         class="mt-1.5 border border-amber-300/45 rounded-md bg-amber-900/25 p-1.5 text-[10px] lg:text-[11px]"
       >
-        <div class="font-semibold text-amber-200">Next Match Goal</div>
+        <div class="font-semibold text-amber-200">Convoy Mastery</div>
         <div
           class="${
             this.nextMatchGoalCompleted ? "text-emerald-200" : "text-amber-50"
@@ -2779,24 +2790,10 @@ export class ControlPanel extends LitElement implements Layer {
       (!this.onboardingProgress.vaultCaptured ||
         !this.onboardingProgress.convoyAction);
 
-    const steps: Array<{ done: boolean; label: string }> = [
-      {
-        done: this.onboardingProgress.focusSet,
-        label: "Set Resource Focus once",
-      },
-      {
-        done: this.onboardingProgress.vaultCaptured,
-        label: "Capture one vault",
-      },
-      {
-        done: this.onboardingProgress.convoyAction,
-        label: "Shield or intercept one Vault Convoy",
-      },
-      {
-        done: this.onboardingProgress.pulseTriggered,
-        label: "Trigger one Defense Factory pulse",
-      },
-    ];
+    const steps = FIRST_EXTRACTION_STEPS.map((step) => ({
+      done: this.onboardingProgress[step.key],
+      label: step.label,
+    }));
     const activeIndex = steps.findIndex((step) => !step.done);
 
     return html`
@@ -2805,7 +2802,7 @@ export class ControlPanel extends LitElement implements Layer {
       >
         <div class="flex items-center justify-between">
           <div class="font-semibold text-emerald-200">
-            First 3 Minutes Objectives
+            ${FIRST_EXTRACTION_TITLE}
           </div>
           ${
             lockRequired

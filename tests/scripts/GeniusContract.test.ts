@@ -1,12 +1,20 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   parseGeniusCache,
   selectFirstPendingUnblocked,
 } from "../../scripts/lib/genius-cache.mjs";
 import { spawnSync } from "../../scripts/lib/safe-spawn.mjs";
+
+const fixtures: string[] = [];
+
+afterEach(() => {
+  while (fixtures.length) {
+    fs.rmSync(fixtures.pop()!, { recursive: true, force: true });
+  }
+});
 
 describe("versioned genius cache contract", () => {
   it("supports the current and legacy cache shapes", () => {
@@ -43,6 +51,7 @@ describe("versioned genius cache contract", () => {
     const fixture = fs.mkdtempSync(
       path.join(os.tmpdir(), "vaultfront-genius-"),
     );
+    fixtures.push(fixture);
     const cachePath = path.join(fixture, "genius-list.json");
     fs.writeFileSync(
       cachePath,
@@ -65,6 +74,7 @@ describe("versioned genius cache contract", () => {
     ).toHaveLength(2);
   });
   it("flows the latest audit cache into the closeout next-session hint", () => {
+    const startedAt = performance.now();
     const root = process.cwd();
     const generated = spawnSync(
       process.execPath,
@@ -79,6 +89,7 @@ describe("versioned genius cache contract", () => {
     const fixture = fs.mkdtempSync(
       path.join(os.tmpdir(), "vaultfront-closeout-"),
     );
+    fixtures.push(fixture);
     fs.mkdirSync(path.join(fixture, "context"), { recursive: true });
     fs.writeFileSync(
       path.join(fixture, "context", "PROJECT_STATUS.json"),
@@ -109,5 +120,6 @@ describe("versioned genius cache contract", () => {
         "No pending unblocked audit item remains.",
       );
     }
-  });
+    expect(performance.now() - startedAt).toBeLessThan(12_000);
+  }, 15_000);
 });

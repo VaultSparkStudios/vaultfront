@@ -9,7 +9,12 @@ const defaultRoot = path.resolve(
   "..",
 );
 const finished = new Set(["shipped", "done", "complete", "completed"]);
-const nonActionable = new Set(["deferred", "blocked", "human-blocked"]);
+const nonActionable = new Set([
+  "deferred",
+  "blocked",
+  "human-blocked",
+  "externally-blocked",
+]);
 
 export function pendingUnblocked(items = []) {
   return items.filter((item) => {

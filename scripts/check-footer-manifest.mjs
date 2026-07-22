@@ -2,6 +2,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { generatePublicShellHtml } from "./lib/public-shell.mjs";
 
 function hrefOf(link) {
   return typeof link === "string" ? link : link?.href;
@@ -65,6 +66,13 @@ export function checkFooterManifest(root = process.cwd()) {
     } catch {
       errors.push(`${page.route}: missing source ${page.source}`);
       continue;
+    }
+    try {
+      if (generatePublicShellHtml(html, manifest) !== html) {
+        errors.push(`${page.route}: generated public shell drift`);
+      }
+    } catch (error) {
+      errors.push(`${page.route}: ${String(error)}`);
     }
 
     const navigation = scopedHtml(html, "nav");

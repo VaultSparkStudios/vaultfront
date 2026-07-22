@@ -4,10 +4,10 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 981/1000 | Velocity: 8↑ | Debt: ↓ | Velocity trend: ↑
-Avgs — 3: 976.0 | Momentum runway: external launch-evidence corridor | Intent rate: 100%
-Categories: Dev 100 | Align 99 | Momentum 100 | Engage 90 | Process 100 | Coherence 98 | Security 100 | Ecosystem 94 | Capital 100 | Automation 100
-Last session: 2026-07-20 Session 76 saturated truth-contract arc
+Total: 985/1000 | Velocity: 9↑ | Debt: ↓ | Velocity trend: ↑
+Avgs — 3: 982.3 | Momentum runway: approved staging-evidence corridor | Intent rate: 100%
+Categories: Dev 100 | Align 100 | Momentum 100 | Engage 92 | Process 100 | Coherence 98 | Security 100 | Ecosystem 95 | Capital 100 | Automation 100
+Last session: 2026-07-21 Session 78 saturated product-truth arc
 
 <!-- rolling-status-end -->
 
@@ -324,3 +324,38 @@ capitalEfficiency +7 (oracle/prophecy cache eliminates >80% redundant Haiku call
 - [SIL:2] Carry recovery provenance into the final Session 78 closeout honesty ledger.
 
 **Honest refusal:** No runtime or launch claim was refreshed merely because Session 76 was already green; recovery reran the actual gates first.
+
+## 2026-07-21 — Session 78 | Total: 985/1000 | Velocity: 9
+
+| SIL v3 category       |        Score | Evidence                                                                                                                                               |
+| --------------------- | -----------: | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Dev Health            |          100 | 840/840 main tests, 124/124 independent server tests, TypeScript, production build, formatter ratchet, focused Playwright, and doctor all pass.        |
+| Creative Alignment    |          100 | First Extraction, Convoy Mastery, and certified convoy prediction resolution deepen the project-specific convoy command fantasy.                       |
+| Momentum              |          100 | Seven executable audit items and two new second-order innovations shipped; audit 9/9 and innovation pack 11/11 are locally exhausted.                  |
+| Engagement            |           92 | Onboarding, cross-match mastery, and spectator rewards materially improve the loop; no human retention evidence is invented.                           |
+| Process Quality       |          100 | Recovery boundary, typed chronology, exact receipts, direct exit codes, fixture diagnosis, and explicit claim boundaries are independently reviewable. |
+| Cross-Repo Coherence  |           98 | Registry correction follow-up traveled through signed Ark cargo; canonical Studio Ops reconciliation is still pending.                                 |
+| Security Posture      |          100 | Certified authority, bounded generation paths, scoped persistence, no dependency additions, and fail-closed release truth are preserved.               |
+| Ecosystem Integration |           95 | Human/agent public shells, prediction/meta progression, Ark, and theme proof integrate; live staging, Obelisk, Brevo, and human evidence remain open.  |
+| Capital Efficiency    |          100 | No dependency, paid call, SaaS expansion, or variable-cost free-tier surface was introduced.                                                           |
+| Automation Coverage   |          100 | Chronology, public-shell drift, six-cell theme freshness/contrast, external-block taxonomy, work exhaustion, and eight doctor probes are executable.   |
+| **Total**             | **985/1000** | Exact category sum; live launch and human evidence remain deliberately unscored.                                                                       |
+
+**Rolling data:** Avg3 982.3 · velocity 9 · debt ↓ · sparkline █████.
+
+**Top win:** Product comprehension, mastery, spectator progression, and public/release truth now reinforce the same convoy-centered loop instead of existing as parallel features.
+
+**Top gap:** No approved external staging observation corridor or distinct-human Alpha corpus exists.
+
+### Brainstorm
+
+1. Carry prediction-resolution counts into a future authenticated spectator debrief only after real spectator usage establishes value.
+2. Bind the generated public-shell digest into release lineage if live staging proves shell provenance needs independent promotion evidence.
+3. Convert the First Extraction completion receipt into a cohort-level funnel only after privacy-safe human Alpha traffic exists.
+
+### Commitments
+
+- [SIL:1] Require a Studio Ops receipt before treating the central registry profile as reconciled.
+- [SIL:2] Establish a deliberate staging contract before collecting parity, identity, email, live-web, human, revenue, and founder evidence.
+
+**Honest refusal:** The session did not deploy externally, claim subjective screenshot inspection, invent human Alpha evidence, or reinterpret READY credentials as launch authorization.

@@ -178,6 +178,13 @@ export function validateStartupBrief(body) {
     );
   }
 
+  const lastActiveMatch = body.match(/Last active:\s*(\d+)d\b/i);
+  if (lastActiveMatch && Number(lastActiveMatch[1]) > 3650) {
+    findings.semanticContradictions.push(
+      `Last active reports ${lastActiveMatch[1]} days; reject likely non-date chronology input.`,
+    );
+  }
+
   // S142 audit item 2 — brief integrity self-assertion. The renderer stamps
   // `<!-- brief-coherent: true|false -->` after a three-way check (SIL log vs
   // PROJECT_STATUS vs rendered headline). false → the brief is showing stale or

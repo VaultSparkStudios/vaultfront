@@ -25,6 +25,7 @@ describe("complete-all exhaustion proof", () => {
       { id: "done", status: "shipped" },
       { id: "deferred", status: "deferred" },
       { id: "blocked", status: "human-blocked" },
+      { id: "external", status: "externally-blocked" },
     ];
     expect(pendingUnblocked(items)).toEqual([]);
     expect(

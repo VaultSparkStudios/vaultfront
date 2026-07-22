@@ -79,6 +79,15 @@ export function runProjectDoctor({
         args: [path.join(defaultRoot, "scripts", "check-footer-manifest.mjs")],
       },
       {
+        id: "local-theme-proof",
+        command: process.execPath,
+        args: [
+          path.join(defaultRoot, "scripts", "check-theme-proof-receipt.mjs"),
+          "--root",
+          root,
+        ],
+      },
+      {
         id: "capability-reachability",
         command: process.execPath,
         args: [

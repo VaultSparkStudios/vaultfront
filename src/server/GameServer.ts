@@ -1239,6 +1239,7 @@ export class GameServer {
           won: winnerIDs.has(player.clientID),
           vaultCaptures: toCount(vault?.vaultCaptures),
           convoyDeliveries: toCount(vault?.vaultConvoysDelivered),
+          convoyIntercepts: toCount(vault?.vaultConvoysIntercepted),
           executionChains: toCount(vault?.cleanExecutionStreaks),
           surgeActivations: toCount(vault?.surgeActivations),
         },

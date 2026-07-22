@@ -6,6 +6,14 @@ Public-safe summary:
 - Internal operating detail lives in the private Studio OS / ops repository.
 - This repo retains only the public-safe implementation and evidence boundary.
 
+## 2026-07-21 — Session 78 saturated product-truth arc
+
+The recovered Session 77 boundary was followed by a complete fresh `/start → /audit → /implement → /closeout` arc. Seven locally executable audit items shipped and two external evidence corridors remain explicit. Prediction League picks now resolve once from certified match convoy outcomes; first-run guidance converges on one four-action First Extraction quest; Convoy Mastery carries one evidence-ranked prescription across recap, debrief, and the live HUD.
+
+Startup chronology now accepts only real ISO dates and computes rolling score averages from current SIL entries. Ten public leaves receive navigation and footer markup from one bounded manifest generator. A local-only Playwright matrix verifies three themes across desktop and mobile play/settings surfaces, with WCAG AA token checks and a 30-day self-expiring receipt. Two second-order innovations make externally blocked work exhaustible without hiding it and make theme proof claim-boundary aware.
+
+Verification is green: 139/139 main Vitest files and 840/840 tests, independent 32/32 server files and 124/124 tests, TypeScript, production Vite build, focused six-cell Playwright theme proof, Prettier ratchet, work exhaustion (audit 9/9; innovations 11/11), and project doctor 8/8 with `blockingFailing: 0`. Public launch remains NO-GO pending a deliberate staging origin, parity, native Obelisk, project-domain Brevo delivery, three distinct human Alpha sessions, revenue evidence, and founder approval.
+
 ## 2026-07-21 — Session 77 interrupted-start recovery
 
 The cut-off Session 77 was recovered at its actual boundary: it had refreshed propagated agent/Canon guidance, regenerated Canon adoption and compact handoff state, and logged the full-arc intent, but had not begun the audit or changed deployable behavior. Recovery provenance found no merge markers, untracked debris, half-written structured data, or Claude configuration corruption.

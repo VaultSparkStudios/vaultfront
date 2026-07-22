@@ -3,6 +3,7 @@
   "owner": "VaultSpark Studios LLC",
   "brandHref": "https://vaultsparkstudios.com",
   "copyright": "© 2026 VaultSpark Studios LLC. All rights reserved.",
+  "upstreamNotice": "Based on OpenFrontIO; source licensing and upstream credits remain available in LICENSE, LICENSING.md, and CREDITS.md.",
   "headerLinks": [
     { "href": "/", "label": "Play" },
     { "href": "/about/", "label": "About" },

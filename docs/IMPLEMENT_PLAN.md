@@ -1,24 +1,33 @@
-# Session 76 Implementation Plan
+# Session 78 Implementation Plan
 
-Source: `docs/AUDIT_2026-07-20.json` (sole truth).
+Status: complete — all seven local items shipped; two external evidence lanes remain explicitly non-actionable in this repository; second-order innovation pack 11/11 shipped.
 
-## Wave 4A — observability foundations
+Source: `docs/AUDIT_2026-07-21.json` (sole truth).
 
-1. `context-usage-source-contract` — add a pure tokens/limit usage contract, wire the startup renderer, and cover arithmetic drift.
-2. `sil-forecast-parser-honesty` — structurally parse current and legacy SIL entries, sort by actual session, and refuse evidence-free forecasts.
+## Wave 4A — truth and gate foundations
 
-## Wave 4B — cross-surface release truth
+1. `startup-chronology-source-contract` — typed ISO activity age, live Avg3, adversarial fixtures, semantic brief validation.
+2. `spawn-contract-time-budget` — scoped measured timeout and deterministic temporary-fixture cleanup.
+3. `prediction-league-resolution-spine` — certified dominant convoy outcome, idempotent prediction resolution, progression receipt and tests.
 
-3. `project-manifest-split-brain-guard` — compare status and generated manifest, repair the local snapshot, add fixtures, and prepare Ark evidence for the canonical source.
-4. `public-footer-route-parity` — adopt the canonical non-vacuous route schema, enforce scoped nav/footer parity, update all leaf pages, and cover the prior false pass.
+## Wave 4B — player comprehension and mastery
 
-## Wave 4C — operator contract
+4. `first-extraction-onboarding-convergence` — one live quest vocabulary, progressive disclosure, dead-path proof/removal, mobile/desktop telemetry tests.
+5. `convoy-mastery-prescription` — pure next-goal selector, structured persistence, debrief hierarchy and ControlPanel handoff.
 
-5. `deploy-runbook-workflow-contract` — align staging, promotion, and rollback instructions with immutable workflow inputs and make documentation drift fail the deploy contract.
+## Wave 4C — public experience construction
+
+6. `generated-public-shell-contract` — bounded semantic nav/footer generation, check mode, ten-leaf migration and tamper/idempotency tests.
+7. `three-theme-visual-proof-harness` — local three-theme × two-viewport contrast/screenshots, machine-readable receipt, visual inspection.
+
+## External evidence lane
+
+8. `registry-profile-conformance-receipt` — verify existing receipt and send a bounded follow-up through Ark; remain externally blocked until canonical propagation.
+9. `live-staging-evidence-corridor` — retain NO-GO with exact missing-environment/credential/live-observation evidence; never synthesize it.
 
 ## Verification cadence
 
-- Focused Vitest after each same-surface group.
-- Direct script exits for project truth, footer, deploy contract, startup render, brief validation, doctor, and work exhaustion.
-- Full lint, typecheck/build, Vitest, server repeat, and Playwright during closeout.
-- No gameplay core-loop code is touched; the game-medium playtest hook gate is therefore not applicable. Operator-loop mappings remain recorded in the audit.
+- Focused Vitest and direct behavior scripts after each same-surface group.
+- Context meter between ranked items; climb to L3 while verdict remains CONTINUE.
+- Full lint, typecheck/build, unit/server suites, Playwright desktop/mobile, doctor, sanitization, and work exhaustion at closeout.
+- No dependency install, sibling tree edit, launch flip, or fabricated live/human evidence.

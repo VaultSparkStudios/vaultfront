@@ -29,6 +29,12 @@ export interface SpectatorLeaderboardEntry {
   currentWeekKey: string;
 }
 
+export interface PredictionResolutionReceipt {
+  gameId: string;
+  actualOutcome: "intercept" | "delivery";
+  resolvedPredictions: number;
+}
+
 function getWeekKey(ts = Date.now()): string {
   const d = new Date(ts);
   const startOfYear = new Date(d.getFullYear(), 0, 1);
@@ -41,7 +47,7 @@ function getWeekKey(ts = Date.now()): string {
   return `${d.getFullYear()}-${String(week).padStart(2, "0")}`;
 }
 
-class PredictionLeagueStore {
+export class PredictionLeagueStore {
   // gameId → Map<spectatorId, prediction>
   private pending = new Map<string, Map<string, Prediction>>();
   // spectatorId → all predictions (keep last 500 per spectator)
@@ -68,9 +74,14 @@ class PredictionLeagueStore {
     this.pending.set(gameId, gamePredictions);
   }
 
-  resolveGame(gameId: string, actualOutcome: "intercept" | "delivery"): void {
+  resolveGame(
+    gameId: string,
+    actualOutcome: "intercept" | "delivery",
+  ): PredictionResolutionReceipt {
     const gamePredictions = this.pending.get(gameId);
-    if (!gamePredictions) return;
+    if (!gamePredictions) {
+      return { gameId, actualOutcome, resolvedPredictions: 0 };
+    }
     for (const pred of gamePredictions.values()) {
       pred.actualOutcome = actualOutcome;
       pred.resolved = true;
@@ -86,6 +97,11 @@ class PredictionLeagueStore {
       actualOutcome,
       count: gamePredictions.size,
     });
+    return {
+      gameId,
+      actualOutcome,
+      resolvedPredictions: gamePredictions.size,
+    };
   }
 
   getLeaderboard(limit = 10, weekOnly = false): SpectatorLeaderboardEntry[] {

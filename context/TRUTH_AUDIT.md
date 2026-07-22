@@ -172,3 +172,17 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 - `~/.claude.json` passes native JSON parsing, and the canonical guard reports zero corruption events in the prior 24 hours.
 - The first `npm test` red was one fixed-timeout failure, not an assertion mismatch. The exact test passed alone in 0.9 seconds and the next direct full run passed 134/134 files, 822/822 tests, 31/31 server files, and 121/121 server tests.
 - Project doctor directly passed seven executable checks with `blockingFailing: 0`.
+
+## 2026-07-21 — Session 78 product-truth audit
+
+- `docs/AUDIT_2026-07-21.json` contains 9 items: 7 shipped locally and 2 explicitly `externally-blocked`; no pending unblocked item remains.
+- `docs/INNOVATION_PACK.json` reports 11/11 evidence-derived innovations shipped, including external-block taxonomy parity and local-theme-proof freshness enforcement.
+- Prediction League resolution now consumes only certified match progression evidence and is process-idempotent; its receipt records actual outcome and resolved prediction count.
+- First-run truth has one shared four-action First Extraction vocabulary; advanced coachmarks cannot appear or complete before it clears; two unmounted client tutorial paths were removed.
+- Convoy Mastery persists one typed prescription across recap, debrief, and HUD; malformed local state fails closed.
+- Startup brief truth reports `Last active: 0d` and `Avg3: 980.3` from typed evidence; impossible activity ages are semantic failures.
+- All 10 manifest pages are generator-owned and pass idempotent shell check plus scoped 4-header/7-footer validation.
+- `docs/THEME_LOCAL_PROOF.json` contains six local-only theme/viewport cells and twelve captured surfaces. Every checked token pair exceeds 4.5 contrast; the doctor rejects stale, incomplete, low-contrast, or non-local claims.
+- Full verification passed: 139 main files / 840 tests, independent 32 server files / 124 tests, TypeScript, production Vite build, focused Playwright theme matrix, Prettier ratchet, work exhaustion, and doctor 8/8 with `blockingFailing: 0`.
+- Cloudflare deploy and Brevo capabilities are READY. No external staging target, parity, native Obelisk, human Alpha, revenue, or founder evidence was fabricated or inferred.
+- Closeout helper discovery unexpectedly mutated the Studio Ops default target because `--help` was not side-effect-free. Read-only sibling status identified a dirty tree with concurrent/unknown provenance; Ark cargo `01JU3V1GUP49DF58394CEE8244` reports likely affected paths for owner reconciliation. VaultFront did not edit or revert the sibling directly.

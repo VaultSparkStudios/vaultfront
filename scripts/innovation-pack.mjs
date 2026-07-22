@@ -139,6 +139,30 @@ const candidates = [
     evidence:
       "digest-addressed operator runbook, 25-check deploy contract gate, and protocol regression execution",
   },
+  {
+    id: "external-block-status-parity",
+    title:
+      "Make externally blocked audit truth exhaustible without becoming invisible",
+    description:
+      "Teach the complete-all gate that an evidenced cross-repo or authorization corridor is non-actionable locally while retaining its exact status and reason in the generated Genius list.",
+    complete:
+      has("scripts/check-work-exhaustion.mjs", /externally-blocked/) &&
+      has("tests/scripts/WorkExhaustion.test.ts", /externally-blocked/),
+    evidence:
+      "shared exhaustion taxonomy and externally-blocked regression fixture",
+  },
+  {
+    id: "local-theme-proof-freshness-gate",
+    title: "Make local theme evidence self-expiring and claim-boundary aware",
+    description:
+      "Validate the six-cell desktop/mobile theme matrix, contrast floors, surfaces, freshness, and local-only scope so screenshots cannot silently become stale or masquerade as staging parity.",
+    complete:
+      has("scripts/check-theme-proof-receipt.mjs", /receipt is stale/) &&
+      has("scripts/project-doctor.mjs", /local-theme-proof/) &&
+      has("tests/scripts/ThemeProofReceipt.test.ts", /low-contrast/),
+    evidence:
+      "theme receipt validator, doctor probe, freshness/contrast/claim-boundary fixtures",
+  },
 ];
 
 const payload = {

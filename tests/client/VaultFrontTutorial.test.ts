@@ -46,8 +46,8 @@ describe("VaultFrontTutorial", () => {
 
     const strip = el.shadowRoot?.querySelector(".strip");
     expect(strip).toBeTruthy();
-    expect(strip?.textContent).toContain("Vault Sites");
-    expect(strip?.textContent).toContain("1/5");
+    expect(strip?.textContent).toContain("Find the First Extraction tracker");
+    expect(strip?.textContent).toContain("1/2");
     expect(apiMock.recordVaultFrontPlaytestPulse).toHaveBeenCalledWith({
       surface: "tutorial",
       event: "shown",
@@ -61,7 +61,7 @@ describe("VaultFrontTutorial", () => {
     await el.updateComplete;
 
     expect(el.shadowRoot?.querySelector(".strip")?.textContent).toContain(
-      "Convoys Deliver Loot",
+      "Extract, then expand",
     );
     expect(apiMock.recordVaultFrontPlaytestPulse).toHaveBeenCalledWith({
       surface: "tutorial",
@@ -75,10 +75,30 @@ describe("VaultFrontTutorial", () => {
     await el.updateComplete;
 
     expect(el.shadowRoot?.querySelector(".strip")).toBeNull();
-    expect(localStorage.getItem("vf-tutorial-seen")).toBe("1");
+    expect(localStorage.getItem("vf-tutorial-seen")).toBe("2");
     expect(apiMock.recordVaultFrontPlaytestPulse).toHaveBeenCalledWith({
       surface: "tutorial",
       event: "skip",
     });
+  });
+
+  it("uses the same two-step First Extraction vocabulary on desktop", async () => {
+    vi.stubGlobal("matchMedia", () => ({
+      matches: false,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
+    const el = document.createElement("vault-front-tutorial") as HTMLElement & {
+      updateComplete: Promise<unknown>;
+    };
+    document.body.appendChild(el);
+    await vi.advanceTimersByTimeAsync(800);
+    await el.updateComplete;
+    expect(el.shadowRoot?.querySelector(".card")?.textContent).toContain(
+      "Find the First Extraction tracker",
+    );
+    expect(el.shadowRoot?.querySelectorAll(".progress-dot")).toHaveLength(2);
   });
 });

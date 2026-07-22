@@ -141,3 +141,27 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Decision:** Production promotion and rollback require an exact image digest, its matching staging-evidence digest, dry-run-first execution, canonical /_health revision verification, and a retained receipt. Mutable image tags and undocumented workflow inputs are not acceptable recovery paths.
 
 **Why:** A rollback instruction that cannot be executed against the live workflow is false safety. Binding documentation to checked inputs makes recovery rehearsable without weakening launch gates.
+
+## 2026-07-21 — Certified convoy dominance resolves spectator predictions
+
+**Decision:** Prediction League outcomes derive inside the idempotent certified progression spine: total deliveries greater than or equal to total intercepts resolve as `delivery`; intercepts strictly greater resolve as `intercept`. A tie therefore means the convoy survived at least as often as it was stopped. Resolution emits a typed count receipt and duplicate match envelopes cannot resolve twice.
+
+**Why:** The prediction surface previously accepted picks without any caller that resolved them. Binding the rule to certified match evidence closes the loop without creating a second winner authority.
+
+## 2026-07-21 — Local visual evidence is self-expiring and cannot claim staging
+
+**Decision:** Theme proof is a six-cell local-only receipt covering three themes across desktop/mobile play and settings surfaces. The doctor verifies WCAG AA token contrast, surface completeness, a 30-day freshness ceiling, and the literal `local-only` claim boundary.
+
+**Why:** Screenshot existence is weaker than a checked evidence contract, but local browser output still cannot prove live origin parity, headers, Core Web Vitals, or founder approval.
+
+## 2026-07-21 — External blockers remain visible but do not defeat local exhaustion
+
+**Decision:** `externally-blocked` is non-actionable for the local work-exhaustion gate while remaining distinct from shipped, deferred, or human-blocked work in the audit and Genius surfaces.
+
+**Why:** Cross-repo receipts and launch authorization cannot be completed by editing this repository. Treating them as locally pending made saturation impossible; treating them as done would hide material truth.
+
+## 2026-07-21 — Canonical helper discovery must be side-effect-safe
+
+**Decision:** Treat Studio Ops helper `--help` behavior as untrusted until inspected. After three discovery commands unexpectedly executed against the sibling default root, VaultFront made no direct sibling repair; it shipped signed Ark handoff `01JU3V1GUP49DF58394CEE8244` with the likely touched paths for the Studio Ops owner to reconcile, then reran the same helpers only with explicit `--project .` targeting VaultFront.
+
+**Why:** A help probe that mutates default state violates least surprise. Directly reverting the sibling would compound the CANON-018 violation and risk overwriting unrelated concurrent work.

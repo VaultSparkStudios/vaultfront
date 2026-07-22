@@ -2,6 +2,7 @@ import { achievementStore, type AchievementEvent } from "./AchievementStore";
 import { logger } from "./Logger";
 import type { PlayerStats } from "./PlayerStatsStore";
 import { playerStatsStore } from "./PlayerStatsStore";
+import { predictionLeagueStore } from "./PredictionLeagueStore";
 import { seasonMilestoneStore } from "./SeasonMilestoneStore";
 
 const log = logger.child({ comp: "MatchProgression" });
@@ -12,6 +13,7 @@ export interface AuthoritativePlayerOutcome {
   won: boolean;
   vaultCaptures: number;
   convoyDeliveries: number;
+  convoyIntercepts: number;
   executionChains: number;
   surgeActivations: number;
 }
@@ -30,6 +32,8 @@ export interface ProgressionReceipt {
   duplicate: boolean;
   playersRecorded: number;
   achievementsUnlocked: number;
+  predictionOutcome: "intercept" | "delivery";
+  predictionsResolved: number;
 }
 
 interface ProgressionDependencies {
@@ -37,6 +41,7 @@ interface ProgressionDependencies {
   getPlayerStats: (persistentId: string) => Promise<PlayerStats | null>;
   checkAndUnlock: typeof achievementStore.checkAndUnlock;
   recordSeasonActivity: typeof seasonMilestoneStore.recordActivity;
+  resolvePrediction: typeof predictionLeagueStore.resolveGame;
 }
 
 const defaultDependencies: ProgressionDependencies = {
@@ -45,7 +50,26 @@ const defaultDependencies: ProgressionDependencies = {
   checkAndUnlock: achievementStore.checkAndUnlock.bind(achievementStore),
   recordSeasonActivity:
     seasonMilestoneStore.recordActivity.bind(seasonMilestoneStore),
+  resolvePrediction: predictionLeagueStore.resolveGame.bind(
+    predictionLeagueStore,
+  ),
 };
+
+export function derivePredictionOutcome(
+  players: AuthoritativePlayerOutcome[],
+): "intercept" | "delivery" {
+  const deliveries = players.reduce(
+    (total, player) => total + player.convoyDeliveries,
+    0,
+  );
+  const intercepts = players.reduce(
+    (total, player) => total + player.convoyIntercepts,
+    0,
+  );
+  // A tie resolves toward delivery: the convoy survived at least as often as
+  // it was stopped. This stable rule also makes empty telemetry deterministic.
+  return deliveries >= intercepts ? "delivery" : "intercept";
+}
 
 /**
  * One authoritative match envelope fans into Elo/history, achievements, and
@@ -68,18 +92,27 @@ export class ServerAuthoritativeProgressionSpine {
         duplicate: true,
         playersRecorded: 0,
         achievementsUnlocked: 0,
+        predictionOutcome: derivePredictionOutcome(outcome.players),
+        predictionsResolved: 0,
       };
     }
 
     // Claim before the first async side effect. If a downstream store fails,
     // retrying this envelope in-process could duplicate earlier fan-out legs.
     this.processedGameIds.add(outcome.gameId);
+    const predictionOutcome = derivePredictionOutcome(outcome.players);
+    const predictionReceipt = this.dependencies.resolvePrediction(
+      outcome.gameId,
+      predictionOutcome,
+    );
     if (outcome.players.length === 0) {
       return {
         gameId: outcome.gameId,
         duplicate: false,
         playersRecorded: 0,
         achievementsUnlocked: 0,
+        predictionOutcome,
+        predictionsResolved: predictionReceipt.resolvedPredictions,
       };
     }
 
@@ -206,6 +239,8 @@ export class ServerAuthoritativeProgressionSpine {
       duplicate: false,
       playersRecorded: outcome.players.length,
       achievementsUnlocked,
+      predictionOutcome,
+      predictionsResolved: predictionReceipt.resolvedPredictions,
     };
     log.info("authoritative progression recorded", receipt);
     return receipt;

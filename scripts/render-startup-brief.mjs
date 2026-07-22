@@ -30,6 +30,10 @@ import { isWarning } from "./lib/doctor-predicates.mjs";
 import { loadIgnisInsight } from "./lib/ignis-insight.mjs";
 import { contextWindowForAgent } from "./lib/model-router.mjs";
 import { spawnSync } from "./lib/safe-spawn.mjs";
+import {
+  averageLatestTotals,
+  freshestIsoDate,
+} from "./lib/session-chronology.mjs";
 import { BLOCKED_STATUSES_CORE } from "./lib/shared-policies.mjs";
 import { forecastNext, parseSilHistory } from "./lib/sil-forecaster.mjs";
 import { parseUnifiedItems } from "./lib/task-board.mjs";
@@ -395,7 +399,7 @@ let silMax = parseInt(silTotalMatch?.[2] ?? "") || status.silMax || 1000;
 let velocity = parseInt(silHeader.match(/Velocity:\s*(\d+)/)?.[1] ?? "") || 0;
 const sparkline =
   silHeader.match(/Sparkline[^:]*:\s*([▁▂▃▄▅▆▇█ ]+)/)?.[1]?.trim() ?? "";
-const avg3Raw =
+let avg3Raw =
   parseFloat(silHeader.match(/Avgs — 3:\s*([\d.]+)/)?.[1] ?? "") || null;
 const runwayRaw =
   silHeader.match(/[Mm]omentum runway:\s*([^|]+)/)?.[1]?.trim() ??
@@ -463,6 +467,10 @@ function entryVelocity(e) {
   return m ? parseInt(m[1], 10) : null;
 }
 const latestScored = allSilEntries.find((e) => entryTotal(e) !== null) ?? null;
+const measuredAvg3 = averageLatestTotals(
+  allSilEntries.map((entry) => entryTotal(entry)?.total),
+);
+if (measuredAvg3 !== null) avg3Raw = measuredAvg3;
 
 // Override headline metrics from the latest scored entry when it is fresher than
 // the rolling-status block (compared by session number). Falls back to the
@@ -659,16 +667,12 @@ const scopeCap = velocity > 0 ? Math.floor(velocity * 1.5) : null;
 // running /closeout. Now takes the newest signal across all three sources.
 const lastSilDateMatch = lastSessionStr.match(/(\d{4}-\d{2}-\d{2})/);
 const lastSilDate = lastSilDateMatch?.[1] || null;
-const candidateDates = [
+const freshestDate = freshestIsoDate([
   lastSilDate,
   status.lastUpdated,
   status.lastHandoffDate,
   status.silLastSession,
-].filter(Boolean);
-const freshestDate =
-  candidateDates.length > 0
-    ? candidateDates.sort().slice(-1)[0] // max lex-sorted date
-    : null;
+]);
 const daysSinceActive = freshestDate ? daysBetween(freshestDate, today) : "?";
 const daysSinceClosedOut = lastSilDate ? daysBetween(lastSilDate, today) : "?";
 // Keep daysSinceLast alias for any downstream reader, but prefer the new honest value.

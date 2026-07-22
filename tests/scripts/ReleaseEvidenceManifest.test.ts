@@ -2,6 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { generatePublicShell } from "../../scripts/generate-public-shell.mjs";
 import {
   buildReleaseEvidence,
   canonicalReleaseGateDefinitions,
@@ -229,6 +230,7 @@ describe("Release Evidence Manifest", () => {
         path.join(fixture, "public", "index.html"),
         '<nav><a href="/">Play</a></nav><footer><a href="https://vaultsparkstudios.com">VaultSpark Studios</a><a href="/">Play</a><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a>© 2026 VaultSpark Studios LLC. All rights reserved.</footer>',
       );
+      generatePublicShell(fixture, true);
 
       const { evidence } = generateReleaseEvidence(fixture);
       expect(evidence.status).toBe("blocked");

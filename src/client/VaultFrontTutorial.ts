@@ -14,9 +14,10 @@
 import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { recordVaultFrontPlaytestPulse } from "./Api";
+import { FIRST_EXTRACTION_ORIENTATION } from "./FirstExtractionQuest";
 
 const TUTORIAL_SEEN_KEY = "vf-tutorial-seen";
-const TUTORIAL_VERSION = "1";
+const TUTORIAL_VERSION = "2";
 const MOBILE_QUERY = "(max-width: 640px)";
 
 interface TutorialStep {
@@ -25,33 +26,7 @@ interface TutorialStep {
   body: string;
 }
 
-const STEPS: TutorialStep[] = [
-  {
-    icon: "🏦",
-    title: "Vault Sites",
-    body: "Vault sites spawn on the map. Hold a vault tile for ~9 seconds to capture it. Once captured, a convoy launches automatically toward your structures.",
-  },
-  {
-    icon: "🚛",
-    title: "Convoys Deliver Loot",
-    body: "Your convoy carries gold and troops to your nearest city, port, or factory. Riskier routes pay more — but an intercepted convoy loses everything.",
-  },
-  {
-    icon: "🛡️",
-    title: "Escort & Jam Breaker",
-    body: "Use Escort to give your convoy a shield against one interception. Use Jam Breaker (costs 115k gold) to disable enemy defense beacons near your path.",
-  },
-  {
-    icon: "⚡",
-    title: "Comeback Surge",
-    body: "If you're behind for 6 minutes straight, Surge activates for 2 minutes — boosting your next convoy rewards and interception gold. Don't give up!",
-  },
-  {
-    icon: "🔗",
-    title: "Execution Chain",
-    body: "The hidden combo: Capture a vault → Deliver the convoy → Trigger a Jam Breaker that denies an enemy pulse. Complete all three within 2.5 minutes for +20% rewards.",
-  },
-];
+const STEPS: TutorialStep[] = [...FIRST_EXTRACTION_ORIENTATION];
 
 @customElement("vault-front-tutorial")
 export class VaultFrontTutorial extends LitElement {

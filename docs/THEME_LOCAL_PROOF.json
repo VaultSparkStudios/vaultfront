@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-22T02:48:48.935Z",
+  "scope": "local-only",
+  "claimBoundary": "This is local browser evidence, not live staging parity or founder approval.",
+  "matrix": [
+    {
+      "project": "chromium",
+      "localOnly": true,
+      "results": [
+        {
+          "theme": "vaultfront",
+          "tokens": {
+            "--vf-bg": "#05070d",
+            "--vf-surface": "#0b101c",
+            "--vf-text": "#eef2ff",
+            "--vf-text-muted": "#bac4da"
+          },
+          "ratios": {
+            "textOnBackground": 18.01195868807325,
+            "textOnSurface": 16.993976556649322,
+            "mutedOnBackground": 11.505405700152702
+          },
+          "surfaces": ["play", "settings"]
+        },
+        {
+          "theme": "light",
+          "tokens": {
+            "--vf-bg": "#f0f4ff",
+            "--vf-surface": "#ffffff",
+            "--vf-text": "#111827",
+            "--vf-text-muted": "#4b5563"
+          },
+          "ratios": {
+            "textOnBackground": 16.125678507362128,
+            "textOnSurface": 17.73971700407407,
+            "mutedOnBackground": 6.869774193675399
+          },
+          "surfaces": ["play", "settings"]
+        },
+        {
+          "theme": "competitive",
+          "tokens": {
+            "--vf-bg": "#0a0010",
+            "--vf-surface": "#12001e",
+            "--vf-text": "#f5eeff",
+            "--vf-text-muted": "#c4aedd"
+          },
+          "ratios": {
+            "textOnBackground": 18.18554150519875,
+            "textOnSurface": 17.766293530681924,
+            "mutedOnBackground": 10.236953045245846
+          },
+          "surfaces": ["play", "settings"]
+        }
+      ]
+    },
+    {
+      "project": "mobile-chrome",
+      "localOnly": true,
+      "results": [
+        {
+          "theme": "vaultfront",
+          "tokens": {
+            "--vf-bg": "#05070d",
+            "--vf-surface": "#0b101c",
+            "--vf-text": "#eef2ff",
+            "--vf-text-muted": "#bac4da"
+          },
+          "ratios": {
+            "textOnBackground": 18.01195868807325,
+            "textOnSurface": 16.993976556649322,
+            "mutedOnBackground": 11.505405700152702
+          },
+          "surfaces": ["play", "settings"]
+        },
+        {
+          "theme": "light",
+          "tokens": {
+            "--vf-bg": "#f0f4ff",
+            "--vf-surface": "#ffffff",
+            "--vf-text": "#111827",
+            "--vf-text-muted": "#4b5563"
+          },
+          "ratios": {
+            "textOnBackground": 16.125678507362128,
+            "textOnSurface": 17.73971700407407,
+            "mutedOnBackground": 6.869774193675399
+          },
+          "surfaces": ["play", "settings"]
+        },
+        {
+          "theme": "competitive",
+          "tokens": {
+            "--vf-bg": "#0a0010",
+            "--vf-surface": "#12001e",
+            "--vf-text": "#f5eeff",
+            "--vf-text-muted": "#c4aedd"
+          },
+          "ratios": {
+            "textOnBackground": 18.18554150519875,
+            "textOnSurface": 17.766293530681924,
+            "mutedOnBackground": 10.236953045245846
+          },
+          "surfaces": ["play", "settings"]
+        }
+      ]
+    }
+  ]
+}

@@ -35,6 +35,7 @@ ignis/output/
 # Playwright test artifacts
 test-results/
 playwright-report/
+output/playwright/
 context/.session-lock
 
 # Private surfaces — never commit (sanitization 2026-06-03)

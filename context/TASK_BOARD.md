@@ -52,6 +52,18 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 
 ## Follow-ups
 
+## Completed (2026-07-21 — Session 78 saturated product-truth arc)
+
+- [done] Closed certified Prediction League resolution with deterministic delivery/intercept/tie rules and typed receipts.
+- [done] Converged onboarding onto one First Extraction vocabulary and removed two proven-unmounted tutorial paths.
+- [done] Shipped cross-match Convoy Mastery prescriptions across recap, debrief, and HUD.
+- [done] Root-fixed startup chronology, scoped the spawn-heavy test budget, and retained the global timeout tripwire.
+- [done] Generated all ten public nav/footer shells from one manifest with drift/path/route safety checks.
+- [done] Produced a local-only three-theme × desktop/mobile Playwright proof and a self-expiring doctor gate.
+- [done] Exhausted `docs/AUDIT_2026-07-21.json` at 9/9 and `docs/INNOVATION_PACK.json` at 11/11; two external corridors remain non-actionable locally and visible.
+- [ecosystem] Await Studio Ops reply to Ark cargo `01JU3RL522793F2F1D15EC71D6` before changing the canonical registry profile.
+- [release-evidence] Establish an approved external staging origin, then collect exact-digest parity, Brevo, Obelisk, live web/theme, three-human Alpha, revenue, and founder-approval evidence in that order.
+
 ## Completed (2026-07-21 — Session 77 interrupted-start recovery)
 
 - Reconstructed Session 77 as cut off during `/start`, not during implementation or closeout.

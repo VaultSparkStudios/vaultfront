@@ -19,6 +19,7 @@ vi.mock("../../../src/client/Auth", () => ({
 
 describe("ProgressionDebrief", () => {
   beforeEach(() => {
+    localStorage.clear();
     vi.mocked(fetchVaultFrontContracts).mockResolvedValue({
       eloRating: 1248,
       eloLabel: "Gold",
@@ -78,5 +79,10 @@ describe("ProgressionDebrief", () => {
     expect(container.textContent).toContain("Gold 1248");
     expect(container.textContent).toContain("Getting Started 4/5");
     expect(container.textContent).toContain("1/2 achievements");
+    expect(container.textContent).toContain("Convoy Mastery");
+    expect(container.textContent).toContain("Advance Getting Started");
+    expect(localStorage.getItem("vaultfront.convoyMasteryGoal.v1")).toContain(
+      '"source":"season"',
+    );
   });
 });

@@ -42,6 +42,7 @@ import {
   VaultFrontSeasonContractState,
 } from "../../Api";
 import "../../components/PatternButton";
+import { type MasteryGoalKey, persistConvoyMastery } from "../../ConvoyMastery";
 import {
   fetchCosmetics,
   handlePurchase,
@@ -1350,8 +1351,13 @@ export class WinModal extends LitElement implements Layer {
 
   private saveNextMatchGoal = () => {
     if (!this.actionableHint) return;
-    localStorage.setItem("vaultfront.nextMatchGoal", this.actionableHint);
-    localStorage.setItem("vaultfront.nextMatchGoalKey", this.actionableGoalKey);
+    persistConvoyMastery({
+      text: this.actionableHint,
+      goalKey: this.actionableGoalKey as MasteryGoalKey,
+      source: "recap",
+      evidence: "Selected from your weakest certified match dimension",
+      selectedAt: Date.now(),
+    });
     this.nextGoalSaved = true;
     this.recapGoalClicked = true;
     this.recordRivalChallengePulse("rival_goal_saved");

@@ -1,5 +1,5 @@
 <!-- generated-by: scripts/innovation-pack.mjs -->
-<!-- generated-at: 2026-07-21T03:09:26.516Z -->
+<!-- generated-at: 2026-07-22T03:19:23.355Z -->
 
 # Second-Order Innovation Pack
 
@@ -14,3 +14,5 @@ Generated only after the audit-backed Unified Genius List was exhausted. Complet
 7. [x] **startup-brief-semantic-sentinel** — Make the startup brief prove its own arithmetic. Recompute context utilization and reject numeric SIL forecasts with zero parsed evidence so adjacent source-of-truth values cannot contradict one another behind a polished status tile. Evidence: semantic brief validator, contradiction diagnostics, and adversarial context/SIL fixtures.
 8. [x] **release-truth-fingerprint** — Bind cross-surface project truth into release provenance. Fingerprint status identity, generated manifest posture, footer topology, and immutable deployment sources, then make that receipt a first-class parent of the release decision. Evidence: canonical project-truth fingerprint, source digests, release-lineage node, and mutation-sensitive tests.
 9. [x] **operator-rollback-receipt-contract** — Turn rollback prose into an executable receipt contract. Require immutable image and staging-evidence digests, dry-run-first promotion, canonical health verification, and a retained rollback receipt so recovery instructions cannot drift from workflow inputs. Evidence: digest-addressed operator runbook, 25-check deploy contract gate, and protocol regression execution.
+10. [x] **external-block-status-parity** — Make externally blocked audit truth exhaustible without becoming invisible. Teach the complete-all gate that an evidenced cross-repo or authorization corridor is non-actionable locally while retaining its exact status and reason in the generated Genius list. Evidence: shared exhaustion taxonomy and externally-blocked regression fixture.
+11. [x] **local-theme-proof-freshness-gate** — Make local theme evidence self-expiring and claim-boundary aware. Validate the six-cell desktop/mobile theme matrix, contrast floors, surfaces, freshness, and local-only scope so screenshots cannot silently become stale or masquerade as staging parity. Evidence: theme receipt validator, doctor probe, freshness/contrast/claim-boundary fixtures.

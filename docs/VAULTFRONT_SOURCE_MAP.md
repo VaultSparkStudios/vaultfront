@@ -143,11 +143,11 @@ upstream changes, check these files for conflicts.
 
 ### Client — session 6 new files
 
-| File                            | Purpose                                                               |
-| ------------------------------- | --------------------------------------------------------------------- |
-| `src/client/ClanModal.ts`       | Clan create/join/leave/leaderboard Lit modal (C-20)                   |
-| `src/client/TournamentModal.ts` | Tournament browse/register/bracket viewer Lit modal (C-22)            |
-| `src/client/TutorialOverlay.ts` | 5-step in-game tutorial overlay with event-driven step advance (C-21) |
+| File                                 | Purpose                                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------------ |
+| `src/client/ClanModal.ts`            | Clan create/join/leave/leaderboard Lit modal (C-20)                                  |
+| `src/client/TournamentModal.ts`      | Tournament browse/register/bracket viewer Lit modal (C-22)                           |
+| `src/client/FirstExtractionQuest.ts` | Canonical four-action First Extraction vocabulary shared by orientation and live HUD |
 
 ### Server — session 6 new files
 

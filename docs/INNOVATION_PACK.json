@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-07-21T03:09:26.516Z",
+  "generatedAt": "2026-07-22T03:19:23.355Z",
   "source": "scripts/innovation-pack.mjs",
   "primarySource": "latest audit-backed Unified Genius List",
   "items": [
@@ -84,6 +84,24 @@
       "description": "Require immutable image and staging-evidence digests, dry-run-first promotion, canonical health verification, and a retained rollback receipt so recovery instructions cannot drift from workflow inputs.",
       "complete": true,
       "evidence": "digest-addressed operator runbook, 25-check deploy contract gate, and protocol regression execution"
+    },
+    {
+      "rank": 10,
+      "status": "shipped",
+      "id": "external-block-status-parity",
+      "title": "Make externally blocked audit truth exhaustible without becoming invisible",
+      "description": "Teach the complete-all gate that an evidenced cross-repo or authorization corridor is non-actionable locally while retaining its exact status and reason in the generated Genius list.",
+      "complete": true,
+      "evidence": "shared exhaustion taxonomy and externally-blocked regression fixture"
+    },
+    {
+      "rank": 11,
+      "status": "shipped",
+      "id": "local-theme-proof-freshness-gate",
+      "title": "Make local theme evidence self-expiring and claim-boundary aware",
+      "description": "Validate the six-cell desktop/mobile theme matrix, contrast floors, surfaces, freshness, and local-only scope so screenshots cannot silently become stale or masquerade as staging parity.",
+      "complete": true,
+      "evidence": "theme receipt validator, doctor probe, freshness/contrast/claim-boundary fixtures"
     }
   ]
 }

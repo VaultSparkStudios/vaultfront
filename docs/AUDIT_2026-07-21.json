@@ -1,0 +1,390 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "/audit skill v2 · Session 78 product rubric + game-loop and public app-release lenses",
+  "generatedAt": "2026-07-21T20:00:00Z",
+  "project": {
+    "slug": "vaultfront",
+    "name": "VaultFront",
+    "type": "game",
+    "registryType": "app",
+    "audience": "public-unlaunched",
+    "stage": "FORGE",
+    "stagingType": "local"
+  },
+  "summary": "Premise-verified Session 78 product audit: close an unreachable spectator progression loop, consolidate onboarding and mastery feedback around the convoy fantasy, make startup chronology and public-shell generation self-validating, add real theme readability proof, and preserve external release/profile gaps as explicit fail-closed evidence.",
+  "axes": {
+    "featureDepth": 2,
+    "innovation": 1.5,
+    "ux": 2,
+    "feedbackLoop": 1.5,
+    "gamification": 3,
+    "aiIntegration": 1.5,
+    "security": 1.5,
+    "speedOrganization": 1.5,
+    "tokenApiReduction": 1.5
+  },
+  "sample": {
+    "method": "Main-agent capped 20-file code survey plus forked read-only game-loop and app-release reviews; every accepted premise was grepped to a live caller, renderer, route, test, or release source.",
+    "picked": 20,
+    "scanned": "startup/SIL chronology, Genius cache, public shell manifest and ten leaves, progression spine, spectator predictions, season/achievement/debrief surfaces, first-run tutorial and ControlPanel onboarding, narrator budget, theme E2E, CI/release workflows, readiness, and Ark receipts",
+    "baseline": "Recovery commit 9688d4a6 synchronized to main; 134/134 main files and 822/822 tests plus 31/31 server files and 121/121 tests; doctor 7/7 blockingFailing 0; game-loop implementation score 80/100 with low empirical confidence; release verdict NO-GO."
+  },
+  "specialtyReviews": {
+    "gameLoop": {
+      "score": 80,
+      "confidence": "low-empirical",
+      "axes": {
+        "loopTightness": 84,
+        "progression": 76,
+        "sessionEngagement": 86,
+        "retention": 79,
+        "soulFidelity": 74
+      },
+      "boundary": "No GAME_LOOP.md or PLAYTESTS corpus exists; three distinct human Alpha sessions remain unobserved."
+    },
+    "release": {
+      "verdict": "no-go",
+      "passing": [
+        "latest five CI runs",
+        "repo-side branding/footer/sitemap",
+        "documented immutable rollback contract",
+        "CANON-029 cost gates"
+      ],
+      "red": [
+        "no staging origin or health observation",
+        "no staging/production environment secrets",
+        "no parity receipt",
+        "no native Obelisk relying-party evidence",
+        "no project-domain Brevo delivery evidence",
+        "no live theme/mobile/CWV/CSP/HSTS evidence",
+        "no founder approval"
+      ]
+    }
+  },
+  "evidenceBoundary": [
+    "Local automation cannot satisfy real staging, distinct-human Alpha, project-domain email delivery, relying-party identity, revenue, or founder-approval observations.",
+    "Registry type remains app while local PROJECT_STATUS and STUDIO_MANIFEST say game; cargo 01JU1AEATS46E1C7F5DD9AE41C was drained by Studio Ops but no corrective reply or registry propagation exists.",
+    "No new remote-AI feature is justified: the project already has broad AI surfaces, a cost firewall, prompt caching, and no measured unmet player need. Narrator compression is rejected until prompt-volume telemetry establishes a hot path.",
+    "No package install, paid service, license change, or sibling tree edit is needed for local items. AGPL upstream obligations remain unchanged."
+  ],
+  "rejectedPremises": [
+    {
+      "candidate": "Add another AI coach/narrative feature",
+      "result": "skipped",
+      "evidence": "Oracle, coach, recap, debrief, prophecy, narrator, persona, lore, mission, and commentary surfaces already exist; no playtest evidence identifies an AI-depth deficit."
+    },
+    {
+      "candidate": "Materialize progression and prediction database views now",
+      "result": "skipped",
+      "evidence": "Readiness already declares process-local scope and no staging database contract exists; persistence design before environment evidence would repeat a previously rejected premise."
+    },
+    {
+      "candidate": "Raise all test timeouts",
+      "result": "skipped",
+      "evidence": "Only one spawn-heavy integration test exceeded its 5-second default under full-suite contention; the exact test completed in 0.9 seconds alone. Scope the measured budget to that contract."
+    },
+    {
+      "candidate": "Claim local screenshots as live launch parity",
+      "result": "skipped",
+      "evidence": "A local visual harness can prove code readability but cannot become staging-origin, Core Web Vitals, Content Security Policy, or HTTP Strict Transport Security evidence."
+    }
+  ],
+  "items": [
+    {
+      "id": 43,
+      "slug": "prediction-league-resolution-spine",
+      "tier": "🔥",
+      "axis": "gamification / engagement / feature depth",
+      "effortHours": 2,
+      "impact": 10,
+      "innovation": 7,
+      "priority": 105,
+      "status": "shipped",
+      "title": "Close the spectator Prediction League loop with an authoritative resolution receipt",
+      "why": "PredictionLeagueStore records picks and exposes a leaderboard, but resolveGame has zero callers, so pending predictions never become history and the player-facing leaderboard can never populate.",
+      "coreLoopStep": "spectator prediction input → certified match outcome → accuracy reward → weekly mastery progression",
+      "recipe": "Extend the certified match progression envelope with convoy deliveries/intercepts, derive the dominant outcome deterministically, resolve predictions exactly once through the idempotent progression spine, return the resolution in its receipt, and test duplicate, tie, intercept, delivery, and empty-prediction paths.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Call resolveGame after a certified match."
+        },
+        "L2": {
+          "effortHours": 2,
+          "recipe": "Bind resolution to the idempotent progression spine with typed dominant-outcome derivation and focused tests."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Emit a tamper-sensitive prediction-resolution receipt and expose it in the progression debrief/readiness evidence."
+        }
+      },
+      "executionLog": [
+        "S78 L2 shipped: certified GameServer convoy deliveries/intercepts now derive a deterministic dominant outcome inside the idempotent MatchProgression spine; PredictionLeagueStore emits a typed resolution receipt and duplicate/tie/intercept/delivery/empty paths are covered."
+      ]
+    },
+    {
+      "id": 44,
+      "slug": "convoy-mastery-prescription",
+      "tier": "🔥",
+      "axis": "gamification / feedback loop / progression",
+      "effortHours": 6,
+      "impact": 9,
+      "innovation": 9,
+      "priority": 81,
+      "status": "shipped",
+      "title": "Turn parallel meta systems into one Convoy Mastery prescription",
+      "why": "ProgressionDebrief lists Elo, one season milestone, and achievement count as three equal facts while WinModal separately saves an actionable next-match goal; contracts, achievements, season progress, dynasty, and rivalry therefore lack one player-facing hierarchy.",
+      "coreLoopStep": "match evidence → one mastery diagnosis → next-match vow → live HUD completion → compounding identity",
+      "recipe": "Create a pure mastery selector that ranks the most actionable contract, season milestone, achievement gap, and saved WinModal goal; render one named Convoy Mastery prescription in ProgressionDebrief; persist the structured goal for ControlPanel; preserve supporting meta counts as evidence; test deterministic priority, completion, empty, and malformed payloads.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Choose and display one next goal in the debrief."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Share a typed selector with ControlPanel persistence and focused tests."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Unify contract, season, achievement, and rivalry evidence into a deterministic mastery prescription with lifecycle receipts."
+        }
+      },
+      "executionLog": [
+        "S78 L2 shipped: one typed Convoy Mastery prescription prioritizes certified recap weakness, then actionable season and achievement evidence; the receipt persists across WinModal, ProgressionDebrief, and ControlPanel with malformed-state coverage."
+      ]
+    },
+    {
+      "id": 45,
+      "slug": "first-extraction-onboarding-convergence",
+      "tier": "🔥",
+      "axis": "ux / onboarding / game-loop tightness",
+      "effortHours": 4,
+      "impact": 9,
+      "innovation": 8,
+      "priority": 55.7,
+      "status": "shipped",
+      "title": "Converge four tutorial voices into one event-driven First Extraction quest",
+      "why": "A mounted five-card static tutorial, four-step ControlPanel objectives, three first-match coachmarks, contextual coach hints, and two unmounted tutorial engines describe overlapping paths, creating instruction density and drift risk before the first meaningful convoy decision.",
+      "coreLoopStep": "first contact → capture → convoy command → reward comprehension → confident autonomy",
+      "recipe": "Reduce the static overlay to a concise First Extraction orientation, make the existing live objective chain the canonical quest vocabulary, delay advanced Jam/Execution coachmarks until the quest clears, remove genuinely unreferenced tutorial engines after a reference proof, and extend mobile/desktop telemetry and tests for skip, advance, live handoff, and progressive disclosure.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Rewrite the static carousel around the live objective chain."
+        },
+        "L2": {
+          "effortHours": 2.5,
+          "recipe": "Gate advanced coachmarks behind First Extraction and add lifecycle tests."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Delete dead paths, share one quest vocabulary, and prove mobile/desktop telemetry convergence."
+        }
+      },
+      "executionLog": [
+        "S78 L3 shipped: desktop/mobile orientation now hands off to one shared four-action First Extraction vocabulary, advanced coachmarks remain gated until completion, and two proven-unmounted client tutorial paths were removed."
+      ]
+    },
+    {
+      "id": 46,
+      "slug": "startup-chronology-source-contract",
+      "tier": "🔥",
+      "axis": "speed / organization / observability",
+      "effortHours": 1,
+      "impact": 9,
+      "innovation": 6,
+      "priority": 51.1,
+      "status": "shipped",
+      "title": "Make startup activity age and rolling averages derive only from typed session evidence",
+      "why": "render-startup-brief mixes numeric status.silLastSession into ISO candidateDates, producing the live 'Last active: 20654d' claim, and prints Avg3 from a stale rolling header despite a newer Session 77 score table.",
+      "coreLoopStep": "session evidence input → trustworthy orientation → correct priority choice → clean continuation",
+      "recipe": "Extract typed chronology and rolling-summary helpers; accept only valid ISO dates for age; compute Avg3 from the newest scored SIL entries; render unknown when evidence is absent; add adversarial numeric-session, invalid-date, out-of-order, and current-log tests; regenerate and semantically validate the brief.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.25,
+          "recipe": "Remove silLastSession from date candidates."
+        },
+        "L2": {
+          "effortHours": 1,
+          "recipe": "Add typed pure helpers and regression fixtures for age plus Avg3."
+        },
+        "L3": {
+          "effortHours": 2,
+          "recipe": "Extend semantic brief validation to reject impossible age and stale-average claims."
+        }
+      },
+      "executionLog": [
+        "S78 L3 shipped: strict ISO chronology excludes numeric session IDs, Avg3 derives from the newest scored entries, semantic validation rejects impossible activity ages, and the regenerated brief reports Last active 0d / Avg3 980.3."
+      ]
+    },
+    {
+      "id": 47,
+      "slug": "generated-public-shell-contract",
+      "tier": "⚡",
+      "axis": "ux / organization / legal",
+      "effortHours": 4,
+      "impact": 8,
+      "innovation": 6,
+      "priority": 37.1,
+      "status": "shipped",
+      "title": "Generate every public navigation and footer shell from the semantic manifest",
+      "why": "The scoped checker now catches drift, but ten HTML leaves still hand-copy identical navigation, brand, copyright, and seven-link footer markup; the Session 76 SIL commitment explicitly calls for construction instead of repair.",
+      "coreLoopStep": "public route intent → generated trustworthy shell → reachable help/legal path → retained confidence",
+      "recipe": "Add an idempotent generator that replaces only marked nav/footer regions from footer-manifest.json, migrate all ten leaves to generated markers, preserve page-specific content, add check mode and malformed/duplicate-route fixtures, and wire check mode into the footer doctor probe.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Create shared nav/footer render functions."
+        },
+        "L2": {
+          "effortHours": 2.5,
+          "recipe": "Add bounded markers, check mode, migration, and idempotency tests."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Make generation plus scoped validation one atomic public-shell contract with tamper fixtures."
+        }
+      },
+      "executionLog": [
+        "S78 L3 shipped: manifest-owned bounded nav/footer generation migrated all ten leaves; check mode is idempotent, doctor validation detects drift, and duplicate-route/path-escape fixtures fail closed."
+      ]
+    },
+    {
+      "id": 48,
+      "slug": "three-theme-visual-proof-harness",
+      "tier": "⚡",
+      "axis": "ux / accessibility / release",
+      "effortHours": 3,
+      "impact": 8,
+      "innovation": 5,
+      "priority": 34.5,
+      "status": "shipped",
+      "title": "Turn theme persistence tests into desktop/mobile readability proof",
+      "why": "E2E verifies that vaultfront, light, and competitive theme attributes persist, but captures screenshots only on failure and has no computed contrast/readability assertions; CANON-047 cannot be evidenced from attribute presence.",
+      "coreLoopStep": "theme choice → readable command surface → confident tactical action → inclusive retention",
+      "recipe": "Add a Playwright proof matrix for all three themes at 390px and 1440px, capture named screenshots, assert key foreground/background pairs meet WCAG AA, exercise navigation and Command Center panels, inspect the generated images, and record the result as local-only evidence rather than live staging parity.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Capture all theme/viewport screenshots."
+        },
+        "L2": {
+          "effortHours": 2,
+          "recipe": "Add contrast assertions and deterministic artifact names."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Cover key panels, visually inspect artifacts, and emit a machine-readable local proof receipt."
+        }
+      },
+      "executionLog": [
+        "S78 L2 shipped: Playwright captured named play/settings screenshots for all three themes on desktop and mobile and verified foreground/background pairs exceed WCAG AA; docs/THEME_LOCAL_PROOF.json is explicitly local-only. Built-in image viewing was unavailable due Windows DPAPI sandbox failure, so no subjective visual-inspection claim is made."
+      ]
+    },
+    {
+      "id": 49,
+      "slug": "registry-profile-conformance-receipt",
+      "tier": "⚡",
+      "axis": "security / ecosystem / observability",
+      "effortHours": 2,
+      "impact": 9,
+      "innovation": 5,
+      "priority": 33.8,
+      "status": "externally-blocked",
+      "blockedReason": "Studio Ops drained correction cargo 01JU1AEATS46E1C7F5DD9AE41C, but the central registry still reports app and no corrective reply/propagation exists; CANON-018 forbids direct sibling edits.",
+      "title": "Require a receipt before the registry can silently override local project type",
+      "why": "arc-profile still classifies VaultFront as app while PROJECT_STATUS, STUDIO_MANIFEST, startup brief, and deployed gameplay classify it as game, repeating the Session 73/76 split after the correction cargo was accepted.",
+      "coreLoopStep": "profile evidence input → one intentional rubric → correctly weighted audit → coherent portfolio progression",
+      "recipe": "Verify the existing receipt, send a bounded follow-up Ark question with current evidence, and when Studio Ops replies, require arc-profile output to expose source, disagreement, and correction receipt instead of silently choosing registry metadata.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Surface the disagreement and prior receipt."
+        },
+        "L2": {
+          "effortHours": 2,
+          "recipe": "Follow up through Ark and add a local conformance assertion that never edits sibling truth."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Land source-tagged profile reconciliation in the canonical control-plane producer and propagate it."
+        }
+      },
+      "executionLog": [
+        "S78 follow-up shipped through Ark as repo-question 01JU3RL522793F2F1D15EC71D6. Local code remains untouched; awaiting Studio Ops correction receipt or intentional-classification rationale."
+      ]
+    },
+    {
+      "id": 50,
+      "slug": "spawn-contract-time-budget",
+      "tier": "⚡",
+      "axis": "dev health / speed / test reliability",
+      "effortHours": 0.75,
+      "impact": 7,
+      "innovation": 4,
+      "priority": 28.7,
+      "status": "shipped",
+      "title": "Give the spawn-heavy Genius contract a measured integration-test budget",
+      "why": "The recovery full suite timed out the generator-plus-renderer contract at Vitest's 5-second default while its isolated execution passed in 0.9 seconds and the next full run passed, proving resource-sensitive flake exposure rather than an assertion defect.",
+      "coreLoopStep": "code change → deterministic gate → trustworthy green/red signal → sustained delivery momentum",
+      "recipe": "Add a scoped 15-second timeout only to the two-process integration case, measure and assert each subprocess exit and total elapsed time below a tighter diagnostic ceiling, clean temporary fixtures, and repeat the focused plus full suites without changing global timeouts.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": { "effortHours": 0.15, "recipe": "Set a per-test timeout." },
+        "L2": {
+          "effortHours": 0.5,
+          "recipe": "Add elapsed diagnostics and deterministic fixture cleanup."
+        },
+        "L3": {
+          "effortHours": 0.75,
+          "recipe": "Prove focused and full-suite behavior while preserving the global 5-second tripwire."
+        }
+      },
+      "executionLog": [
+        "S78 L3 shipped: only the two-process Genius integration case receives a 15s budget, asserts a 12s diagnostic ceiling, and guarantees temporary fixture cleanup; global Vitest timeout remains unchanged."
+      ]
+    },
+    {
+      "id": 51,
+      "slug": "live-staging-evidence-corridor",
+      "tier": "🔥",
+      "axis": "feedback loop / release / ecosystem",
+      "effortHours": 8,
+      "impact": 10,
+      "innovation": 5,
+      "priority": 22.6,
+      "status": "externally-blocked",
+      "blockedReason": "Capability preflight confirms cloudflare.deploy and Brevo credentials are READY, but the canonical registry still specifies local staging and there is no approved external staging origin, GitHub environment contract, native Obelisk relying-party registration, three-human Alpha evidence, revenue event, or final founder approval. This remains an evidence/authorization corridor, not a phantom credential blocker.",
+      "title": "Exercise the immutable digest through a real staging observation corridor",
+      "why": "CI, local E2E, branding, sitemap, rollback documentation, and cost gates pass, but every live launch observation remains absent; local artifacts must not be promoted into a release claim.",
+      "coreLoopStep": "verified artifact → staging observation → human trust evidence → founder-approved launch progression",
+      "recipe": "After credentials/environments exist, deploy the exact digest, verify /_health revision and parity receipt, test Brevo and Obelisk, capture live theme/mobile/CWV/CSP/HSTS evidence, run three authenticated Alpha sessions, observe revenue, and request founder approval last.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Create staging environment and health observation."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Produce digest parity plus identity/email/theme evidence."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Complete human Alpha, revenue, rollback drill, and final founder gate with signed receipts."
+        }
+      },
+      "executionLog": [
+        "S78 release gate remains NO-GO. Local theme/public-shell/test evidence improved, but no external deploy was inferred from the audit arc and local artifacts were not promoted into live parity claims."
+      ]
+    }
+  ]
+}
