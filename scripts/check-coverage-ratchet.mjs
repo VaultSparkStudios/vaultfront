@@ -35,6 +35,14 @@ export function evaluateCoverage(summary, baseline) {
     normalizeCoveragePath(key),
     value,
   ]);
+  const reportedPaths = entries.map(([key]) => key);
+  for (const modulePath of baseline.observedModules ?? []) {
+    const suffix = `/${normalizeCoveragePath(modulePath)}`;
+    if (!reportedPaths.some((key) => key.endsWith(suffix))) {
+      failures.push(`${modulePath}: missing from production coverage surface`);
+    }
+  }
+
   for (const [modulePath, floors] of Object.entries(
     baseline.criticalModules ?? {},
   )) {

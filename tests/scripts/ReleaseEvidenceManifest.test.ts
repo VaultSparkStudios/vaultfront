@@ -33,7 +33,10 @@ describe("Release Evidence Manifest", () => {
       gitSha: "abc123",
       dirty: false,
       auditSource: "docs/AUDIT_2026-07-16.json",
-      auditItems: [{ slug: "done", status: "shipped" }],
+      auditItems: [
+        { slug: "done", status: "shipped" },
+        { slug: "external-receipt", status: "externally-blocked" },
+      ],
       innovationItems: [{ id: "innovation", status: "shipped" }],
       projectTruth: {
         evaluation: { ok: true, contradictionIds: [] },

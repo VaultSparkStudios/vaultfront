@@ -207,3 +207,43 @@ CREATE TABLE IF NOT EXISTS spectator_bets (
 
 CREATE INDEX IF NOT EXISTS idx_spectator_bets_game
   ON spectator_bets (game_id);
+-- ── Certified Daily Mastery ─────────────────────────────────────────────────
+-- Only server-certified match envelopes may write these tables. The event key
+-- makes one match contribute at most once to one player's UTC-day objective.
+CREATE TABLE IF NOT EXISTS daily_mastery_events (
+  persistent_id   VARCHAR(64)  NOT NULL,
+  challenge_date  DATE         NOT NULL,
+  game_id         VARCHAR(64)  NOT NULL,
+  challenge_id    VARCHAR(64)  NOT NULL,
+  metric          VARCHAR(32)  NOT NULL CHECK (
+    metric IN (
+      'wins',
+      'vault_captures',
+      'convoy_deliveries',
+      'convoy_intercepts',
+      'execution_chains',
+      'surge_activations'
+    )
+  ),
+  amount           INT          NOT NULL CHECK (amount >= 0),
+  recorded_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (persistent_id, challenge_date, game_id)
+);
+
+CREATE TABLE IF NOT EXISTS daily_mastery_progress (
+  persistent_id   VARCHAR(64)  NOT NULL,
+  challenge_date  DATE         NOT NULL,
+  challenge_id    VARCHAR(64)  NOT NULL,
+  progress        INT          NOT NULL DEFAULT 0 CHECK (progress >= 0),
+  target          INT          NOT NULL CHECK (target > 0),
+  reward_mastery  INT          NOT NULL CHECK (reward_mastery >= 0),
+  completed_at    TIMESTAMPTZ,
+  updated_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (persistent_id, challenge_date)
+);
+
+CREATE TABLE IF NOT EXISTS daily_mastery_wallet (
+  persistent_id   VARCHAR(64)  PRIMARY KEY,
+  mastery_balance INT          NOT NULL DEFAULT 0 CHECK (mastery_balance >= 0),
+  updated_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);

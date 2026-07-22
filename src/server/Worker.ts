@@ -32,8 +32,9 @@ import {
   parseRecapProviderOutput,
   withAiDeadline,
 } from "./CanonicalAiEvidence";
+import { certifiedDailyMasteryStore } from "./CertifiedDailyMasteryStore";
 import { Client } from "./Client";
-import { dailyChallengeStore } from "./DailyChallengeStore";
+import { registerDailyMasteryRoute } from "./DailyMasteryRouter";
 import { EloRating } from "./EloRating";
 import { ExperimentIntegrityGate } from "./ExperimentIntegrity";
 import { GameCreationAdmissionGuard } from "./GameCreationAdmission";
@@ -1205,18 +1206,12 @@ export async function startWorker() {
     res.json(game.gameInfo());
   });
 
-  app.get("/api/vaultfront/daily-challenge", async (req, res) => {
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.startsWith("Bearer ")
-      ? authHeader.slice(7)
-      : null;
-    let persistentId = "anonymous";
-    if (token) {
-      const auth = await verifyClientToken(token, config);
-      if (auth.type !== "error") persistentId = auth.persistentId;
-    }
-    const data = dailyChallengeStore.getChallenge(persistentId);
-    return res.json(data);
+  registerDailyMasteryRoute(app, {
+    verifyToken: (token) => verifyClientToken(token, config),
+    getChallenge: (persistentId) =>
+      certifiedDailyMasteryStore.getChallenge(persistentId),
+    reportError: (error) =>
+      log.error("Daily mastery unavailable", { err: String(error) }),
   });
 
   app.get("/api/vaultfront/contracts", async (req, res) => {
@@ -2650,14 +2645,6 @@ export async function startWorker() {
       const label =
         parsed.data.label ?? parsed.data.activity.replace(/_/g, " ");
       narratorBus.queueEvent(gameId, label, parsed.data.context);
-
-      // Wire activity into daily challenge tracking
-      if (parsed.data.persistentId) {
-        dailyChallengeStore.recordActivity(
-          parsed.data.persistentId,
-          parsed.data.activity,
-        );
-      }
 
       return res.json({ ok: true });
     },

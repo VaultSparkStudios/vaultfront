@@ -1,50 +1,55 @@
 <!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
-<!-- source-hash: 60b1031f86d7 -->
-<!-- generated-at: 2026-07-22T03:47:48.409Z -->
+<!-- source-hash: 96afd464618d -->
+<!-- generated-at: 2026-07-22T21:58:46.934Z -->
 
 # LATEST_HANDOFF (compact)
 
-SESSION HANDOFF SUMMARY
+SESSION
 
-Session
+- Number: 79 (certified-mastery closeout)
+- Date: 2026-07-22
 
-- Number: 78 (saturated closeout)
-- Boundary committed to main; prior S77 recovery checkpoint at 9688d4a6
+SHIPPED
 
-Shipped
+- Daily Mastery derives from certified match outcomes; exactly-once UTC-day progress + Mastery wallet in PostgreSQL; typed receipts; authenticated injected route.
+- Single atomic invariant writer for all project-status mutations; doctor rejects bypasses.
+- One typed session ledger parser shared across startup/freshness/forecast/closeout with dup/prose/date defenses.
+- Client graph 181/181 reachable; 11 dead modules removed; source map corrected.
+- E2E installs native canvas prereqs, Node 22, canonical /_health for staging/promotion.
+- Tests non-duplicated, capped 4 workers; coverage includes unloaded prod code; 10 critical seams ratcheted.
+- Second-order pack 14/14 (three new this session).
 
-- 7 locally executable audit items in docs/AUDIT_2026-07-21.json; second-order pack 11/11
-- Certified match progression: resolves spectator predictions once from deterministic convoy evidence, returns typed receipt
-- First Extraction quest owns first-run vocabulary; advanced coaching gated on completion; two unmounted tutorial paths removed
-- Convoy Mastery selects one cross-match prescription from certified recap/season/achievement/rating evidence
-- Startup activity age uses strict ISO dates; Avg3 uses newest scored entries; semantic validation rejects impossible age
-- Bounded manifest generator owns nav/footer for ten public leaves; doctor detects drift
-- Local Playwright evidence: three themes desktop/mobile, contrast exceeds WCAG AA; receipt local-only, 30-day expiry
-- Work exhaustion recognizes evidenced externally-blocked status without hiding it
+INTENT
 
-Current Intent
+- Run full agent-neutral arc continuously, exhaust verified local items, implement second-order innovations, close to main without fabricated external evidence.
 
-- Establish real staging contract after Studio Ops registry reply, then exercise external parity, delivery, identity, live metrics, human Alpha sessions, revenue, founder approval
+NOW (top 3)
 
-Now Bucket (top 3)
+- Receive source-tagged Studio Ops registry decision.
+- Deliberately establish external staging contract.
+- Collect exact-digest parity + human/business evidence in gate order.
 
-- Receive Studio Ops registry-profile reply and deliberately establish staging contract
-- Exercise exact-digest parity and project-domain Brevo delivery on staging
-- Run native Obelisk relying-party identity plus live headers/Core Web Vitals/themes
+BLOCKERS (top 3)
 
-Blockers (top 3)
+- No external staging target/contract established.
+- Remote post-push run unproven (local E2E only).
+- Registry specifies local staging; no launch authorization.
 
-- Browser screenshot viewer unavailable: Windows DPAPI sandbox failed; only automated capture claimed, no visual inspection
-- No external staging target: registry specifies local staging; local proof is not staging parity
-- No launch authorization; founder approval required last
+HUMAN-BLOCKED
 
-Human-Blocked Items
+- Three authenticated human Alpha sessions (pending since S78+).
+- Founder approval (final gate).
+- Studio Ops registry-profile reply / correction receipt (Ark follow-up 01JU3RL522793F2F1D15EC71D6, since S78).
+- External-only: Obelisk relying-party identity, Brevo live delivery, live theme/header/CWV, real revenue event, rollback observation.
 
-- Studio Ops registry-profile reply, Ark follow-up 01JU3RL522793F2F1D15EC71D6 requests registry correction receipt (opened S78, ~0 days)
-- Two external corridors (Cloudflare deploy, Brevo) READY but blocked pending staging contract
+VERIFICATION
 
-Verification
+- 143/143 Vitest files, 856/856 tests; prod-inclusive coverage + ratchet; TypeScript; ESLint; prod build; 26/26 Playwright; 38 deploy-contract; audit 8/8; innovation 14/14; doctor 10/10, blockingFailing 0.
 
-- 139/139 main Vitest files, 840/840 tests; 32/32 server files, 124/124 tests; TypeScript; prod Vite build; two Playwright theme-matrix projects (6 cells/12 screenshots); audit 9/9; innovation 11/11; doctor 8/8, blockingFailing 0
+TRUTH BOUNDARY
 
-Next session: Await Studio Ops registry reply, then establish and exercise the staging parity contract.
+- Local E2E and corrected workflow semantics do not prove remote run. Release work-exhausted, transfer-green, launch-blocked.
+
+NEXT
+
+- Await registry decision, then establish staging contract and gather parity + human/business evidence in gate order.

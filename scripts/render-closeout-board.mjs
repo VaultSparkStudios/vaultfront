@@ -28,6 +28,7 @@ import {
   selectFirstPendingUnblocked,
 } from "./lib/genius-cache.mjs";
 import { spawnSync } from "./lib/safe-spawn.mjs";
+import { parseSessionSections } from "./lib/session-chronology.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STUDIO_ROOT = path.resolve(__dirname, "..");
@@ -192,10 +193,11 @@ function deploymentRows() {
 function parseShippedFromHandoff() {
   const body = readText(HANDOFF_PATH);
   if (!body) return [];
-  const match =
-    body.match(/^##\s+Where We Left Off[\s\S]*?(?=^##\s|\Z)/m) ||
-    body.match(/^#\s+(?:S\d+\s+|Session\s+\d+\s+).*?\n([\s\S]*?)(?=^#\s|\Z)/m);
-  const segment = match ? match[0] : body.slice(0, 4000);
+  const match = body.match(/^##\s+Where We Left Off[\s\S]*?(?=^##\s|\Z)/m);
+  const latest = parseSessionSections(body).sort(
+    (a, b) => b.session - a.session || b.start - a.start,
+  )[0];
+  const segment = match?.[0] ?? latest?.body ?? "";
   const bullets = segment
     .split("\n")
     .filter((l) => /^[-*•]\s+/.test(l))

@@ -163,6 +163,45 @@ const candidates = [
     evidence:
       "theme receipt validator, doctor probe, freshness/contrast/claim-boundary fixtures",
   },
+  {
+    id: "bounded-test-worker-contract",
+    title: "Make test parallelism a repository-owned resource contract",
+    description:
+      "Convert the coverage process storm into a durable ceiling so local, CI, and closeout verification cannot silently multiply workers until the host becomes the failure mode.",
+    complete:
+      has("package.json", /vitest run --maxWorkers=4/) &&
+      has("package.json", /--coverage --maxWorkers=4/),
+    evidence:
+      "four-worker ceilings on default, server, and production coverage commands plus a clean 143-file run",
+  },
+  {
+    id: "coverage-surface-visibility-contract",
+    title:
+      "Make unloaded production code visible even before it earns coverage",
+    description:
+      "Separate visibility from percentage: enumerate the production TypeScript surface, require the Worker router to appear in the report, and ratchet critical seams from measured floors.",
+    complete:
+      has("vite.config.ts", /src\/server\/\*\*\/\*\.ts/) &&
+      has("coverage-baseline.json", /observedModules/) &&
+      has(
+        "tests/scripts/CoverageRatchet.test.ts",
+        /production coverage surface/,
+      ),
+    evidence:
+      "production-inclusive V8 configuration, Worker observed-module invariant, ten measured critical-module floors, and regression fixtures",
+  },
+  {
+    id: "authenticated-route-seam",
+    title: "Extract a fully testable trust boundary from the router god-object",
+    description:
+      "Turn the Daily Mastery endpoint into an injected authorization and persistence seam that fails closed, reports operational failure, and can be certified without importing the 4,300-line Worker.",
+    complete:
+      has("src/server/DailyMasteryRouter.ts", /registerDailyMasteryRoute/) &&
+      has("src/server/Worker.ts", /registerDailyMasteryRoute/) &&
+      has("tests/server/DailyMasteryRouter.test.ts", /fails closed/),
+    evidence:
+      "dependency-injected route registrar, Worker composition, authorization/isolation/error tests, and 100% route coverage",
+  },
 ];
 
 const payload = {

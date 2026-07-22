@@ -24,27 +24,30 @@ New files with no upstream equivalent. These are the core VaultFront additions.
 | ----------------------------------------------- | ------------------------------------------------------------------------- |
 | `src/client/graphics/layers/VaultFrontLayer.ts` | Dedicated canvas layer: vault site markers, convoy overlays, beacon rings |
 
-### Client — features (scaffolded / shipped)
+### Client — runtime features
 
 | File                               | Purpose                                                                 |
 | ---------------------------------- | ----------------------------------------------------------------------- |
-| `src/client/ReplayPlayer.ts`       | Replay player: drives deterministic simulation from a recorded game log |
-| `src/client/SpectatorRunner.ts`    | Spectator runner: read-only WebSocket connection to a live game         |
-| `src/client/MapEditor.ts`          | Browser-based visual map editor (vault site placement, config export)   |
 | `src/client/sw.ts`                 | Service worker: PWA asset caching and offline shell                     |
 | `src/client/BrandTheme.ts`         | Theme tokens and persistence (dark / light / competitive)               |
 | `src/client/VaultFrontTutorial.ts` | First-run tutorial overlay: 5-step carousel for new players             |
 | `src/client/AchievementToast.ts`   | Fixed bottom-right toast component for achievement unlock notifications |
 
+Every listed client feature must be reachable from the production
+`src/client/Main.ts` module graph. `scripts/check-client-reachability.mjs`
+enforces the invariant and prevents unwired scaffolds from masquerading as
+shipped product.
+
 ### Server — features (scaffolded)
 
-| File                                 | Purpose                                                                                                          |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `src/server/ReplayStore.ts`          | Records per-game input logs for deterministic replay                                                             |
-| `src/server/SpectatorBus.ts`         | Broadcasts game turn updates to read-only spectator WebSocket connections                                        |
-| `src/server/DiscordNotifier.ts`      | Fire-and-forget Discord webhook notifications for game events                                                    |
-| `src/server/AchievementStore.ts`     | In-memory achievement definitions, per-player progress, and unlock logic                                         |
-| `src/server/VaultSeasonScheduler.ts` | Authoritative weekly mutator rotation, Discord announcements, community voting; serves `GET /api/season/current` |
+| File                                       | Purpose                                                                                                          |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `src/server/ReplayStore.ts`                | Records per-game input logs for deterministic replay                                                             |
+| `src/server/SpectatorBus.ts`               | Broadcasts game turn updates to read-only spectator WebSocket connections                                        |
+| `src/server/DiscordNotifier.ts`            | Fire-and-forget Discord webhook notifications for game events                                                    |
+| `src/server/AchievementStore.ts`           | In-memory achievement definitions, per-player progress, and unlock logic                                         |
+| `src/server/VaultSeasonScheduler.ts`       | Authoritative weekly mutator rotation, Discord announcements, community voting; serves `GET /api/season/current` |
+| `src/server/CertifiedDailyMasteryStore.ts` | Certified-match objective, exactly-once receipts, and persistent mastery wallet                                  |
 
 ### E2E tests
 

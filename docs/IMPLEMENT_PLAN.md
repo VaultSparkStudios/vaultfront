@@ -1,33 +1,36 @@
-# Session 78 Implementation Plan
+# Session 79 Implementation Plan
 
-Status: complete — all seven local items shipped; two external evidence lanes remain explicitly non-actionable in this repository; second-order innovation pack 11/11 shipped.
+Status: local implementation complete — six verified audit items shipped at L3; two external evidence lanes remain explicitly non-actionable from this repository.
 
-Source: `docs/AUDIT_2026-07-21.json` (sole truth).
+Source: `docs/AUDIT_2026-07-22.json` (sole truth).
 
-## Wave 4A — truth and gate foundations
+## Wave 4A — authoritative truth
 
-1. `startup-chronology-source-contract` — typed ISO activity age, live Avg3, adversarial fixtures, semantic brief validation.
-2. `spawn-contract-time-budget` — scoped measured timeout and deterministic temporary-fixture cleanup.
-3. `prediction-league-resolution-spine` — certified dominant convoy outcome, idempotent prediction resolution, progression receipt and tests.
+1. `atomic-project-status-write-path` — shipped: one atomic invariant-preserving writer, bypass scanner, doctor probe, and focused tests.
+2. `canonical-session-ledger-parser` — shipped: one typed parser across startup, freshness, forecast, and closeout.
 
-## Wave 4B — player comprehension and mastery
+## Wave 4B — player contract
 
-4. `first-extraction-onboarding-convergence` — one live quest vocabulary, progressive disclosure, dead-path proof/removal, mobile/desktop telemetry tests.
-5. `convoy-mastery-prescription` — pure next-goal selector, structured persistence, debrief hierarchy and ControlPanel handoff.
+3. `certified-daily-mastery-contract` — shipped: certified match metrics, exactly-once UTC-day progress, Postgres wallet, honest local scope, authenticated router, typed receipts, and HUD refresh.
+4. `client-feature-reachability-ratchet` — shipped: production-entry graph, eleven proven orphan deletions, corrected capability source map, CI/doctor enforcement.
 
-## Wave 4C — public experience construction
+## Wave 4C — delivery integrity
 
-6. `generated-public-shell-contract` — bounded semantic nav/footer generation, check mode, ten-leaf migration and tamper/idempotency tests.
-7. `three-theme-visual-proof-harness` — local three-theme × two-viewport contrast/screenshots, machine-readable receipt, visual inspection.
+5. `deterministic-e2e-bootstrap-contract` — shipped locally: native canvas prerequisites before install, Node/engine parity, canonical health routes, and a 38-check deploy contract.
+6. `production-risk-test-contract` — shipped: non-duplicated four-worker suite, explicit production coverage, Worker visibility, ten critical floors, and CI contract alignment.
+
+## Second-order innovation wave
+
+1. `bounded-test-worker-contract` — generated from the coverage process storm and shipped into every Vitest package command.
+2. `coverage-surface-visibility-contract` — generated from Worker omission and shipped as an explicit observed-module invariant.
+3. `authenticated-route-seam` — generated from the router god-object and shipped as a dependency-injected, 100%-covered Daily Mastery boundary.
 
 ## External evidence lane
 
-8. `registry-profile-conformance-receipt` — verify existing receipt and send a bounded follow-up through Ark; remain externally blocked until canonical propagation.
-9. `live-staging-evidence-corridor` — retain NO-GO with exact missing-environment/credential/live-observation evidence; never synthesize it.
+- `registry-profile-conformance-receipt-s79` — send one deduplicated Ark follow-up; never edit Studio Ops.
+- `live-staging-evidence-corridor-s79` — retain NO-GO until an approved origin, identity/email parity, human Alpha, revenue, rollback, and founder receipts exist.
 
-## Verification cadence
+## Closeout verification
 
-- Focused Vitest and direct behavior scripts after each same-surface group.
-- Context meter between ranked items; climb to L3 while verdict remains CONTINUE.
-- Full lint, typecheck/build, unit/server suites, Playwright desktop/mobile, doctor, sanitization, and work exhaustion at closeout.
-- No dependency install, sibling tree edit, launch flip, or fabricated live/human evidence.
+- Direct exit codes for contracts, coverage ratchet, typecheck, lint, build, unit suite, E2E, doctor, security/public sanitization, and work exhaustion.
+- Remote workflow rerun is reported only after the direct-to-main push; no local result is promoted into live evidence.

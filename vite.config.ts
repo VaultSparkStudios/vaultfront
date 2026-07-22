@@ -50,6 +50,12 @@ export default defineConfig(({ mode }) => {
       coverage: {
         provider: "v8",
         reporter: ["text", "json", "json-summary"],
+        include: [
+          "src/client/**/*.ts",
+          "src/core/**/*.ts",
+          "src/server/**/*.ts",
+        ],
+        exclude: ["src/**/*.d.ts"],
         thresholds: {
           // The checked-in ratchet owns measurable no-regression policy. Keep
           // Vitest's disconnected global threshold neutral so the JSON report

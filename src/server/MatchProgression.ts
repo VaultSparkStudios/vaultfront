@@ -1,4 +1,8 @@
 import { achievementStore, type AchievementEvent } from "./AchievementStore";
+import {
+  certifiedDailyMasteryStore,
+  type DailyMasteryCompletionReceipt,
+} from "./CertifiedDailyMasteryStore";
 import { logger } from "./Logger";
 import type { PlayerStats } from "./PlayerStatsStore";
 import { playerStatsStore } from "./PlayerStatsStore";
@@ -34,6 +38,7 @@ export interface ProgressionReceipt {
   achievementsUnlocked: number;
   predictionOutcome: "intercept" | "delivery";
   predictionsResolved: number;
+  dailyMastery: DailyMasteryCompletionReceipt[];
 }
 
 interface ProgressionDependencies {
@@ -42,6 +47,7 @@ interface ProgressionDependencies {
   checkAndUnlock: typeof achievementStore.checkAndUnlock;
   recordSeasonActivity: typeof seasonMilestoneStore.recordActivity;
   resolvePrediction: typeof predictionLeagueStore.resolveGame;
+  recordDailyMastery: typeof certifiedDailyMasteryStore.recordCertifiedMatch;
 }
 
 const defaultDependencies: ProgressionDependencies = {
@@ -52,6 +58,9 @@ const defaultDependencies: ProgressionDependencies = {
     seasonMilestoneStore.recordActivity.bind(seasonMilestoneStore),
   resolvePrediction: predictionLeagueStore.resolveGame.bind(
     predictionLeagueStore,
+  ),
+  recordDailyMastery: certifiedDailyMasteryStore.recordCertifiedMatch.bind(
+    certifiedDailyMasteryStore,
   ),
 };
 
@@ -78,10 +87,11 @@ export function derivePredictionOutcome(
  */
 export class ServerAuthoritativeProgressionSpine {
   private readonly processedGameIds = new Set<string>();
+  private readonly dependencies: ProgressionDependencies;
 
-  constructor(
-    private readonly dependencies: ProgressionDependencies = defaultDependencies,
-  ) {}
+  constructor(dependencies: Partial<ProgressionDependencies> = {}) {
+    this.dependencies = { ...defaultDependencies, ...dependencies };
+  }
 
   async record(
     outcome: AuthoritativeMatchOutcome,
@@ -94,6 +104,7 @@ export class ServerAuthoritativeProgressionSpine {
         achievementsUnlocked: 0,
         predictionOutcome: derivePredictionOutcome(outcome.players),
         predictionsResolved: 0,
+        dailyMastery: [],
       };
     }
 
@@ -113,6 +124,7 @@ export class ServerAuthoritativeProgressionSpine {
         achievementsUnlocked: 0,
         predictionOutcome,
         predictionsResolved: predictionReceipt.resolvedPredictions,
+        dailyMastery: [],
       };
     }
 
@@ -151,6 +163,7 @@ export class ServerAuthoritativeProgressionSpine {
     );
 
     let achievementsUnlocked = 0;
+    const dailyMastery: DailyMasteryCompletionReceipt[] = [];
     for (const player of outcome.players) {
       const aggregate = await this.dependencies.getPlayerStats(
         player.persistentId,
@@ -232,6 +245,13 @@ export class ServerAuthoritativeProgressionSpine {
           playerUnlocks,
         );
       }
+      const masteryReceipt = await this.dependencies.recordDailyMastery(
+        outcome.gameId,
+        player,
+      );
+      if (masteryReceipt) {
+        dailyMastery.push(masteryReceipt);
+      }
     }
 
     const receipt = {
@@ -241,6 +261,7 @@ export class ServerAuthoritativeProgressionSpine {
       achievementsUnlocked,
       predictionOutcome,
       predictionsResolved: predictionReceipt.resolvedPredictions,
+      dailyMastery,
     };
     log.info("authoritative progression recorded", receipt);
     return receipt;

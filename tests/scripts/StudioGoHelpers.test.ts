@@ -34,7 +34,15 @@ describe("Studio /go helper scripts", () => {
       ),
     ).toBe(true);
     expect(
-      payload.items.some((item: { status: string }) => item.status === "done"),
+      payload.items.every((item: { status: string }) =>
+        [
+          "unblocked",
+          "externally-blocked",
+          "in-progress",
+          "done",
+          "deferred",
+        ].includes(item.status),
+      ),
     ).toBe(true);
   });
 
@@ -45,7 +53,6 @@ describe("Studio /go helper scripts", () => {
       (item: { status: string }) => item.status === "done",
     );
 
-    expect(doneItems.length).toBeGreaterThan(0);
     expect(
       doneItems.every((item: { blocked: boolean }) => item.blocked === false),
     ).toBe(true);

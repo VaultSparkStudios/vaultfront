@@ -1,0 +1,361 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "/audit skill v2 · Session 79 hybrid product + infrastructure rubric · game-loop + app-release lenses",
+  "generatedAt": "2026-07-22T12:00:00Z",
+  "project": {
+    "slug": "vaultfront",
+    "name": "VaultFront",
+    "type": "game",
+    "registryType": "app",
+    "audience": "public-unlaunched",
+    "stage": "FORGE",
+    "stagingType": "local"
+  },
+  "summary": "Premise-verified Session 79 hybrid audit: repair the Daily Challenge trust break through certified match evidence and durable reward receipts, enforce one atomic project-status mutation path, delete unreachable shipped-looking client code and prevent recurrence, make E2E bootstrap deterministic, converge session parsing, and make the test/coverage contract reflect the production risk surface. Registry and launch observations stay externally blocked and explicit.",
+  "axes": {
+    "featureDepth": 2,
+    "innovation": 1.5,
+    "ux": 2,
+    "feedbackLoop": 1.5,
+    "gamification": 3,
+    "aiIntegration": 1,
+    "security": 2,
+    "speedOrganization": 2.5,
+    "tokenApiReduction": 1.5
+  },
+  "sample": {
+    "method": "Main-agent live-code survey plus forked read-only game-loop, release-gate, and infrastructure-debt reviews. Every accepted premise was traced to a live route, caller, store, workflow, parser, coverage artifact, or import graph.",
+    "picked": 28,
+    "scanned": "authoritative progression, Daily Challenge store/API/HUD, player persistence schema, Worker route composition, project-status writers, client import graph, startup/SIL parsers, Vitest coverage, package scripts, E2E/deploy/promote workflows, source map, release evidence, Ark receipts, and live GitHub workflow state",
+    "baseline": "main synchronized at 86fc03b5; prior closeout reported 139/139 main files and 840/840 tests plus 32/32 server files and 124/124 tests; doctor 8/8 blockingFailing 0. Live release review is NO-GO because the latest E2E workflow failed during native canvas bootstrap and no external staging/identity/email/human/revenue/approval evidence exists."
+  },
+  "specialtyReviews": {
+    "gameLoop": {
+      "score": 72,
+      "confidence": "code-grounded-low-empirical",
+      "axes": {
+        "loopTightness": 84,
+        "progression": 64,
+        "sessionEngagement": 80,
+        "retention": 55,
+        "soulFidelity": 76
+      },
+      "boundary": "The core convoy-pressure loop is coherent, but context/GAME_LOOP.md, a playtest corpus, and three authenticated human Alpha sessions are absent. Daily Challenge is visible but not a functional authoritative progression loop."
+    },
+    "release": {
+      "verdict": "no-go",
+      "passing": [
+        "repo-side branding/footer and cost-neutral gates",
+        "immutable digest promotion and rollback documentation",
+        "local six-cell theme contrast receipt"
+      ],
+      "red": [
+        "latest E2E workflow failed during canvas installation fallback",
+        "no external staging origin, parity receipt, or live header/CWV/theme proof",
+        "no native Obelisk relying-party credentials or wiring",
+        "no verified project-domain Brevo delivery",
+        "no three-human Alpha, revenue, or founder-approval receipt"
+      ]
+    },
+    "infrastructure": {
+      "topRisks": [
+        "Worker.ts is a 4,300-line route god-object with no direct coverage",
+        "four scripts bypass the canonical PROJECT_STATUS invariant writer",
+        "ten client modules are unreachable from every runtime entrypoint",
+        "coverage excludes unloaded production modules and major UI god-objects remain below useful branch floors"
+      ]
+    }
+  },
+  "evidenceBoundary": [
+    "Local automation cannot manufacture staging, relying-party identity, project-domain delivery, distinct-human Alpha, revenue, or founder approval.",
+    "Registry type is still app while local PROJECT_STATUS and STUDIO_MANIFEST say game. CANON-018 forbids editing the sibling registry; follow-up must travel through Ark.",
+    "No new AI surface is justified: the audit found retention and infrastructure trust gaps, not an unmet generative feature need.",
+    "No package install, paid service, license change, or sibling tree edit is required for local items. AGPL upstream obligations remain unchanged."
+  ],
+  "rejectedPremises": [
+    {
+      "candidate": "Tune the convoy loop from code review alone",
+      "result": "skipped",
+      "evidence": "No core-loop timing corpus or three-human Alpha sample exists. Instrumentation and declared success bars must precede tuning."
+    },
+    {
+      "candidate": "Wire every orphaned client scaffold into navigation",
+      "result": "skipped",
+      "evidence": "Several files duplicate mature upstream replay/spectator paths or contain incomplete endpoints and double custom-element registration. Reachability without product need would convert dead code into broken promises."
+    },
+    {
+      "candidate": "Bulk-upgrade 37 outdated dependencies",
+      "result": "skipped",
+      "evidence": "The gaps include breaking Express, Vite, ESLint, TypeScript, nanoid, uuid, and protobuf majors; a bulk train would obscure compatibility evidence."
+    },
+    {
+      "candidate": "Promote local theme proof into launch parity",
+      "result": "skipped",
+      "evidence": "docs/THEME_LOCAL_PROOF.json explicitly says local-only; it cannot prove an external origin, headers, Core Web Vitals, or deployment digest."
+    }
+  ],
+  "items": [
+    {
+      "id": 52,
+      "slug": "certified-daily-mastery-contract",
+      "tier": "🔥",
+      "axis": "gamification / retention / security / feature depth",
+      "effortHours": 8,
+      "impact": 10,
+      "innovation": 9,
+      "priority": 54.2,
+      "status": "shipped",
+      "title": "Rebuild Daily Challenge as a certified, durable Daily Mastery contract",
+      "why": "The HUD fetches a challenge, but normal play never sends an authenticated persistentId to the only progress caller; the store advertises bonus gold no caller applies and clears all progress on restart. This is a visible retention promise that cannot complete honestly.",
+      "coreLoopStep": "certified match actions → exactly-once daily progress → durable mastery reward receipt → next-session return",
+      "recipe": "Restrict challenges to metrics present in the certified match envelope, process batched counts inside MatchProgression, persist per-day progress plus per-game idempotency in Postgres with an honest memory fallback, replace fictitious match gold with durable Mastery points, return typed completion/balance receipts, extract the Daily Mastery HTTP router behind injected auth/store dependencies, update HUD copy, and test duplicate envelopes, rollover, batch completion, persistence SQL, anonymous isolation, and router authorization.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Remove unsupported challenges and drive progress from certified match counts."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Add exactly-once in-memory receipts, honest Mastery rewards, HUD refresh, and focused tests."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Add Postgres persistence/idempotency, extracted authenticated router, typed progression receipt, and transaction-bound tests."
+        }
+      },
+      "executionLog": [
+        "Shipped L3: certified metrics, UTC deterministic selection, transactional Postgres event/progress/wallet tables, honest process-local fallback, authenticated injected router, typed progression receipts, HUD refresh/copy, and 7 focused tests."
+      ]
+    },
+    {
+      "id": 53,
+      "slug": "atomic-project-status-write-path",
+      "tier": "🔥",
+      "axis": "security / observability / organization",
+      "effortHours": 3,
+      "impact": 10,
+      "innovation": 7,
+      "priority": 44.2,
+      "status": "shipped",
+      "title": "Make every PROJECT_STATUS mutation use one atomic invariant writer",
+      "why": "verify-plan-mode, detect-session-mode, render-startup-brief, and project-doctor write PROJECT_STATUS directly despite the declared canonical writer, allowing SIL invariants or concurrent fields to be lost.",
+      "coreLoopStep": "runtime evidence → one validated atomic mutation → trustworthy briefs/doctors → correct founder decision",
+      "recipe": "Upgrade write-project-status to durable temporary-file plus atomic-rename semantics, expose a mutation API, migrate all four direct writers, add a repository-wide bypass checker, wire it into doctor, and test SIL invariant preservation plus unrelated-field retention.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.75,
+          "recipe": "Replace direct writes with writeProjectStatus calls."
+        },
+        "L2": {
+          "effortHours": 1.5,
+          "recipe": "Use updateProjectStatus and atomic rename with focused tests."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Add a fail-closed bypass scanner and doctor enforcement."
+        }
+      },
+      "executionLog": [
+        "Shipped L3: atomic same-directory temp/rename writer, mutation API migration across four callers, bypass scanner, doctor probe, and 4 focused tests."
+      ]
+    },
+    {
+      "id": 54,
+      "slug": "client-feature-reachability-ratchet",
+      "tier": "🔥",
+      "axis": "feature depth / ux / speed / organization",
+      "effortHours": 4,
+      "impact": 9,
+      "innovation": 8,
+      "priority": 38.7,
+      "status": "shipped",
+      "title": "Delete unreachable shipped-looking client code and make orphan features fail CI",
+      "why": "Ten client modules have no runtime importer, mount, or entrypoint; several advertise missing endpoints or duplicate mature replay paths, and some would double-register custom elements if imported.",
+      "coreLoopStep": "feature source → proven runtime reachability → player-visible value, or deletion → smaller honest product",
+      "recipe": "Build a deterministic relative-import graph from the real browser entrypoint, fail on unreachable custom elements/layers in VaultFront-owned source, delete the ten proven orphans, update the source map, and test dynamic-import, extension, index, and intentional type-only edge cases so the gate is not a regex toy.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Delete the ten proven orphan files and update source documentation."
+        },
+        "L2": {
+          "effortHours": 2.5,
+          "recipe": "Add an import-graph checker and representative fixtures."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Wire the reachability ratchet into doctor/build and bind it to the public capability truth surface."
+        }
+      },
+      "executionLog": [
+        "Shipped L3: production-entry import graph with static/dynamic/re-export/URL edges, 11 proven orphan deletions, corrected source map, CI/doctor contract, and 2 fixture tests."
+      ]
+    },
+    {
+      "id": 55,
+      "slug": "deterministic-e2e-bootstrap-contract",
+      "tier": "🔥",
+      "axis": "dev health / release / reliability",
+      "effortHours": 2,
+      "impact": 9,
+      "innovation": 6,
+      "priority": 34.2,
+      "status": "shipped",
+      "title": "Make E2E bootstrap survive canvas prebuild outages and use canonical health",
+      "why": "The latest E2E run failed before tests when canvas prebuild download fell back to node-gyp without pixman. Playwright system dependencies install only after npm ci, and deploy/promote probe /api/health while the canonical release contract names /_health.",
+      "coreLoopStep": "commit → deterministic dependency bootstrap → real browser gate → trustworthy staging promotion",
+      "recipe": "Provision canvas build dependencies before npm ci, pin the workflow Node contract to the repository engine, cache without masking install failures, converge deploy/promote health URLs on /_health, extend the deploy contract checker, and validate workflow semantics locally without pretending the remote rerun already passed.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Install native canvas prerequisites before npm ci."
+        },
+        "L2": {
+          "effortHours": 1,
+          "recipe": "Add Node-engine parity and canonical health route convergence."
+        },
+        "L3": {
+          "effortHours": 2,
+          "recipe": "Make workflow/deploy contract tests prove step order and exact health semantics."
+        }
+      },
+      "executionLog": [
+        "Shipped L3 locally: Node 22 E2E, native canvas prerequisites before npm ci, canonical /_health convergence, engine contract, and 38-check deploy verifier. Remote rerun remains unclaimed until push."
+      ]
+    },
+    {
+      "id": 56,
+      "slug": "canonical-session-ledger-parser",
+      "tier": "⚡",
+      "axis": "observability / organization / token efficiency",
+      "effortHours": 3,
+      "impact": 8,
+      "innovation": 7,
+      "priority": 30.9,
+      "status": "shipped",
+      "title": "Converge startup, freshness, forecast, and closeout on one typed session parser",
+      "why": "Four generated surfaces recognize different Session/S heading grammars; brief freshness even treats prose mentions as authoritative, so a plausible document can silently pick the wrong session.",
+      "coreLoopStep": "append-only session evidence → one parser → coherent startup/forecast/closeout surfaces",
+      "recipe": "Extend session-chronology with typed heading records and strict date/session extraction, migrate sil-forecaster, brief-freshness, startup brief, and closeout board, and add adversarial prose, legacy S headings, out-of-order, duplicate, and malformed-date fixtures.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.75,
+          "recipe": "Share the same strict heading regex across four consumers."
+        },
+        "L2": {
+          "effortHours": 1.5,
+          "recipe": "Return typed ordered session records with legacy support."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Add semantic ambiguity rejection and cross-renderer contract fixtures."
+        }
+      },
+      "executionLog": [
+        "Shipped L3: typed session sections and strict session evidence shared by freshness, startup, forecast, and closeout with adversarial fixtures."
+      ]
+    },
+    {
+      "id": 57,
+      "slug": "production-risk-test-contract",
+      "tier": "⚡",
+      "axis": "dev health / speed / test reliability",
+      "effortHours": 3,
+      "impact": 8,
+      "innovation": 6,
+      "priority": 26.5,
+      "status": "shipped",
+      "title": "Make test and coverage commands describe the real production risk surface",
+      "why": "npm test runs the server suite twice, coverage only includes loaded modules with zero native thresholds, Worker is absent, and the three-file custom ratchet omits the largest client/server risk surfaces.",
+      "coreLoopStep": "code change → non-duplicated representative suite → risk-sensitive coverage receipt → fast trustworthy delivery",
+      "recipe": "Split main and independent server-repeat commands without double discovery, add explicit production coverage.include/exclude rules, extend the ratchet to the extracted Daily Mastery router plus critical progression and major UI seams at evidence-based floors, and test package/workflow contract alignment.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Remove accidental duplicate server discovery and name the repeat command explicitly."
+        },
+        "L2": {
+          "effortHours": 1.5,
+          "recipe": "Include production modules and add measured critical-module floors."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Bind local/CI/closeout commands to one machine-checked verification contract."
+        }
+      },
+      "executionLog": [
+        "Shipped L3: non-duplicated bounded test scripts, production-inclusive coverage, Worker visibility, 10 evidence-based critical floors, injected Daily Mastery route seam, and CI contract alignment."
+      ]
+    },
+    {
+      "id": 58,
+      "slug": "registry-profile-conformance-receipt-s79",
+      "tier": "⚡",
+      "axis": "ecosystem / observability / security",
+      "effortHours": 1,
+      "impact": 9,
+      "innovation": 5,
+      "priority": 39.6,
+      "status": "externally-blocked",
+      "blockedReason": "Studio Ops still reports type=app after prior correction and follow-up cargo; CANON-018 forbids editing the sibling registry or arc-profile producer from VaultFront.",
+      "title": "Receive a source-tagged registry correction receipt",
+      "why": "The arc profiler selected the wrong audit lens again while local source-of-truth consistently says game.",
+      "coreLoopStep": "project truth → source-tagged registry receipt → correct audit/release lens",
+      "recipe": "Ship one evidence-deduplicated Ark follow-up referencing the existing cargos and require Studio Ops to return either a correction receipt or intentional-classification decision. Do not send repeated cargo after receipt exists.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.25,
+          "recipe": "Surface the mismatch and existing receipt IDs."
+        },
+        "L2": {
+          "effortHours": 1,
+          "recipe": "Ship a deduplicated follow-up with current arc-profile output."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Land and propagate source-tagged reconciliation in Studio Ops after its owner acts."
+        }
+      },
+      "executionLog": []
+    },
+    {
+      "id": 59,
+      "slug": "live-staging-evidence-corridor-s79",
+      "tier": "🔥",
+      "axis": "feedback loop / release / ecosystem",
+      "effortHours": 8,
+      "impact": 10,
+      "innovation": 5,
+      "priority": 22.6,
+      "status": "externally-blocked",
+      "blockedReason": "Cloudflare and Brevo capabilities are ready, but no approved external staging origin/environment or Obelisk relying-party registration exists; human Alpha, revenue, and founder approval are non-substitutable observations.",
+      "title": "Exercise the exact digest through a real staging observation corridor",
+      "why": "Local artifacts and contracts are strong, but the release gate is correctly NO-GO without live parity and human/business evidence.",
+      "coreLoopStep": "verified digest → staging observation → human trust evidence → founder-approved launch",
+      "recipe": "After the staging contract exists, deploy the exact digest; bind origin, commit, image digest, workflow URL, headers, CWV, themes, Brevo, and Obelisk into a parity receipt; then collect three authenticated humans, revenue, rollback drill, and founder approval in that order.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Create approved staging environment and health observation."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Produce digest parity plus identity/email/theme evidence."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Complete human Alpha, revenue, rollback, and founder gate with signed receipts."
+        }
+      },
+      "executionLog": []
+    }
+  ]
+}

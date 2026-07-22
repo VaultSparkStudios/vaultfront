@@ -2,15 +2,13 @@
  * SpectatorBus — broadcasts game turn updates to read-only spectator connections.
  *
  * Architecture:
- * - Spectators connect via WebSocket to /spectate/:gameId (new route, Worker.ts)
- * - Each turn, the Worker calls SpectatorBus.broadcast(gameId, turnData)
- * - SpectatorBus fans out the serialized turn to all registered spectator sockets
- * - Spectators receive the same turn payload as players but send NO intents
- * - The client SpectatorRunner initialises the simulation from the game's
- *   public snapshot and then applies each incoming turn in sequence
+ * - Spectators connect via WebSocket to /spectate/:gameId.
+ * - WorkerLobbyService owns admission and payload/backpressure limits.
+ * - Each certified server turn fans out to registered read-only sockets.
+ * - The transport is an external-consumer API; no unwired browser client is
+ *   represented as a shipped feature in this repository.
  *
- * Status: SCAFFOLDED — add the /spectate route to Worker.ts and call
- * broadcast() alongside the existing player fan-out loop.
+ * Status: server transport operational; consumer UI intentionally external.
  */
 
 import type { WebSocket } from "ws";

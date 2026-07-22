@@ -17,9 +17,20 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
 
+      - name: Provision native canvas build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            pkg-config \
+            libcairo2-dev \
+            libgif-dev \
+            libjpeg-dev \
+            libpango1.0-dev \
+            librsvg2-dev \
+            libpixman-1-dev
       - run: npm ci
 
       - name: Install Playwright browsers

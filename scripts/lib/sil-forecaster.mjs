@@ -4,6 +4,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { parseSessionSections } from "./session-chronology.mjs";
 
 const CATEGORIES = [
   "Dev Health",
@@ -70,34 +71,30 @@ function parseCategoryRows(block) {
 }
 
 export function parseSilHistory(silText, maxSessions = 5) {
-  const headingRe =
-    /^## (?:Sprint:\s*)?(\d{4}-\d{2}-\d{2})\s+—\s+Session\s+(\d+)([^\n]*)/gmu;
-  const physical = [];
-  let match;
+  const physical = parseSessionSections(silText).map((section) => {
+    const parsed = parseCategoryRows(section.body);
+    return {
+      date: section.date ?? "",
+      session: section.session,
+      total: scoreFromHeading(section.title) ?? parsed.total,
+      idx: section.start,
+      categories: parsed.categories,
+    };
+  });
 
-  while ((match = headingRe.exec(String(silText))) !== null) {
-    physical.push({
-      date: match[1],
-      session: Number(match[2]),
-      total: scoreFromHeading(match[3]),
-      idx: match.index,
-    });
-  }
-
-  for (let index = 0; index < physical.length; index += 1) {
-    const current = physical[index];
-    const end = physical[index + 1]?.idx ?? String(silText).length;
-    const parsed = parseCategoryRows(String(silText).slice(current.idx, end));
-    current.categories = parsed.categories;
-    current.total ??= parsed.total;
-  }
-
-  return physical
+  const ordered = physical
     .filter((session) => Number.isFinite(session.total))
     .sort(
       (a, b) =>
         b.session - a.session || b.date.localeCompare(a.date) || b.idx - a.idx,
-    )
+    );
+  const seen = new Set();
+  return ordered
+    .filter((entry) => {
+      if (seen.has(entry.session)) return false;
+      seen.add(entry.session);
+      return true;
+    })
     .slice(0, Math.max(0, maxSessions));
 }
 
@@ -188,10 +185,12 @@ export function renderForecastBlock(forecast, currentTotal = null) {
   return lines.join("\n");
 }
 
-if (
-  import.meta.url === `file://${process.argv[1].replace(/\\/g, "/")}` ||
-  process.argv[1].endsWith("sil-forecaster.mjs")
-) {
+const isDirect =
+  process.argv[1] &&
+  (import.meta.url === `file://${process.argv[1].replace(/\\/g, "/")}` ||
+    process.argv[1].endsWith("sil-forecaster.mjs"));
+
+if (isDirect) {
   const root = process.cwd();
   const silPath = path.join(root, "context", "SELF_IMPROVEMENT_LOOP.md");
   const sil = fs.readFileSync(silPath, "utf8");

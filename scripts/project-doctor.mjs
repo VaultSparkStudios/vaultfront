@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "./lib/safe-spawn.mjs";
+import { updateProjectStatus as mutateProjectStatus } from "./lib/write-project-status.mjs";
 
 const defaultRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -67,6 +67,22 @@ export function runProjectDoctor({
         id: "windows-spawn-hygiene",
         command: process.execPath,
         args: [path.join(defaultRoot, "scripts", "check-windows-hide.mjs")],
+      },
+      {
+        id: "project-status-write-path",
+        command: process.execPath,
+        args: [
+          path.join(defaultRoot, "scripts", "check-project-status-writers.mjs"),
+          "--root",
+          root,
+        ],
+      },
+      {
+        id: "client-reachability",
+        command: process.execPath,
+        args: [
+          path.join(defaultRoot, "scripts", "check-client-reachability.mjs"),
+        ],
       },
       {
         id: "release-workflow-contract",
@@ -136,33 +152,28 @@ export function runProjectDoctor({
 }
 
 export function updateProjectStatus(root, report) {
-  const target = path.join(root, "context", "PROJECT_STATUS.json");
-  const status = JSON.parse(fs.readFileSync(target, "utf8"));
   const passing = report.checks.filter(
     (check) => check.status === "pass",
   ).length;
-  const output = {
-    ...status,
-    doctorScore: {
-      passing,
-      total: report.checks.length,
-      score:
-        report.checks.length === 0
-          ? 0
-          : Math.round((passing / report.checks.length) * 100),
-      warning: report.warnings.length,
-      warnings: report.warnings.length,
-      failing: report.blockingFailing,
-      blockingFailing: report.blockingFailing,
-      date: report.observedAt.slice(0, 10),
-      observedAt: report.observedAt,
-      source: report.source,
-      checks: report.checks,
-    },
+  const doctorScore = {
+    passing,
+    total: report.checks.length,
+    score:
+      report.checks.length === 0
+        ? 0
+        : Math.round((passing / report.checks.length) * 100),
+    warning: report.warnings.length,
+    warnings: report.warnings.length,
+    failing: report.blockingFailing,
+    blockingFailing: report.blockingFailing,
+    date: report.observedAt.slice(0, 10),
+    observedAt: report.observedAt,
+    source: report.source,
+    checks: report.checks,
   };
-  const temporary = `${target}.tmp-${process.pid}`;
-  fs.writeFileSync(temporary, `${JSON.stringify(output, null, 2)}\n`, "utf8");
-  fs.renameSync(temporary, target);
+  mutateProjectStatus(root, (current) => ({ ...current, doctorScore }), {
+    touchLastUpdated: false,
+  });
 }
 
 function renderHuman(report) {

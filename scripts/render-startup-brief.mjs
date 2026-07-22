@@ -33,11 +33,13 @@ import { spawnSync } from "./lib/safe-spawn.mjs";
 import {
   averageLatestTotals,
   freshestIsoDate,
+  parseSessionSections,
 } from "./lib/session-chronology.mjs";
 import { BLOCKED_STATUSES_CORE } from "./lib/shared-policies.mjs";
 import { forecastNext, parseSilHistory } from "./lib/sil-forecaster.mjs";
 import { parseUnifiedItems } from "./lib/task-board.mjs";
 import { sparkline as _sparkline } from "./lib/visual-blocks.mjs";
+import { updateProjectStatus } from "./lib/write-project-status.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
@@ -434,15 +436,11 @@ if (cat3Match) {
 // most-recent, so it locked onto a stale block (brief rendered S135/928 while
 // real state was S141/996). We now scan EVERY `## …Session N…` header in either
 // format, capture each body, and select the latest by session NUMBER.
-const allSilEntries = [
-  ...sil.matchAll(
-    /##[^\n]*?\bSession\s+(\d+)\b[^\n]*\n([\s\S]*?)(?=\n##\s|$)/g,
-  ),
-]
-  .map((m) => ({
-    session: parseInt(m[1], 10),
-    header: m[0].split("\n")[0],
-    body: m[2] ?? "",
+const allSilEntries = parseSessionSections(sil)
+  .map((section) => ({
+    session: section.session,
+    header: section.header,
+    body: section.body,
   }))
   .sort((a, b) => b.session - a.session);
 
@@ -966,10 +964,9 @@ const entropyLabel =
 
 // ── Velocity history (last 5 session velocities from SIL entries) ──────────
 // Velocity history from inline-metric session headers (format A), newest→oldest → reverse to chronological.
-const velEntries = [
-  ...sil.matchAll(/##[^\n]*?\bSession\s+\d+\b[^\n]*Velocity:\s*(\d+)/g),
-]
-  .map((m) => parseInt(m[1]))
+const velEntries = allSilEntries
+  .map(entryVelocity)
+  .filter(Number.isFinite)
   .reverse();
 const velLast5 = velEntries.slice(-5);
 const velBar = (v) =>
@@ -1524,13 +1521,14 @@ if (silMaxSession == null) {
 } else if (statusLatest != null && statusLatest !== silMaxSession) {
   // PROJECT_STATUS.json lagged the SIL log (the historical failure mode). Self-heal it.
   try {
-    const statusPath = path.join(root, "context", "PROJECT_STATUS.json");
-    const live = JSON.parse(fs.readFileSync(statusPath, "utf8"));
     // Sync ONLY the session number. silScore/silCategoriesV3 are owned by the
     // closeout SIL scorer — writing silScore here would desync it from the
     // category breakdown (tier1-sil-migration invariant: score == sum(categories)).
-    live.currentSession = silMaxSession;
-    fs.writeFileSync(statusPath, JSON.stringify(live, null, 2) + "\n", "utf8");
+    updateProjectStatus(
+      root,
+      (current) => ({ ...current, currentSession: silMaxSession }),
+      { touchLastUpdated: false },
+    );
     console.log(
       `  ↻ self-heal: PROJECT_STATUS.currentSession ${statusLatest} → ${silMaxSession} (synced from SIL log)`,
     );

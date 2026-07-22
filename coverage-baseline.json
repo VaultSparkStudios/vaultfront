@@ -1,15 +1,58 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-07-16",
-  "source": "vitest-v8 coverage/coverage-summary.json",
+  "generatedAt": "2026-07-22",
+  "source": "vitest-v8 production-inclusive coverage/coverage-summary.json",
   "tolerance": 0.1,
+  "observedModules": ["src/server/Worker.ts"],
   "global": {
-    "lines": 50.35,
-    "statements": 49.68,
-    "functions": 45.95,
-    "branches": 38.58
+    "lines": 29.88,
+    "statements": 29.63,
+    "functions": 28.57,
+    "branches": 24.77
   },
   "criticalModules": {
+    "src/server/CertifiedDailyMasteryStore.ts": {
+      "lines": 64.55,
+      "statements": 63.09,
+      "functions": 75,
+      "branches": 61.01
+    },
+    "src/server/DailyMasteryRouter.ts": {
+      "lines": 100,
+      "statements": 100,
+      "functions": 100,
+      "branches": 100
+    },
+    "src/server/MatchProgression.ts": {
+      "lines": 96.42,
+      "statements": 96.49,
+      "functions": 100,
+      "branches": 77.41
+    },
+    "src/server/MatchResultCertificate.ts": {
+      "lines": 87.34,
+      "statements": 83.9,
+      "functions": 94.11,
+      "branches": 78.57
+    },
+    "src/server/WorkerLobbyService.ts": {
+      "lines": 27.51,
+      "statements": 29.41,
+      "functions": 25,
+      "branches": 38.04
+    },
+    "src/client/graphics/layers/GameRightSidebar.ts": {
+      "lines": 24.71,
+      "statements": 28.12,
+      "functions": 20.22,
+      "branches": 22.36
+    },
+    "src/client/graphics/layers/ControlPanel.ts": {
+      "lines": 33.43,
+      "statements": 35.44,
+      "functions": 23.46,
+      "branches": 23.06
+    },
     "src/server/ReplayStore.ts": {
       "lines": 81.35,
       "statements": 78.46,

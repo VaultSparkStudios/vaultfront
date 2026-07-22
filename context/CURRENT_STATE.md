@@ -6,6 +6,14 @@ Public-safe summary:
 - Internal operating detail lives in the private Studio OS / ops repository.
 - This repo retains only the public-safe implementation and evidence boundary.
 
+## 2026-07-22 — Session 79 certified-mastery and delivery-integrity arc
+
+The complete `/start → /audit → /implement → /closeout` mission shipped six premise-verified local items and three new second-order innovations; two external evidence corridors remain explicit. Daily Mastery now consumes only server-certified match outcomes, persists per-player UTC-day progress and an earned Mastery balance with transactional exactly-once semantics, exposes typed receipts through the progression spine, and labels its process-local development fallback honestly. Its authenticated route is dependency-injected and directly tested.
+
+Every `PROJECT_STATUS.json` mutation now travels through one invariant-preserving atomic writer. Startup, forecast, freshness, and closeout share one typed session ledger parser. The production client graph is machine-checked from `Main.ts`; eleven unreachable shipped-looking modules were deleted and the source map corrected. E2E provisions native canvas prerequisites before installation, uses Node 22, and deploy/promotion probes converge on `/_health`.
+
+Verification is green: 143 Vitest files / 856 tests, production-inclusive V8 coverage with Worker visibility and ten measured critical floors, TypeScript, ESLint, production build, 26/26 Playwright desktop/mobile tests, 38 deploy-contract checks, work exhaustion (audit 8/8; innovations 14/14), and project doctor 10/10 with `blockingFailing: 0`. Release remains NO-GO pending a deliberate staging origin, parity, native Obelisk, project-domain Brevo delivery, three authenticated human Alpha sessions, revenue evidence, and founder approval.
+
 ## 2026-07-21 — Session 78 saturated product-truth arc
 
 The recovered Session 77 boundary was followed by a complete fresh `/start → /audit → /implement → /closeout` arc. Seven locally executable audit items shipped and two external evidence corridors remain explicit. Prediction League picks now resolve once from certified match convoy outcomes; first-run guidance converges on one four-action First Extraction quest; Convoy Mastery carries one evidence-ranked prescription across recap, debrief, and the live HUD.

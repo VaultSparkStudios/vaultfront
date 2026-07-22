@@ -55,12 +55,14 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       actualOutcome: "delivery" as const,
       resolvedPredictions: 4,
     }));
+    const recordDailyMastery = vi.fn().mockResolvedValue(null);
     const spine = new ServerAuthoritativeProgressionSpine({
       recordMatch,
       getPlayerStats,
       checkAndUnlock,
       recordSeasonActivity,
       resolvePrediction,
+      recordDailyMastery,
     });
     const outcome = {
       gameId: "game-1",
@@ -123,6 +125,7 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       "convoy_deliveries",
       3,
     );
+    expect(recordDailyMastery).toHaveBeenCalledTimes(2);
   });
 
   test("resolves an intercept-dominant match once even without progression players", async () => {

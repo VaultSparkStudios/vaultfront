@@ -1,29 +1,29 @@
 <!-- generated-by: scripts/render-closeout-board.mjs v1.0 -->
-<!-- generated-at: 2026-07-21 (Session 77 closeout) -->
+<!-- generated-at: 2026-07-22 (Session 79 closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
-╔══ SESSION CLOSEOUT · VaultFront · S77 ═════════════════════════╗
-║  Date: 2026-07-21 · SIL: 981/1000 · V:8  ·  Debt: down           ║
+╔══ SESSION CLOSEOUT · VaultFront · S79 ═════════════════════════╗
+║  Date: 2026-07-22 · SIL: 987/1000 · V:9  ·  Debt: down           ║
 ║  Mode: FOUNDER  ·  Agent: codex                                  ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ WHAT SHIPPED · last 5 commits ═══════════════════════════════╗
-║  ✓ feat(release): make project truth self-validating             ║
-║  ✓ feat(auth): add Obelisk Passport scaffold                     ║
-║  ✓ test: cover persistence readiness postures                    ║
-║  ✓ test: isolate release evidence fixture                        ║
-║  ✓ feat: certify match truth and release evidence                ║
+╔══ WHAT SHIPPED ════════════════════════════════════════════════╗
+║  ✓ Daily Mastery now derives only from certified match outcomes  ║
+║  ✓ Every project-status mutation uses one atomic invariant writ  ║
+║  ✓ Startup, freshness, forecast, and closeout share one typed s  ║
+║  ✓ The production client graph is 181/181 reachable; eleven dea  ║
+║  ✓ E2E installs native canvas prerequisites before `npm ci`, ru  ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ SCORES · SIL 981/1000 ═══════════════════════════════════════╗
+╔══ SCORES · SIL 987/1000 ═══════════════════════════════════════╗
 ║    Dev Health         100  ██████████                            ║
-║    Alignment          99   ██████████                            ║
+║    Alignment          100  ██████████                            ║
 ║    Momentum           100  ██████████                            ║
-║    Engagement         90   █████████░                            ║
+║    Engagement         94   █████████░                            ║
 ║    Process Qual       100  ██████████                            ║
 ║    Coherence          98   ██████████                            ║
 ║    Security           100  ██████████                            ║
-║    Ecosystem          94   █████████░                            ║
+║    Ecosystem          95   ██████████                            ║
 ║    Capital            100  ██████████                            ║
 ║    Automation         100  ██████████                            ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -40,7 +40,7 @@
 ║  · agent memory (context/BRAIN.md or agent home)                 ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 11 files  ·  M:10 A:0 D:0 ?:1                          ║
+║  Changes: 72 files  ·  M:51 A:1 D:12 ?:8                         ║
 ║  Ahead: 0  ·  Behind: 0                                          ║
 ║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -49,16 +49,16 @@
 ║  Live:     N/A — pre-deploy (FORGE)                              ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
-║  Doctor:        7/7                                              ║
+║  Doctor:        10/10                                            ║
 ║  Compliance:    49/49                                            ║
-║  Tests:         822/822                                          ║
-║  IGNIS:         6d ago                                           ║
+║  Tests:         856/856                                          ║
+║  IGNIS:         7d ago                                           ║
 ║  Truth:         green                                            ║
-║  Sanitization:  5d ago                                           ║
+║  Sanitization:  6d ago                                           ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ NEXT SESSION ════════════════════════════════════════════════╗
-║  #1: Unified Genius List exhausted                               ║
-║      No pending unblocked audit item remains.                    ║
+║  #1: Require a receipt before the registry can silently overrid  ║
+║      arc-profile still classifies VaultFront as app while PROJE  ║
 ╚════════════════════════════════════════════════════════════════╝
 ```
 

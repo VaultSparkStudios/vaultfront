@@ -25,6 +25,7 @@ const deploy = read("deploy.sh");
 const update = read("update.sh");
 const buildDeploy = read("build-deploy.sh");
 const deployWorkflow = read(".github/workflows/deploy.yml");
+const e2eWorkflow = read(".github/workflows/e2e.yml");
 const promoteWorkflow = read(".github/workflows/promote.yml");
 const prWorkflow = read(".github/workflows/pr-description.yml");
 const runbook = read("docs/DEPLOY_RUNTIME_RUNBOOK.md");
@@ -48,6 +49,45 @@ requireText(
   /\^sha256:\[0-9a-f\]\{64\}\$/u,
   "deploy.sh does not validate immutable digests",
 );
+for (const [name, body] of [
+  ["deploy workflow", deployWorkflow],
+  ["promote workflow", promoteWorkflow],
+]) {
+  requireText(
+    body,
+    /DEPLOY_HEALTH_URL:.*FQDN.*\/_health/u,
+    name + " does not probe the canonical /_health route",
+  );
+  check(
+    !body.includes("/api/health"),
+    name + " retains the obsolete /api/health route",
+  );
+}
+requireText(
+  e2eWorkflow,
+  /node-version:\s*["']22["']/u,
+  "E2E does not pin the supported Node 22 runtime",
+);
+for (const prerequisite of [
+  "pkg-config",
+  "libcairo2-dev",
+  "libpango1.0-dev",
+  "libjpeg-dev",
+  "libgif-dev",
+  "librsvg2-dev",
+  "libpixman-1-dev",
+]) {
+  check(
+    e2eWorkflow.includes(prerequisite),
+    "E2E bootstrap omits native prerequisite " + prerequisite,
+  );
+}
+check(
+  e2eWorkflow.indexOf("Provision native canvas build prerequisites") <
+    e2eWorkflow.indexOf("- run: npm ci"),
+  "E2E installs dependencies before native build prerequisites",
+);
+
 requireText(
   deploy,
   /DEPLOY_STAGING_ATTESTATION/u,
@@ -133,7 +173,7 @@ const digest = `sha256:${"0".repeat(64)}`;
 const baseEnv = {
   ...process.env,
   DEPLOY_DRY_RUN: "1",
-  DEPLOY_HEALTH_URL: "https://staging.example.test/api/health",
+  DEPLOY_HEALTH_URL: "https://staging.example.test/_health",
   GHCR_REPO: "vaultfront",
   GHCR_USERNAME: "vaultsparkstudios",
 };

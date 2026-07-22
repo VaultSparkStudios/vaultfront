@@ -182,3 +182,15 @@ All 5 premise-verified infrastructure findings in docs/AUDIT_2026-07-20.json shi
 
 - [ ] [SIL:1] Generate the public nav/footer route graph from one source, preserve the scoped checker as the invariant, and attach desktop/mobile theme screenshots once staging exists.
 - [ ] [SIL:2] Verify Ark cargo 01JU1AEATS46E1C7F5DD9AE41C is accepted and the canonical release admission consumes the same complete project-truth fingerprint rather than private/public heuristics.
+
+## Completed (2026-07-22 — Session 79 certified-mastery arc)
+
+All six local items in `docs/AUDIT_2026-07-22.json` shipped at L3; two external corridors remain evidenced and non-actionable locally. Three new second-order candidates shipped, taking `docs/INNOVATION_PACK.json` to 14/14.
+
+- [done] Certified Daily Mastery: authoritative match evidence, exactly-once daily progress, Postgres wallet, typed receipts, authenticated router, and honest local fallback.
+- [done] Atomic project-status mutation path with repository bypass scanner and doctor enforcement.
+- [done] Typed session-ledger parsing shared across startup, freshness, forecasting, and closeout.
+- [done] Production client reachability graph; eleven proven orphans removed and capability source map corrected.
+- [done] Deterministic E2E native bootstrap and canonical `/_health` workflow contract.
+- [done] Bounded non-duplicated tests plus production-inclusive coverage, Worker visibility, and ten critical floors.
+- [done] Full proof: 143 files / 856 tests, TypeScript, lint, build, 26/26 E2E, audit 8/8, innovations 14/14, doctor 10/10 with `blockingFailing: 0`.

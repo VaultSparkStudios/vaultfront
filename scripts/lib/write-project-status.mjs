@@ -86,6 +86,24 @@ export function enforceSilInvariant(status) {
   for (const v of v6.violations) violations.push(v);
   return { status: v6.status, violations };
 }
+/** Write JSON through a same-directory temporary file, then atomically rename. */
+export function writeJsonAtomicSync(target, value) {
+  const directory = path.dirname(target);
+  fs.mkdirSync(directory, { recursive: true });
+  const temporary = path.join(
+    directory,
+    `.${path.basename(target)}.${process.pid}.${Date.now()}.tmp`,
+  );
+  try {
+    fs.writeFileSync(temporary, `${JSON.stringify(value, null, 2)}\n`, {
+      encoding: "utf8",
+      flag: "wx",
+    });
+    fs.renameSync(temporary, target);
+  } finally {
+    if (fs.existsSync(temporary)) fs.rmSync(temporary, { force: true });
+  }
+}
 
 /**
  * Validate + write context/PROJECT_STATUS.json under the invariant.
@@ -100,8 +118,7 @@ export function writeProjectStatus(
   if (touchLastUpdated)
     fixed.lastUpdated = new Date().toISOString().slice(0, 10);
   const p = path.join(repoRoot, "context", "PROJECT_STATUS.json");
-  fs.mkdirSync(path.dirname(p), { recursive: true });
-  fs.writeFileSync(p, JSON.stringify(fixed, null, 2) + "\n");
+  writeJsonAtomicSync(p, fixed);
   return { written: p, violations };
 }
 
@@ -132,7 +149,7 @@ if (isMain) {
   const { status: fixed, violations } = enforceSilInvariant(current);
   if (args.includes("--fix")) {
     if (violations.length) {
-      fs.writeFileSync(p, JSON.stringify(fixed, null, 2) + "\n");
+      writeProjectStatus(repoRoot, fixed, { touchLastUpdated: false });
       console.log(`✓ fixed ${violations.length} violation(s):`);
       for (const v of violations)
         console.log(`  - ${v.field}=${JSON.stringify(v.value)} → ${v.fix}`);
@@ -152,4 +169,9 @@ if (isMain) {
   process.exit(0);
 }
 
-export default { enforceSilInvariant, writeProjectStatus, updateProjectStatus };
+export default {
+  enforceSilInvariant,
+  writeJsonAtomicSync,
+  writeProjectStatus,
+  updateProjectStatus,
+};

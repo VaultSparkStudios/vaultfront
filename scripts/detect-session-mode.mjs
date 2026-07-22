@@ -22,6 +22,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { updateProjectStatus } from "./lib/write-project-status.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -334,9 +335,12 @@ if (shouldFlip) {
   if (matchedFounder.length)
     console.log(`   Founder signals: ${matchedFounder.slice(0, 4).join(", ")}`);
   // Persist the flip
-  status.sessionMode = recommended;
-  status.sessionModeAutoShiftedAt = new Date().toISOString();
-  fs.writeFileSync(STATUS, JSON.stringify(status, null, 2) + "\n");
+  const shiftedAt = new Date().toISOString();
+  updateProjectStatus(ROOT, (current) => ({
+    ...current,
+    sessionMode: recommended,
+    sessionModeAutoShiftedAt: shiftedAt,
+  }));
   console.log(`   PROJECT_STATUS.json updated.`);
 } else {
   console.log(

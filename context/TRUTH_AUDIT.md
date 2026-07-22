@@ -186,3 +186,16 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 - Full verification passed: 139 main files / 840 tests, independent 32 server files / 124 tests, TypeScript, production Vite build, focused Playwright theme matrix, Prettier ratchet, work exhaustion, and doctor 8/8 with `blockingFailing: 0`.
 - Cloudflare deploy and Brevo capabilities are READY. No external staging target, parity, native Obelisk, human Alpha, revenue, or founder evidence was fabricated or inferred.
 - Closeout helper discovery unexpectedly mutated the Studio Ops default target because `--help` was not side-effect-free. Read-only sibling status identified a dirty tree with concurrent/unknown provenance; Ark cargo `01JU3V1GUP49DF58394CEE8244` reports likely affected paths for owner reconciliation. VaultFront did not edit or revert the sibling directly.
+
+## 2026-07-22 — Session 79 certified-mastery truth audit
+
+- `docs/AUDIT_2026-07-22.json` contains 8 items: 6 shipped locally, 2 explicitly `externally-blocked`, and 0 pending unblocked.
+- `docs/INNOVATION_PACK.json` reports 14/14 evidence-derived innovations shipped; three were generated and implemented this session.
+- Daily Mastery reads only authenticated identity and certified match envelopes. PostgreSQL enforces one event per player/game/UTC-day and credits a persistent wallet once; the no-database fallback reports `process-local` scope.
+- The browser graph reports 181/181 production client modules reachable and eleven former orphans were deleted. Historical audit prose remains historical evidence, not a runtime claim.
+- Every project-status writer passes the atomic-path scanner. Four startup/doctor callers no longer write the JSON directly.
+- Coverage enumerates production TypeScript rather than only loaded files: global 29.88% lines / 29.63% statements / 28.57% functions / 24.77% branches; Worker is honestly visible at 0%; ten critical modules have measured floors.
+- Release evidence reports work `exhausted=true`, transfer `pass`, and launch `blocked` on eight real observations/dirty-source state. It no longer misclassifies evidenced external corridors as pending work.
+- Direct verification passed: 143 Vitest files / 856 tests, TypeScript, ESLint, production build, 26/26 Playwright desktop/mobile tests, 38 deploy-contract checks, and project doctor 10/10 with `blockingFailing: 0`.
+- Remote E2E bootstrap is corrected locally but no post-push GitHub run is claimed green yet.
+- No external staging, native Obelisk relying-party, project-domain Brevo delivery, distinct-human Alpha, revenue, rollback observation, or founder approval was fabricated.

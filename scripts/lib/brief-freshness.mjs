@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { extractSessionNumbers } from "./session-chronology.mjs";
 
 export const BRIEF_SOURCE_SCHEMA = 1;
 export const BRIEF_SOURCE_FILES = Object.freeze([
@@ -20,9 +21,7 @@ function readRequired(root, relativePath) {
 }
 
 function sessionNumbers(source) {
-  return [...String(source).matchAll(/\bSession\s+(\d+)\b/gi)].map((match) =>
-    Number(match[1]),
-  );
+  return extractSessionNumbers(source);
 }
 
 export function buildBriefSourceManifest(root) {

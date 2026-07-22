@@ -10,6 +10,7 @@ import {
   measureMediaAssets,
 } from "./check-bundle-budget.mjs";
 import { checkFooterManifest } from "./check-footer-manifest.mjs";
+import { pendingUnblocked } from "./check-work-exhaustion.mjs";
 import { findLatestAuditSidecar } from "./lib/audit-sidecar.mjs";
 import {
   buildEvidenceLineage,
@@ -262,14 +263,9 @@ export function buildReleaseEvidence({
 }) {
   const audit = statusCounts(auditItems);
   const innovations = statusCounts(innovationItems);
-  const pendingWork = [...auditItems, ...innovationItems]
-    .filter(
-      (item) =>
-        !["shipped", "done", "deferred", "blocked", "human-blocked"].includes(
-          String(item.status ?? "pending"),
-        ),
-    )
-    .map((item) => item.slug ?? item.id ?? item.title);
+  const pendingWork = pendingUnblocked([...auditItems, ...innovationItems]).map(
+    (item) => item.slug ?? item.id ?? item.title,
+  );
   const budgetStatus =
     transfer.initial.gzipBytes <= transfer.initial.maxGzipBytes &&
     transfer.initial.brotliBytes <= transfer.initial.maxBrotliBytes &&

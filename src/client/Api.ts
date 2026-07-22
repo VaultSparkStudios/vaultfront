@@ -590,8 +590,12 @@ export interface DailyChallenge {
   description: string;
   progress: number;
   target: number;
-  rewardGold: number;
+  rewardMastery: number;
   completed: boolean;
+  masteryBalance: number;
+  dateUtc: string;
+  evidence: "certified-match-result";
+  durability: "postgres" | "process-local";
 }
 
 export async function fetchDailyChallenge(): Promise<DailyChallenge | null> {

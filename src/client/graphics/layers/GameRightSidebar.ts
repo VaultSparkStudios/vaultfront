@@ -191,18 +191,22 @@ export class GameRightSidebar extends LitElement implements Layer {
 
     this.eventBus.on(SendWinnerEvent, () => {
       this.hasWinner = true;
+      this.refreshDailyMastery(1_000);
       this.requestUpdate();
     });
 
-    // Fetch daily challenge once at game start
-    void fetchDailyChallenge().then((ch) => {
-      if (ch) {
-        this.dailyChallenge = ch;
-        this.requestUpdate();
-      }
-    });
+    this.refreshDailyMastery();
 
     this.requestUpdate();
+  }
+  private refreshDailyMastery(delayMs = 0): void {
+    window.setTimeout(() => {
+      void fetchDailyChallenge().then((challenge) => {
+        if (!challenge) return;
+        this.dailyChallenge = challenge;
+        this.requestUpdate();
+      });
+    }, delayMs);
   }
 
   getTickIntervalMs() {
@@ -1095,19 +1099,32 @@ export class GameRightSidebar extends LitElement implements Layer {
         : 0;
     return html`
       <div
-        class="fixed bottom-24 right-4 z-[900] w-44 rounded-md border border-amber-400/40 bg-slate-950/80 px-2.5 py-2 text-[10px] text-amber-50 shadow-lg"
+        class="fixed bottom-24 right-4 z-[900] w-48 rounded-md border border-amber-400/40 bg-slate-950/80 px-2.5 py-2 text-[10px] text-amber-50 shadow-lg"
         style="zoom: ${this.hudScale};"
       >
         <div
-          class="text-[9px] uppercase tracking-wider text-amber-300 mb-1 flex items-center justify-between"
+          class="mb-1 flex items-center justify-between text-[9px] uppercase tracking-wider text-amber-300"
         >
-          <span>Daily Challenge</span>
-          <span class="text-amber-400">${ch.rewardGold}g</span>
+          <span>Daily Mastery</span>
+          <span class="text-amber-400">+${ch.rewardMastery} M</span>
         </div>
-        <div class="text-[10px] text-slate-200 leading-snug mb-1.5">
+        <div class="mb-1.5 text-[10px] leading-snug text-slate-200">
           ${ch.description}
         </div>
-        <div class="h-1.5 rounded-full bg-slate-700 overflow-hidden">
+        <div
+          class="mb-1 flex items-center justify-between text-[9px] text-slate-400"
+        >
+          <span>Certified matches only</span>
+          <span>${ch.masteryBalance} M total</span>
+        </div>
+        ${
+          ch.durability === "process-local"
+            ? html`<div class="mb-1 text-[8px] text-slate-500">
+                Local session progress
+              </div>`
+            : null
+        }
+        <div class="h-1.5 overflow-hidden rounded-full bg-slate-700">
           <div
             class="h-full rounded-full ${
               ch.completed ? "bg-emerald-400" : "bg-amber-400"
@@ -1116,7 +1133,7 @@ export class GameRightSidebar extends LitElement implements Layer {
           ></div>
         </div>
         <div
-          class="text-right text-[9px] mt-0.5 ${
+          class="mt-0.5 text-right text-[9px] ${
             ch.completed ? "text-emerald-300" : "text-slate-400"
           }"
         >

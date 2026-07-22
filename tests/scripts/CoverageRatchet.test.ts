@@ -13,6 +13,7 @@ describe("coverage ratchet", () => {
   const baseline = {
     tolerance: 0.1,
     global: { lines: 50, statements: 50, functions: 50, branches: 50 },
+    observedModules: ["src/server/Worker.ts"],
     criticalModules: {
       "src/server/Critical.ts": {
         lines: 80,
@@ -26,6 +27,7 @@ describe("coverage ratchet", () => {
   it("accepts global and critical coverage at the checked-in floors", () => {
     const result = evaluateCoverage(
       {
+        "C:\\repo\\src\\server\\Worker.ts": coverage(0),
         total: coverage(50),
         "C:\\repo\\src\\server\\Critical.ts": coverage(80),
       },
@@ -40,6 +42,9 @@ describe("coverage ratchet", () => {
     expect(result.failures).toContain("global lines: 49.00% < 50.00% floor");
     expect(result.failures).toContain(
       "src/server/Critical.ts: missing from coverage report",
+    );
+    expect(result.failures).toContain(
+      "src/server/Worker.ts: missing from production coverage surface",
     );
   });
 });

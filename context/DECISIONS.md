@@ -165,3 +165,15 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Decision:** Treat Studio Ops helper `--help` behavior as untrusted until inspected. After three discovery commands unexpectedly executed against the sibling default root, VaultFront made no direct sibling repair; it shipped signed Ark handoff `01JU3V1GUP49DF58394CEE8244` with the likely touched paths for the Studio Ops owner to reconcile, then reran the same helpers only with explicit `--project .` targeting VaultFront.
 
 **Why:** A help probe that mutates default state violates least surprise. Directly reverting the sibling would compound the CANON-018 violation and risk overwriting unrelated concurrent work.
+
+## 2026-07-22 — Daily rewards require certified evidence and explicit durability
+
+**Decision:** Daily Mastery accepts only metrics from the server-certified match envelope. One player/game/UTC-day event is idempotent in PostgreSQL; completion credits a persistent Mastery wallet exactly once. When no database is configured, local development may use a process-local fallback only if every snapshot and receipt labels that scope. Authenticated reads fail closed when configured persistence is unavailable.
+
+**Why:** The prior client narrator path could not prove identity or outcome, advertised unimplemented bonus gold, and lost state on restart. A retention promise is part of the trust boundary, not decorative HUD copy.
+
+## 2026-07-22 — Verification owns both resource ceilings and production visibility
+
+**Decision:** Vitest commands cap workers at four. Coverage explicitly enumerates production TypeScript, requires the 4,300-line Worker to remain visible even at zero coverage, and applies measured no-regression floors to ten critical server/client seams. Route logic should be extracted from the Worker when a trust boundary can be dependency-injected and tested directly.
+
+**Why:** An unbounded verifier can become its own outage, while loaded-only coverage can look healthier by omitting the largest risks. Visibility and percentage are separate invariants; both must be honest.

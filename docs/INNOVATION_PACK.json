@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-07-22T03:19:23.355Z",
+  "generatedAt": "2026-07-22T22:01:07.306Z",
   "source": "scripts/innovation-pack.mjs",
   "primarySource": "latest audit-backed Unified Genius List",
   "items": [
@@ -102,6 +102,33 @@
       "description": "Validate the six-cell desktop/mobile theme matrix, contrast floors, surfaces, freshness, and local-only scope so screenshots cannot silently become stale or masquerade as staging parity.",
       "complete": true,
       "evidence": "theme receipt validator, doctor probe, freshness/contrast/claim-boundary fixtures"
+    },
+    {
+      "rank": 12,
+      "status": "shipped",
+      "id": "bounded-test-worker-contract",
+      "title": "Make test parallelism a repository-owned resource contract",
+      "description": "Convert the coverage process storm into a durable ceiling so local, CI, and closeout verification cannot silently multiply workers until the host becomes the failure mode.",
+      "complete": true,
+      "evidence": "four-worker ceilings on default, server, and production coverage commands plus a clean 143-file run"
+    },
+    {
+      "rank": 13,
+      "status": "shipped",
+      "id": "coverage-surface-visibility-contract",
+      "title": "Make unloaded production code visible even before it earns coverage",
+      "description": "Separate visibility from percentage: enumerate the production TypeScript surface, require the Worker router to appear in the report, and ratchet critical seams from measured floors.",
+      "complete": true,
+      "evidence": "production-inclusive V8 configuration, Worker observed-module invariant, ten measured critical-module floors, and regression fixtures"
+    },
+    {
+      "rank": 14,
+      "status": "shipped",
+      "id": "authenticated-route-seam",
+      "title": "Extract a fully testable trust boundary from the router god-object",
+      "description": "Turn the Daily Mastery endpoint into an injected authorization and persistence seam that fails closed, reports operational failure, and can be certified without importing the 4,300-line Worker.",
+      "complete": true,
+      "evidence": "dependency-injected route registrar, Worker composition, authorization/isolation/error tests, and 100% route coverage"
     }
   ]
 }

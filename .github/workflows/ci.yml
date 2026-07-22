@@ -45,6 +45,8 @@ jobs:
           node-version: 20
       - run: npm ci
       - run: npm run test:coverage
+      - name: Verify source-of-truth contracts
+        run: npm run verify:contracts
       - name: Enforce checked-in coverage ratchet
         run: node scripts/check-coverage-ratchet.mjs
       - uses: actions/upload-artifact@v4
