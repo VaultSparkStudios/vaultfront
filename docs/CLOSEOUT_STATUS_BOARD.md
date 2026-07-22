@@ -31,7 +31,7 @@
 ║  ✓ context/CURRENT_STATE.md                                      ║
 ║  ✓ context/TASK_BOARD.md                                         ║
 ║  ✓ context/LATEST_HANDOFF.md                                     ║
-║  · context/WORK_LOG.md                                           ║
+║  ✓ logs/WORK_LOG.md                                              ║
 ║  ✓ context/DECISIONS.md                                          ║
 ║  ✓ context/SELF_IMPROVEMENT_LOOP.md                              ║
 ║  ✓ docs/CREATIVE_DIRECTION_RECORD.md                             ║
@@ -40,7 +40,7 @@
 ║  · agent memory (context/BRAIN.md or agent home)                 ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 72 files  ·  M:51 A:1 D:12 ?:8                         ║
+║  Changes: 0 files  ·  M:0 A:0 D:0 ?:0                            ║
 ║  Ahead: 0  ·  Behind: 0                                          ║
 ║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
