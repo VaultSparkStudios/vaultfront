@@ -1,25 +1,27 @@
 <!-- generated-by: scripts/render-closeout-board.mjs v1.0 -->
-<!-- generated-at: 2026-07-23 (Session 80 closeout) -->
+<!-- generated-at: 2026-07-23 (Session 81 closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
-╔══ SESSION CLOSEOUT · VaultFront · S80 ═════════════════════════╗
-║  Date: 2026-07-23 · SIL: 987/1000 · V:6  ·  Debt: down           ║
+╔══ SESSION CLOSEOUT · VaultFront · S81 ═════════════════════════╗
+║  Date: 2026-07-23 · SIL: 988/1000 · V:9  ·  Debt: down           ║
 ║  Mode: FOUNDER  ·  Agent: codex                                  ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WHAT SHIPPED ════════════════════════════════════════════════╗
-║  ✓ Authenticated playtest evidence persists in PostgreSQL acros  ║
-║  ✓ A TypeScript abstract-syntax-tree inventory proves bidirecti  ║
-║  ✓ Dependabot automation is exact-identity and ecosystem scoped  ║
+║  ✓ Every scheduled public playlist enables the vault-to-convoy   ║
+║  ✓ Seasonal contracts and loop evidence are certified, idempote  ║
+║  ✓ Release evidence distinguishes a declared health route from   ║
+║  ✓ Prediction League is reachable in spectator mode, binds pick  ║
+║  ✓ Three injected router seams are directly tested; route polic  ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ SCORES · SIL 987/1000 ═══════════════════════════════════════╗
+╔══ SCORES · SIL 988/1000 ═══════════════════════════════════════╗
 ║    Dev Health         100  ██████████                            ║
 ║    Alignment          100  ██████████                            ║
 ║    Momentum           100  ██████████                            ║
-║    Engagement         94   █████████░                            ║
+║    Engagement         96   ██████████                            ║
 ║    Process Qual       100  ██████████                            ║
-║    Coherence          98   ██████████                            ║
+║    Coherence          97   ██████████                            ║
 ║    Security           100  ██████████                            ║
 ║    Ecosystem          95   ██████████                            ║
 ║    Capital            100  ██████████                            ║
@@ -49,14 +51,14 @@
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
 ║  Doctor:        11/11                                            ║
 ║  Compliance:    49/49                                            ║
-║  Tests:         873/873                                          ║
-║  IGNIS:         7d ago                                           ║
+║  Tests:         904/904                                          ║
+║  IGNIS:         1d ago                                           ║
 ║  Truth:         green                                            ║
-║  Sanitization:  cleared S80                                      ║
+║  Sanitization:  2d ago                                           ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ NEXT SESSION ════════════════════════════════════════════════╗
-║  #1: Receive a source-tagged registry correction receipt         ║
-║      The arc profiler selected the wrong audit lens again while  ║
+║  #1: Unified Genius List exhausted                               ║
+║      No pending unblocked audit item remains.                    ║
 ╚════════════════════════════════════════════════════════════════╝
 ```
 
