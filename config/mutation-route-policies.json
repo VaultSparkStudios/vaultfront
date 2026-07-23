@@ -1,0 +1,357 @@
+{
+  "schemaVersion": 1,
+  "scope": "Every POST/PUT/PATCH/DELETE registration in Worker.ts and extracted *Router.ts modules.",
+  "riskBudget": {
+    "publicIngestMax": 11,
+    "rationale": "Any expansion of unauthenticated ingestion is a reviewed trust-boundary change."
+  },
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/api/create_game/:id",
+      "auth": "actor-or-admin",
+      "rateLimit": "global-standard",
+      "evidence": "runtime-passport",
+      "binding": "authorizeRoutePolicy"
+    },
+    {
+      "method": "POST",
+      "path": "/api/start_game/:id",
+      "auth": "verified-actor",
+      "rateLimit": "global-standard",
+      "evidence": "none",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/contracts/update",
+      "auth": "verified-actor",
+      "rateLimit": "global-standard",
+      "evidence": "authenticated-event",
+      "binding": "verifyClientToken"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/ab/dock/event",
+      "auth": "verified-actor",
+      "rateLimit": "global-standard",
+      "evidence": "assignment-ledger",
+      "binding": "authorizeRoutePolicy"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/ab/recap/event",
+      "auth": "verified-actor",
+      "rateLimit": "global-standard",
+      "evidence": "assignment-ledger",
+      "binding": "authorizeRoutePolicy"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/ab/runtime/event",
+      "auth": "verified-actor",
+      "rateLimit": "global-standard",
+      "evidence": "assignment-ledger",
+      "binding": "authorizeRoutePolicy"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/outcome",
+      "auth": "identity",
+      "rateLimit": "global-standard",
+      "evidence": "authenticated-event",
+      "binding": "resolveVaultFrontIdentity"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/funnel",
+      "auth": "identity",
+      "rateLimit": "global-standard",
+      "evidence": "authenticated-event",
+      "binding": "resolveVaultFrontIdentity"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/playtest-pulse",
+      "auth": "verified-actor",
+      "rateLimit": "dependencies.rateLimit",
+      "evidence": "authenticated-event",
+      "binding": "dependencies.resolveActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ignis/signal",
+      "auth": "public-ingest",
+      "rateLimit": "ignisRateLimit",
+      "evidence": "none",
+      "binding": "ignisSignalSchema",
+      "rationale": "Bounded qualitative signal intake; no privileged action is performed."
+    },
+    {
+      "method": "POST",
+      "path": "/api/mutator-vote",
+      "auth": "public-ingest",
+      "rateLimit": "mutatorVoteRateLimit",
+      "evidence": "none",
+      "binding": "MutatorVoteSchema",
+      "rationale": "Public season ballot with one bounded vote per supplied voter key."
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/battle-narrative",
+      "auth": "identity",
+      "rateLimit": "narrativeRateLimit",
+      "evidence": "none",
+      "binding": "resolveVaultFrontIdentity"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/match-prophecy",
+      "auth": "public-ingest",
+      "rateLimit": "prophecyRateLimit",
+      "evidence": "none",
+      "binding": "reserveRemoteAiCall",
+      "rationale": "Read-like generated response using a bounded reservation and cache; it does not mutate player state."
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/match-commentary",
+      "auth": "public-ingest",
+      "rateLimit": "commentaryRateLimit",
+      "evidence": "none",
+      "binding": "reserveRemoteAiCall",
+      "rationale": "Read-like generated response using a bounded reservation; it does not mutate player state."
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/match-mission",
+      "auth": "public-ingest",
+      "rateLimit": "missionRateLimit",
+      "evidence": "none",
+      "binding": "reserveRemoteAiCall",
+      "rationale": "Read-like generated response using a bounded reservation; it does not mutate player state."
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/match-coach",
+      "auth": "verified-actor",
+      "rateLimit": "coachRateLimit",
+      "evidence": "result-certificate",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/dynasty-story",
+      "auth": "identity",
+      "rateLimit": "dynastyRateLimit",
+      "evidence": "none",
+      "binding": "resolveVaultFrontIdentity"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/narrator/:gameId/event",
+      "auth": "public-ingest",
+      "rateLimit": "narratorEventRateLimit",
+      "evidence": "none",
+      "binding": "NarratorEventSchema",
+      "rationale": "Ephemeral game-scoped narration intake; bounded and schema-constrained."
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/intel-purchase",
+      "auth": "public-ingest",
+      "rateLimit": "intelRateLimit",
+      "evidence": "none",
+      "binding": "safeParse",
+      "rationale": "Ephemeral game-scoped quote response; no authoritative economy balance is mutated."
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/intel-list",
+      "auth": "public-ingest",
+      "rateLimit": "intelRateLimit",
+      "evidence": "none",
+      "binding": "safeParse",
+      "rationale": "Ephemeral game-scoped listing intake; bounded and excluded from certified progression."
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/narrator/:gameId/predict",
+      "auth": "public-ingest",
+      "rateLimit": "crowdPredictRateLimit",
+      "evidence": "none",
+      "binding": "safeParse",
+      "rationale": "Ephemeral spectator poll with no certified progression effect."
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/coach-debrief",
+      "auth": "verified-actor",
+      "rateLimit": "coachDebriefRateLimit",
+      "evidence": "result-certificate",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/match-rating",
+      "auth": "verified-actor",
+      "rateLimit": "global-standard",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/style-history",
+      "auth": "verified-actor",
+      "rateLimit": "global-standard",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/win-fortune",
+      "auth": "verified-actor",
+      "rateLimit": "fortuneRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/prediction-league/predict",
+      "auth": "verified-actor",
+      "rateLimit": "predictionLeagueRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/clan-war/challenge",
+      "auth": "verified-actor",
+      "rateLimit": "clanWarRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/clan-war/accept",
+      "auth": "verified-actor",
+      "rateLimit": "clanWarRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/clan-war/decline",
+      "auth": "verified-actor",
+      "rateLimit": "clanWarRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/vaultfront/season-progress/claim",
+      "auth": "verified-actor",
+      "rateLimit": "seasonProgressRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/archive_singleplayer_game",
+      "auth": "public-ingest",
+      "rateLimit": "global-standard",
+      "evidence": "none",
+      "binding": "PartialGameRecordSchema",
+      "rationale": "Upstream-compatible single-player replay intake; schema-limited and excluded from certified multiplayer progression."
+    },
+    {
+      "method": "POST",
+      "path": "/api/clans",
+      "auth": "verified-actor",
+      "rateLimit": "clanRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/clans/:clanId/join",
+      "auth": "verified-actor",
+      "rateLimit": "clanRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/clans/leave",
+      "auth": "verified-actor",
+      "rateLimit": "clanRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/complete",
+      "auth": "verified-actor",
+      "rateLimit": "global-standard",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tutorial/reset",
+      "auth": "verified-actor",
+      "rateLimit": "global-standard",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournaments",
+      "auth": "verified-actor",
+      "rateLimit": "tourneyRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournaments/:id/register",
+      "auth": "verified-actor",
+      "rateLimit": "tourneyRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournaments/:id/seed",
+      "auth": "verified-actor",
+      "rateLimit": "tourneyRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/tournaments/matches/:matchId/report",
+      "auth": "verified-actor",
+      "rateLimit": "tourneyRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "requireVaultFrontActor"
+    },
+    {
+      "method": "POST",
+      "path": "/api/rematch/:gameId",
+      "auth": "verified-actor",
+      "rateLimit": "rematchRateLimit",
+      "evidence": "authenticated-event",
+      "binding": "resolveAuthenticatedActorKey"
+    },
+    {
+      "method": "POST",
+      "path": "/api/replay/:gameId/clip",
+      "auth": "public-ingest",
+      "rateLimit": "clipRateLimit",
+      "evidence": "none",
+      "binding": "CustomClipSchema",
+      "rationale": "Read-like share-link derivation from an existing replay; no replay or player state is mutated."
+    }
+  ]
+}

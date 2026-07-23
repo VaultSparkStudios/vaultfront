@@ -85,6 +85,12 @@ export function runProjectDoctor({
         ],
       },
       {
+        id: "mutation-route-policy-coverage",
+        command: process.execPath,
+        args: ["scripts/check-route-policy-coverage.mjs"],
+        blocking: true,
+      },
+      {
         id: "release-workflow-contract",
         command: process.execPath,
         args: [path.join(defaultRoot, "scripts", "check-deploy-contract.mjs")],

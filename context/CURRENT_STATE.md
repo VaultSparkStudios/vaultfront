@@ -6,6 +6,22 @@ Public-safe summary:
 - Internal operating detail lives in the private Studio OS / ops repository.
 - This repo retains only the public-safe implementation and evidence boundary.
 
+## 2026-07-22 — Session 80 durable-evidence and trust-boundary arc
+
+The complete `/start → /audit → /implement → /closeout` mission shipped all three premise-verified local findings and three generated second-order innovations. Authenticated Alpha evidence now persists across restarts in PostgreSQL, binds one evidence session to one pseudonymous actor, deduplicates event IDs, exposes only privacy-minimal 24-hour cohort summaries, fails closed when configured persistence is unavailable, and applies a 30-day retention ceiling with process-local parity.
+
+Every mutation route is extracted from the TypeScript abstract syntax tree and reconciled bidirectionally against an explicit 42-route policy catalog. The catalog records authentication, rate limiting, evidence, and source binding for every mutation, and ratchets unauthenticated ingestion at an explicit 11-route risk budget. Dependabot pull requests now use an ecosystem-specific changed-file contract loaded from the trusted base commit without retained credentials; substantive continuous integration remains mandatory.
+
+Verification is green: 147 Vitest files / 873 tests, production-inclusive coverage, TypeScript, ESLint, production build, Prettier ratchet, bundle budgets, 26/26 Playwright desktop/mobile tests, 41 deploy-contract checks, work exhaustion (audit 11/11; innovations 17/17), and project doctor 11/11 with `blockingFailing: 0`. Release remains NO-GO pending real staging/parity, native Obelisk, working project-domain Brevo delivery, three authenticated human Alpha sessions, live theme/header/Core Web Vitals, revenue evidence, rollback observation, and founder approval.
+
+## 2026-07-22 — Session 80 durable-evidence and trust-boundary arc
+
+The complete `/start → /audit → /implement → /closeout` mission shipped all three premise-verified local findings and three generated second-order innovations. Authenticated Alpha evidence now persists across restarts in PostgreSQL, binds one evidence session to one pseudonymous actor, deduplicates event IDs, exposes only privacy-minimal 24-hour cohort summaries, fails closed when configured persistence is unavailable, and applies a 30-day retention ceiling with process-local parity.
+
+Every mutation route is extracted from the TypeScript abstract syntax tree and reconciled bidirectionally against an explicit 42-route policy catalog. The catalog records authentication, rate limiting, evidence, and source binding for every mutation, and ratchets unauthenticated ingestion at an explicit 11-route risk budget. Dependabot pull requests now use an ecosystem-specific changed-file contract loaded from the trusted base commit without retained credentials; substantive continuous integration remains mandatory.
+
+Verification is green: 147 Vitest files / 873 tests, production-inclusive coverage, TypeScript, ESLint, production build, Prettier ratchet, bundle budgets, 26/26 Playwright desktop/mobile tests, 41 deploy-contract checks, work exhaustion (audit 11/11; innovations 17/17), and project doctor 11/11 with `blockingFailing: 0`. Release remains NO-GO pending real staging/parity, native Obelisk, working project-domain Brevo delivery, three authenticated human Alpha sessions, live theme/header/Core Web Vitals, revenue evidence, rollback observation, and founder approval.
+
 ## 2026-07-22 — Session 79 certified-mastery and delivery-integrity arc
 
 The complete `/start → /audit → /implement → /closeout` mission shipped six premise-verified local items and three new second-order innovations; two external evidence corridors remain explicit. Daily Mastery now consumes only server-certified match outcomes, persists per-player UTC-day progress and an earned Mastery balance with transactional exactly-once semantics, exposes typed receipts through the progression spine, and labels its process-local development fallback honestly. Its authenticated route is dependency-injected and directly tested.

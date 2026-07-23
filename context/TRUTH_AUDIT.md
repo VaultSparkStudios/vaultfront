@@ -199,3 +199,15 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 - Direct verification passed: 143 Vitest files / 856 tests, TypeScript, ESLint, production build, 26/26 Playwright desktop/mobile tests, 38 deploy-contract checks, and project doctor 10/10 with `blockingFailing: 0`.
 - Remote E2E bootstrap is corrected locally but no post-push GitHub run is claimed green yet.
 - No external staging, native Obelisk relying-party, project-domain Brevo delivery, distinct-human Alpha, revenue, rollback observation, or founder approval was fabricated.
+
+## 2026-07-22 — Session 80 durable-evidence truth audit
+
+- `docs/AUDIT_2026-07-22.json` contains 11 items: 9 shipped locally across Sessions 79–80, 2 explicitly `externally-blocked`, and 0 pending unblocked.
+- `docs/INNOVATION_PACK.json` reports 17/17 evidence-derived innovations shipped; three retention/risk/validator invariants were generated and implemented this session.
+- Alpha evidence is durable only when PostgreSQL is available. A configured-but-unavailable database fails closed; an unconfigured development runtime reports `process-local`.
+- Public playtest summaries omit actor keys, session IDs, and event IDs; release gates read a 24-hour cohort, while stored actor-bound evidence expires after 30 days.
+- The live route inventory reports 42 mutation registrations and 42 declared policies. Public ingestion is 11/11 against its explicit reviewed ceiling.
+- Dependabot exemption requires exact bot identity plus ecosystem-specific file scope. The workflow loads its validator from the pull request base SHA with `persist-credentials: false`; substantive CI is not bypassed.
+- Direct verification passed: 147 Vitest files / 873 tests, production coverage, TypeScript, ESLint, production build, Prettier ratchet, bundle budgets, 26/26 Playwright tests, 41 deploy-contract checks, and project doctor 11/11 with `blockingFailing: 0`.
+- Cloudflare deploy/DNS and Brevo capabilities resolve READY, but both available Cloudflare tokens returned HTTP 403 for Email Routing rules. Delivery remains unverified rather than inferred.
+- No external staging, native Obelisk relying-party, project-domain delivery, distinct-human Alpha, live-web/revenue/rollback, or founder approval was fabricated.

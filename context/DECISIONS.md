@@ -2,6 +2,18 @@
 
 Public-safe decisions only. Detailed internal decision history is maintained privately.
 
+## 2026-07-22 — Evidence trust boundaries require lifecycle and expansion budgets
+
+**Decision:** Authenticated Alpha evidence has a 24-hour release cohort and a 30-day storage ceiling. Every mutation route must appear in a bidirectional machine catalog, and unauthenticated ingestion cannot exceed its explicitly reviewed 11-route budget without changing the rationale-bearing contract.
+
+**Why:** Durability without retention turns release evidence into indefinite actor-linked accumulation. Complete route coverage without an expansion ceiling still permits security posture to weaken one apparently valid entry at a time. Lifecycle and risk budgets make both forms of drift executable failures.
+
+## 2026-07-22 — Dependency automation executes only trusted-base policy
+
+**Decision:** Dependabot convenience exemptions require exact bot identity, an ecosystem-derived branch, and ecosystem-specific changed-file scope. The validator is loaded from the pull request base commit with checkout credentials disabled.
+
+**Why:** Pull request head content is attacker-controlled. An automation exemption is safe only when its decision logic comes from trusted repository state and cannot convert a dependency update into a mixed-scope change.
+
 ## 2026-07-19 — One certificate is the only match-outcome authority
 
 **Decision:** Archive, progression, metrics, recap, and coaching consume one strict-majority, complete-roster, tamper-evident match result certificate. Client winner/stat payloads remain attestations and cannot independently mint downstream state.

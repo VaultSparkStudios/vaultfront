@@ -1,55 +1,51 @@
 <!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
-<!-- source-hash: 96afd464618d -->
-<!-- generated-at: 2026-07-22T21:58:46.934Z -->
+<!-- source-hash: 949ba4b42301 -->
+<!-- generated-at: 2026-07-23T03:09:21.985Z -->
 
 # LATEST_HANDOFF (compact)
 
 SESSION
 
-- Number: 79 (certified-mastery closeout)
-- Date: 2026-07-22
+- Session 80, durable-evidence closeout
 
-SHIPPED
+SHIPPED (S80)
 
-- Daily Mastery derives from certified match outcomes; exactly-once UTC-day progress + Mastery wallet in PostgreSQL; typed receipts; authenticated injected route.
-- Single atomic invariant writer for all project-status mutations; doctor rejects bypasses.
-- One typed session ledger parser shared across startup/freshness/forecast/closeout with dup/prose/date defenses.
-- Client graph 181/181 reachable; 11 dead modules removed; source map corrected.
-- E2E installs native canvas prereqs, Node 22, canonical /_health for staging/promotion.
-- Tests non-duplicated, capped 4 workers; coverage includes unloaded prod code; 10 critical seams ratcheted.
-- Second-order pack 14/14 (three new this session).
+- Authenticated playtest evidence persists in PostgreSQL across restarts: actor/session binding, event idempotency, 24h privacy-minimal summaries, fail-closed on configured DB, 30-day retention cap.
+- TypeScript AST inventory proves bidirectional policy coverage for all 42 mutation routes; caps public ingestion at reviewed 11-route budget.
+- Dependabot automation exact-identity and ecosystem scoped; loads repo-owned validator from trusted base SHA, no retained credentials.
+- Second-order pack 17/17 shipped (three new S80 invariants).
 
-INTENT
+CURRENT INTENT
 
-- Run full agent-neutral arc continuously, exhaust verified local items, implement second-order innovations, close to main without fabricated external evidence.
-
-NOW (top 3)
-
-- Receive source-tagged Studio Ops registry decision.
-- Deliberately establish external staging contract.
-- Collect exact-digest parity + human/business evidence in gate order.
-
-BLOCKERS (top 3)
-
-- No external staging target/contract established.
-- Remote post-push run unproven (local E2E only).
-- Registry specifies local staging; no launch authorization.
-
-HUMAN-BLOCKED
-
-- Three authenticated human Alpha sessions (pending since S78+).
-- Founder approval (final gate).
-- Studio Ops registry-profile reply / correction receipt (Ark follow-up 01JU3RL522793F2F1D15EC71D6, since S78).
-- External-only: Obelisk relying-party identity, Brevo live delivery, live theme/header/CWV, real revenue event, rollback observation.
+- Run full agent-neutral arc continuously, exhaust live-code findings and generated innovations, preserve exit-code truth, close directly to main without fabricating external launch evidence.
 
 VERIFICATION
 
-- 143/143 Vitest files, 856/856 tests; prod-inclusive coverage + ratchet; TypeScript; ESLint; prod build; 26/26 Playwright; 38 deploy-contract; audit 8/8; innovation 14/14; doctor 10/10, blockingFailing 0.
+- 147/147 Vitest files, 873/873 tests; production coverage; TypeScript; ESLint; production build; Prettier ratchet; bundle budgets; 26/26 Playwright; 41 deploy-contract checks; audit 11/11; innovation 17/17; doctor 11/11, blockingFailing 0.
+
+NOW (top 3)
+
+- Obtain source-tagged Studio Ops registry decision.
+- Obtain Cloudflare token authorized for Email Routing (current tokens 403 on Email Routing rules).
+- Deliberately establish external staging, then collect exact-digest parity in gate order.
+
+BLOCKERS (top 3)
+
+- Cloudflare tokens return 403 for Email Routing rules (credentials READY but insufficient scope).
+- No external staging established; local suite proves deployable source only, not public deployment.
+- Studio Ops registry decision pending (source-tagged).
+
+HUMAN-BLOCKED (age: since S79+)
+
+- Three distinct authenticated Alpha humans: not collected.
+- Founder approval: pending.
+- Revenue and rollback observation evidence: pending.
+- Native Obelisk, project-domain delivery, live-web/theme: pending.
 
 TRUTH BOUNDARY
 
-- Local E2E and corrected workflow semantics do not prove remote run. Release work-exhausted, transfer-green, launch-blocked.
+- Local suite proves deployable source, not public deployment. No staging, Obelisk, domain delivery, human Alpha, live-web, revenue, rollback, or founder-approval evidence fabricated.
 
-NEXT
+NEXT SESSION
 
-- Await registry decision, then establish staging contract and gather parity + human/business evidence in gate order.
+- Secure Email-Routing-scoped Cloudflare token and Studio Ops decision, stand up external staging, then run gate-ordered parity and human/business evidence collection.

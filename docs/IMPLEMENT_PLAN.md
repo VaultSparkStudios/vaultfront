@@ -1,36 +1,31 @@
-# Session 79 Implementation Plan
+# Session 80 Implementation Plan
 
-Status: local implementation complete — six verified audit items shipped at L3; two external evidence lanes remain explicitly non-actionable from this repository.
+Status: primary implementation complete — all three new premise-verified items shipped and verified at L3; second-order innovation is in progress.
 
 Source: `docs/AUDIT_2026-07-22.json` (sole truth).
 
-## Wave 4A — authoritative truth
+## Wave 3A — evidence foundation
 
-1. `atomic-project-status-write-path` — shipped: one atomic invariant-preserving writer, bypass scanner, doctor probe, and focused tests.
-2. `canonical-session-ledger-parser` — shipped: one typed parser across startup, freshness, forecast, and closeout.
+1. `durable-privacy-minimal-alpha-evidence-ledger` — shipped and focused tests green.
 
-## Wave 4B — player contract
+## Wave 3B — security truth
 
-3. `certified-daily-mastery-contract` — shipped: certified match metrics, exactly-once UTC-day progress, Postgres wallet, honest local scope, authenticated router, typed receipts, and HUD refresh.
-4. `client-feature-reachability-ratchet` — shipped: production-entry graph, eleven proven orphan deletions, corrected capability source map, CI/doctor enforcement.
+2. `complete-route-policy-coverage-ratchet` — shipped; 42/42 bidirectional coverage and doctor enforcement green.
 
-## Wave 4C — delivery integrity
+## Wave 3C — delivery signal
 
-5. `deterministic-e2e-bootstrap-contract` — shipped locally: native canvas prerequisites before install, Node/engine parity, canonical health routes, and a 38-check deploy contract.
-6. `production-risk-test-contract` — shipped: non-duplicated four-worker suite, explicit production coverage, Worker visibility, ten critical floors, and CI contract alignment.
+3. `dependency-pr-machine-contract` — shipped; live GitHub Actions shape plus hostile fixtures green.
 
-## Second-order innovation wave
+## Wave 4 — second-order innovation
 
-1. `bounded-test-worker-contract` — generated from the coverage process storm and shipped into every Vitest package command.
-2. `coverage-surface-visibility-contract` — generated from Worker omission and shipped as an explicit observed-module invariant.
-3. `authenticated-route-seam` — generated from the router god-object and shipped as a dependency-injected, 100%-covered Daily Mastery boundary.
+Generate from the shipped seams after all three primary items verify. Implement every accepted candidate; record rejected premises and external constraints honestly.
 
 ## External evidence lane
 
-- `registry-profile-conformance-receipt-s79` — send one deduplicated Ark follow-up; never edit Studio Ops.
-- `live-staging-evidence-corridor-s79` — retain NO-GO until an approved origin, identity/email parity, human Alpha, revenue, rollback, and founder receipts exist.
+- Registry type reconciliation stays Studio Ops-owned via Ark.
+- External staging, Email Routing permission, native Obelisk, three authenticated humans, revenue, rollback observation, and founder approval remain non-substitutable.
 
-## Closeout verification
+## Verification
 
-- Direct exit codes for contracts, coverage ratchet, typecheck, lint, build, unit suite, E2E, doctor, security/public sanitization, and work exhaustion.
-- Remote workflow rerun is reported only after the direct-to-main push; no local result is promoted into live evidence.
+- Focused tests after each item.
+- Then `npm test`, `npm run test:server`, `npm run build-prod`, `npm run lint`, `npm run e2e`, deploy/contracts, audit/innovation exhaustion, and project doctor with direct exit-code evidence.

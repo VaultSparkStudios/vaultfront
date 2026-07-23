@@ -118,6 +118,21 @@ requireText(
   "automation PRs are not restricted by changed-file scope",
 );
 requireText(
+  prWorkflow,
+  /ref:\s*\$\{\{ github\.event\.pull_request\.base\.sha \}\}/u,
+  "PR validator is not checked out from the trusted base SHA",
+);
+requireText(
+  prWorkflow,
+  /persist-credentials:\s*false/u,
+  "trusted-base checkout retains write credentials",
+);
+requireText(
+  prWorkflow,
+  /scripts\/lib\/dependabot-pr-contract\.cjs/u,
+  "PR workflow does not load the repository-owned machine contract",
+);
+requireText(
   promoteWorkflow,
   /staging_evidence_digest/u,
   "promotion lacks explicit staging evidence",

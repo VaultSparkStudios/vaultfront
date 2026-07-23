@@ -2,6 +2,16 @@
 
 Append-only. Each session appends one entry. Never edit prior entries.
 
+## 2026-07-22 — Session 80 durable-evidence and trust-boundary closeout
+
+- Goal: Execute one saturated `/start → /audit → /implement → /closeout` arc, exhaust the live-code plan, generate and ship second-order innovations, and preserve honest external gates.
+- What changed: Added restart-durable privacy-minimal Alpha evidence; extracted and cataloged every mutation route policy; replaced Dependabot prose-only gating with an ecosystem-specific trusted-base machine contract; added evidence retention, public-ingest risk-budget, and validator-pin invariants.
+- Verification: 147 Vitest files / 873 tests; production coverage; TypeScript; ESLint; production build; Prettier ratchet; bundle budgets; 26/26 Playwright desktop/mobile; 41 deploy-contract checks; audit 11/11; innovations 17/17; doctor 11/11 with `blockingFailing: 0`.
+- Risks removed: restart-erased Alpha evidence, actor/session rebinding, duplicate event inflation, indefinite evidence retention, unregistered mutation policy, silent public-ingress expansion, Dependabot identity spoofing, mixed-ecosystem file scope, and head-controlled validator execution.
+- Remaining boundary: release stays NO-GO until external staging/parity, Cloudflare Email Routing authorization and Brevo delivery, native Obelisk, three authenticated humans, live-web/theme evidence, revenue, rollback observation, and founder approval exist.
+
+---
+
 ## 2026-07-21 — Session 77 interrupted-start recovery closeout
 
 - Goal: Recover the cut-off Session 77, prove its boundary and prior claims against live state, checkpoint it independently, then hand off to a fresh full arc.

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
-  "generatedBy": "/audit skill v2 · Session 79 hybrid product + infrastructure rubric · game-loop + app-release lenses",
-  "generatedAt": "2026-07-22T12:00:00Z",
+  "generatedBy": "/audit skill v2 · Sessions 79–80 merged hybrid product + infrastructure rubric · game-loop + app-release lenses",
+  "generatedAt": "2026-07-23T00:18:00Z",
   "project": {
     "slug": "vaultfront",
     "name": "VaultFront",
@@ -11,7 +11,7 @@
     "stage": "FORGE",
     "stagingType": "local"
   },
-  "summary": "Premise-verified Session 79 hybrid audit: repair the Daily Challenge trust break through certified match evidence and durable reward receipts, enforce one atomic project-status mutation path, delete unreachable shipped-looking client code and prevent recurrence, make E2E bootstrap deterministic, converge session parsing, and make the test/coverage contract reflect the production risk surface. Registry and launch observations stay externally blocked and explicit.",
+  "summary": "Premise-verified Sessions 79–80 hybrid audit: retain the completed certified-mastery and delivery-integrity work, then make Alpha evidence restart-durable and privacy-minimal, close the gap between the declared route-policy manifest and the real mutation surface, and repair the Dependabot PR contract without weakening its machine-authorship boundary. Registry, external staging, email-routing permission, human, revenue, and approval observations stay explicitly blocked rather than fabricated.",
   "axes": {
     "featureDepth": 2,
     "innovation": 1.5,
@@ -356,6 +356,117 @@
         }
       },
       "executionLog": []
+    },
+    {
+      "id": 60,
+      "slug": "durable-privacy-minimal-alpha-evidence-ledger",
+      "tier": "🔥",
+      "axis": "feedback loop / security / observability / engagement",
+      "effortHours": 6,
+      "impact": 10,
+      "innovation": 9,
+      "priority": 51.7,
+      "status": "shipped",
+      "title": "Make authenticated Alpha evidence restart-durable and privacy-minimal",
+      "why": "The Alpha gate currently derives from module-global maps and counters, so every worker restart erases the three-human sample. Its public summary also returns eventId and evidenceSessionId even though neither identifier is needed for public readiness.",
+      "coreLoopStep": "authenticated play action → idempotent durable evidence → privacy-minimal cohort summary → trustworthy Alpha decision",
+      "recipe": "Extract a PlaytestEvidenceStore with transactional PostgreSQL event persistence and an explicitly labeled process-local fallback; hydrate summaries from durable rows, enforce event-id idempotency plus one actor per evidence session, redact linkable event/session identifiers from the public summary, extract the route behind injected dependencies, and test restart hydration, duplicates, actor/session conflicts, excluded sources, stale evidence, and public serialization.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Remove event/session identifiers from the public summary and label process-local scope."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Extract an injected store/router and support deterministic snapshot hydration."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Persist idempotent human evidence in PostgreSQL with an honest memory fallback and restart-equivalence tests."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-23T00:40:00Z",
+          "status": "shipped",
+          "note": "Shipped L3: 24-hour PostgreSQL evidence ledger, idempotent session/actor binding, process-local fallback labeling, fail-closed configured persistence, privacy-minimal summaries, extracted routes, schema, and 12 focused tests."
+        }
+      ]
+    },
+    {
+      "id": 61,
+      "slug": "complete-route-policy-coverage-ratchet",
+      "tier": "🔥",
+      "axis": "security / organization / observability",
+      "effortHours": 4,
+      "impact": 10,
+      "innovation": 8,
+      "priority": 43.1,
+      "status": "shipped",
+      "title": "Make the declared route-policy plane cover the real mutation surface",
+      "why": "RoutePolicyManifest declares only a small hand-picked subset while Worker registers dozens of POST routes. MutationAuthorizationContract protects another manually maintained subset by searching source text, so an unlisted mutation can bypass both truth surfaces.",
+      "coreLoopStep": "route registration → exhaustive inventory → declared auth/rate/evidence policy → fail-closed CI",
+      "recipe": "Build one deterministic Worker route inventory, require every state-changing first-party route to appear in a typed policy catalog or a narrow documented exclusion, compare method/path pairs bidirectionally, replace the hand-maintained source-slice authorization list, wire the checker into doctor and verify-contracts, and add fixtures for multiline registrations, nested middleware, duplicates, and an undeclared mutation.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Generate and review the mutation route inventory."
+        },
+        "L2": {
+          "effortHours": 2.5,
+          "recipe": "Require every mutation to declare auth and rate-limit posture."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Make catalog-to-registration coverage bidirectional and doctor-enforced with adversarial fixtures."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-23T00:40:00Z",
+          "status": "shipped",
+          "note": "Shipped L3: TypeScript-AST inventory across Worker and extracted routers, explicit 42-route auth/rate/evidence catalog, bidirectional binding checks, adversarial fixtures, verify-contract wiring, and blocking doctor probe."
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "slug": "dependency-pr-machine-contract",
+      "tier": "⚡",
+      "axis": "dev health / security / delivery efficiency",
+      "effortHours": 2,
+      "impact": 8,
+      "innovation": 6,
+      "priority": 30.9,
+      "status": "shipped",
+      "title": "Repair the Dependabot PR contract without weakening machine-authorship trust",
+      "why": "The live github-actions group PR changes only workflow action pins, but Validate Description rejects every workflow file because the trusted-automation allowlist only admits package manifests. Build, test, E2E, milestone, and brief checks pass, so the red gate is a contract false positive.",
+      "coreLoopStep": "trusted dependency PR → scope-aware file contract → substantive CI → actionable green/red signal",
+      "recipe": "Move trusted-automation validation into a tested pure module; distinguish npm_and_yarn from github_actions heads; allow only package manifests for npm and only .github/workflows YAML plus dependabot config for action groups; reject mixed or branch-mismatched changes; call the module from github-script and add fixture tests covering the live PR shape and hostile mixed-file variants.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Narrowly allow workflow YAML on dependabot/github_actions branches."
+        },
+        "L2": {
+          "effortHours": 1,
+          "recipe": "Split npm and GitHub Actions file policies."
+        },
+        "L3": {
+          "effortHours": 2,
+          "recipe": "Extract a pure validator with hostile fixtures and keep substantive CI mandatory."
+        }
+      },
+      "executionLog": [
+        {
+          "at": "2026-07-23T00:40:00Z",
+          "status": "shipped",
+          "note": "Shipped L3: trusted-base pure validator with distinct npm/GitHub-Actions scopes, mixed-file and spoof defenses, live PR fixtures, and workflow integration while substantive CI remains mandatory."
+        }
+      ]
     }
   ]
 }

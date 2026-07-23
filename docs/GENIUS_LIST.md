@@ -1,88 +1,106 @@
 <!-- generated-by: scripts/generate-genius-list.mjs -->
-<!-- generated-at: 2026-07-22T06:17:27.522Z -->
+<!-- generated-at: 2026-07-23T03:09:55.219Z -->
 
 # Unified Genius List
 
 Project: vaultfront
 IGNIS source: latest-audit-sidecar
 
-## 1. Close the spectator Prediction League loop with an authoritative resolution receipt
+## 1. Rebuild Daily Challenge as a certified, durable Daily Mastery contract
 
-**Tier:** 🔥 · **Axis:** gamification / engagement / feature depth · **Effort:** 2h · **Score:** 210
+**Tier:** 🔥 · **Axis:** gamification / retention / security / feature depth · **Effort:** 8h · **Score:** 108
 
-PredictionLeagueStore records picks and exposes a leaderboard, but resolveGame has zero callers, so pending predictions never become history and the player-facing leaderboard can never populate.
-
-Status: done
-Recommended model: sonnet
-
-## 2. Turn parallel meta systems into one Convoy Mastery prescription
-
-**Tier:** 🔥 · **Axis:** gamification / feedback loop / progression · **Effort:** 6h · **Score:** 162
-
-ProgressionDebrief lists Elo, one season milestone, and achievement count as three equal facts while WinModal separately saves an actionable next-match goal; contracts, achievements, season progress, dynasty, and rivalry therefore lack one player-facing hierarchy.
+The HUD fetches a challenge, but normal play never sends an authenticated persistentId to the only progress caller; the store advertises bonus gold no caller applies and clears all progress on restart. This is a visible retention promise that cannot complete honestly.
 
 Status: done
 Recommended model: sonnet
 
-## 3. Converge four tutorial voices into one event-driven First Extraction quest
+## 2. Make authenticated Alpha evidence restart-durable and privacy-minimal
 
-**Tier:** 🔥 · **Axis:** ux / onboarding / game-loop tightness · **Effort:** 4h · **Score:** 111
+**Tier:** 🔥 · **Axis:** feedback loop / security / observability / engagement · **Effort:** 6h · **Score:** 103
 
-A mounted five-card static tutorial, four-step ControlPanel objectives, three first-match coachmarks, contextual coach hints, and two unmounted tutorial engines describe overlapping paths, creating instruction density and drift risk before the first meaningful convoy decision.
-
-Status: done
-Recommended model: sonnet
-
-## 4. Make startup activity age and rolling averages derive only from typed session evidence
-
-**Tier:** 🔥 · **Axis:** speed / organization / observability · **Effort:** 1h · **Score:** 102
-
-render-startup-brief mixes numeric status.silLastSession into ISO candidateDates, producing the live 'Last active: 20654d' claim, and prints Avg3 from a stale rolling header despite a newer Session 77 score table.
+The Alpha gate currently derives from module-global maps and counters, so every worker restart erases the three-human sample. Its public summary also returns eventId and evidenceSessionId even though neither identifier is needed for public readiness.
 
 Status: done
 Recommended model: sonnet
 
-## 5. Generate every public navigation and footer shell from the semantic manifest
+## 3. Make every PROJECT_STATUS mutation use one atomic invariant writer
 
-**Tier:** ⚡ · **Axis:** ux / organization / legal · **Effort:** 4h · **Score:** 74
+**Tier:** 🔥 · **Axis:** security / observability / organization · **Effort:** 3h · **Score:** 88
 
-The scoped checker now catches drift, but ten HTML leaves still hand-copy identical navigation, brand, copyright, and seven-link footer markup; the Session 76 SIL commitment explicitly calls for construction instead of repair.
-
-Status: done
-Recommended model: sonnet
-
-## 6. Turn theme persistence tests into desktop/mobile readability proof
-
-**Tier:** ⚡ · **Axis:** ux / accessibility / release · **Effort:** 3h · **Score:** 69
-
-E2E verifies that vaultfront, light, and competitive theme attributes persist, but captures screenshots only on failure and has no computed contrast/readability assertions; CANON-047 cannot be evidenced from attribute presence.
+verify-plan-mode, detect-session-mode, render-startup-brief, and project-doctor write PROJECT_STATUS directly despite the declared canonical writer, allowing SIL invariants or concurrent fields to be lost.
 
 Status: done
 Recommended model: sonnet
 
-## 7. Require a receipt before the registry can silently override local project type
+## 4. Make the declared route-policy plane cover the real mutation surface
 
-**Tier:** ⚡ · **Axis:** security / ecosystem / observability · **Effort:** 2h · **Score:** 68
+**Tier:** 🔥 · **Axis:** security / organization / observability · **Effort:** 4h · **Score:** 86
 
-arc-profile still classifies VaultFront as app while PROJECT_STATUS, STUDIO_MANIFEST, startup brief, and deployed gameplay classify it as game, repeating the Session 73/76 split after the correction cargo was accepted.
-
-Status: externally-blocked — Studio Ops drained correction cargo 01JU1AEATS46E1C7F5DD9AE41C, but the central registry still reports app and no corrective reply/propagation exists; CANON-018 forbids direct sibling edits.
-Recommended model: sonnet
-
-## 8. Give the spawn-heavy Genius contract a measured integration-test budget
-
-**Tier:** ⚡ · **Axis:** dev health / speed / test reliability · **Effort:** 0.75h · **Score:** 57
-
-The recovery full suite timed out the generator-plus-renderer contract at Vitest's 5-second default while its isolated execution passed in 0.9 seconds and the next full run passed, proving resource-sensitive flake exposure rather than an assertion defect.
+RoutePolicyManifest declares only a small hand-picked subset while Worker registers dozens of POST routes. MutationAuthorizationContract protects another manually maintained subset by searching source text, so an unlisted mutation can bypass both truth surfaces.
 
 Status: done
 Recommended model: sonnet
 
-## 9. Exercise the immutable digest through a real staging observation corridor
+## 5. Receive a source-tagged registry correction receipt
+
+**Tier:** ⚡ · **Axis:** ecosystem / observability / security · **Effort:** 1h · **Score:** 79
+
+The arc profiler selected the wrong audit lens again while local source-of-truth consistently says game.
+
+Status: externally-blocked — Studio Ops still reports type=app after prior correction and follow-up cargo; CANON-018 forbids editing the sibling registry or arc-profile producer from VaultFront.
+Recommended model: sonnet
+
+## 6. Delete unreachable shipped-looking client code and make orphan features fail CI
+
+**Tier:** 🔥 · **Axis:** feature depth / ux / speed / organization · **Effort:** 4h · **Score:** 77
+
+Ten client modules have no runtime importer, mount, or entrypoint; several advertise missing endpoints or duplicate mature replay paths, and some would double-register custom elements if imported.
+
+Status: done
+Recommended model: sonnet
+
+## 7. Make E2E bootstrap survive canvas prebuild outages and use canonical health
+
+**Tier:** 🔥 · **Axis:** dev health / release / reliability · **Effort:** 2h · **Score:** 68
+
+The latest E2E run failed before tests when canvas prebuild download fell back to node-gyp without pixman. Playwright system dependencies install only after npm ci, and deploy/promote probe /api/health while the canonical release contract names /_health.
+
+Status: done
+Recommended model: sonnet
+
+## 8. Converge startup, freshness, forecast, and closeout on one typed session parser
+
+**Tier:** ⚡ · **Axis:** observability / organization / token efficiency · **Effort:** 3h · **Score:** 62
+
+Four generated surfaces recognize different Session/S heading grammars; brief freshness even treats prose mentions as authoritative, so a plausible document can silently pick the wrong session.
+
+Status: done
+Recommended model: sonnet
+
+## 9. Repair the Dependabot PR contract without weakening machine-authorship trust
+
+**Tier:** ⚡ · **Axis:** dev health / security / delivery efficiency · **Effort:** 2h · **Score:** 62
+
+The live github-actions group PR changes only workflow action pins, but Validate Description rejects every workflow file because the trusted-automation allowlist only admits package manifests. Build, test, E2E, milestone, and brief checks pass, so the red gate is a contract false positive.
+
+Status: done
+Recommended model: sonnet
+
+## 10. Make test and coverage commands describe the real production risk surface
+
+**Tier:** ⚡ · **Axis:** dev health / speed / test reliability · **Effort:** 3h · **Score:** 53
+
+npm test runs the server suite twice, coverage only includes loaded modules with zero native thresholds, Worker is absent, and the three-file custom ratchet omits the largest client/server risk surfaces.
+
+Status: done
+Recommended model: sonnet
+
+## 11. Exercise the exact digest through a real staging observation corridor
 
 **Tier:** 🔥 · **Axis:** feedback loop / release / ecosystem · **Effort:** 8h · **Score:** 45
 
-CI, local E2E, branding, sitemap, rollback documentation, and cost gates pass, but every live launch observation remains absent; local artifacts must not be promoted into a release claim.
+Local artifacts and contracts are strong, but the release gate is correctly NO-GO without live parity and human/business evidence.
 
-Status: externally-blocked — Capability preflight confirms cloudflare.deploy and Brevo credentials are READY, but the canonical registry still specifies local staging and there is no approved external staging origin, GitHub environment contract, native Obelisk relying-party registration, three-human Alpha evidence, revenue event, or final founder approval. This remains an evidence/authorization corridor, not a phantom credential blocker.
+Status: externally-blocked — Cloudflare and Brevo capabilities are ready, but no approved external staging origin/environment or Obelisk relying-party registration exists; human Alpha, revenue, and founder approval are non-substitutable observations.
 Recommended model: sonnet

@@ -1,5 +1,5 @@
 <!-- generated-by: scripts/innovation-pack.mjs -->
-<!-- generated-at: 2026-07-22T22:01:07.306Z -->
+<!-- generated-at: 2026-07-23T03:09:55.309Z -->
 
 # Second-Order Innovation Pack
 
@@ -19,3 +19,6 @@ Generated only after the audit-backed Unified Genius List was exhausted. Complet
 12. [x] **bounded-test-worker-contract** — Make test parallelism a repository-owned resource contract. Convert the coverage process storm into a durable ceiling so local, CI, and closeout verification cannot silently multiply workers until the host becomes the failure mode. Evidence: four-worker ceilings on default, server, and production coverage commands plus a clean 143-file run.
 13. [x] **coverage-surface-visibility-contract** — Make unloaded production code visible even before it earns coverage. Separate visibility from percentage: enumerate the production TypeScript surface, require the Worker router to appear in the report, and ratchet critical seams from measured floors. Evidence: production-inclusive V8 configuration, Worker observed-module invariant, ten measured critical-module floors, and regression fixtures.
 14. [x] **authenticated-route-seam** — Extract a fully testable trust boundary from the router god-object. Turn the Daily Mastery endpoint into an injected authorization and persistence seam that fails closed, reports operational failure, and can be certified without importing the 4,300-line Worker. Evidence: dependency-injected route registrar, Worker composition, authorization/isolation/error tests, and 100% route coverage.
+15. [x] **bounded-alpha-evidence-retention** — Give durable Alpha evidence a privacy-minimal lifecycle. Retain the 24-hour release cohort without accumulating actor-bound evidence forever: prune durable and process-local history after a declared 30-day ceiling and release orphaned session bindings. Evidence: 30-day retention constant, transactional PostgreSQL pruning, process-local parity, and binding-release regression test.
+16. [x] **public-ingest-risk-budget** — Ratchet unauthenticated ingestion as an explicit risk budget. Count every public-ingest mutation and fail closed when it exceeds the reviewed ceiling, forcing any trust-boundary expansion to update a rationale-bearing machine contract. Evidence: 11-route public-ingest ceiling, catalog rationale, fail-closed validator, and hostile over-budget fixture.
+17. [x] **trusted-base-validator-pin** — Make the dependency automation validator self-protecting. Extend the immutable deploy contract to prove that the PR workflow checks out the trusted base SHA without credentials and loads the repository-owned validator from that checkout. Evidence: three trusted-base workflow invariants added to the directly executed deploy contract gate.

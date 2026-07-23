@@ -247,3 +247,29 @@ CREATE TABLE IF NOT EXISTS daily_mastery_wallet (
   mastery_balance INT          NOT NULL DEFAULT 0 CHECK (mastery_balance >= 0),
   updated_at      TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
+
+-- ── Authenticated Alpha Evidence ─────────────────────────────────────────────
+-- Pseudonymous actor keys are server-derived. The 24-hour Alpha gate reads the
+-- durable event ledger; event IDs make retries idempotent across worker restarts.
+CREATE TABLE IF NOT EXISTS playtest_evidence_sessions (
+  evidence_session_id VARCHAR(128) PRIMARY KEY,
+  actor_key            VARCHAR(128) NOT NULL,
+  first_seen_at        TIMESTAMPTZ  NOT NULL,
+  last_seen_at         TIMESTAMPTZ  NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS playtest_evidence_events (
+  event_id             VARCHAR(128) PRIMARY KEY,
+  evidence_session_id  VARCHAR(128) NOT NULL
+    REFERENCES playtest_evidence_sessions(evidence_session_id),
+  actor_key            VARCHAR(128) NOT NULL,
+  surface              VARCHAR(32)  NOT NULL CHECK (
+    surface IN ('tutorial', 'match', 'tournament', 'retention')
+  ),
+  event_name           VARCHAR(64)  NOT NULL,
+  source               VARCHAR(16)  NOT NULL CHECK (source = 'human'),
+  occurred_at          TIMESTAMPTZ  NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_playtest_evidence_window
+  ON playtest_evidence_events (occurred_at DESC);

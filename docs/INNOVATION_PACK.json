@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-07-22T22:01:07.306Z",
+  "generatedAt": "2026-07-23T03:09:55.309Z",
   "source": "scripts/innovation-pack.mjs",
   "primarySource": "latest audit-backed Unified Genius List",
   "items": [
@@ -129,6 +129,33 @@
       "description": "Turn the Daily Mastery endpoint into an injected authorization and persistence seam that fails closed, reports operational failure, and can be certified without importing the 4,300-line Worker.",
       "complete": true,
       "evidence": "dependency-injected route registrar, Worker composition, authorization/isolation/error tests, and 100% route coverage"
+    },
+    {
+      "rank": 15,
+      "status": "shipped",
+      "id": "bounded-alpha-evidence-retention",
+      "title": "Give durable Alpha evidence a privacy-minimal lifecycle",
+      "description": "Retain the 24-hour release cohort without accumulating actor-bound evidence forever: prune durable and process-local history after a declared 30-day ceiling and release orphaned session bindings.",
+      "complete": true,
+      "evidence": "30-day retention constant, transactional PostgreSQL pruning, process-local parity, and binding-release regression test"
+    },
+    {
+      "rank": 16,
+      "status": "shipped",
+      "id": "public-ingest-risk-budget",
+      "title": "Ratchet unauthenticated ingestion as an explicit risk budget",
+      "description": "Count every public-ingest mutation and fail closed when it exceeds the reviewed ceiling, forcing any trust-boundary expansion to update a rationale-bearing machine contract.",
+      "complete": true,
+      "evidence": "11-route public-ingest ceiling, catalog rationale, fail-closed validator, and hostile over-budget fixture"
+    },
+    {
+      "rank": 17,
+      "status": "shipped",
+      "id": "trusted-base-validator-pin",
+      "title": "Make the dependency automation validator self-protecting",
+      "description": "Extend the immutable deploy contract to prove that the PR workflow checks out the trusted base SHA without credentials and loads the repository-owned validator from that checkout.",
+      "complete": true,
+      "evidence": "three trusted-base workflow invariants added to the directly executed deploy contract gate"
     }
   ]
 }

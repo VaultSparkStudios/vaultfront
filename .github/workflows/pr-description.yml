@@ -22,6 +22,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      - name: Checkout trusted base validator
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
       - uses: actions/github-script@v7
         with:
           script: |
@@ -33,23 +39,29 @@ jobs:
             const pr = context.payload.pull_request;
             const trustedAutomation = pr.user?.login === 'dependabot[bot]';
             if (trustedAutomation) {
-              if (!pr.head?.ref?.startsWith('dependabot/')) {
-                core.setFailed('Dependabot-authored PR must use a dependabot/* head ref.');
-                return;
-              }
               const files = await github.paginate(github.rest.pulls.listFiles, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 pull_number: pr.number,
                 per_page: 100,
               });
-              const allowed = /^(?:package(?:-lock)?\.json|\.github\/dependabot\.yml)$/;
-              const unsafe = files.map(file => file.filename).filter(file => !allowed.test(file));
-              if (unsafe.length > 0) {
-                core.setFailed(`Dependabot PR changes non-dependency files: ${unsafe.join(', ')}`);
+              const path = require('node:path');
+              const { validateDependabotFiles } = require(path.join(
+                process.env.GITHUB_WORKSPACE,
+                'scripts/lib/dependabot-pr-contract.cjs',
+              ));
+              const result = validateDependabotFiles({
+                actorLogin: pr.user?.login,
+                headRef: pr.head?.ref,
+                files: files.map(file => file.filename),
+              });
+              if (!result.ok) {
+                core.setFailed(result.errors.join('\n'));
                 return;
               }
-              console.log('Dependabot machine contract verified; substantive CI remains required.');
+              console.log(
+                `Dependabot ${result.ecosystem} machine contract verified for ${result.files.length} file(s); substantive CI remains required.`,
+              );
               return;
             }
 

@@ -18,6 +18,8 @@ export interface VaultFrontPlaytestPulseEvent {
 
 export interface VaultFrontPlaytestPulseSummary {
   generatedAt: string;
+  durability: "postgres" | "process-local";
+  evidenceWindowHours: 24;
   status: "no-signal" | "warming" | "ready";
   score: number;
   totals: {
@@ -46,7 +48,13 @@ export interface VaultFrontPlaytestPulseSummary {
     lastEventAt: string | null;
     ageMinutes: number | null;
   };
-  recent: Array<Omit<VaultFrontPlaytestPulseEvent, "actorKey">>;
+  recent: Array<{
+    surface: VaultFrontPulseSurface;
+    event: string;
+    value: 1;
+    at: number;
+    source: VaultFrontEvidenceSource;
+  }>;
   evidence: {
     acceptedHumanEvents: number;
     uniqueHumanSessions: number;
@@ -100,52 +108,88 @@ const allowedEvents: Record<VaultFrontPulseSurface, ReadonlySet<string>> = {
   ]),
 };
 
-const seenEventIds = new Set<string>();
-const seenEventOrder: string[] = [];
-const humanSessionActors = new Map<string, string>();
-const sessionEvents = new Map<string, Set<string>>();
-let duplicateEvents = 0;
-let rejectedEvents = 0;
-let legacyEventSequence = 0;
-const excludedBySource: Record<
-  Exclude<VaultFrontEvidenceSource, "human">,
-  number
-> = {
-  agent: 0,
-  test: 0,
-  system: 0,
-};
+interface PulseState {
+  seenEventIds: Set<string>;
+  seenEventOrder: string[];
+  humanSessionActors: Map<string, string>;
+  sessionEvents: Map<string, Set<string>>;
+  duplicateEvents: number;
+  rejectedEvents: number;
+  legacyEventSequence: number;
+  excludedBySource: Record<Exclude<VaultFrontEvidenceSource, "human">, number>;
+  pulse: {
+    events: number;
+    tutorialShown: number;
+    tutorialAdvanced: number;
+    tutorialCompleted: number;
+    tutorialSkipped: number;
+    matchFeedback: number;
+    tournamentActions: number;
+    retentionSignals: number;
+    retentionChallengeShown: number;
+    retentionGoalSaved: number;
+    retentionRequeued: number;
+    retentionRematchRequested: number;
+    firstEventAt: number | null;
+    lastEventAt: number | null;
+    recent: VaultFrontPlaytestPulseSummary["recent"];
+  };
+}
+
+function createPulseState(): PulseState {
+  return {
+    seenEventIds: new Set<string>(),
+    seenEventOrder: [],
+    humanSessionActors: new Map<string, string>(),
+    sessionEvents: new Map<string, Set<string>>(),
+    duplicateEvents: 0,
+    rejectedEvents: 0,
+    legacyEventSequence: 0,
+    excludedBySource: { agent: 0, test: 0, system: 0 },
+    pulse: {
+      events: 0,
+      tutorialShown: 0,
+      tutorialAdvanced: 0,
+      tutorialCompleted: 0,
+      tutorialSkipped: 0,
+      matchFeedback: 0,
+      tournamentActions: 0,
+      retentionSignals: 0,
+      retentionChallengeShown: 0,
+      retentionGoalSaved: 0,
+      retentionRequeued: 0,
+      retentionRematchRequested: 0,
+      firstEventAt: null,
+      lastEventAt: null,
+      recent: [],
+    },
+  };
+}
+
+const defaultState = createPulseState();
 
 function sessionsWith(
+  state: PulseState,
   surface: VaultFrontPulseSurface,
   ...events: string[]
 ): number {
   let count = 0;
-  for (const keys of sessionEvents.values()) {
+  for (const keys of state.sessionEvents.values()) {
     if (events.some((event) => keys.has(`${surface}:${event}`))) count += 1;
   }
   return count;
 }
 
-const pulse = {
-  events: 0,
-  tutorialShown: 0,
-  tutorialAdvanced: 0,
-  tutorialCompleted: 0,
-  tutorialSkipped: 0,
-  matchFeedback: 0,
-  tournamentActions: 0,
-  retentionSignals: 0,
-  retentionChallengeShown: 0,
-  retentionGoalSaved: 0,
-  retentionRequeued: 0,
-  retentionRematchRequested: 0,
-  firstEventAt: null as number | null,
-  lastEventAt: null as number | null,
-  recent: [] as Array<Omit<VaultFrontPlaytestPulseEvent, "actorKey">>,
-};
-
 export function resetVaultFrontPlaytestPulseForTests(): void {
+  const state = defaultState;
+  const {
+    pulse,
+    seenEventIds,
+    seenEventOrder,
+    humanSessionActors,
+    sessionEvents,
+    excludedBySource,
+  } = state;
   pulse.events = 0;
   pulse.tutorialShown = 0;
   pulse.tutorialAdvanced = 0;
@@ -165,9 +209,9 @@ export function resetVaultFrontPlaytestPulseForTests(): void {
   seenEventOrder.length = 0;
   humanSessionActors.clear();
   sessionEvents.clear();
-  duplicateEvents = 0;
-  rejectedEvents = 0;
-  legacyEventSequence = 0;
+  state.duplicateEvents = 0;
+  state.rejectedEvents = 0;
+  state.legacyEventSequence = 0;
   excludedBySource.agent = 0;
   excludedBySource.test = 0;
   excludedBySource.system = 0;
@@ -175,22 +219,31 @@ export function resetVaultFrontPlaytestPulseForTests(): void {
 
 export function recordVaultFrontPlaytestPulse(
   input: VaultFrontPlaytestPulseEvent,
+  state: PulseState = defaultState,
 ): VaultFrontPlaytestPulseSummary {
+  const {
+    pulse,
+    seenEventIds,
+    seenEventOrder,
+    humanSessionActors,
+    sessionEvents,
+    excludedBySource,
+  } = state;
   const source = input.source ?? "system";
   const value = input.value ?? 1;
   const at = input.at ?? Date.now();
   const eventId =
-    input.eventId ?? `legacy:${source}:${at}:${legacyEventSequence++}`;
+    input.eventId ?? `legacy:${source}:${at}:${state.legacyEventSequence++}`;
   const evidenceSessionId =
     input.evidenceSessionId ?? `legacy:${source}:${eventId}`;
 
   if (!allowedEvents[input.surface].has(input.event) || value !== 1) {
-    rejectedEvents += 1;
-    return buildVaultFrontPlaytestPulseSummary(at);
+    state.rejectedEvents += 1;
+    return buildVaultFrontPlaytestPulseSummary(at, state);
   }
   if (seenEventIds.has(eventId)) {
-    duplicateEvents += 1;
-    return buildVaultFrontPlaytestPulseSummary(at);
+    state.duplicateEvents += 1;
+    return buildVaultFrontPlaytestPulseSummary(at, state);
   }
   seenEventIds.add(eventId);
   seenEventOrder.push(eventId);
@@ -199,13 +252,11 @@ export function recordVaultFrontPlaytestPulse(
     if (oldest) seenEventIds.delete(oldest);
   }
 
-  const publicEvent: Omit<VaultFrontPlaytestPulseEvent, "actorKey"> = {
+  const publicEvent: VaultFrontPlaytestPulseSummary["recent"][number] = {
     surface: input.surface,
     event: input.event,
     value: 1,
     at,
-    evidenceSessionId,
-    eventId,
     source,
   };
   pulse.recent.unshift(publicEvent);
@@ -215,16 +266,16 @@ export function recordVaultFrontPlaytestPulse(
   // launch gates. Agent, test, and system samples remain visible but excluded.
   if (source !== "human") {
     excludedBySource[source] += 1;
-    return buildVaultFrontPlaytestPulseSummary(at);
+    return buildVaultFrontPlaytestPulseSummary(at, state);
   }
   if (!input.actorKey) {
-    rejectedEvents += 1;
-    return buildVaultFrontPlaytestPulseSummary(at);
+    state.rejectedEvents += 1;
+    return buildVaultFrontPlaytestPulseSummary(at, state);
   }
   const sessionActor = humanSessionActors.get(evidenceSessionId);
   if (sessionActor && sessionActor !== input.actorKey) {
-    rejectedEvents += 1;
-    return buildVaultFrontPlaytestPulseSummary(at);
+    state.rejectedEvents += 1;
+    return buildVaultFrontPlaytestPulseSummary(at, state);
   }
   humanSessionActors.set(evidenceSessionId, input.actorKey);
   const evidence = sessionEvents.get(evidenceSessionId) ?? new Set<string>();
@@ -260,32 +311,37 @@ export function recordVaultFrontPlaytestPulse(
     }
   }
 
-  return buildVaultFrontPlaytestPulseSummary(at);
+  return buildVaultFrontPlaytestPulseSummary(at, state);
 }
 export function buildVaultFrontPlaytestPulseSummary(
   now = Date.now(),
+  state: PulseState = defaultState,
+  durability: VaultFrontPlaytestPulseSummary["durability"] = "process-local",
 ): VaultFrontPlaytestPulseSummary {
-  const tutorialShownSessions = sessionsWith("tutorial", "shown");
+  const { pulse, humanSessionActors, excludedBySource } = state;
+  const tutorialShownSessions = sessionsWith(state, "tutorial", "shown");
   const tutorialCompletion =
     tutorialShownSessions > 0
       ? Number(
           (
-            sessionsWith("tutorial", "complete") / tutorialShownSessions
+            sessionsWith(state, "tutorial", "complete") / tutorialShownSessions
           ).toFixed(4),
         )
       : 0;
   const tutorialAdvance =
     tutorialShownSessions > 0
       ? Number(
-          (sessionsWith("tutorial", "advance") / tutorialShownSessions).toFixed(
-            4,
-          ),
+          (
+            sessionsWith(state, "tutorial", "advance") / tutorialShownSessions
+          ).toFixed(4),
         )
       : 0;
   const tutorialSkip =
     tutorialShownSessions > 0
       ? Number(
-          (sessionsWith("tutorial", "skip") / tutorialShownSessions).toFixed(4),
+          (
+            sessionsWith(state, "tutorial", "skip") / tutorialShownSessions
+          ).toFixed(4),
         )
       : 0;
   const matchFeedback =
@@ -293,6 +349,7 @@ export function buildVaultFrontPlaytestPulseSummary(
       ? Number(
           (
             sessionsWith(
+              state,
               "match",
               "feedback",
               "feedback_epic",
@@ -304,6 +361,7 @@ export function buildVaultFrontPlaytestPulseSummary(
       : 0;
 
   const retentionExposureSessions = sessionsWith(
+    state,
     "retention",
     "rival_challenge_shown",
   );
@@ -312,6 +370,7 @@ export function buildVaultFrontPlaytestPulseSummary(
       ? Number(
           (
             sessionsWith(
+              state,
               "retention",
               "rival_goal_saved",
               "rival_requeue_clicked",
@@ -336,7 +395,7 @@ export function buildVaultFrontPlaytestPulseSummary(
   const status =
     pulse.events === 0 ? "no-signal" : score >= 30 ? "ready" : "warming";
 
-  const actionInsights = buildActionInsights({
+  const actionInsights = buildActionInsights(state, {
     tutorialAdvance,
     tutorialCompletion,
     tutorialSkip,
@@ -344,7 +403,7 @@ export function buildVaultFrontPlaytestPulseSummary(
     retentionAction,
     ageMinutes,
   });
-  const alphaGate = buildAlphaGate({
+  const alphaGate = buildAlphaGate(state, {
     tutorialAdvance,
     tutorialCompletion,
     matchFeedback,
@@ -354,6 +413,8 @@ export function buildVaultFrontPlaytestPulseSummary(
 
   return {
     generatedAt: new Date(now).toISOString(),
+    durability,
+    evidenceWindowHours: 24,
     status,
     score,
     totals: {
@@ -393,13 +454,18 @@ export function buildVaultFrontPlaytestPulseSummary(
       acceptedHumanEvents: pulse.events,
       uniqueHumanSessions: humanSessionActors.size,
       uniqueHumanActors: new Set(humanSessionActors.values()).size,
-      duplicateEvents,
-      rejectedEvents,
+      duplicateEvents: state.duplicateEvents,
+      rejectedEvents: state.rejectedEvents,
       excludedBySource: { ...excludedBySource },
     },
-    insights: buildPulseInsights(tutorialCompletion, tutorialSkip, ageMinutes),
+    insights: buildPulseInsights(
+      state,
+      tutorialCompletion,
+      tutorialSkip,
+      ageMinutes,
+    ),
     actionInsights,
-    operatorNext: buildOperatorNext({
+    operatorNext: buildOperatorNext(state, {
       tutorialAdvance,
       tutorialCompletion,
       tutorialSkip,
@@ -412,13 +478,17 @@ export function buildVaultFrontPlaytestPulseSummary(
   };
 }
 
-function buildAlphaGate(input: {
-  tutorialAdvance: number;
-  tutorialCompletion: number;
-  matchFeedback: number;
-  retentionAction: number;
-  ageMinutes: number | null;
-}): VaultFrontPlaytestPulseSummary["alphaGate"] {
+function buildAlphaGate(
+  state: PulseState,
+  input: {
+    tutorialAdvance: number;
+    tutorialCompletion: number;
+    matchFeedback: number;
+    retentionAction: number;
+    ageMinutes: number | null;
+  },
+): VaultFrontPlaytestPulseSummary["alphaGate"] {
+  const { pulse, humanSessionActors } = state;
   const checks = {
     fresh: input.ageMinutes !== null && input.ageMinutes <= 1440,
     sampleSize: new Set(humanSessionActors.values()).size >= 3,
@@ -480,10 +550,12 @@ function buildAlphaGate(input: {
 }
 
 function buildPulseInsights(
+  state: PulseState,
   tutorialCompletion: number,
   tutorialSkip: number,
   ageMinutes: number | null,
 ): string[] {
+  const { pulse } = state;
   const insights: string[] = [];
   if (pulse.events === 0) {
     insights.push("No playtest pulse events have landed in this process yet.");
@@ -509,14 +581,18 @@ function buildPulseInsights(
   return insights;
 }
 
-function buildActionInsights(input: {
-  tutorialAdvance: number;
-  tutorialCompletion: number;
-  tutorialSkip: number;
-  matchFeedback: number;
-  retentionAction: number;
-  ageMinutes: number | null;
-}): string[] {
+function buildActionInsights(
+  state: PulseState,
+  input: {
+    tutorialAdvance: number;
+    tutorialCompletion: number;
+    tutorialSkip: number;
+    matchFeedback: number;
+    retentionAction: number;
+    ageMinutes: number | null;
+  },
+): string[] {
+  const { pulse } = state;
   if (pulse.events === 0) {
     return [
       "Run one guided internal match and confirm tutorial, match feedback, and post-match retention events land.",
@@ -562,15 +638,19 @@ function buildActionInsights(input: {
   return actions.slice(0, 3);
 }
 
-function buildOperatorNext(input: {
-  tutorialAdvance: number;
-  tutorialCompletion: number;
-  tutorialSkip: number;
-  matchFeedback: number;
-  retentionAction: number;
-  ageMinutes: number | null;
-  actionInsights: string[];
-}): VaultFrontPlaytestPulseSummary["operatorNext"] {
+function buildOperatorNext(
+  state: PulseState,
+  input: {
+    tutorialAdvance: number;
+    tutorialCompletion: number;
+    tutorialSkip: number;
+    matchFeedback: number;
+    retentionAction: number;
+    ageMinutes: number | null;
+    actionInsights: string[];
+  },
+): VaultFrontPlaytestPulseSummary["operatorNext"] {
+  const { pulse } = state;
   if (pulse.events === 0) {
     return {
       headline: "Run a guided first-match alpha pass.",
@@ -647,4 +727,23 @@ function buildOperatorNext(input: {
       input.actionInsights[0] ??
       "Pulse stays ready with tutorial, feedback, and retention signals present.",
   };
+}
+
+/** Build a cohort summary without sharing mutable process state. */
+export function buildVaultFrontPlaytestPulseSummaryFromEvents(
+  events: readonly VaultFrontPlaytestPulseEvent[],
+  now = Date.now(),
+  durability: VaultFrontPlaytestPulseSummary["durability"] = "postgres",
+): VaultFrontPlaytestPulseSummary {
+  const state = createPulseState();
+  for (const event of events) recordVaultFrontPlaytestPulse(event, state);
+  return buildVaultFrontPlaytestPulseSummary(now, state, durability);
+}
+
+export function isAllowedVaultFrontPulseEvent(
+  event: Pick<VaultFrontPlaytestPulseEvent, "surface" | "event" | "value">,
+): boolean {
+  return (
+    allowedEvents[event.surface].has(event.event) && (event.value ?? 1) === 1
+  );
 }

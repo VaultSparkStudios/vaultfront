@@ -44,6 +44,8 @@ import { getUserMe, verifyClientToken } from "./jwt";
 import { logger } from "./Logger";
 import { verifyMatchResultCertificate } from "./MatchResultCertificate";
 import { playerStatsStore } from "./PlayerStatsStore";
+import { registerPlaytestEvidenceRoutes } from "./PlaytestEvidenceRouter";
+import { playtestEvidenceStore } from "./PlaytestEvidenceStore";
 import {
   assertRoutePolicyBinding,
   evaluateRouteAuthorization,
@@ -100,10 +102,7 @@ import {
   verifyOptionalIdentityClaim,
   type VerifiedVaultFrontActor,
 } from "./VaultFrontAuthorization";
-import {
-  buildVaultFrontPlaytestPulseSummary,
-  recordVaultFrontPlaytestPulse,
-} from "./VaultFrontPlaytestPulse";
+import { recordVaultFrontPlaytestPulse } from "./VaultFrontPlaytestPulse";
 import { buildVaultFrontReadiness } from "./VaultFrontReadiness";
 import {
   vaultSeasonScheduler,
@@ -208,27 +207,6 @@ const VaultFrontFunnelTelemetrySchema = z.object({
     mid: z.record(z.string(), z.number().int().min(0).max(10_000)),
     late: z.record(z.string(), z.number().int().min(0).max(10_000)),
   }),
-});
-
-const VaultFrontPlaytestPulseEventSchema = z.object({
-  surface: z.enum(["tutorial", "match", "tournament", "retention"]),
-  event: z
-    .string()
-    .min(1)
-    .max(64)
-    .regex(/^[a-zA-Z0-9_.-]+$/),
-  value: z.literal(1).default(1),
-  evidenceSessionId: z
-    .string()
-    .min(12)
-    .max(128)
-    .regex(/^[a-zA-Z0-9:_-]+$/),
-  eventId: z
-    .string()
-    .min(12)
-    .max(128)
-    .regex(/^[a-zA-Z0-9:_-]+$/),
-  source: z.literal("human"),
 });
 
 interface VaultFrontSeasonContractState {
@@ -971,7 +949,7 @@ export async function startWorker() {
   );
 
   assertRoutePolicyBinding("readiness", "GET", "/api/vaultfront/readiness");
-  const handleWorkerReadiness = (_req: Request, res: Response) => {
+  const handleWorkerReadiness = async (_req: Request, res: Response) => {
     if (!authorizeRoutePolicy("readiness", {}, res)) return;
     const gameLoop = gm.healthSnapshot();
     const ipc = lobbyService.ipcHealthSnapshot();
@@ -982,6 +960,7 @@ export async function startWorker() {
       ipc.healthy &&
       database.state !== "connecting" &&
       database.state !== "failed";
+    const playtestPulse = await playtestEvidenceStore.summary();
     const payload = buildVaultFrontReadiness({
       healthy,
       processRole: "worker",
@@ -1000,7 +979,7 @@ export async function startWorker() {
               observedAt: process.env.VAULTFRONT_REVENUE_OBSERVED_AT,
             }
           : { status: "unverified" },
-      playtestPulse: buildVaultFrontPlaytestPulseSummary(),
+      playtestPulse,
       replayIntegrity: getReplayIntegrityPosture(),
       persistence,
       rightsEvidence: {
@@ -1733,32 +1712,13 @@ export async function startWorker() {
     });
   });
 
-  const playtestPulseRateLimit = rateLimit({ windowMs: 60_000, max: 120 });
-  app.post(
-    "/api/vaultfront/playtest-pulse",
-    playtestPulseRateLimit,
-    async (req, res) => {
-      const actor = await resolveAuthenticatedActorKey(req);
-      if (!actor) {
-        return res
-          .status(401)
-          .json({ error: "Authenticated play token required" });
-      }
-      const parsed = VaultFrontPlaytestPulseEventSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return res.status(400).json({ error: z.prettifyError(parsed.error) });
-      }
-      const summary = recordVaultFrontPlaytestPulse({
-        ...parsed.data,
-        actorKey: actor.actorKey,
-        at: Date.now(),
-      });
-      return res.json({ ok: true, summary });
-    },
-  );
-
-  app.get("/api/vaultfront/playtest-pulse/summary", async (_req, res) => {
-    return res.json(buildVaultFrontPlaytestPulseSummary());
+  registerPlaytestEvidenceRoutes(app, {
+    rateLimit: rateLimit({ windowMs: 60_000, max: 120 }),
+    resolveActor: resolveAuthenticatedActorKey,
+    record: (event) => playtestEvidenceStore.record(event),
+    summary: () => playtestEvidenceStore.summary(),
+    reportError: (error) =>
+      log.error("playtest evidence route failed", { error: String(error) }),
   });
 
   // ── Anti-Cheat Admin ─────────────────────────────────────────────────────

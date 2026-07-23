@@ -202,6 +202,54 @@ const candidates = [
     evidence:
       "dependency-injected route registrar, Worker composition, authorization/isolation/error tests, and 100% route coverage",
   },
+  {
+    id: "bounded-alpha-evidence-retention",
+    title: "Give durable Alpha evidence a privacy-minimal lifecycle",
+    description:
+      "Retain the 24-hour release cohort without accumulating actor-bound evidence forever: prune durable and process-local history after a declared 30-day ceiling and release orphaned session bindings.",
+    complete:
+      has(
+        "src/server/PlaytestEvidenceStore.ts",
+        /EVIDENCE_RETENTION_DAYS = 30/,
+      ) &&
+      has(
+        "src/server/PlaytestEvidenceStore.ts",
+        /DELETE FROM playtest_evidence_events/,
+      ) &&
+      has(
+        "tests/server/PlaytestEvidenceStore.test.ts",
+        /releases expired session bindings/,
+      ),
+    evidence:
+      "30-day retention constant, transactional PostgreSQL pruning, process-local parity, and binding-release regression test",
+  },
+  {
+    id: "public-ingest-risk-budget",
+    title: "Ratchet unauthenticated ingestion as an explicit risk budget",
+    description:
+      "Count every public-ingest mutation and fail closed when it exceeds the reviewed ceiling, forcing any trust-boundary expansion to update a rationale-bearing machine contract.",
+    complete:
+      has("config/mutation-route-policies.json", /publicIngestMax/) &&
+      has("scripts/lib/route-policy-coverage.mjs", /risk budget exceeded/) &&
+      has("tests/scripts/RoutePolicyCoverage.test.ts", /reviewed budget/),
+    evidence:
+      "11-route public-ingest ceiling, catalog rationale, fail-closed validator, and hostile over-budget fixture",
+  },
+  {
+    id: "trusted-base-validator-pin",
+    title: "Make the dependency automation validator self-protecting",
+    description:
+      "Extend the immutable deploy contract to prove that the PR workflow checks out the trusted base SHA without credentials and loads the repository-owned validator from that checkout.",
+    complete:
+      has("scripts/check-deploy-contract.mjs", /trusted base SHA/) &&
+      has(
+        "scripts/check-deploy-contract.mjs",
+        /repository-owned machine contract/,
+      ) &&
+      has(".github/workflows/pr-description.yml", /persist-credentials: false/),
+    evidence:
+      "three trusted-base workflow invariants added to the directly executed deploy contract gate",
+  },
 ];
 
 const payload = {
