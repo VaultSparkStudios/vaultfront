@@ -35,7 +35,7 @@
     {
       "command": "npm run test:coverage",
       "status": "pass",
-      "evidence": "155/155 files; 904/904 tests; 30.96% production-inclusive line coverage"
+      "evidence": "155/155 files; 904/904 tests; 30.97% production-inclusive line coverage; critical-module ratchet retained and green"
     },
     {
       "command": "npm run lint; npm run build-prod",

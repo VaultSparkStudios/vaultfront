@@ -49,7 +49,10 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       createdAt: new Date(0).toISOString(),
       updatedAt: new Date(0).toISOString(),
     }));
-    const checkAndUnlock = vi.fn(() => []);
+    const checkAndUnlock = vi.fn(
+      (_persistentId: string, event: { type: string }) =>
+        event.type === "match_ended" ? ([{}] as any[]) : [],
+    ) as any;
     const recordSeasonActivity = vi.fn();
     const resolvePrediction = vi.fn(async () => ({
       gameId: "game-1",
@@ -57,8 +60,26 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       resolvedPredictions: 4,
       durability: "process-local" as const,
     }));
-    const recordDailyMastery = vi.fn().mockResolvedValue(null);
-    const recordSeasonContracts = vi.fn().mockResolvedValue(null);
+    const recordDailyMastery = vi.fn().mockResolvedValue({
+      persistentId: "p1",
+      challengeId: "vault-5",
+      dateUtc: "2026-07-23",
+      progress: 2,
+      target: 5,
+      rewardMastery: 50,
+      completedNow: false,
+      masteryBalance: 0,
+      durability: "process-local",
+    });
+    const recordSeasonContracts = vi.fn().mockResolvedValue({
+      seasonId: "week-29",
+      interceptionTiming: 1,
+      objectiveDenial: 2,
+      comebackExecution: 1,
+      surgeExecution: 1,
+      evidence: "certified-match-result",
+      durability: "process-local",
+    });
     const recordLoopEvidence = vi.fn().mockResolvedValue({
       gameId: "game-1",
       evidence: "certified-match-result",
@@ -97,7 +118,7 @@ describe("ServerAuthoritativeProgressionSpine", () => {
           persistentId: "p2",
           displayName: "RunnerUp",
           won: false,
-          vaultCaptures: 1,
+          vaultCaptures: 0,
           convoyDeliveries: 0,
           convoyIntercepts: 1,
           convoysLost: 2,
@@ -113,8 +134,11 @@ describe("ServerAuthoritativeProgressionSpine", () => {
     expect(first).toMatchObject({
       duplicate: false,
       playersRecorded: 2,
+      achievementsUnlocked: 2,
       predictionOutcome: "delivery",
       predictionsResolved: 4,
+      dailyMastery: [expect.any(Object), expect.any(Object)],
+      seasonContracts: [expect.any(Object), expect.any(Object)],
     });
     expect(duplicate).toMatchObject({ duplicate: true, playersRecorded: 0 });
     expect(recordMatch).toHaveBeenCalledTimes(1);
@@ -122,7 +146,7 @@ describe("ServerAuthoritativeProgressionSpine", () => {
     expect(resolvePrediction).toHaveBeenCalledWith("game-1", "delivery");
     expect(recordMatch.mock.calls[0][3].statsByPersistentId).toEqual({
       p1: { vaultCaptures: 2, convoyDeliveries: 3, executionChains: 1 },
-      p2: { vaultCaptures: 1, convoyDeliveries: 0, executionChains: 0 },
+      p2: { vaultCaptures: 0, convoyDeliveries: 0, executionChains: 0 },
     });
     expect(getPlayerStats).toHaveBeenCalledTimes(2);
     expect(checkAndUnlock).toHaveBeenCalledWith("p1", {

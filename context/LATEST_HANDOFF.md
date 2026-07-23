@@ -14,7 +14,7 @@ This repo keeps only a public-safe two-session handoff. Detailed operational his
 - Prediction League is reachable in spectator mode, binds picks to authenticated actors, serializes submit/resolve per game, persists rank history, broadcasts privacy-minimal consensus, and retires the duplicate anonymous poll.
 - Three injected router seams are directly tested; route policy covers Worker plus extracted routers; public ingestion is capped at 10/10 and Worker at 4,040 lines.
 
-**Verification:** 155/155 Vitest files and 904/904 tests; production-inclusive coverage (30.96% lines); TypeScript; ESLint; production build; Prettier ratchet; bundle budgets; 26/26 Playwright desktop/mobile; 41 deploy-contract checks; audit 6/6; innovation pack 20/20; work exhaustion green; project doctor 11/11 with `blockingFailing: 0`.
+**Verification:** 155/155 Vitest files and 904/904 tests; production-inclusive coverage (30.97% lines); TypeScript; ESLint; production build; Prettier ratchet; bundle budgets; 26/26 Playwright desktop/mobile; 41 deploy-contract checks; audit 6/6; innovation pack 20/20; work exhaustion green; project doctor 11/11 with `blockingFailing: 0`. The first exact-SHA CI run exposed a `MatchProgression` coverage-ratchet deficit; the repair exercised both certified-receipt and no-vault-capture branches and retained every checked-in floor.
 
 **Truth boundary:** Local proof does not establish a public deployment. Release remains NO-GO without staging and health observations, exact-digest parity, working project-domain delivery, native Obelisk, three authenticated human Alpha sessions, live headers/Core Web Vitals/themes, revenue, rollback observation, and founder approval.
 

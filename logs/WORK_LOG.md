@@ -194,3 +194,4 @@ Append-only. Each session appends one entry. Never edit prior entries.
 - Extracted three routers, expanded route inventory across composition files, reduced the public-ingest ceiling to ten, and ratcheted Worker at 4,040 lines.
 - Generated and shipped three second-order innovations; work exhaustion passed at audit 6/6 and innovations 20/20.
 - Direct verification passed: 155 files / 904 tests and coverage, TypeScript, lint, build, format, bundles, 26/26 E2E, and 41 deploy checks.
+- The first exact-SHA CI run found a real `MatchProgression` branch-coverage regression. The repair covered certified mastery/season receipts plus the no-vault-capture branch, reran all 155 files / 904 tests, and passed the unchanged global + ten-critical-module ratchet.
