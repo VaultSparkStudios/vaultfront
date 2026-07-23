@@ -14,6 +14,8 @@ This repo keeps only a public-safe two-session handoff. Detailed operational his
 
 **Verification:** 147/147 Vitest files and 873/873 tests; production-inclusive coverage; TypeScript; ESLint; production build; Prettier ratchet; bundle budgets; 26/26 Playwright desktop/mobile; 41 deploy-contract checks; audit 11/11; innovation pack 17/17; project doctor 11/11 with `blockingFailing: 0`.
 
+**Post-push repair:** The first Linux CI build exposed TypeScript self-reference in two test-harness parameter annotations that Windows accepted. The fixture factories were renamed to remove scope ambiguity; direct TypeScript, focused Vitest, and ESLint reruns pass.
+
 **Truth boundary:** The local suite proves deployable source, not a public deployment. Cloudflare/Brevo credentials are READY, but the available Cloudflare tokens returned 403 for Email Routing rules. No staging, native Obelisk, project-domain delivery, distinct-human Alpha, live-web, revenue, rollback, or founder-approval evidence was fabricated.
 
 **Ark:** Signed session outcome `01JU6FD3AGDB699E9CB5BD99B7`, reusable trust-boundary pattern `01JU6FD3VUA2A773FD5213F313`, and Studio Ops registry/Email Routing question `01JU6FD4KF023171AC83AF4650` shipped without editing a sibling tree.

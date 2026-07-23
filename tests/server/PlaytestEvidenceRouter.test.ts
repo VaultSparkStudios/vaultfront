@@ -18,8 +18,8 @@ vi.mock("../../src/server/Logger", () => {
 describe("PlaytestEvidenceRouter", () => {
   test("requires auth, validates input, and maps actor conflicts", async () => {
     type RouteHandler = (
-      request: ReturnType<typeof request>,
-      response: ReturnType<typeof response>,
+      req: ReturnType<typeof makeRequest>,
+      res: ReturnType<typeof makeResponse>,
     ) => Promise<{ status: number; body: unknown }>;
     const routes = new Map<string, RouteHandler>();
     const app = {
@@ -41,12 +41,12 @@ describe("PlaytestEvidenceRouter", () => {
     );
     const handler = routes.get("POST /api/vaultfront/playtest-pulse")!;
 
-    expect((await handler(request({}), response())).status).toBe(401);
+    expect((await handler(makeRequest({}), makeResponse())).status).toBe(401);
     dependencies.resolveActor = vi
       .fn()
       .mockResolvedValue({ actorKey: "actor-alpha-1" });
     expect(
-      (await handler(request({ event: "shown" }), response())).status,
+      (await handler(makeRequest({ event: "shown" }), makeResponse())).status,
     ).toBe(400);
     dependencies.record = vi
       .fn()
@@ -54,7 +54,7 @@ describe("PlaytestEvidenceRouter", () => {
     expect(
       (
         await handler(
-          request({
+          makeRequest({
             surface: "tutorial",
             event: "shown",
             value: 1,
@@ -62,18 +62,18 @@ describe("PlaytestEvidenceRouter", () => {
             eventId: "event-alpha-000001",
             source: "human",
           }),
-          response(),
+          makeResponse(),
         )
       ).status,
     ).toBe(409);
   });
 });
 
-function request(body: unknown) {
+function makeRequest(body: unknown) {
   return { body, headers: {} };
 }
 
-function response() {
+function makeResponse() {
   return {
     statusCode: 200,
     status(code: number) {

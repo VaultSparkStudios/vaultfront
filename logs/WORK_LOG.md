@@ -10,6 +10,7 @@ Append-only. Each session appends one entry. Never edit prior entries.
 - Risks removed: restart-erased Alpha evidence, actor/session rebinding, duplicate event inflation, indefinite evidence retention, unregistered mutation policy, silent public-ingress expansion, Dependabot identity spoofing, mixed-ecosystem file scope, and head-controlled validator execution.
 - Remaining boundary: release stays NO-GO until external staging/parity, Cloudflare Email Routing authorization and Brevo delivery, native Obelisk, three authenticated humans, live-web/theme evidence, revenue, rollback observation, and founder approval exist.
 - Ark broadcast: signed session outcome `01JU6FD3AGDB699E9CB5BD99B7`, pattern share `01JU6FD3VUA2A773FD5213F313`, and Studio Ops question `01JU6FD4KF023171AC83AF4650`.
+- Post-push root-fix: Linux TypeScript rejected self-referential test parameter annotations accepted locally; renamed the request/response fixture factories and reran TypeScript, focused Vitest, and ESLint green.
 
 ---
 
