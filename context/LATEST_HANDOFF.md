@@ -16,6 +16,8 @@ This repo keeps only a public-safe two-session handoff. Detailed operational his
 
 **Truth boundary:** The local suite proves deployable source, not a public deployment. Cloudflare/Brevo credentials are READY, but the available Cloudflare tokens returned 403 for Email Routing rules. No staging, native Obelisk, project-domain delivery, distinct-human Alpha, live-web, revenue, rollback, or founder-approval evidence was fabricated.
 
+**Ark:** Signed session outcome `01JU6FD3AGDB699E9CB5BD99B7`, reusable trust-boundary pattern `01JU6FD3VUA2A773FD5213F313`, and Studio Ops registry/Email Routing question `01JU6FD4KF023171AC83AF4650` shipped without editing a sibling tree.
+
 **Suggested next focus:** Obtain the source-tagged Studio Ops registry decision and a Cloudflare token authorized for Email Routing, deliberately establish external staging, then collect exact-digest parity and human/business evidence in gate order.
 
 ---

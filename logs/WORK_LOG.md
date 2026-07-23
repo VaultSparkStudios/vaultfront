@@ -9,6 +9,7 @@ Append-only. Each session appends one entry. Never edit prior entries.
 - Verification: 147 Vitest files / 873 tests; production coverage; TypeScript; ESLint; production build; Prettier ratchet; bundle budgets; 26/26 Playwright desktop/mobile; 41 deploy-contract checks; audit 11/11; innovations 17/17; doctor 11/11 with `blockingFailing: 0`.
 - Risks removed: restart-erased Alpha evidence, actor/session rebinding, duplicate event inflation, indefinite evidence retention, unregistered mutation policy, silent public-ingress expansion, Dependabot identity spoofing, mixed-ecosystem file scope, and head-controlled validator execution.
 - Remaining boundary: release stays NO-GO until external staging/parity, Cloudflare Email Routing authorization and Brevo delivery, native Obelisk, three authenticated humans, live-web/theme evidence, revenue, rollback observation, and founder approval exist.
+- Ark broadcast: signed session outcome `01JU6FD3AGDB699E9CB5BD99B7`, pattern share `01JU6FD3VUA2A773FD5213F313`, and Studio Ops question `01JU6FD4KF023171AC83AF4650`.
 
 ---
 
