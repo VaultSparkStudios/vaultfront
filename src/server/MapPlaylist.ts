@@ -20,6 +20,10 @@ import { getMapLandTiles } from "./MapLandTiles";
 
 const log = logger.child({});
 const ARCADE_MAPS = new Set(mapCategories.arcade);
+const PUBLIC_VAULTFRONT_FEATURE_POLICY = {
+  vaultSitesEnabled: true,
+  intelOperationsEnabled: true,
+} as const;
 
 // How many times each map should appear in the playlist.
 // Note: The Partial should eventually be removed for better type safety.
@@ -177,6 +181,7 @@ export class MapPlaylist {
 
     // Create the default public game config (from your GameManager)
     return {
+      ...PUBLIC_VAULTFRONT_FEATURE_POLICY,
       donateGold: mode === GameMode.Team,
       donateTroops: mode === GameMode.Team,
       gameMap: map,
@@ -303,6 +308,7 @@ export class MapPlaylist {
         : "default";
 
     return {
+      ...PUBLIC_VAULTFRONT_FEATURE_POLICY,
       donateGold: mode === GameMode.Team,
       donateTroops: mode === GameMode.Team,
       gameMap: map,
@@ -345,6 +351,7 @@ export class MapPlaylist {
     ];
     const isCompact = Math.random() < 0.5;
     return {
+      ...PUBLIC_VAULTFRONT_FEATURE_POLICY,
       donateGold: false,
       donateTroops: false,
       gameMap: maps[Math.floor(Math.random() * maps.length)],

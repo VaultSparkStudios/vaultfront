@@ -1,4 +1,5 @@
 import { placeName } from "../client/graphics/NameBoxCalculator";
+import type { Config } from "./configuration/Config";
 import { getConfig } from "./configuration/ConfigLoader";
 import { Executor } from "./execution/ExecutionManager";
 import { RecomputeRailClusterExecution } from "./execution/RecomputeRailClusterExecution";
@@ -81,6 +82,12 @@ export async function createGameRunner(
   return gr;
 }
 
+export function shouldInstallVaultFrontExecution(
+  config: Pick<Config, "vaultSitesEnabled" | "intelOperationsEnabled">,
+): boolean {
+  return config.vaultSitesEnabled() || config.intelOperationsEnabled();
+}
+
 export class GameRunner {
   private turns: Turn[] = [];
   private currTurn = 0;
@@ -107,10 +114,7 @@ export class GameRunner {
       this.game.addExecution(...this.execManager.nationExecutions());
     }
     this.game.addExecution(new WinCheckExecution());
-    if (
-      this.game.config().vaultSitesEnabled() ||
-      this.game.config().intelOperationsEnabled()
-    ) {
+    if (shouldInstallVaultFrontExecution(this.game.config())) {
       this.game.addExecution(new VaultFrontExecution());
     }
     if (!this.game.config().isUnitDisabled(UnitType.Factory)) {
