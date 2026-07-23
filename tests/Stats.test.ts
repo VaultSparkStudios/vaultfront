@@ -234,6 +234,22 @@ describe("Stats", () => {
     });
   });
 
+  test("records the first certified VaultFront loop timestamps only", () => {
+    stats.vaultCaptured(player1, 120);
+    stats.vaultCaptured(player1, 240);
+    stats.vaultConvoyLost(player1, 300);
+    stats.vaultConvoyDelivered(player1, 360);
+    expect(stats.getPlayerStats(player1)).toMatchObject({
+      vaultfront: {
+        vaultCaptures: 2n,
+        vaultConvoysLost: 1n,
+        vaultConvoysDelivered: 1n,
+        firstVaultCaptureTick: 120n,
+        firstConvoyOutcomeTick: 300n,
+      },
+    });
+  });
+
   test("stringify", () => {
     stats.unitLose(player1, UnitType.Port);
     expect(JSON.stringify(stats.stats(), replacer)).toBe(

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-07-23T03:09:55.309Z",
+  "generatedAt": "2026-07-23T10:07:24.482Z",
   "source": "scripts/innovation-pack.mjs",
   "primarySource": "latest audit-backed Unified Genius List",
   "items": [
@@ -156,6 +156,33 @@
       "description": "Extend the immutable deploy contract to prove that the PR workflow checks out the trusted base SHA without credentials and loads the repository-owned validator from that checkout.",
       "complete": true,
       "evidence": "three trusted-base workflow invariants added to the directly executed deploy contract gate"
+    },
+    {
+      "rank": 18,
+      "status": "shipped",
+      "id": "certified-crowd-consensus-pulse",
+      "title": "Turn spectator opinion into a certified live consensus pulse",
+      "description": "Converge the anonymous narrator poll and durable Prediction League into one authenticated ledger, broadcast privacy-minimal consensus from accepted durable picks, and make the spectator surface show the live split.",
+      "complete": true,
+      "evidence": "durable consensus aggregation, authenticated single-write path, narrator broadcast seam, live accessible meter, and closed-game tests"
+    },
+    {
+      "rank": 19,
+      "status": "shipped",
+      "id": "anonymous-mutation-budget-contraction",
+      "title": "Shrink the public-ingest trust boundary after route convergence",
+      "description": "Retire the duplicate anonymous crowd mutation and immediately ratchet the reviewed public-ingest ceiling from eleven to ten so the security gain cannot silently regress.",
+      "complete": true,
+      "evidence": "legacy 410 tombstone, authenticated replacement, and ten-route fail-closed public-ingest ceiling"
+    },
+    {
+      "rank": 20,
+      "status": "shipped",
+      "id": "composition-ratchet-contraction",
+      "title": "Cash router extraction into a tighter composition budget",
+      "description": "Convert the removed duplicate crowd domain into a lower Worker line ceiling and keep all three extracted domains behind bounded, directly tested registrars.",
+      "complete": true,
+      "evidence": "4,040-line Worker ceiling, 180-line router ceiling, route reclamation detection, and executable regression test"
     }
   ]
 }

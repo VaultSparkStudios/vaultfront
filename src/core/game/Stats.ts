@@ -109,12 +109,12 @@ export interface Stats {
   trainExternalTrade(player: Player, goldPlayer: number | bigint);
 
   // VaultFront-specific metrics for recap/onboarding/tuning.
-  vaultCaptured(player: Player): void;
+  vaultCaptured(player: Player, tick?: number): void;
   vaultPassiveGold(player: Player, gold: number | bigint): void;
   vaultConvoyLaunched(player: Player): void;
-  vaultConvoyDelivered(player: Player): void;
+  vaultConvoyDelivered(player: Player, tick?: number): void;
   vaultConvoyIntercepted(interceptor: Player): void;
-  vaultConvoyLost(owner: Player): void;
+  vaultConvoyLost(owner: Player, tick?: number): void;
   defenseFactoryPulse(player: Player, durationTicks: number): void;
   resourceFocusSet(player: Player, focus: number): void;
   resourceFocusSample(player: Player, focus: number): void;

@@ -1,7 +1,10 @@
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { GameUpdateType } from "../../core/game/GameUpdates";
 import { GameView } from "../../core/game/GameView";
+import {
+  fetchVaultFrontContracts,
+  type VaultFrontContractsSnapshot,
+} from "../Api";
 import type { Layer } from "../graphics/layers/Layer";
 
 interface ContractProgress {
@@ -12,10 +15,10 @@ interface ContractProgress {
 }
 
 const CONTRACT_TARGETS: Record<string, { label: string; target: number }> = {
-  interceptionTiming: { label: "Intercept Master", target: 10 },
-  objectiveDenial: { label: "Objective Denial", target: 5 },
-  comebackExecution: { label: "Comeback King", target: 3 },
-  rivalryRevenge: { label: "Rivalry Revenge", target: 5 },
+  interceptionTiming: { label: "Interception Timing", target: 12 },
+  objectiveDenial: { label: "Objective Denial", target: 20 },
+  comebackExecution: { label: "Comeback Execution", target: 6 },
+  surgeExecution: { label: "Surge Execution", target: 8 },
 };
 
 @customElement("contract-hud-widget")
@@ -38,21 +41,12 @@ export class ContractHudWidget extends LitElement implements Layer {
   }
 
   private async loadContracts() {
-    try {
-      // Fetch from the contracts endpoint (reuse updateVaultFrontSeasonContracts
-      // by fetching the current state — GET /api/vaultfront/contracts)
-      const res = await fetch("/api/vaultfront/contracts", {
-        credentials: "include",
-      });
-      if (!res.ok) return;
-      const data = (await res.json()) as Record<string, number | string>;
-      this.applyContractState(data);
-    } catch {
-      // non-fatal
-    }
+    const snapshot = await fetchVaultFrontContracts();
+    if (!snapshot) return;
+    this.applyContractState(snapshot);
   }
 
-  private applyContractState(data: Record<string, number | string>): void {
+  private applyContractState(data: VaultFrontContractsSnapshot): void {
     const progress: ContractProgress[] = [];
     for (const [key, meta] of Object.entries(CONTRACT_TARGETS)) {
       const value = Number(data[key] ?? 0);
@@ -67,37 +61,10 @@ export class ContractHudWidget extends LitElement implements Layer {
   tick(): void {
     this.tickCount++;
 
-    // Update progress based on VaultFront activity events
-    const updates = this.game?.updatesSinceLastTick();
-    const activities = updates?.[GameUpdateType.VaultFrontActivity];
-
-    if (activities) {
-      let changed = false;
-      for (const act of activities) {
-        if (act.activity === "convoy_intercepted") {
-          this.incrementContract("interceptionTiming");
-          changed = true;
-        } else if (act.activity === "vault_captured") {
-          this.incrementContract("objectiveDenial");
-          changed = true;
-        } else if (act.activity === "comeback_surge") {
-          this.incrementContract("comebackExecution");
-          changed = true;
-        }
-      }
-      if (changed) this.requestUpdate();
-    }
-
     if (this.tickCount >= this.FETCH_INTERVAL_TICKS) {
       this.tickCount = 0;
       void this.loadContracts();
     }
-  }
-
-  private incrementContract(key: string): void {
-    this.contracts = this.contracts.map((c) =>
-      c.key === key ? { ...c, value: Math.min(c.value + 1, c.target) } : c,
-    );
   }
 
   render() {

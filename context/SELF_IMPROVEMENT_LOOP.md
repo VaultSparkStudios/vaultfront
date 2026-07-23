@@ -4,10 +4,10 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 987/1000 | Velocity: 6 | Debt: ↓ | Velocity trend: →
-Avgs — 3: 986.3 | Momentum runway: authorized staging-evidence corridor | Intent rate: 100%
-Categories: Dev 100 | Align 100 | Momentum 100 | Engage 94 | Process 100 | Coherence 98 | Security 100 | Ecosystem 95 | Capital 100 | Automation 100
-Last session: 2026-07-22 Session 80 durable-evidence and trust-boundary arc
+Total: 988/1000 | Velocity: 9 | Debt: ↓ | Velocity trend: ↑
+Avgs — 3: 987.3 | Momentum runway: authorized staging-evidence corridor | Intent rate: 100%
+Categories: Dev 100 | Align 100 | Momentum 100 | Engage 96 | Process 100 | Coherence 97 | Security 100 | Ecosystem 95 | Capital 100 | Automation 100
+Last session: 2026-07-23 Session 81 certified-loop and spectator-trust arc
 
 <!-- rolling-status-end -->
 
@@ -431,3 +431,39 @@ capitalEfficiency +7 (oracle/prophecy cache eliminates >80% redundant Haiku call
 - [SIL:3] Require a source-tagged Studio Ops receipt before treating the registry profile as reconciled.
 
 **Honest refusal:** The session did not deploy externally, fabricate Alpha/revenue/approval evidence, alarm on notional Max-plan cost, or wire dead scaffolds merely to make them reachable.
+
+## 2026-07-23 — Session 81 | Total: 988/1000 | Velocity: 9
+
+| SIL v3 category       |        Score | Evidence                                                                                                                                                         |
+| --------------------- | -----------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev Health            |          100 | 155/155 Vitest files and 904/904 tests plus coverage, TypeScript, ESLint, build, format, bundles, 26/26 E2E, and release/deploy contracts pass directly.         |
+| Creative Alignment    |          100 | Public play now centers the vault-to-convoy command fantasy; contracts, evidence, and spectator prediction reinforce that loop rather than adding a side theme.  |
+| Momentum              |          100 | Six L3 audit items and three new innovations shipped; audit 6/6 and innovation pack 20/20 are exhausted with session-floor saturation proven.                    |
+| Engagement            |           96 | Certified contracts and a reachable live-consensus spectator league deepen return/spectate loops; no human retention outcome is invented.                        |
+| Process Quality       |          100 | Live-premise verification, direct exit codes, retired mutation tombstones, evidence scope labels, and executable exhaustion keep claims independently testable.  |
+| Cross-Repo Coherence  |           97 | Registry and sibling-tool contamination are Ark-owned and disclosed; no direct sibling repair or destructive history rewrite was used.                           |
+| Security Posture      |          100 | Actor-bound picks, replay keys, advisory locks, fail-closed persistence, 42-route policy coverage, and a contracted 10-route public-ingest ceiling are enforced. |
+| Ecosystem Integration |           95 | Human UI, agent-readable evidence, PostgreSQL, narrator broadcast, deploy contracts, and Ark align; live Obelisk/Brevo/staging evidence remains open.            |
+| Capital Efficiency    |          100 | No dependency, paid API, SaaS expansion, or variable-cost free-tier path was introduced; Max-plan cost remains notional.                                         |
+| Automation Coverage   |          100 | Playlist reachability, certified stores, router seams, policy/composition budgets, release health truth, coverage, browser proof, and exhaustion are executable. |
+| **Total**             | **988/1000** | Exact category sum; the one-point rise is structural product/trust coherence, not a claim of live launch performance.                                            |
+
+**Rolling data:** Avg3 987.3 · Avg5 985.6 · Avg10/Avg25/all 982.0 · velocity 9 · debt ↓ · sparkline █████.
+
+**Top win:** The public loop, progression authority, analytics evidence, spectator commitment, and release truth now describe the same certified game rather than five adjacent approximations.
+
+**Top gap:** No approved external staging observation or distinct-human Alpha corpus exists, so launch and behavioral tuning remain correctly unscored.
+
+### Brainstorm
+
+1. Add a durable progression outbox only when every existing fan-out leg exposes an idempotency key; a partial coordinator would create a stronger false guarantee.
+2. Add match-phase consensus history after real spectator traffic proves that time-series crowd movement improves commentary rather than merely adding storage.
+3. Contract the next public-ingest or Worker budget only when a verified producer can move behind authenticated identity or an extracted route seam.
+
+### Commitments
+
+- [SIL:1] Never reintroduce client-authored seasonal progress or browser-derived certified loop evidence.
+- [SIL:2] Treat ten public-ingest routes and 4,040 Worker lines as maxima, not targets.
+- [SIL:3] Require source-tagged registry/tool-contamination receipts and an approved staging contract before external evidence collection.
+
+**Honest refusal:** The session rejected client optimism as authority, did not fabricate staging/health/email/identity/human/revenue/rollback/approval evidence, did not repair the sibling tree directly, did not rewrite the mismatched commit, and did not alarm on flat-rate Max-plan cost.

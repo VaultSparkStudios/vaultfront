@@ -1,56 +1,15 @@
-<!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
-<!-- source-hash: b1e01b20ad10 -->
-<!-- generated-at: 2026-07-23T03:17:18.762Z -->
+<!-- generated-by: closeout Session 81 fallback; canonical helper is Studio-Ops-root-only -->
+<!-- generated-at: 2026-07-23 -->
 
 # LATEST_HANDOFF (compact)
 
-# Handoff Summary — Session 80
+## Session 81 — certified-loop and spectator-trust closeout
 
-## Session
-
-- Session 80, dated 2026-07-22, durable-evidence closeout.
-- Direct-to-main close; no fabricated external launch evidence.
-
-## Shipped
-
-- Three new local items in docs/AUDIT_2026-07-22.json; second-order pack now 17/17.
-- Authenticated playtest evidence persists in PostgreSQL: actor/session binding, event idempotency, 24h privacy-minimal summaries, fail-closed DB config, 30-day retention ceiling.
-- TypeScript AST inventory proves bidirectional policy coverage for all 42 mutation routes; caps public ingestion at 11-route budget.
-- Dependabot automation exact-identity/ecosystem scoped; loads repo-owned validator from trusted base SHA, no retained credentials.
-
-## Verification
-
-- 147/147 Vitest files, 873/873 tests; production-inclusive coverage.
-- TypeScript, ESLint, production build, Prettier ratchet, bundle budgets pass.
-- 26/26 Playwright, 41 deploy-contract checks, audit 11/11, innovation 17/17, doctor 11/11 (blockingFailing: 0).
-- Post-push repair: Linux CI exposed TypeScript self-reference in two test-harness annotations (Windows accepted); fixture factories renamed; reruns pass.
-
-## Current Intent
-
-- Prove deployable source only; do not fabricate deployment evidence.
-- Next: acquire external authorizations, establish staging, collect parity + human/business evidence in gate order.
-
-## Now Bucket (top 3)
-
-- Obtain source-tagged Studio Ops registry decision.
-- Obtain Cloudflare token authorized for Email Routing.
-- Deliberately establish external staging, then exact-digest parity.
-
-## Blockers (top 3)
-
-- Cloudflare tokens return 403 for Email Routing rules (creds READY but insufficient scope).
-- No external staging established; parity unverifiable.
-- Studio Ops registry decision unresolved (source-tag pending).
-
-## Human-Blocked (age from Session 79+)
-
-- Distinct-human Alpha (three authenticated humans): blocked >=2 sessions.
-- Founder approval: blocked >=2 sessions.
-- Revenue and rollback observation evidence: blocked >=2 sessions.
-- Live-web/theme, native Obelisk, project-domain delivery: blocked >=2 sessions.
-
-## Ark
-
-- Signed outcome 01JU6FD3AGDB699E9CB5BD99B7; trust-boundary pattern 01JU6FD3VUA2A773FD5213F313; Studio Ops question 01JU6FD4KF023171AC83AF4650.
-
-Next session: secure Email-Routing-scoped Cloudflare token and Studio Ops decision, then stand up staging for parity.
+- Six L3 audit items and three new innovations shipped; audit 6/6 and innovation pack 20/20 are exhausted.
+- Scheduled public playlists run VaultFront; private feature configuration remains explicit.
+- Seasonal contracts and loop evidence derive from certified matches, persist in PostgreSQL, fail closed when configured persistence is unavailable, and label database-free fallback `process-local`.
+- Prediction League is spectator-reachable, authenticated, advisory-lock serialized, durable, consensus-aware, and resolved only from certified outcomes. The anonymous duplicate poll is retired.
+- Health source declaration no longer claims runtime reachability. Three domain routers are extracted; policy is 42/42, public ingest 10/10, Worker 4,028/4,040.
+- Direct proof: 155 files / 904 tests and coverage; TypeScript; lint; build; format; bundles; 26/26 E2E; 41 deploy checks; doctor 11/11 with `blockingFailing: 0`; SIL 988.
+- Release stays NO-GO without staging/health/parity, project-domain delivery, native Obelisk, three authenticated humans, live web evidence, revenue, rollback observation, and founder approval.
+- Next: receive Studio Ops registry/tool-contamination receipts, establish approved staging, then collect external evidence in gate order.

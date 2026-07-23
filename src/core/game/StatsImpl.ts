@@ -192,6 +192,18 @@ export class StatsImpl implements Stats {
     p.vaultfront[key] ??= 0n;
     p.vaultfront[key] += _bigint(value);
   }
+
+  private _setVaultFrontFirst(
+    player: Player,
+    key: "firstVaultCaptureTick" | "firstConvoyOutcomeTick",
+    tick: number | undefined,
+  ): void {
+    if (!Number.isSafeInteger(tick) || (tick ?? -1) < 0) return;
+    const p = this._makePlayerStats(player);
+    if (p === undefined) return;
+    p.vaultfront ??= {};
+    p.vaultfront[key] ??= BigInt(tick!);
+  }
   attack(
     player: Player,
     target: Player | TerraNullius,
@@ -325,8 +337,9 @@ export class StatsImpl implements Stats {
     this._addGold(player, GOLD_INDEX_TRAIN_OTHER, gold);
   }
 
-  vaultCaptured(player: Player): void {
+  vaultCaptured(player: Player, tick?: number): void {
     this._addVaultFront(player, "vaultCaptures", 1);
+    this._setVaultFrontFirst(player, "firstVaultCaptureTick", tick);
   }
 
   vaultPassiveGold(player: Player, gold: BigIntLike): void {
@@ -338,16 +351,18 @@ export class StatsImpl implements Stats {
     this._addVaultFront(player, "vaultConvoysLaunched", 1);
   }
 
-  vaultConvoyDelivered(player: Player): void {
+  vaultConvoyDelivered(player: Player, tick?: number): void {
     this._addVaultFront(player, "vaultConvoysDelivered", 1);
+    this._setVaultFrontFirst(player, "firstConvoyOutcomeTick", tick);
   }
 
   vaultConvoyIntercepted(interceptor: Player): void {
     this._addVaultFront(interceptor, "vaultConvoysIntercepted", 1);
   }
 
-  vaultConvoyLost(owner: Player): void {
+  vaultConvoyLost(owner: Player, tick?: number): void {
     this._addVaultFront(owner, "vaultConvoysLost", 1);
+    this._setVaultFrontFirst(owner, "firstConvoyOutcomeTick", tick);
   }
 
   defenseFactoryPulse(player: Player, durationTicks: number): void {

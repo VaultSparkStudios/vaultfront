@@ -270,7 +270,9 @@ const VaultFrontSeasonContractStateSchema = z.object({
   interceptionTiming: z.number(),
   objectiveDenial: z.number(),
   comebackExecution: z.number(),
-  rivalryRevenge: z.number(),
+  surgeExecution: z.number(),
+  evidence: z.literal("certified-match-result"),
+  durability: z.enum(["postgres", "process-local"]),
 });
 
 export type VaultFrontSeasonContractState = z.infer<
@@ -415,30 +417,24 @@ const VaultFrontOutcomeSummarySchema = z.object({
   ),
 });
 
-const VaultFrontFunnelTelemetryInputSchema = z.object({
-  won: z.boolean(),
-  matchLengthSeconds: z.number().int().min(0),
-  phases: z.object({
-    early: z.record(z.string(), z.number().int().min(0)),
-    mid: z.record(z.string(), z.number().int().min(0)),
-    late: z.record(z.string(), z.number().int().min(0)),
-  }),
-});
-
 const VaultFrontFunnelSummarySchema = z.object({
   generatedAt: z.number(),
-  summaries: z.array(
-    z.object({
-      key: z.string(),
-      matches: z.number(),
-      winRate: z.number(),
-      phases: z.object({
-        early: z.record(z.string(), z.number()),
-        mid: z.record(z.string(), z.number()),
-        late: z.record(z.string(), z.number()),
-      }),
-    }),
-  ),
+  matches: z.number(),
+  playerSamples: z.number(),
+  vaultParticipants: z.number(),
+  outcomeParticipants: z.number(),
+  completedCycleParticipants: z.number(),
+  vaultParticipationRatePct: z.number(),
+  cycleCompletionRatePct: z.number(),
+  averageFirstVaultSeconds: z.number().nullable(),
+  averageFirstOutcomeSeconds: z.number().nullable(),
+  phases: z.object({
+    early: z.record(z.string(), z.number()),
+    mid: z.record(z.string(), z.number()),
+    late: z.record(z.string(), z.number()),
+  }),
+  evidence: z.literal("certified-match-result"),
+  durability: z.enum(["postgres", "process-local"]),
 });
 
 const VaultFrontPlaytestPulseEventSchema = z.object({
@@ -538,9 +534,6 @@ export type VaultFrontOutcomeTelemetryInput = z.infer<
 export type VaultFrontOutcomeSummary = z.infer<
   typeof VaultFrontOutcomeSummarySchema
 >;
-export type VaultFrontFunnelTelemetryInput = z.infer<
-  typeof VaultFrontFunnelTelemetryInputSchema
->;
 export type VaultFrontFunnelSummary = z.infer<
   typeof VaultFrontFunnelSummarySchema
 >;
@@ -550,40 +543,6 @@ export type VaultFrontPlaytestPulseEvent = z.infer<
 export type VaultFrontPlaytestPulseSummary = z.infer<
   typeof VaultFrontPlaytestPulseSummarySchema
 >;
-
-export async function updateVaultFrontSeasonContracts(delta: {
-  interceptionTimingDelta: number;
-  objectiveDenialDelta: number;
-  comebackExecutionDelta: number;
-  rivalryRevengeDelta: number;
-}): Promise<VaultFrontSeasonContractState | false> {
-  try {
-    const authHeader = await getAuthHeader();
-    const fallbackToken = authHeader ? null : await getPlayToken();
-    const response = await fetch(
-      `${getApiBase()}/api/vaultfront/contracts/update`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authHeader || `Bearer ${fallbackToken}`,
-        },
-        body: JSON.stringify(delta),
-      },
-    );
-    if (!response.ok) {
-      return false;
-    }
-    const json = await response.json();
-    const parsed = VaultFrontSeasonContractStateSchema.safeParse(json);
-    if (!parsed.success) {
-      return false;
-    }
-    return parsed.data;
-  } catch {
-    return false;
-  }
-}
 
 export interface DailyChallenge {
   challengeId: string;
@@ -611,7 +570,7 @@ export async function fetchDailyChallenge(): Promise<DailyChallenge | null> {
   }
 }
 
-export interface VaultFrontContractsSnapshot {
+export interface VaultFrontContractsSnapshot extends VaultFrontSeasonContractState {
   eloRating: number;
   eloLabel: string;
   matchesPlayed: number;
@@ -630,9 +589,15 @@ export async function fetchVaultFrontContracts(): Promise<
     });
     if (!response.ok) return false;
     const json = await response.json();
-    if (typeof json.eloRating !== "number" || typeof json.eloLabel !== "string")
+    const contracts = VaultFrontSeasonContractStateSchema.safeParse(json);
+    if (
+      !contracts.success ||
+      typeof json.eloRating !== "number" ||
+      typeof json.eloLabel !== "string"
+    )
       return false;
     return {
+      ...contracts.data,
       eloRating: json.eloRating as number,
       eloLabel: json.eloLabel as string,
       matchesPlayed: (json.matchesPlayed as number) ?? 0,
@@ -999,28 +964,6 @@ export async function fetchVaultFrontOutcomeSummary(
       return false;
     }
     return parsed.data;
-  } catch {
-    return false;
-  }
-}
-
-export async function recordVaultFrontFunnelTelemetry(
-  input: VaultFrontFunnelTelemetryInput,
-): Promise<boolean> {
-  const parsed = VaultFrontFunnelTelemetryInputSchema.safeParse(input);
-  if (!parsed.success) {
-    return false;
-  }
-  try {
-    const response = await fetch(`${getApiBase()}/api/vaultfront/funnel`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(await vaultFrontIdentityHeaders()),
-      },
-      body: JSON.stringify(parsed.data),
-    });
-    return response.ok;
   } catch {
     return false;
   }
@@ -1780,5 +1723,88 @@ export async function fetchPredictionLeaderboard(weekOnly = false): Promise<
     return data.leaderboard ?? [];
   } catch {
     return [];
+  }
+}
+
+export type PredictionOutcome = "intercept" | "delivery";
+
+export interface PredictionSubmissionResult {
+  accepted: boolean;
+  reason: "accepted" | "duplicate-or-closed" | "unavailable";
+  durability?: "postgres" | "process-local";
+  consensus?: PredictionConsensus;
+}
+
+export interface PredictionConsensus {
+  gameId: string;
+  interceptPct: number;
+  deliveryPct: number;
+  total: number;
+  status: "open" | "resolved";
+  durability: "postgres" | "process-local";
+}
+
+export async function submitPredictionLeaguePick(
+  gameId: string,
+  outcome: PredictionOutcome,
+): Promise<PredictionSubmissionResult> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/vaultfront/prediction-league/predict`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(await vaultFrontIdentityHeaders()),
+        },
+        body: JSON.stringify({ gameId, outcome }),
+      },
+    );
+    if (res.status !== 201 && res.status !== 409) {
+      return { accepted: false, reason: "unavailable" };
+    }
+    return (await res.json()) as PredictionSubmissionResult;
+  } catch {
+    return { accepted: false, reason: "unavailable" };
+  }
+}
+
+export async function fetchPredictionLeagueStats(): Promise<{
+  totalPredictions: number;
+  correctPredictions: number;
+  accuracy: number;
+  weeklyScore: number;
+} | null> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/vaultfront/prediction-league/stats`,
+      { headers: await vaultFrontIdentityHeaders() },
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      stats?: {
+        totalPredictions: number;
+        correctPredictions: number;
+        accuracy: number;
+        weeklyScore: number;
+      } | null;
+    };
+    return data.stats ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchPredictionConsensus(
+  gameId: string,
+): Promise<PredictionConsensus | null> {
+  try {
+    const res = await fetch(
+      `${getApiBase()}/api/vaultfront/prediction-league/games/${encodeURIComponent(gameId)}/consensus`,
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as PredictionConsensus;
+  } catch {
+    return null;
   }
 }

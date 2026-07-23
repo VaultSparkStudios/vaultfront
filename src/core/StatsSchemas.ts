@@ -111,6 +111,8 @@ export const VaultFrontPlayerStatsSchema = z
     vaultConvoysDelivered: BigIntStringSchema.optional(),
     vaultConvoysIntercepted: BigIntStringSchema.optional(),
     vaultConvoysLost: BigIntStringSchema.optional(),
+    firstVaultCaptureTick: BigIntStringSchema.optional(),
+    firstConvoyOutcomeTick: BigIntStringSchema.optional(),
     defenseFactoryPulses: BigIntStringSchema.optional(),
     defenseFactoryPulseUptimeTicks: BigIntStringSchema.optional(),
     focusChanges: BigIntStringSchema.optional(),

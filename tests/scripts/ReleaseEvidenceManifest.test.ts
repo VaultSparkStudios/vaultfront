@@ -132,9 +132,12 @@ describe("Release Evidence Manifest", () => {
     expect(
       evaluated.gates.find((gate) => gate.gate === "founderApproval"),
     ).toMatchObject({ status: "block", evidenceStatus: "missing" });
+    expect(
+      evaluated.gates.find((gate) => gate.gate === "healthObservation"),
+    ).toMatchObject({ status: "block", evidenceStatus: "missing" });
   });
 
-  it("becomes ready only with every fresh sourced gate and executable local health", () => {
+  it("becomes ready only with every fresh sourced gate and a healthy observed runtime", () => {
     const generatedAt = "2026-07-17T12:00:00.000Z";
     const releaseObservations = Object.fromEntries(
       canonicalReleaseGateDefinitions.map(([gate], index) => [
@@ -144,6 +147,9 @@ describe("Release Evidence Manifest", () => {
           observedAt: "2026-07-17T11:30:00.000Z",
           source: `probe:${gate}`,
           digest: `sha256:${index.toString(16).padStart(64, "0")}`,
+          ...(gate === "healthObservation"
+            ? { httpStatus: 200, healthy: true }
+            : {}),
         },
       ]),
     );
@@ -157,12 +163,12 @@ describe("Release Evidence Manifest", () => {
       transfer,
       releaseObservations,
       localSurfaceEvidence: {
-        healthEndpoint: {
-          status: "pass",
+        healthRouteContract: {
+          status: "declared",
           source: "Master.ts + Worker.ts",
           observedAt: generatedAt,
           digest: `sha256:${"f".repeat(64)}`,
-          detail: "Both routes declared.",
+          detail: "Both routes are statically declared.",
         },
       },
     });
@@ -170,8 +176,69 @@ describe("Release Evidence Manifest", () => {
     expect(evidence).toMatchObject({
       status: "ready",
       blockers: [],
-      launch: { status: "ready" },
+      launch: { status: "ready", runtimeAdvertised: true },
     });
+  });
+
+  it("does not advertise a statically declared but unobserved runtime", () => {
+    const evidence = buildReleaseEvidence({
+      generatedAt: "2026-07-17T12:00:00.000Z",
+      gitSha: "abc123",
+      dirty: false,
+      auditSource: "docs/AUDIT_2026-07-16.json",
+      auditItems: [{ slug: "done", status: "shipped" }],
+      innovationItems: [{ id: "innovation", status: "shipped" }],
+      transfer,
+      localSurfaceEvidence: {
+        healthRouteContract: {
+          status: "declared",
+          source: "Master.ts + Worker.ts",
+          observedAt: "2026-07-17T12:00:00.000Z",
+          digest: `sha256:${"f".repeat(64)}`,
+          detail: "Both routes are statically declared.",
+        },
+      },
+    });
+
+    expect(evidence.localSurface).toHaveProperty("healthRouteContract");
+    expect(evidence.localSurface).not.toHaveProperty("healthEndpoint");
+    expect(evidence.launch.runtimeAdvertised).toBe(false);
+    expect(evidence.launch.gates).toContainEqual(
+      expect.objectContaining({
+        gate: "healthObservation",
+        status: "block",
+        evidenceStatus: "missing",
+      }),
+    );
+  });
+
+  it("rejects a fresh provenance-backed HTTP 503 health observation", () => {
+    const now = Date.parse("2026-07-17T12:00:00.000Z");
+    const evaluated = evaluateCanonicalReleaseGates(
+      {
+        healthObservation: {
+          status: "verified",
+          observedAt: "2026-07-17T11:59:00.000Z",
+          source: "staging:/_health",
+          digest: `sha256:${"e".repeat(64)}`,
+          httpStatus: 503,
+          healthy: false,
+        },
+      },
+      { now },
+    );
+    const health = evaluated.gates.find(
+      (gate) => gate.gate === "healthObservation",
+    );
+
+    expect(health).toMatchObject({
+      status: "block",
+      evidenceStatus: "verified",
+      httpStatus: 503,
+      healthy: false,
+      freshness: { state: "fresh" },
+    });
+    expect(health?.detail).toContain("HTTP 503");
   });
 
   it("reports blocked without external proof in an isolated unbuilt fixture", () => {
@@ -239,6 +306,11 @@ describe("Release Evidence Manifest", () => {
       expect(evidence.status).toBe("blocked");
       expect(evidence.launch.status).toBe("blocked");
       expect(evidence.source.observationBundle.state).toBe("missing");
+      expect(evidence.localSurface.healthRouteContract).toMatchObject({
+        status: "declared",
+      });
+      expect(evidence.localSurface).not.toHaveProperty("healthEndpoint");
+      expect(evidence.launch.runtimeAdvertised).toBe(false);
       expect(evidence.launch.gates).toContainEqual(
         expect.objectContaining({
           gate: "founderApproval",

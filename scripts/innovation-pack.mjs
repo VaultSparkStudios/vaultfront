@@ -250,6 +250,55 @@ const candidates = [
     evidence:
       "three trusted-base workflow invariants added to the directly executed deploy contract gate",
   },
+  {
+    id: "certified-crowd-consensus-pulse",
+    title: "Turn spectator opinion into a certified live consensus pulse",
+    description:
+      "Converge the anonymous narrator poll and durable Prediction League into one authenticated ledger, broadcast privacy-minimal consensus from accepted durable picks, and make the spectator surface show the live split.",
+    complete:
+      has("src/server/PredictionLeagueStore.ts", /getGameConsensus/) &&
+      has("src/server/PredictionLeagueRouter.ts", /publishConsensus/) &&
+      has(
+        "src/client/components/PredictionLeaguePanel.ts",
+        /Live crowd consensus/,
+      ) &&
+      has("tests/server/PredictionLeagueStore.test.ts", /getGameConsensus/),
+    evidence:
+      "durable consensus aggregation, authenticated single-write path, narrator broadcast seam, live accessible meter, and closed-game tests",
+  },
+  {
+    id: "anonymous-mutation-budget-contraction",
+    title: "Shrink the public-ingest trust boundary after route convergence",
+    description:
+      "Retire the duplicate anonymous crowd mutation and immediately ratchet the reviewed public-ingest ceiling from eleven to ten so the security gain cannot silently regress.",
+    complete:
+      has("config/mutation-route-policies.json", /"publicIngestMax": 10/) &&
+      has(
+        "config/mutation-route-policies.json",
+        /narrator\/:gameId\/predict[\s\S]*?"auth": "retired"/,
+      ) &&
+      has(
+        "src/server/PredictionLeagueRouter.ts",
+        /authenticated Prediction League contract/,
+      ),
+    evidence:
+      "legacy 410 tombstone, authenticated replacement, and ten-route fail-closed public-ingest ceiling",
+  },
+  {
+    id: "composition-ratchet-contraction",
+    title: "Cash router extraction into a tighter composition budget",
+    description:
+      "Convert the removed duplicate crowd domain into a lower Worker line ceiling and keep all three extracted domains behind bounded, directly tested registrars.",
+    complete:
+      has(
+        "scripts/check-worker-composition.mjs",
+        /WORKER_LINE_BUDGET = 4040/,
+      ) &&
+      has("scripts/check-worker-composition.mjs", /forbiddenInWorker/) &&
+      has("tests/scripts/WorkerComposition.test.ts", /extracted domains/),
+    evidence:
+      "4,040-line Worker ceiling, 180-line router ceiling, route reclamation detection, and executable regression test",
+  },
 ];
 
 const payload = {

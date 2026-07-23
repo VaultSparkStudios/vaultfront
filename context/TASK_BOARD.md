@@ -187,6 +187,18 @@ All 5 premise-verified infrastructure findings in docs/AUDIT_2026-07-20.json shi
 - [ ] [SIL:1] Generate the public nav/footer route graph from one source, preserve the scoped checker as the invariant, and attach desktop/mobile theme screenshots once staging exists.
 - [ ] [SIL:2] Verify Ark cargo 01JU1AEATS46E1C7F5DD9AE41C is accepted and the canonical release admission consumes the same complete project-truth fingerprint rather than private/public heuristics.
 
+## Completed (2026-07-23 — Session 81 certified-loop and spectator-trust arc)
+
+All six items in `docs/AUDIT_2026-07-23.json` shipped at L3. Three new second-order candidates shipped, taking `docs/INNOVATION_PACK.json` to 20/20 with zero pending unblocked work.
+
+- [done] Public playlist contract enables VaultFront execution across free-for-all, team, special, and ranked paths while preserving private opt-in behavior.
+- [done] Certified seasonal contract ledger with PostgreSQL replay safety, bounded server derivation, evidence/durability receipts, and read-only client state.
+- [done] Certified privacy-minimal loop evidence from first-transition ticks and server intent funnels; browser-authored telemetry retired.
+- [done] Static health-route declarations separated from fresh provenance-bearing HTTP health observations.
+- [done] Reachable durable Prediction League with authenticated picks, advisory-lock resolution, private stats, live consensus, and legacy anonymous poll retirement.
+- [done] Season, loop, and prediction router seams plus route-policy inventory and a 4,040-line Worker composition ratchet.
+- [done] Full proof: 155 files / 904 tests and coverage, TypeScript, lint, build, formatting, bundle budgets, 26/26 E2E, 41 deploy checks, audit 6/6, innovations 20/20.
+
 ## Completed (2026-07-22 — Session 79 certified-mastery arc)
 
 All six local items in `docs/AUDIT_2026-07-22.json` shipped at L3; two external corridors remain evidenced and non-actionable locally. Three new second-order candidates shipped, taking `docs/INNOVATION_PACK.json` to 14/14.
@@ -198,15 +210,6 @@ All six local items in `docs/AUDIT_2026-07-22.json` shipped at L3; two external 
 - [done] Deterministic E2E native bootstrap and canonical `/_health` workflow contract.
 - [done] Bounded non-duplicated tests plus production-inclusive coverage, Worker visibility, and ten critical floors.
 - [done] Full proof: 143 files / 856 tests, TypeScript, lint, build, 26/26 E2E, audit 8/8, innovations 14/14, doctor 10/10 with `blockingFailing: 0`.
-
-## Completed (2026-07-22 — Session 80 durable-evidence arc)
-
-All three new local items in `docs/AUDIT_2026-07-22.json` shipped; the two existing external corridors remain evidenced and non-actionable locally. Three generated second-order candidates shipped, taking `docs/INNOVATION_PACK.json` to 17/17.
-
-- [done] Durable privacy-minimal Alpha evidence: PostgreSQL persistence, actor/session binding, event idempotency, 24-hour summaries, fail-closed configured-database posture, 30-day retention, and honest process-local parity.
-- [done] Complete mutation-route policy coverage: 42/42 bidirectional abstract-syntax-tree inventory with auth, rate, evidence, source binding, public-ingest rationale, and an 11-route risk ceiling.
-- [done] Dependency automation contract: exact Dependabot identity, ecosystem-specific changed-file allowlists, hostile fixture coverage, and trusted-base validator checkout without retained credentials.
-- [done] Full proof: 147 files / 873 tests, production coverage, TypeScript, lint, build, formatting, bundle budgets, 26/26 E2E, 41 deploy checks, audit 11/11, innovations 17/17, doctor 11/11 with `blockingFailing: 0`.
 
 ## Completed (2026-07-22 — Session 80 durable-evidence arc)
 

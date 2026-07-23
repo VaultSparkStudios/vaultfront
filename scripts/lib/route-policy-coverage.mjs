@@ -5,6 +5,7 @@ const ALLOWED_AUTH = new Set([
   "admin",
   "signed-worker",
   "public-ingest",
+  "retired",
 ]);
 const ALLOWED_EVIDENCE = new Set([
   "none",

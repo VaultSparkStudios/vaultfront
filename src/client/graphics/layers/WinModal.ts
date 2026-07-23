@@ -29,7 +29,6 @@ import {
   getUserMe,
   type MutatorVoteCandidate,
   postStyleHistory,
-  recordVaultFrontFunnelTelemetry,
   recordVaultFrontOutcomeTelemetry,
   recordVaultFrontPlaytestPulse,
   recordVaultFrontRecapEvent,
@@ -38,7 +37,6 @@ import {
   requestReplayHighlight,
   shareMatchInvite,
   shareReplayHighlight,
-  updateVaultFrontSeasonContracts,
   VaultFrontSeasonContractState,
 } from "../../Api";
 import "../../components/PatternButton";
@@ -1733,48 +1731,6 @@ export class WinModal extends LitElement implements Layer {
     }
   }
 
-  private funnelPhasesForCurrentMatch(): Record<
-    "early" | "mid" | "late",
-    Record<string, number>
-  > {
-    const summary: Record<"early" | "mid" | "late", Record<string, number>> = {
-      early: {},
-      mid: {},
-      late: {},
-    };
-    const streamRaw = sessionStorage.getItem("vaultfront.hud.telemetry.stream");
-    if (!streamRaw) return summary;
-    const startAt =
-      Date.now() - Math.max(60_000, this.matchLengthSeconds * 1000);
-    const eventToCommand = (action: string): string | null => {
-      if (action.startsWith("hud_command_reroute")) return "reroute";
-      if (action === "hud_command_shield") return "escort";
-      if (action === "hud_command_jam_breaker") return "jam_breaker";
-      if (action.startsWith("hud_command_jam_next")) return "jam_next";
-      if (action === "hud_role_ping") return "role_ping";
-      if (action === "hud_focus_slider") return "resource_focus";
-      return null;
-    };
-    try {
-      const events = JSON.parse(streamRaw) as Array<{
-        at: number;
-        action: string;
-      }>;
-      for (const item of events) {
-        if ((item.at ?? 0) < startAt) continue;
-        const command = eventToCommand(item.action);
-        if (!command) continue;
-        const elapsedMs = Math.max(0, item.at - startAt);
-        const bucket =
-          elapsedMs < 300_000 ? "early" : elapsedMs < 900_000 ? "mid" : "late";
-        summary[bucket][command] = (summary[bucket][command] ?? 0) + 1;
-      }
-      return summary;
-    } catch {
-      return summary;
-    }
-  }
-
   private async postOutcomeTelemetry(): Promise<void> {
     if (this.outcomePosted || this.matchLengthSeconds <= 0) return;
     const ok = await recordVaultFrontOutcomeTelemetry({
@@ -1785,11 +1741,6 @@ export class WinModal extends LitElement implements Layer {
       recapCtaClicked: this.recapGoalClicked || this.recapRequeueClicked,
       requeueClicked: this.recapRequeueClicked,
       hud: this.hudCountersForCurrentMatch(),
-    });
-    void recordVaultFrontFunnelTelemetry({
-      won: this.isWin,
-      matchLengthSeconds: this.matchLengthSeconds,
-      phases: this.funnelPhasesForCurrentMatch(),
     });
     if (ok) {
       this.outcomePosted = true;
@@ -2092,26 +2043,16 @@ export class WinModal extends LitElement implements Layer {
           ? `Loss reason: deficits in ${gaps.join(" and ")}.`
           : "Result was close on the tracked objective metrics.";
 
-    const seasonalMatch = {
-      vaultCaptures: Number(myVaultCaptures),
-      convoysIntercepted: Number(
-        this.toBigInt(myStats?.vaultfront?.vaultConvoysIntercepted),
-      ),
-      convoysLost: Number(this.toBigInt(myStats?.vaultfront?.vaultConvoysLost)),
-      convoysDelivered: Number(
-        this.toBigInt(myStats?.vaultfront?.vaultConvoysDelivered),
-      ),
-      rivalryRevengeDelta: Number(
-        localStorage.getItem("vaultfront.rivalryRevengeCount") ?? "0",
-      ),
-    };
-    this.rivalryRevengeDelta = Math.max(0, seasonalMatch.rivalryRevengeDelta);
+    this.rivalryRevengeDelta = Math.max(
+      0,
+      Number(localStorage.getItem("vaultfront.rivalryRevengeCount") ?? "0"),
+    );
+    localStorage.removeItem("vaultfront.rivalryRevengeCount");
     if (this.rivalryRevengeDelta > 0 && !this.rivalChallengeExposureTracked) {
       this.rivalChallengeExposureTracked = true;
       this.recordRivalChallengePulse("rival_challenge_shown");
     }
-    this.seasonalContracts = this.updateSeasonalContractsLocal(seasonalMatch);
-    void this.syncSeasonalContracts(seasonalMatch);
+    setTimeout(() => void this.refreshCertifiedSeasonalContracts(), 750);
 
     this.computePlayStyle(myStats);
   }
@@ -2191,25 +2132,9 @@ export class WinModal extends LitElement implements Layer {
     };
   }
 
-  private async syncSeasonalContracts(match: {
-    vaultCaptures: number;
-    convoysIntercepted: number;
-    convoysLost: number;
-    convoysDelivered: number;
-    rivalryRevengeDelta: number;
-  }): Promise<void> {
-    const serverState = await updateVaultFrontSeasonContracts({
-      interceptionTimingDelta: Math.max(0, match.convoysIntercepted),
-      objectiveDenialDelta: Math.max(
-        0,
-        match.vaultCaptures + match.convoysIntercepted,
-      ),
-      comebackExecutionDelta:
-        match.convoysLost > 0 && match.convoysDelivered > 0 ? 1 : 0,
-      rivalryRevengeDelta: Math.max(0, match.rivalryRevengeDelta),
-    });
+  private async refreshCertifiedSeasonalContracts(): Promise<void> {
+    const serverState = await fetchVaultFrontContracts();
     if (!serverState) return;
-    localStorage.removeItem("vaultfront.rivalryRevengeCount");
     this.seasonalContracts = this.contractCardsFromState(serverState);
     this.requestUpdate();
   }
@@ -2238,65 +2163,12 @@ export class WinModal extends LitElement implements Layer {
         target: 6,
       },
       {
-        title: "Rivalry Revenge",
-        description:
-          "Counter-intercept rivals that intercepted your convoy earlier.",
-        progress: state.rivalryRevenge,
+        title: "Surge Execution",
+        description: "Activate Surge from certified match outcomes.",
+        progress: state.surgeExecution,
         target: 8,
       },
     ];
-  }
-
-  private updateSeasonalContractsLocal(match: {
-    vaultCaptures: number;
-    convoysIntercepted: number;
-    convoysLost: number;
-    convoysDelivered: number;
-    rivalryRevengeDelta: number;
-  }): SeasonalContract[] {
-    const now = new Date();
-    const seasonId = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
-    const key = "vaultfront.season.contracts";
-    let state: {
-      seasonId: string;
-      interceptionTiming: number;
-      objectiveDenial: number;
-      comebackExecution: number;
-      rivalryRevenge: number;
-    } = {
-      seasonId,
-      interceptionTiming: 0,
-      objectiveDenial: 0,
-      comebackExecution: 0,
-      rivalryRevenge: 0,
-    };
-
-    const raw = localStorage.getItem(key);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw) as typeof state;
-        if (parsed.seasonId === seasonId) {
-          state = parsed;
-        }
-      } catch {
-        // Ignore malformed local state and reset.
-      }
-    }
-
-    state.interceptionTiming += Math.max(0, match.convoysIntercepted);
-    state.objectiveDenial += Math.max(
-      0,
-      match.vaultCaptures + match.convoysIntercepted,
-    );
-    if (match.convoysLost > 0 && match.convoysDelivered > 0) {
-      state.comebackExecution += 1;
-    }
-    state.rivalryRevenge += Math.max(0, match.rivalryRevengeDelta);
-    localStorage.removeItem("vaultfront.rivalryRevengeCount");
-
-    localStorage.setItem(key, JSON.stringify(state));
-
-    return this.contractCardsFromState(state);
   }
 
   private jumpToReplayMoment(moment: ReplayMoment): void {

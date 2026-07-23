@@ -1,5 +1,5 @@
 <!-- generated-by: scripts/innovation-pack.mjs -->
-<!-- generated-at: 2026-07-23T03:09:55.309Z -->
+<!-- generated-at: 2026-07-23T10:07:24.482Z -->
 
 # Second-Order Innovation Pack
 
@@ -22,3 +22,6 @@ Generated only after the audit-backed Unified Genius List was exhausted. Complet
 15. [x] **bounded-alpha-evidence-retention** — Give durable Alpha evidence a privacy-minimal lifecycle. Retain the 24-hour release cohort without accumulating actor-bound evidence forever: prune durable and process-local history after a declared 30-day ceiling and release orphaned session bindings. Evidence: 30-day retention constant, transactional PostgreSQL pruning, process-local parity, and binding-release regression test.
 16. [x] **public-ingest-risk-budget** — Ratchet unauthenticated ingestion as an explicit risk budget. Count every public-ingest mutation and fail closed when it exceeds the reviewed ceiling, forcing any trust-boundary expansion to update a rationale-bearing machine contract. Evidence: 11-route public-ingest ceiling, catalog rationale, fail-closed validator, and hostile over-budget fixture.
 17. [x] **trusted-base-validator-pin** — Make the dependency automation validator self-protecting. Extend the immutable deploy contract to prove that the PR workflow checks out the trusted base SHA without credentials and loads the repository-owned validator from that checkout. Evidence: three trusted-base workflow invariants added to the directly executed deploy contract gate.
+18. [x] **certified-crowd-consensus-pulse** — Turn spectator opinion into a certified live consensus pulse. Converge the anonymous narrator poll and durable Prediction League into one authenticated ledger, broadcast privacy-minimal consensus from accepted durable picks, and make the spectator surface show the live split. Evidence: durable consensus aggregation, authenticated single-write path, narrator broadcast seam, live accessible meter, and closed-game tests.
+19. [x] **anonymous-mutation-budget-contraction** — Shrink the public-ingest trust boundary after route convergence. Retire the duplicate anonymous crowd mutation and immediately ratchet the reviewed public-ingest ceiling from eleven to ten so the security gain cannot silently regress. Evidence: legacy 410 tombstone, authenticated replacement, and ten-route fail-closed public-ingest ceiling.
+20. [x] **composition-ratchet-contraction** — Cash router extraction into a tighter composition budget. Convert the removed duplicate crowd domain into a lower Worker line ceiling and keep all three extracted domains behind bounded, directly tested registrars. Evidence: 4,040-line Worker ceiling, 180-line router ceiling, route reclamation detection, and executable regression test.

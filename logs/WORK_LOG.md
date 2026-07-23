@@ -183,3 +183,14 @@ Append-only. Each session appends one entry. Never edit prior entries.
 - Verification: 143 Vitest files / 856 tests; production coverage and 10-module ratchet; TypeScript; ESLint; production build; 26/26 Playwright desktop/mobile; 38-check deploy contract; audit 8/8; innovations 14/14; doctor 10/10 with `blockingFailing: 0`.
 - Risks removed: client-trusted progression, fictitious reward currency, restart-only durability, non-atomic status mutation, parser drift, phantom shipped features, nondeterministic canvas fallback, unbounded test worker storms, and invisible production modules.
 - Remaining boundary: release stays NO-GO until a real staging/parity corridor, native Obelisk, working project-domain Brevo delivery, three authenticated human Alpha sessions, revenue, rollback observation, and founder approval exist.
+
+## 2026-07-23 — Session 81 certified-loop and spectator-trust arc
+
+- Ran the complete `/start → /audit → /implement → /closeout` mission and verified all six audit premises against live code.
+- Enabled the VaultFront loop across every scheduled public playlist; preserved private opt-in semantics with direct integration coverage.
+- Replaced client-authored seasonal progression and browser-derived loop telemetry with certified, idempotent PostgreSQL stores and honest process-local development fallbacks.
+- Split static route declaration from observed runtime health in release evidence.
+- Made Prediction League reachable, authenticated, durable, privately scored, consensus-aware, and certified at match resolution; retired the anonymous duplicate mutation.
+- Extracted three routers, expanded route inventory across composition files, reduced the public-ingest ceiling to ten, and ratcheted Worker at 4,040 lines.
+- Generated and shipped three second-order innovations; work exhaustion passed at audit 6/6 and innovations 20/20.
+- Direct verification passed: 155 files / 904 tests and coverage, TypeScript, lint, build, format, bundles, 26/26 E2E, and 41 deploy checks.

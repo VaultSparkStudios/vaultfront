@@ -1,31 +1,26 @@
-# Session 80 Implementation Plan
+# Session 81 Implementation Plan
 
-Status: primary implementation complete — all three new premise-verified items shipped and verified at L3; second-order innovation is in progress.
+Source: `docs/AUDIT_2026-07-23.json`
 
-Source: `docs/AUDIT_2026-07-22.json` (sole truth).
+## Wave 3A — Restore the flagship path and truth boundary
 
-## Wave 3A — evidence foundation
+1. `public-playlist-vaultfront-loop-contract` — restore the VaultFront execution contract in every scheduled public playlist and ratchet it with integration tests.
+2. `runtime-health-observation-truth` — separate source-declared health capability from a provenance-bearing live observation.
 
-1. `durable-privacy-minimal-alpha-evidence-ledger` — shipped and focused tests green.
+## Wave 3B — Certified progression and feedback
 
-## Wave 3B — security truth
+3. `certified-season-contract-ledger` — build the durable match-certified progression store first because the later routers and prediction loop reuse its dependency-injection and persistence pattern.
+4. `certified-loop-funnel-evidence` — derive match-bound loop evidence from authoritative server state and retire the browser-authored funnel mutation.
 
-2. `complete-route-policy-coverage-ratchet` — shipped; 42/42 bidirectional coverage and doctor enforcement green.
+## Wave 3C — Spectator loop and composition
 
-## Wave 3C — delivery signal
+5. `durable-reachable-prediction-league` — complete one authenticated, persistent prediction path resolved by the certified match outcome.
+6. `bounded-worker-router-composition` — reconcile the extracted season, loop-evidence, and prediction routers; add policy/composition tests and a non-regression budget.
 
-3. `dependency-pr-machine-contract` — shipped; live GitHub Actions shape plus hostile fixtures green.
+## Wave 3D — Saturation
 
-## Wave 4 — second-order innovation
+7. Refresh the Unified Genius List and run the innovation pack.
+8. Implement every locally shippable second-order candidate and explicitly evidence any external-only boundary.
+9. Run the work-exhaustion verifier and session-floor gate; continue until both prove exhaustion.
 
-Generate from the shipped seams after all three primary items verify. Implement every accepted candidate; record rejected premises and external constraints honestly.
-
-## External evidence lane
-
-- Registry type reconciliation stays Studio Ops-owned via Ark.
-- External staging, Email Routing permission, native Obelisk, three authenticated humans, revenue, rollback observation, and founder approval remain non-substitutable.
-
-## Verification
-
-- Focused tests after each item.
-- Then `npm test`, `npm run test:server`, `npm run build-prod`, `npm run lint`, `npm run e2e`, deploy/contracts, audit/innovation exhaustion, and project doctor with direct exit-code evidence.
+Every item is complete only after its behavior and relevant test surface pass. Partial work is recorded as blocked, never shipped.

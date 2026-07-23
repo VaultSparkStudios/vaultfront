@@ -1327,7 +1327,7 @@ export class VaultFrontExecution implements Execution {
         `Vault ${site.id} captured`,
         150,
       );
-      this.game.stats().vaultCaptured(owner);
+      this.game.stats().vaultCaptured(owner, this.game.ticks());
       this.game.stats().vaultInteraction(owner);
       this.applyCaptureSurgeBonus(owner, site);
       if (this.weeklyMutator === "rally_point") {
@@ -2148,7 +2148,7 @@ export class VaultFrontExecution implements Execution {
         interceptor.addTroops(troops);
         this.applyInterceptSurgeBonus(interceptor, currentTile);
         this.game.stats().vaultConvoyIntercepted(interceptor);
-        this.game.stats().vaultConvoyLost(owner);
+        this.game.stats().vaultConvoyLost(owner, this.game.ticks());
         this.game.stats().vaultInteraction(interceptor);
         this.resetExecutionChain(owner.smallID());
         this.contributeToSquadObjective(interceptor, ticks, currentTile);
@@ -2242,7 +2242,7 @@ export class VaultFrontExecution implements Execution {
 
       owner.addGold(goldAfterSabotage, convoy.destinationTile);
       owner.addTroops(convoy.troopsReward);
-      this.game.stats().vaultConvoyDelivered(owner);
+      this.game.stats().vaultConvoyDelivered(owner, this.game.ticks());
       this.game.stats().vaultInteraction(owner);
       this.updateExecutionChainConvoyDelivered(owner, ticks);
       this.contributeToSquadObjective(owner, ticks, convoy.destinationTile);

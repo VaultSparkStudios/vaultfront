@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "scope": "Every POST/PUT/PATCH/DELETE registration in Worker.ts and extracted *Router.ts modules.",
   "riskBudget": {
-    "publicIngestMax": 11,
+    "publicIngestMax": 10,
     "rationale": "Any expansion of unauthenticated ingestion is a reviewed trust-boundary change."
   },
   "routes": [
@@ -25,10 +25,10 @@
     {
       "method": "POST",
       "path": "/api/vaultfront/contracts/update",
-      "auth": "verified-actor",
+      "auth": "retired",
       "rateLimit": "global-standard",
-      "evidence": "authenticated-event",
-      "binding": "verifyClientToken"
+      "evidence": "none",
+      "binding": "retiredMutation"
     },
     {
       "method": "POST",
@@ -65,10 +65,10 @@
     {
       "method": "POST",
       "path": "/api/vaultfront/funnel",
-      "auth": "identity",
+      "auth": "retired",
       "rateLimit": "global-standard",
-      "evidence": "authenticated-event",
-      "binding": "resolveVaultFrontIdentity"
+      "evidence": "none",
+      "binding": "retiredMutation"
     },
     {
       "method": "POST",
@@ -177,11 +177,10 @@
     {
       "method": "POST",
       "path": "/api/vaultfront/narrator/:gameId/predict",
-      "auth": "public-ingest",
-      "rateLimit": "crowdPredictRateLimit",
+      "auth": "retired",
+      "rateLimit": "global-standard",
       "evidence": "none",
-      "binding": "safeParse",
-      "rationale": "Ephemeral spectator poll with no certified progression effect."
+      "binding": "retiredMutation"
     },
     {
       "method": "POST",
@@ -219,9 +218,9 @@
       "method": "POST",
       "path": "/api/vaultfront/prediction-league/predict",
       "auth": "verified-actor",
-      "rateLimit": "predictionLeagueRateLimit",
+      "rateLimit": "predictionRateLimit",
       "evidence": "authenticated-event",
-      "binding": "requireVaultFrontActor"
+      "binding": "dependencies.authenticate"
     },
     {
       "method": "POST",

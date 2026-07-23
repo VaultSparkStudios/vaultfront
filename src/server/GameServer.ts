@@ -1227,6 +1227,12 @@ export class GameServer {
       const numeric = Number(value ?? 0n);
       return Number.isSafeInteger(numeric) && numeric >= 0 ? numeric : 0;
     };
+    const toTick = (value: bigint | undefined): number | undefined => {
+      const numeric = Number(value);
+      return Number.isSafeInteger(numeric) && numeric >= 0
+        ? numeric
+        : undefined;
+    };
     const players = this.gameStartInfo.players.flatMap((player) => {
       const persistentId = this.allClients.get(player.clientID)?.persistentID;
       if (!persistentId) return [];
@@ -1240,8 +1246,11 @@ export class GameServer {
           vaultCaptures: toCount(vault?.vaultCaptures),
           convoyDeliveries: toCount(vault?.vaultConvoysDelivered),
           convoyIntercepts: toCount(vault?.vaultConvoysIntercepted),
+          convoysLost: toCount(vault?.vaultConvoysLost),
           executionChains: toCount(vault?.cleanExecutionStreaks),
           surgeActivations: toCount(vault?.surgeActivations),
+          firstVaultCaptureTick: toTick(vault?.firstVaultCaptureTick),
+          firstConvoyOutcomeTick: toTick(vault?.firstConvoyOutcomeTick),
         },
       ];
     });
@@ -1253,10 +1262,12 @@ export class GameServer {
           0,
           Math.floor((Date.now() - this._startTime) / 1000),
         ),
+        turnIntervalMs: this.config.turnIntervalMs(),
         mapName: String(this.gameStartInfo.config.gameMap),
         seasonId: "week-" + season.weekNumber,
         onMutator:
           (this.gameStartInfo.config.vaultWeeklyMutator ?? "none") !== "none",
+        intentFunnel: this.intentFunnel,
         players,
       })
       .catch((err) =>

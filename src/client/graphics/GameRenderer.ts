@@ -2,6 +2,7 @@ import { EventBus } from "../../core/EventBus";
 import { GameView } from "../../core/game/GameView";
 import { UserSettings } from "../../core/game/UserSettings";
 import { ContractHudWidget } from "../components/ContractHudWidget";
+import { PredictionLeaguePanel } from "../components/PredictionLeaguePanel";
 import { ProgressionDebrief } from "../components/ProgressionDebrief";
 import { GameStartingModal } from "../GameStartingModal";
 import { RefreshGraphicsEvent as RedrawGraphicsEvent } from "../InputHandler";
@@ -183,6 +184,13 @@ export function createRenderer(
     contractHud.game = game;
   }
 
+  const predictionLeaguePanel = document.querySelector(
+    "prediction-league-panel",
+  ) as PredictionLeaguePanel;
+  if (predictionLeaguePanel instanceof PredictionLeaguePanel) {
+    predictionLeaguePanel.game = game;
+  }
+
   const coachHint = document.querySelector(
     "coach-hint-engine",
   ) as CoachHintEngine;
@@ -341,6 +349,7 @@ export function createRenderer(
     new NameLayer(game, transformHandler, eventBus),
     interceptCelebration,
     contractHud,
+    predictionLeaguePanel,
     coachHint,
     progressionDebrief,
     playStyleChip,

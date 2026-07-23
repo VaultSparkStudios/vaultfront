@@ -189,3 +189,33 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Decision:** Vitest commands cap workers at four. Coverage explicitly enumerates production TypeScript, requires the 4,300-line Worker to remain visible even at zero coverage, and applies measured no-regression floors to ten critical server/client seams. Route logic should be extracted from the Worker when a trust boundary can be dependency-injected and tested directly.
 
 **Why:** An unbounded verifier can become its own outage, while loaded-only coverage can look healthier by omitting the largest risks. Visibility and percentage are separate invariants; both must be honest.
+
+## 2026-07-23 — Player progression and product analytics share one certified match authority
+
+**Decision:** Seasonal contracts and core-loop evidence accept only the authoritative match envelope. Client mutation endpoints remain explicit `410 Gone` tombstones; PostgreSQL is authoritative when configured, and process-local fallback is allowed only in database-free development with its durability labeled in every receipt.
+
+**Why:** A visible progression or analytics promise is false if a browser can inflate it, replay it, carry it across matches, or lose it on restart while the product calls it durable.
+
+## 2026-07-23 — Prediction League is the only spectator prediction write path
+
+**Decision:** One authenticated Prediction League contract owns spectator picks, durable history, certified match resolution, and privacy-minimal consensus. The anonymous narrator poll is retired; consensus broadcasts are derived from accepted ledger writes. Submission and resolution take the same per-game PostgreSQL advisory transaction lock.
+
+**Why:** Parallel vote systems created two incompatible truths and let anonymous traffic look like persistent league participation. One authority closes replay and late-write races while preserving the live crowd moment.
+
+## 2026-07-23 — Static capability and runtime observation are separate release facts
+
+**Decision:** A source-declared health route is `healthRouteContract`, never a runtime pass. Release readiness requires a fresh provenance-bearing health observation with a matching digest, HTTP 200, and healthy payload.
+
+**Why:** Source text can prove that code declares a route, but cannot prove reachability, deployment identity, or health.
+
+## 2026-07-23 — Router extraction must immediately contract measurable risk budgets
+
+**Decision:** Route inventory scans Worker and every extracted `*Router.ts`; three domain routers carry direct tests and bounded size. Removing the duplicate anonymous poll lowers the public-ingest ceiling from eleven to ten, and Worker growth fails above 4,040 physical lines or if extracted route literals return.
+
+**Why:** Refactoring without a tighter invariant simply creates temporary cleanliness. The removed blast radius should become a lower machine-enforced ceiling in the same change.
+
+## 2026-07-23 — Preserve and disclose the mismatched preexisting session commit
+
+**Decision:** Keep local commit `6328f044` intact even though its `feat(auth)` message does not describe its public-playlist changes. Do not reset, rewrite, or force-push; record the mismatch and include the remaining Session 81 work in a truthful follow-up closeout commit.
+
+**Why:** The content is valid and verified, but rewriting an unexpected shared-worktree commit would be destructive and could erase unknown provenance. Disclosure is safer than history surgery.

@@ -1,0 +1,320 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "Codex /arc Session 81",
+  "generatedAt": "2026-07-23T06:05:00Z",
+  "project": {
+    "slug": "vaultfront",
+    "name": "VaultFront",
+    "type": "game",
+    "registryType": "app",
+    "audience": "public-unlaunched",
+    "stage": "FORGE",
+    "stagingType": "local"
+  },
+  "summary": "Premise-verified Session 81 audit using the game/product rubric plus infrastructure and public-release lenses. The highest-severity finding is functional: scheduled public playlists omit both VaultFront feature flags, so the flagship vault-to-convoy loop is absent from the main public match path. The ranked local plan restores that loop, makes seasonal progression and loop analytics server-certified and restart-durable, separates static health-route contracts from live runtime observations, introduces bounded router seams in Worker.ts, and turns the visible Prediction League into a reachable durable spectator loop. External staging, email delivery, native Obelisk, three-human Alpha, revenue, and founder approval remain explicitly unobserved and cannot be fabricated.",
+  "axes": {
+    "featureDepth": 2,
+    "innovation": 1.5,
+    "ux": 2,
+    "feedbackLoop": 1.5,
+    "gamification": 3,
+    "aiIntegration": 1,
+    "security": 2,
+    "speedOrganization": 2,
+    "tokenApiReduction": 1.5
+  },
+  "sample": {
+    "method": "live code and contract survey; sample-codebase helper absent",
+    "filesSurveyed": 31,
+    "primarySurfaces": [
+      "src/server/MapPlaylist.ts",
+      "src/core/configuration/DefaultConfig.ts",
+      "src/core/GameRunner.ts",
+      "src/server/GameServer.ts",
+      "src/server/MatchProgression.ts",
+      "src/server/Worker.ts",
+      "src/server/SeasonMilestoneStore.ts",
+      "src/server/PredictionLeagueStore.ts",
+      "src/client/graphics/layers/WinModal.ts",
+      "src/client/graphics/HudTelemetry.ts",
+      "scripts/generate-release-evidence.mjs",
+      "scripts/render-startup-brief.mjs"
+    ]
+  },
+  "specialtyReviews": {
+    "gameLoop": {
+      "score": 65,
+      "confidence": "code-grounded-low-empirical",
+      "axes": {
+        "loopTightness": 58,
+        "progression": 61,
+        "sessionEngagement": 72,
+        "retention": 64,
+        "soulFidelity": 68
+      },
+      "boundary": "The enabled vault-to-convoy loop is coherent and richly instrumented, but the scheduled public playlist path does not enable it. No three-human Alpha corpus exists, so qualitative tuning remains out of scope."
+    },
+    "release": {
+      "verdict": "no-go",
+      "passing": [
+        "latest five GitHub runs green",
+        "cost-neutral launch gates",
+        "sitemap and footer completeness",
+        "branding, legal, and AGPL exception attribution",
+        "local six-cell desktop/mobile three-theme proof",
+        "documented immutable promotion and rollback contract"
+      ],
+      "red": [
+        "no staging or production GitHub environments or promotion evidence",
+        "no live staging smoke, digest parity, headers, Core Web Vitals, or theme observation",
+        "project-domain contact route has no DNS or Brevo delivery receipt",
+        "native Obelisk relying-party wiring is absent",
+        "three-human Alpha, revenue, rollback-drill, and founder-approval receipts are absent"
+      ]
+    },
+    "infrastructure": {
+      "topRisks": [
+        "release evidence conflates source-declared health route with live runtime health",
+        "Worker.ts remains a roughly 4,000-line route composition god object",
+        "startup brief rendering mixes broad parsing, healing, status mutation, and telemetry",
+        "human-action parsing exists in three incompatible implementations"
+      ]
+    }
+  },
+  "evidenceBoundary": [
+    "Local automation cannot manufacture staging, project-domain delivery, native relying-party registration, distinct-human Alpha, revenue, rollback observation, or founder approval.",
+    "The registry still classifies VaultFront as app while local project truth says game. CANON-018 forbids editing the sibling registry; correction must travel through signed Ark cargo.",
+    "No dependency install, paid service, license change, or sibling tree edit is required for these local items.",
+    "No AI feature is proposed: the verified gaps are core-loop reachability, certified progression, analytics truth, and infrastructure composition."
+  ],
+  "rejectedPremises": [
+    {
+      "candidate": "Repair direct PROJECT_STATUS writers",
+      "result": "skipped",
+      "evidence": "Live scripts already import and use scripts/lib/write-project-status.mjs; the prior audit premise is stale."
+    },
+    {
+      "candidate": "Tune convoy timings from code review",
+      "result": "skipped",
+      "evidence": "The core public loop is currently disabled and no three-human Alpha corpus exists. Restore reachability and certified evidence before tuning."
+    },
+    {
+      "candidate": "Treat the current health route regex as staging health",
+      "result": "skipped",
+      "evidence": "A source declaration cannot prove a reachable or healthy runtime; the evidence model must separate contract from observation."
+    },
+    {
+      "candidate": "Delete old deploy and migration workflows by age",
+      "result": "skipped",
+      "evidence": "The workflows remain referenced by architecture and runbook surfaces; age alone is not orphan evidence."
+    },
+    {
+      "candidate": "Bulk-upgrade dependencies",
+      "result": "skipped",
+      "evidence": "The current mission has higher-severity functional and truth gaps; dependency changes also require package-trust review and migration-specific evidence."
+    },
+    {
+      "candidate": "Promote local theme proof or generated release evidence into launch proof",
+      "result": "skipped",
+      "evidence": "Local and static evidence explicitly cannot prove an external origin, live headers, Core Web Vitals, email delivery, identity, human use, or revenue."
+    }
+  ],
+  "items": [
+    {
+      "id": 63,
+      "slug": "public-playlist-vaultfront-loop-contract",
+      "tier": "🔥",
+      "axis": "feature depth / core loop / ux / soul fidelity",
+      "effortHours": 3,
+      "impact": 10,
+      "innovation": 7,
+      "priority": 92,
+      "status": "shipped",
+      "title": "Make every scheduled public playlist actually run the VaultFront loop",
+      "why": "MapPlaylist returns FFA, team, special, and ranked public configs without vaultSitesEnabled or intelOperationsEnabled. Both default false, and GameRunner installs VaultFrontExecution only when either is true. Private and single-player paths explicitly enable them, proving the public omission is real.",
+      "coreLoopStep": "public matchmaking → vault capture → convoy decision → interception/delivery → certified progression",
+      "recipe": "Centralize a public VaultFront config policy, apply it to FFA/team/special/1v1 configurations, and add integration-grade contract tests proving each scheduled public config installs the VaultFront execution path without changing private-host opt-in semantics.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Set both feature flags on public configs."
+        },
+        "L2": {
+          "effortHours": 1.5,
+          "recipe": "Centralize the policy and add MapPlaylist coverage for FFA, team, special, and 1v1."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Add a GameRunner reachability ratchet proving every scheduled public path installs VaultFrontExecution while private custom configuration remains explicit."
+        }
+      },
+      "executionLog": [
+        "L3 shipped: centralized public feature policy covers FFA, team, special, and ranked paths; GameRunner predicate and five integration assertions preserve private opt-in semantics."
+      ]
+    },
+    {
+      "id": 64,
+      "slug": "certified-season-contract-ledger",
+      "tier": "🔥",
+      "axis": "gamification / retention / security / progression",
+      "effortHours": 8,
+      "impact": 10,
+      "innovation": 9,
+      "priority": 86,
+      "status": "shipped",
+      "title": "Replace client-authoritative seasonal counters with a certified durable contract ledger",
+      "why": "WinModal computes arbitrary deltas and POSTs them to an endpoint whose schema has no game identity, upper bounds, or replay protection. Worker adds those values to a process-local Map, allowing inflation and restart loss despite the project's certified progression posture.",
+      "coreLoopStep": "certified match result → exactly-once seasonal contract progress → durable next-match prescription",
+      "recipe": "Create a typed CertifiedSeasonContractStore with PostgreSQL durability and an honest process-local fallback; derive bounded contract metrics only from AuthoritativeMatchOutcome; key events by player, season, and game for idempotency; make the client GET-only; return durability and evidence metadata; add duplicate, restart, transaction, and authorization tests.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Disable client mutation and update contracts from MatchProgression in memory."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Add typed certified match derivation, idempotency, read-only client refresh, and focused tests."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Add PostgreSQL event/progress tables, transaction-bound replay safety, explicit durability/evidence receipts, route extraction, and restart tests."
+        }
+      },
+      "executionLog": [
+        "L3 shipped: certified match derivation, PostgreSQL event/progress transaction, per-game replay safety, honest process-local fallback, GET-only client refresh, route extraction, and authorization/adversarial tests."
+      ]
+    },
+    {
+      "id": 65,
+      "slug": "certified-loop-funnel-evidence",
+      "tier": "🔥",
+      "axis": "feedback loop / observability / engagement / analytics",
+      "effortHours": 8,
+      "impact": 9,
+      "innovation": 9,
+      "priority": 78,
+      "status": "shipped",
+      "title": "Measure the vault-to-convoy loop from certified game transitions instead of browser timestamps",
+      "why": "WinModal reconstructs early/mid/late phases from an unbound sessionStorage stream and Date.now minus match length. The stream is not game-scoped or cleared and counts UI commands rather than first-vault latency, convoy completion, interception, repeat cycles, or abandonment.",
+      "coreLoopStep": "authoritative transitions → per-game loop evidence → truthful cohort summary → human playtest tuning",
+      "recipe": "Carry GameServer's authoritative intent funnel plus certified VaultFront result counters into a game-bound LoopEvidence receipt, persist one idempotent record per game and actor where available, derive first-cycle and repeat-cycle metrics without client claims, expose a privacy-minimal summary, retire the client funnel POST, and test cross-match isolation and duplicate completion.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Bind existing client telemetry to gameId and clear it at match boundaries."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Build a server-certified per-game receipt from GameServer intentFunnel and result counters, with a read-only summary."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Add durable idempotent storage, privacy-minimal cohort derivation, route extraction, and adversarial cross-match/replay tests."
+        }
+      },
+      "executionLog": [
+        "L3 shipped: first-vault and first-outcome ticks plus server intent funnel persist as one privacy-minimal aggregate per game; browser/sessionStorage mutation is retired and admin summary fails closed."
+      ]
+    },
+    {
+      "id": 66,
+      "slug": "runtime-health-observation-truth",
+      "tier": "🔥",
+      "axis": "observability / release / security",
+      "effortHours": 3,
+      "impact": 10,
+      "innovation": 7,
+      "priority": 74,
+      "status": "shipped",
+      "title": "Separate the static health-route contract from a live runtime health observation",
+      "why": "generate-release-evidence regex-matches source for app.get('/_health'), stamps a fresh observedAt, and records status pass under healthEndpoint. That proves declaration, not reachability or a healthy deployment.",
+      "recipe": "Rename the static evidence dimension to healthRouteContract, model live healthObservation as a provenance-bearing external receipt, keep runtimeAdvertised false without it, update manifest and readiness consumers, and add an adversarial test showing a declared-but-unobserved or 503 endpoint cannot become release-ready.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Rename the static field and copy to remove the false endpoint implication."
+        },
+        "L2": {
+          "effortHours": 1.5,
+          "recipe": "Add separate typed contract and observation dimensions plus generator tests."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Add signed/provenance-ready observation ingestion, readiness invariants, and declared-but-unreachable/503 adversarial fixtures."
+        }
+      },
+      "executionLog": [
+        "L3 shipped: source declaration is healthRouteContract; runtimeAdvertised requires fresh provenance-bearing HTTP 200 healthObservation with digest; unobserved and 503 fixtures remain non-ready."
+      ]
+    },
+    {
+      "id": 67,
+      "slug": "bounded-worker-router-composition",
+      "tier": "⚡",
+      "axis": "speed / organization / security / testability",
+      "effortHours": 6,
+      "impact": 8,
+      "innovation": 7,
+      "priority": 58,
+      "status": "shipped",
+      "title": "Turn Worker.ts into a composition root with bounded domain routers",
+      "why": "Worker.ts is roughly 4,000 physical lines and mixes identity, policy, readiness, experiments, AI, game lifecycle, clans, tournaments, progression, replay, and telemetry. This makes every route change a high-blast-radius edit and leaves many behaviors testable only through source scanning.",
+      "recipe": "Extract the season-contract, loop-evidence, and spectator-prediction domains behind injected route dependencies; preserve RoutePolicy bindings and authentication at the seam; add direct router tests; and introduce a production-code composition budget ratchet so future domains cannot silently re-accumulate in Worker.ts.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Extract one new domain router with injected dependencies."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Extract the three changed domains and add direct auth/error route tests."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Add shared composition types, policy-binding tests, a Worker size/domain ratchet, and source-scan replacement for extracted routes."
+        }
+      },
+      "executionLog": [
+        "L3 shipped: season, loop-evidence, and prediction routers use injected seams with direct tests; route inventory scans extracted routers; Worker has a 4,080-line ratchet and extracted-domain reclamation checks."
+      ]
+    },
+    {
+      "id": 68,
+      "slug": "durable-reachable-prediction-league",
+      "tier": "⚡",
+      "axis": "new feature / spectator engagement / retention / security",
+      "effortHours": 8,
+      "impact": 8,
+      "innovation": 8,
+      "priority": 52,
+      "status": "shipped",
+      "title": "Complete the Prediction League as a reachable, restart-durable spectator loop",
+      "why": "The leaderboard UI is reachable, but no client calls prediction-league/predict; a separate narrator crowd route accepts votes without adding them to league history. PredictionLeagueStore calls itself persistent while storing pending and history exclusively in Maps, so restarts erase the league.",
+      "coreLoopStep": "spectate → commit one authenticated prediction → certified match resolution → durable accuracy/rank → return",
+      "recipe": "Unify crowd vote and league submission behind one authenticated prediction contract, persist pending predictions and resolved history with game/player uniqueness, resolve only from MatchProgression's certified outcome, add a compact spectator prediction surface with live aggregate feedback, and test replay, restart, privacy, and empty-state behavior.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Wire an authenticated client prediction action to the existing league route."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Unify vote/league routes, add idempotent memory behavior, live aggregate UI, and router tests."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Add PostgreSQL persistence, certified resolution receipts, restart/replay tests, and privacy-minimal leaderboard identities."
+        }
+      },
+      "executionLog": [
+        "L3 shipped: spectator-only accessible pick panel, authenticated actor binding, PostgreSQL pending/history ledger, advisory-lock submit/resolve serialization, certified outcome resolution, private stats, and replay/restart truth tests."
+      ]
+    }
+  ]
+}

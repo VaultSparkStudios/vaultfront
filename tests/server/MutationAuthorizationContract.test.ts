@@ -1,10 +1,21 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { extractExpressRoutes } from "../../scripts/lib/route-inventory.mjs";
+import { validateMutationRoutePolicies } from "../../scripts/lib/route-policy-coverage.mjs";
 
-const workerSource = readFileSync(
-  resolve(process.cwd(), "src/server/Worker.ts"),
-  "utf8",
+const serverDir = resolve(process.cwd(), "src/server");
+const routeFiles = readdirSync(serverDir).filter(
+  (name) => name === "Worker.ts" || name.endsWith("Router.ts"),
+);
+const routes = routeFiles.flatMap((name) =>
+  extractExpressRoutes(readFileSync(resolve(serverDir, name), "utf8"), name),
+);
+const catalog = JSON.parse(
+  readFileSync(
+    resolve(process.cwd(), "config/mutation-route-policies.json"),
+    "utf8",
+  ),
 );
 
 const protectedRoutes = [
@@ -30,11 +41,19 @@ const protectedRoutes = [
 
 describe("server-authoritative mutation boundary", () => {
   it.each(protectedRoutes)("requires a verified actor for %s", (route) => {
-    const marker = `"${route}"`;
-    const start = workerSource.indexOf(marker);
-    expect(start, `${route} must be registered`).toBeGreaterThan(-1);
-    const nextRoute = workerSource.indexOf("app.", start + marker.length);
-    const end = nextRoute === -1 ? start + 2_500 : nextRoute;
-    expect(workerSource.slice(start, end)).toContain("requireVaultFrontActor");
+    const policy = catalog.routes.find(
+      (candidate: { method: string; path: string }) =>
+        candidate.method === "POST" && candidate.path === route,
+    );
+    expect(policy, `${route} must have a policy`).toMatchObject({
+      auth: "verified-actor",
+    });
+  });
+
+  it("proves every declared binding against Worker and extracted routers", () => {
+    expect(validateMutationRoutePolicies(routes, catalog)).toMatchObject({
+      ok: true,
+      errors: [],
+    });
   });
 });

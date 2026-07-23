@@ -6,6 +6,14 @@ Public-safe summary:
 - Internal operating detail lives in the private Studio OS / ops repository.
 - This repo retains only the public-safe implementation and evidence boundary.
 
+## 2026-07-23 — Session 81 certified-loop and spectator-trust arc
+
+The complete `/start → /audit → /implement → /closeout` mission shipped all six premise-verified audit findings and three new second-order innovations. Scheduled public playlists now enable the flagship VaultFront loop while preserving private opt-in semantics. Seasonal contracts and core-loop evidence derive only from certified match results, persist in PostgreSQL when configured, label the process-local development fallback honestly, and reject retired browser-authored mutation paths.
+
+Prediction League is now a reachable spectator loop: one authenticated pick per player/game, serialized against certified resolution with PostgreSQL advisory locks, durable private accuracy, privacy-minimal live consensus, and an accessible in-match panel. The duplicate anonymous narrator poll is retired, contracting the public-ingest risk ceiling from eleven routes to ten. Season, loop-evidence, and prediction domains are extracted behind tested routers; the Worker composition root is ratcheted at 4,040 physical lines.
+
+Verification is green: 155 Vitest files / 904 tests, production-inclusive coverage, TypeScript, ESLint, production build, Prettier ratchet, bundle budgets, 26/26 Playwright desktop/mobile tests, 41 deploy-contract checks, audit 6/6, innovation pack 20/20, work exhaustion, and project doctor 11/11 with `blockingFailing: 0`. Release remains NO-GO pending a real staging observation, exact-digest parity, verified project-domain delivery, native Obelisk, three authenticated humans, live headers/Core Web Vitals/themes, revenue, rollback observation, and founder approval.
+
 ## 2026-07-22 — Session 80 durable-evidence and trust-boundary arc
 
 The complete `/start → /audit → /implement → /closeout` mission shipped all three premise-verified local findings and three generated second-order innovations. Authenticated Alpha evidence now persists across restarts in PostgreSQL, binds one evidence session to one pseudonymous actor, deduplicates event IDs, exposes only privacy-minimal 24-hour cohort summaries, fails closed when configured persistence is unavailable, and applies a 30-day retention ceiling with process-local parity.

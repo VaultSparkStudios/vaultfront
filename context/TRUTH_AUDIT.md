@@ -211,3 +211,17 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 - Direct verification passed: 147 Vitest files / 873 tests, production coverage, TypeScript, ESLint, production build, Prettier ratchet, bundle budgets, 26/26 Playwright tests, 41 deploy-contract checks, and project doctor 11/11 with `blockingFailing: 0`.
 - Cloudflare deploy/DNS and Brevo capabilities resolve READY, but both available Cloudflare tokens returned HTTP 403 for Email Routing rules. Delivery remains unverified rather than inferred.
 - No external staging, native Obelisk relying-party, project-domain delivery, distinct-human Alpha, live-web/revenue/rollback, or founder approval was fabricated.
+
+## 2026-07-23 — Session 81 certified-loop truth audit
+
+- `docs/AUDIT_2026-07-23.json` is exhausted at 6/6 shipped with zero pending unblocked items.
+- `docs/INNOVATION_PACK.json` is exhausted at 20/20; three consensus/risk/composition candidates were generated and implemented this session.
+- Scheduled public free-for-all, team, special, and ranked configurations enable both VaultFront feature flags; private configuration remains explicit.
+- Seasonal contract and loop-evidence writes derive from certified match outcomes. Browser mutation endpoints return 410 and cannot create authoritative progress.
+- PostgreSQL stores enforce replay/idempotency; an unavailable configured database fails closed. Database-free development receipts say `process-local` rather than persistent.
+- Prediction League uses authenticated actor identity, game/player uniqueness, a shared per-game advisory lock for submit/resolve, durable private stats, and aggregate consensus without exposing participant identity.
+- Mutation inventory reports 42/42 routes classified and public ingestion 10/10. Worker reports 4,028 physical lines against a 4,040 ceiling; extracted route literals are forbidden from returning.
+- Release evidence reports work exhausted and transfer budgets passing, but remains blocked because staging, runtime health, parity, email, identity, human, live-web, revenue, rollback, and founder observations are absent.
+- Direct verification passed: 155 Vitest files / 904 tests, production-inclusive coverage, TypeScript, ESLint, production build, Prettier ratchet, bundle budgets, 26/26 Playwright, and 41 deploy checks.
+- The local tree contains a valid but mislabeled preexisting Session 81 commit; no reset, amend, force-push, or fabricated provenance was used.
+- A sibling Studio Ops release-gate file was changed by an accidentally invoked generator. VaultFront did not edit or revert the sibling; Ark owns the correction handoff.

@@ -273,3 +273,77 @@ CREATE TABLE IF NOT EXISTS playtest_evidence_events (
 
 CREATE INDEX IF NOT EXISTS idx_playtest_evidence_window
   ON playtest_evidence_events (occurred_at DESC);
+
+-- ── Certified Seasonal Contracts ───────────────────────────────────────────
+-- The client can only read this state. One certified match result contributes
+-- at most once to one player's active season.
+CREATE TABLE IF NOT EXISTS season_contract_events (
+  persistent_id       VARCHAR(64) NOT NULL,
+  season_id           VARCHAR(32) NOT NULL,
+  game_id             VARCHAR(64) NOT NULL,
+  interception_timing INT NOT NULL DEFAULT 0 CHECK (interception_timing >= 0),
+  objective_denial    INT NOT NULL DEFAULT 0 CHECK (objective_denial >= 0),
+  comeback_execution  INT NOT NULL DEFAULT 0 CHECK (comeback_execution >= 0),
+  surge_execution     INT NOT NULL DEFAULT 0 CHECK (surge_execution >= 0),
+  recorded_at         TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (persistent_id, season_id, game_id)
+);
+
+CREATE TABLE IF NOT EXISTS season_contract_progress (
+  persistent_id       VARCHAR(64) NOT NULL,
+  season_id           VARCHAR(32) NOT NULL,
+  interception_timing INT NOT NULL DEFAULT 0 CHECK (interception_timing >= 0),
+  objective_denial    INT NOT NULL DEFAULT 0 CHECK (objective_denial >= 0),
+  comeback_execution  INT NOT NULL DEFAULT 0 CHECK (comeback_execution >= 0),
+  surge_execution     INT NOT NULL DEFAULT 0 CHECK (surge_execution >= 0),
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (persistent_id, season_id)
+);
+
+-- ── Certified Core-Loop Evidence ───────────────────────────────────────────
+-- One privacy-minimal aggregate per certified game. No player identity or
+-- browser-authored telemetry is stored here.
+CREATE TABLE IF NOT EXISTS certified_loop_evidence (
+  game_id                       VARCHAR(64) PRIMARY KEY,
+  duration_seconds              INT NOT NULL DEFAULT 0 CHECK (duration_seconds >= 0),
+  player_samples                INT NOT NULL DEFAULT 0 CHECK (player_samples >= 0),
+  vault_participants            INT NOT NULL DEFAULT 0 CHECK (vault_participants >= 0),
+  outcome_participants          INT NOT NULL DEFAULT 0 CHECK (outcome_participants >= 0),
+  completed_cycle_participants  INT NOT NULL DEFAULT 0 CHECK (completed_cycle_participants >= 0),
+  first_vault_seconds_total     DOUBLE PRECISION NOT NULL DEFAULT 0 CHECK (first_vault_seconds_total >= 0),
+  first_vault_samples           INT NOT NULL DEFAULT 0 CHECK (first_vault_samples >= 0),
+  first_outcome_seconds_total   DOUBLE PRECISION NOT NULL DEFAULT 0 CHECK (first_outcome_seconds_total >= 0),
+  first_outcome_samples         INT NOT NULL DEFAULT 0 CHECK (first_outcome_samples >= 0),
+  intent_funnel                 JSONB NOT NULL DEFAULT '{"early":{},"mid":{},"late":{}}'::jsonb,
+  recorded_at                   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_certified_loop_evidence_recorded
+  ON certified_loop_evidence (recorded_at DESC);
+
+-- ── Spectator Prediction League ────────────────────────────────────────────
+-- The game tombstone closes submissions permanently before resolution. Both
+-- submission and resolution take the same PostgreSQL advisory transaction lock.
+CREATE TABLE IF NOT EXISTS prediction_league_games (
+  game_id         VARCHAR(64) PRIMARY KEY,
+  actual_outcome  VARCHAR(16) NOT NULL CHECK (actual_outcome IN ('intercept', 'delivery')),
+  resolved_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS prediction_league_predictions (
+  game_id            VARCHAR(64) NOT NULL,
+  spectator_id       VARCHAR(64) NOT NULL,
+  predicted_outcome  VARCHAR(16) NOT NULL CHECK (predicted_outcome IN ('intercept', 'delivery')),
+  submitted_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  week_key           VARCHAR(8) NOT NULL,
+  actual_outcome     VARCHAR(16) CHECK (actual_outcome IN ('intercept', 'delivery')),
+  correct            BOOLEAN,
+  resolved_at        TIMESTAMPTZ,
+  PRIMARY KEY (game_id, spectator_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_prediction_league_spectator_resolved
+  ON prediction_league_predictions (spectator_id, resolved_at DESC);
+CREATE INDEX IF NOT EXISTS idx_prediction_league_week_resolved
+  ON prediction_league_predictions (week_key, resolved_at DESC)
+  WHERE resolved_at IS NOT NULL;

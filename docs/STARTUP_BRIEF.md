@@ -2,7 +2,7 @@
 <!-- generated-at: 2026-07-23 (Session 80 closeout) -->
 <!-- fast-boot-valid-until: next session if within 24h -->
 <!-- brief-coherent: true -->
-<!-- brief-sources: {"schema":1,"session":80,"sources":{"context/PROJECT_STATUS.json":"06d419994af36a67","context/TASK_BOARD.md":"95b387b5705c4b98","context/LATEST_HANDOFF.md":"949ba4b42301507e","context/SELF_IMPROVEMENT_LOOP.md":"f1e3f12a00f1909b","docs/GENIUS_LIST.md":"7c949bb4878e99e9"}} -->
+<!-- brief-sources: {"schema":1,"session":80,"sources":{"context/PROJECT_STATUS.json":"b6a7bfc265822803","context/TASK_BOARD.md":"95b387b5705c4b98","context/LATEST_HANDOFF.md":"b1e01b20ad108749","context/SELF_IMPROVEMENT_LOOP.md":"4ed0c1cc53a02219","docs/GENIUS_LIST.md":"73213bba0c4d5465"}} -->
 
 # Startup Brief — VaultFront
 
@@ -60,9 +60,9 @@
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ CONTEXT METER ═══════════════════════════════════════════════╗
-║  ✓  █░░░░░░░░░░░░░░░░░░░░░░░    4% used                          ║
-║     37,009 / 1,000,000 tok  ·  codex/codex-1m  ·  measured+heur  ║
-║     ~18,505 tok/turn  ·  cache 50%  ·  47 turns to compact       ║
+║  ✓  ░░░░░░░░░░░░░░░░░░░░░░░░    1% used                          ║
+║     8,451 / 1,000,000 tok  ·  codex/codex-1m  ·  measured+heuri  ║
+║     ~4,226 tok/turn  ·  cache 50%  ·  215 turns to compact       ║
 ║     Verdict: CONTINUE                                            ║
 ╚════════════════════════════════════════════════════════════════╝
 
@@ -71,7 +71,7 @@
 ║  ✓  Velocity      6 →  ·  Debt: ↓                                ║
 ║  ✓  Runway        authorized staging-evidence corridor           ║
 ║  ⛔  Context age   ?d                                             ║
-║  ⚠  IGNIS         39408 FORGE  ·  7d old                         ║
+║  ✓  IGNIS         41663 FORGE  ·  0d old                         ║
 ║  ✓  Truth         green  ·  Genome: 24/25                        ║
 ║  ⚠  Compliance   not tracked — run: node scripts/ops.mjs compli  ║
 ║  ✓  Genome dims   all stable  (24/25)                            ║

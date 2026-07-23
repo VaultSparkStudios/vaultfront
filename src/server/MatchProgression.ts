@@ -3,6 +3,15 @@ import {
   certifiedDailyMasteryStore,
   type DailyMasteryCompletionReceipt,
 } from "./CertifiedDailyMasteryStore";
+import {
+  certifiedLoopEvidenceStore,
+  type CertifiedLoopEvidenceReceipt,
+  type LoopIntentFunnel,
+} from "./CertifiedLoopEvidenceStore";
+import {
+  certifiedSeasonContractStore,
+  type CertifiedSeasonContractState,
+} from "./CertifiedSeasonContractStore";
 import { logger } from "./Logger";
 import type { PlayerStats } from "./PlayerStatsStore";
 import { playerStatsStore } from "./PlayerStatsStore";
@@ -18,16 +27,21 @@ export interface AuthoritativePlayerOutcome {
   vaultCaptures: number;
   convoyDeliveries: number;
   convoyIntercepts: number;
+  convoysLost: number;
   executionChains: number;
   surgeActivations: number;
+  firstVaultCaptureTick?: number;
+  firstConvoyOutcomeTick?: number;
 }
 
 export interface AuthoritativeMatchOutcome {
   gameId: string;
   durationSeconds: number;
+  turnIntervalMs: number;
   mapName: string;
   seasonId: string;
   onMutator: boolean;
+  intentFunnel: LoopIntentFunnel;
   players: AuthoritativePlayerOutcome[];
 }
 
@@ -39,6 +53,8 @@ export interface ProgressionReceipt {
   predictionOutcome: "intercept" | "delivery";
   predictionsResolved: number;
   dailyMastery: DailyMasteryCompletionReceipt[];
+  seasonContracts: CertifiedSeasonContractState[];
+  loopEvidence: CertifiedLoopEvidenceReceipt | null;
 }
 
 interface ProgressionDependencies {
@@ -48,6 +64,8 @@ interface ProgressionDependencies {
   recordSeasonActivity: typeof seasonMilestoneStore.recordActivity;
   resolvePrediction: typeof predictionLeagueStore.resolveGame;
   recordDailyMastery: typeof certifiedDailyMasteryStore.recordCertifiedMatch;
+  recordSeasonContracts: typeof certifiedSeasonContractStore.recordCertifiedMatch;
+  recordLoopEvidence: typeof certifiedLoopEvidenceStore.recordCertifiedMatch;
 }
 
 const defaultDependencies: ProgressionDependencies = {
@@ -61,6 +79,12 @@ const defaultDependencies: ProgressionDependencies = {
   ),
   recordDailyMastery: certifiedDailyMasteryStore.recordCertifiedMatch.bind(
     certifiedDailyMasteryStore,
+  ),
+  recordSeasonContracts: certifiedSeasonContractStore.recordCertifiedMatch.bind(
+    certifiedSeasonContractStore,
+  ),
+  recordLoopEvidence: certifiedLoopEvidenceStore.recordCertifiedMatch.bind(
+    certifiedLoopEvidenceStore,
   ),
 };
 
@@ -105,6 +129,8 @@ export class ServerAuthoritativeProgressionSpine {
         predictionOutcome: derivePredictionOutcome(outcome.players),
         predictionsResolved: 0,
         dailyMastery: [],
+        seasonContracts: [],
+        loopEvidence: null,
       };
     }
 
@@ -112,11 +138,12 @@ export class ServerAuthoritativeProgressionSpine {
     // retrying this envelope in-process could duplicate earlier fan-out legs.
     this.processedGameIds.add(outcome.gameId);
     const predictionOutcome = derivePredictionOutcome(outcome.players);
-    const predictionReceipt = this.dependencies.resolvePrediction(
+    const predictionReceipt = await this.dependencies.resolvePrediction(
       outcome.gameId,
       predictionOutcome,
     );
     if (outcome.players.length === 0) {
+      const loopEvidence = await this.dependencies.recordLoopEvidence(outcome);
       return {
         gameId: outcome.gameId,
         duplicate: false,
@@ -125,6 +152,8 @@ export class ServerAuthoritativeProgressionSpine {
         predictionOutcome,
         predictionsResolved: predictionReceipt.resolvedPredictions,
         dailyMastery: [],
+        seasonContracts: [],
+        loopEvidence,
       };
     }
 
@@ -164,6 +193,7 @@ export class ServerAuthoritativeProgressionSpine {
 
     let achievementsUnlocked = 0;
     const dailyMastery: DailyMasteryCompletionReceipt[] = [];
+    const seasonContracts: CertifiedSeasonContractState[] = [];
     for (const player of outcome.players) {
       const aggregate = await this.dependencies.getPlayerStats(
         player.persistentId,
@@ -252,7 +282,17 @@ export class ServerAuthoritativeProgressionSpine {
       if (masteryReceipt) {
         dailyMastery.push(masteryReceipt);
       }
+      const seasonReceipt = await this.dependencies.recordSeasonContracts(
+        outcome.gameId,
+        outcome.seasonId,
+        player,
+      );
+      if (seasonReceipt) {
+        seasonContracts.push(seasonReceipt);
+      }
     }
+
+    const loopEvidence = await this.dependencies.recordLoopEvidence(outcome);
 
     const receipt = {
       gameId: outcome.gameId,
@@ -262,6 +302,8 @@ export class ServerAuthoritativeProgressionSpine {
       predictionOutcome,
       predictionsResolved: predictionReceipt.resolvedPredictions,
       dailyMastery,
+      seasonContracts,
+      loopEvidence,
     };
     log.info("authoritative progression recorded", receipt);
     return receipt;

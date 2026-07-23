@@ -21,6 +21,13 @@ describe("ProgressionDebrief", () => {
   beforeEach(() => {
     localStorage.clear();
     vi.mocked(fetchVaultFrontContracts).mockResolvedValue({
+      seasonId: "week-29",
+      interceptionTiming: 2,
+      objectiveDenial: 3,
+      comebackExecution: 1,
+      surgeExecution: 4,
+      evidence: "certified-match-result",
+      durability: "process-local",
       eloRating: 1248,
       eloLabel: "Gold",
       matchesPlayed: 8,

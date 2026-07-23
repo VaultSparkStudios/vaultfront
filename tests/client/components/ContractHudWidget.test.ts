@@ -3,7 +3,7 @@ import { ContractHudWidget } from "../../../src/client/components/ContractHudWid
 import { GameUpdateType } from "../../../src/core/game/GameUpdates";
 
 describe("ContractHudWidget", () => {
-  test("increments live progress before the periodic fetch cadence", () => {
+  test("does not invent progress from client-observed activity", () => {
     const widget = new ContractHudWidget() as any;
     widget.contracts = [
       {
@@ -25,7 +25,7 @@ describe("ContractHudWidget", () => {
 
     widget.tick();
 
-    expect(widget.contracts[0].value).toBe(1);
+    expect(widget.contracts[0].value).toBe(0);
     expect(widget.loadContracts).not.toHaveBeenCalled();
   });
 });

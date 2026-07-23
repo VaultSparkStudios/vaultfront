@@ -23,6 +23,7 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       vaultCaptures: 0,
       convoyDeliveries: deliveries,
       convoyIntercepts: intercepts,
+      convoysLost: 0,
       executionChains: 0,
       surgeActivations: 0,
     });
@@ -50,12 +51,18 @@ describe("ServerAuthoritativeProgressionSpine", () => {
     }));
     const checkAndUnlock = vi.fn(() => []);
     const recordSeasonActivity = vi.fn();
-    const resolvePrediction = vi.fn(() => ({
+    const resolvePrediction = vi.fn(async () => ({
       gameId: "game-1",
       actualOutcome: "delivery" as const,
       resolvedPredictions: 4,
+      durability: "process-local" as const,
     }));
     const recordDailyMastery = vi.fn().mockResolvedValue(null);
+    const recordSeasonContracts = vi.fn().mockResolvedValue(null);
+    const recordLoopEvidence = vi.fn().mockResolvedValue({
+      gameId: "game-1",
+      evidence: "certified-match-result",
+    });
     const spine = new ServerAuthoritativeProgressionSpine({
       recordMatch,
       getPlayerStats,
@@ -63,6 +70,8 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       recordSeasonActivity,
       resolvePrediction,
       recordDailyMastery,
+      recordSeasonContracts,
+      recordLoopEvidence,
     });
     const outcome = {
       gameId: "game-1",
@@ -70,6 +79,8 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       mapName: "plains",
       seasonId: "week-29",
       onMutator: true,
+      turnIntervalMs: 100,
+      intentFunnel: { early: {}, mid: {}, late: {} },
       players: [
         {
           persistentId: "p1",
@@ -78,6 +89,7 @@ describe("ServerAuthoritativeProgressionSpine", () => {
           vaultCaptures: 2,
           convoyDeliveries: 3,
           convoyIntercepts: 1,
+          convoysLost: 1,
           executionChains: 1,
           surgeActivations: 1,
         },
@@ -88,6 +100,7 @@ describe("ServerAuthoritativeProgressionSpine", () => {
           vaultCaptures: 1,
           convoyDeliveries: 0,
           convoyIntercepts: 1,
+          convoysLost: 2,
           executionChains: 0,
           surgeActivations: 0,
         },
@@ -126,13 +139,21 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       3,
     );
     expect(recordDailyMastery).toHaveBeenCalledTimes(2);
+    expect(recordSeasonContracts).toHaveBeenCalledTimes(2);
+    expect(recordLoopEvidence).toHaveBeenCalledTimes(1);
+    expect(recordSeasonContracts).toHaveBeenCalledWith(
+      "game-1",
+      "week-29",
+      expect.objectContaining({ persistentId: "p1", convoysLost: 1 }),
+    );
   });
 
   test("resolves an intercept-dominant match once even without progression players", async () => {
-    const resolvePrediction = vi.fn(() => ({
+    const resolvePrediction = vi.fn(async () => ({
       gameId: "empty",
       actualOutcome: "delivery" as const,
       resolvedPredictions: 1,
+      durability: "process-local" as const,
     }));
     const spine = new ServerAuthoritativeProgressionSpine({
       recordMatch: vi.fn(),
@@ -140,6 +161,7 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       checkAndUnlock: vi.fn(),
       recordSeasonActivity: vi.fn(),
       resolvePrediction,
+      recordLoopEvidence: vi.fn().mockResolvedValue(null),
     });
 
     const receipt = await spine.record({
@@ -148,6 +170,8 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       mapName: "plains",
       seasonId: "week-29",
       onMutator: false,
+      turnIntervalMs: 100,
+      intentFunnel: { early: {}, mid: {}, late: {} },
       players: [],
     });
 
@@ -161,6 +185,8 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       mapName: "plains",
       seasonId: "week-29",
       onMutator: false,
+      turnIntervalMs: 100,
+      intentFunnel: { early: {}, mid: {}, late: {} },
       players: [],
     });
     expect(resolvePrediction).toHaveBeenCalledTimes(1);

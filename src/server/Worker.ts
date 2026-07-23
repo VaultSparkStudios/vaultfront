@@ -33,6 +33,8 @@ import {
   withAiDeadline,
 } from "./CanonicalAiEvidence";
 import { certifiedDailyMasteryStore } from "./CertifiedDailyMasteryStore";
+import { certifiedLoopEvidenceStore } from "./CertifiedLoopEvidenceStore";
+import { certifiedSeasonContractStore } from "./CertifiedSeasonContractStore";
 import { Client } from "./Client";
 import { registerDailyMasteryRoute } from "./DailyMasteryRouter";
 import { EloRating } from "./EloRating";
@@ -42,6 +44,7 @@ import { GameAllocationError, GameManager } from "./GameManager";
 import { registerGamePreviewRoute } from "./GamePreviewRoute";
 import { getUserMe, verifyClientToken } from "./jwt";
 import { logger } from "./Logger";
+import { registerLoopEvidenceRoutes } from "./LoopEvidenceRouter";
 import { verifyMatchResultCertificate } from "./MatchResultCertificate";
 import { playerStatsStore } from "./PlayerStatsStore";
 import { registerPlaytestEvidenceRoutes } from "./PlaytestEvidenceRouter";
@@ -74,6 +77,7 @@ import {
   type PlayStyle,
 } from "./PlayerStatsStore";
 import { startPolling } from "./PollingLoop";
+import { registerPredictionLeagueRoutes } from "./PredictionLeagueRouter";
 import { predictionLeagueStore } from "./PredictionLeagueStore";
 import { PrivilegeRefresher } from "./PrivilegeRefresher";
 import { rematchStore } from "./RematchStore";
@@ -85,6 +89,7 @@ import {
 import { replayHighlightStore } from "./ReplayHighlightStore";
 import { getReplayIntegrityPosture, replayStore } from "./ReplayStore";
 import { buildRuntimeIntegrityPassport } from "./RuntimeIntegrityPassport";
+import { registerSeasonContractRoutes } from "./SeasonContractRouter";
 import { seasonMilestoneStore } from "./SeasonMilestoneStore";
 import {
   MAX_SPECTATOR_BUFFERED_BYTES,
@@ -121,13 +126,6 @@ const config = getServerConfigFromServer();
 const workerId = parseInt(process.env.WORKER_ID ?? "0");
 const log = logger.child({ comp: `w_${workerId}` });
 const playlist = new MapPlaylist();
-
-const VaultFrontSeasonContractDeltaSchema = z.object({
-  interceptionTimingDelta: z.number().int().min(0).default(0),
-  objectiveDenialDelta: z.number().int().min(0).default(0),
-  comebackExecutionDelta: z.number().int().min(0).default(0),
-  rivalryRevengeDelta: z.number().int().min(0).default(0),
-});
 
 const VaultFrontDockVariantSchema = z.enum(["top", "stack"]);
 const VaultFrontRecapVariantSchema = z.enum(["goal_focus", "requeue_focus"]);
@@ -199,24 +197,6 @@ const VaultFrontRuntimeEventSchema = z.object({
   value: z.literal(1).default(1),
 });
 
-const VaultFrontFunnelTelemetrySchema = z.object({
-  won: z.boolean(),
-  matchLengthSeconds: z.number().int().min(0).max(86_400).default(0),
-  phases: z.object({
-    early: z.record(z.string(), z.number().int().min(0).max(10_000)),
-    mid: z.record(z.string(), z.number().int().min(0).max(10_000)),
-    late: z.record(z.string(), z.number().int().min(0).max(10_000)),
-  }),
-});
-
-interface VaultFrontSeasonContractState {
-  seasonId: string;
-  interceptionTiming: number;
-  objectiveDenial: number;
-  comebackExecution: number;
-  rivalryRevenge: number;
-}
-
 interface VaultFrontDockAssignment {
   experimentId: "dock_layout_v1";
   variant: z.infer<typeof VaultFrontDockVariantSchema>;
@@ -266,16 +246,6 @@ interface VaultFrontOutcomeBucketStats {
   recapVariant: Record<z.infer<typeof VaultFrontRecapVariantSchema>, number>;
 }
 
-interface VaultFrontFunnelSummary {
-  matches: number;
-  wins: number;
-  phases: Record<"early" | "mid" | "late", Record<string, number>>;
-}
-
-const vaultFrontContractsStore = new Map<
-  string,
-  VaultFrontSeasonContractState
->();
 const vaultFrontDockAssignments = new Map<string, VaultFrontDockAssignment>();
 const vaultFrontDockVariantStats = new Map<
   z.infer<typeof VaultFrontDockVariantSchema>,
@@ -314,7 +284,6 @@ const vaultFrontRuntimeHudStats = new Map<
   ["default", { assignedUsers: 0, events: {} }],
   ["mobile_priority", { assignedUsers: 0, events: {} }],
 ]);
-const vaultFrontFunnelSummaries = new Map<string, VaultFrontFunnelSummary>();
 const vaultFrontExperimentIntegrity = new ExperimentIntegrityGate();
 
 const DOCK_OBJECTIVE_EVENTS = new Set([
@@ -330,10 +299,6 @@ const EVENT_HISTORY_LIMIT = 800;
 const TREND_WINDOW_MS = 5 * 60 * 1000;
 const GUARDRAIL_MIN_ASSIGNED = 60;
 const GUARDRAIL_MIN_OBJECTIVE_EVENTS = 40;
-
-function seasonIdUTC(now: Date = new Date()): string {
-  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
-}
 
 function stableHash(input: string): number {
   let h = 2166136261;
@@ -581,46 +546,6 @@ function recordRuntimeEvent(
     hudStats.events[event] = (hudStats.events[event] ?? 0) + value;
   }
   return { rewardVariant, hudVariant };
-}
-
-function emptyFunnelSummary(): VaultFrontFunnelSummary {
-  return {
-    matches: 0,
-    wins: 0,
-    phases: {
-      early: {},
-      mid: {},
-      late: {},
-    },
-  };
-}
-
-function mergePhaseCounts(
-  target: Record<string, number>,
-  source: Record<string, number>,
-): void {
-  for (const [key, value] of Object.entries(source)) {
-    target[key] = (target[key] ?? 0) + value;
-  }
-}
-
-function recordFunnelTelemetry(
-  telemetry: z.infer<typeof VaultFrontFunnelTelemetrySchema>,
-): void {
-  const overall = vaultFrontFunnelSummaries.get("all") ?? emptyFunnelSummary();
-  const length = matchLengthBucket(telemetry.matchLengthSeconds);
-  const bucketKey = `length:${length}`;
-  const bucket =
-    vaultFrontFunnelSummaries.get(bucketKey) ?? emptyFunnelSummary();
-  for (const target of [overall, bucket]) {
-    target.matches += 1;
-    if (telemetry.won) target.wins += 1;
-    mergePhaseCounts(target.phases.early, telemetry.phases.early);
-    mergePhaseCounts(target.phases.mid, telemetry.phases.mid);
-    mergePhaseCounts(target.phases.late, telemetry.phases.late);
-  }
-  vaultFrontFunnelSummaries.set("all", overall);
-  vaultFrontFunnelSummaries.set(bucketKey, bucket);
 }
 
 function makeOutcomeBucket(): VaultFrontOutcomeBucketStats {
@@ -1193,87 +1118,21 @@ export async function startWorker() {
       log.error("Daily mastery unavailable", { err: String(error) }),
   });
 
-  app.get("/api/vaultfront/contracts", async (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Missing bearer token" });
-    }
-    const token = authHeader.substring("Bearer ".length);
-    const result = await verifyClientToken(token, config);
-    if (result.type === "error") {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-    const seasonId = seasonIdUTC();
-    const key = `${result.persistentId}:${seasonId}`;
-    const existing = vaultFrontContractsStore.get(key) ?? {
-      seasonId,
-      interceptionTiming: 0,
-      objectiveDenial: 0,
-      comebackExecution: 0,
-      rivalryRevenge: 0,
-    };
-    vaultFrontContractsStore.set(key, existing);
-
-    // Include current Elo so the client can show rank + animate deltas
-    const playerStats = await playerStatsStore.getPlayerStats(
-      result.persistentId,
-    );
-    const eloRating = playerStats?.eloRating ?? 1200;
-    const matchesPlayed = playerStats?.matchesPlayed ?? 0;
-    const isDecaying =
-      playerStats?.updatedAt !== undefined &&
-      Date.now() - new Date(playerStats.updatedAt).getTime() >
-        7 * 24 * 60 * 60 * 1000;
-    const eloHistory = await playerStatsStore.getEloHistory(
-      result.persistentId,
-      10,
-    );
-    return res.json({
-      ...existing,
-      eloRating,
-      eloLabel: EloRating.ratingLabel(eloRating),
-      matchesPlayed,
-      isDecaying,
-      eloHistory,
-    });
-  });
-
-  app.post("/api/vaultfront/contracts/update", async (req, res) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Missing bearer token" });
-    }
-    const token = authHeader.substring("Bearer ".length);
-    const auth = await verifyClientToken(token, config);
-    if (auth.type === "error") {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const parse = VaultFrontSeasonContractDeltaSchema.safeParse(req.body);
-    if (!parse.success) {
-      return res.status(400).json({ error: z.prettifyError(parse.error) });
-    }
-    const delta = parse.data;
-    const seasonId = seasonIdUTC();
-    const key = `${auth.persistentId}:${seasonId}`;
-    const current = vaultFrontContractsStore.get(key) ?? {
-      seasonId,
-      interceptionTiming: 0,
-      objectiveDenial: 0,
-      comebackExecution: 0,
-      rivalryRevenge: 0,
-    };
-    const next: VaultFrontSeasonContractState = {
-      seasonId,
-      interceptionTiming:
-        current.interceptionTiming + delta.interceptionTimingDelta,
-      objectiveDenial: current.objectiveDenial + delta.objectiveDenialDelta,
-      comebackExecution:
-        current.comebackExecution + delta.comebackExecutionDelta,
-      rivalryRevenge: current.rivalryRevenge + delta.rivalryRevengeDelta,
-    };
-    vaultFrontContractsStore.set(key, next);
-    return res.json(next);
+  registerSeasonContractRoutes(app, {
+    verifyToken: (token) => verifyClientToken(token, config),
+    currentSeasonId: () => {
+      const season = vaultSeasonScheduler.getStatus();
+      return `week-${season.weekNumber}`;
+    },
+    getContracts: (persistentId, seasonId) =>
+      certifiedSeasonContractStore.getState(persistentId, seasonId),
+    getPlayerStats: (persistentId) =>
+      playerStatsStore.getPlayerStats(persistentId),
+    getEloHistory: (persistentId, limit) =>
+      playerStatsStore.getEloHistory(persistentId, limit),
+    eloLabel: (rating) => EloRating.ratingLabel(rating),
+    reportError: (error) =>
+      log.error("Season contracts unavailable", { err: String(error) }),
   });
 
   app.get("/api/vaultfront/ab/dock/assignment", async (req, res) => {
@@ -1674,42 +1533,37 @@ export async function startWorker() {
     });
   });
 
-  app.post("/api/vaultfront/funnel", async (req, res) => {
-    const identity = await resolveVaultFrontIdentity(req);
-    if (!identity) {
-      return res.status(401).json({ error: "Missing identity" });
-    }
-    const parsed = VaultFrontFunnelTelemetrySchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ error: z.prettifyError(parsed.error) });
-    }
-    recordFunnelTelemetry(parsed.data);
-    recordVaultFrontPlaytestPulse({
-      surface: "retention",
-      event: parsed.data.won ? "funnel_win" : "funnel_loss",
-    });
-    return res.json({ ok: true });
+  registerLoopEvidenceRoutes(app, {
+    isAdmin: (headers) => headers[config.adminHeader()] === config.adminToken(),
+    getSummary: (limit) => certifiedLoopEvidenceStore.getSummary(limit),
+    reportError: (error) =>
+      log.error("Loop evidence unavailable", { err: String(error) }),
   });
 
-  app.get("/api/vaultfront/funnel/summary", async (req, res) => {
-    if (req.headers[config.adminHeader()] !== config.adminToken()) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-    const summary = Array.from(vaultFrontFunnelSummaries.entries()).map(
-      ([key, value]) => ({
-        key,
-        matches: value.matches,
-        winRate:
-          value.matches > 0
-            ? Number((value.wins / value.matches).toFixed(4))
-            : 0,
-        phases: value.phases,
+  registerPredictionLeagueRoutes(app, {
+    authenticate: (req, res) => requireVaultFrontActor(req, res),
+    recordPrediction: predictionLeagueStore.recordPrediction.bind(
+      predictionLeagueStore,
+    ),
+    getLeaderboard: predictionLeagueStore.getLeaderboard.bind(
+      predictionLeagueStore,
+    ),
+    getSpectatorStats: predictionLeagueStore.getSpectatorStats.bind(
+      predictionLeagueStore,
+    ),
+    getGameConsensus: predictionLeagueStore.getGameConsensus.bind(
+      predictionLeagueStore,
+    ),
+    publishConsensus: (consensus) =>
+      narratorBus.broadcastRaw(consensus.gameId, {
+        type: "crowd_vote",
+        interceptPct: consensus.interceptPct,
+        deliveryPct: consensus.deliveryPct,
+        total: consensus.total,
       }),
-    );
-    return res.json({
-      generatedAt: Date.now(),
-      summaries: summary,
-    });
+    predictionRateLimit: rateLimit({ windowMs: 30_000, max: 3 }),
+    reportError: (error) =>
+      log.error("Prediction league unavailable", { err: String(error) }),
   });
 
   registerPlaytestEvidenceRoutes(app, {
@@ -2680,60 +2534,6 @@ export async function startWorker() {
     return res.json({ ok: true });
   });
 
-  // ── Spectator Crowd Prediction ───────────────────────────────────────────
-  // Per-game in-memory prediction tally: gameId → {intercept: n, delivery: n}
-  const crowdPredictions = new Map<
-    string,
-    { intercept: number; delivery: number }
-  >();
-
-  const crowdPredictRateLimit = rateLimit({ windowMs: 30_000, max: 3 });
-
-  app.post(
-    "/api/vaultfront/narrator/:gameId/predict",
-    crowdPredictRateLimit,
-    (req, res) => {
-      const gameId = req.params.gameId;
-      if (!gameId || gameId.length > 64)
-        return res.status(400).json({ error: "Invalid gameId" });
-
-      const parsed = z
-        .object({
-          outcome: z.enum(["intercept", "delivery"]),
-          persistentId: z.string().max(64).optional(),
-        })
-        .safeParse(req.body);
-      if (!parsed.success)
-        return res.status(400).json({ error: "Invalid prediction" });
-
-      const tally = crowdPredictions.get(gameId) ?? {
-        intercept: 0,
-        delivery: 0,
-      };
-      tally[parsed.data.outcome]++;
-      crowdPredictions.set(gameId, tally);
-
-      const total = tally.intercept + tally.delivery;
-      const interceptPct =
-        total > 0 ? Math.round((tally.intercept / total) * 100) : 50;
-
-      // Broadcast updated tally to all narrator SSE subscribers for this game
-      narratorBus.broadcastRaw(gameId, {
-        type: "crowd_vote",
-        interceptPct,
-        deliveryPct: 100 - interceptPct,
-        total,
-      });
-
-      return res.json({
-        ok: true,
-        interceptPct,
-        deliveryPct: 100 - interceptPct,
-        total,
-      });
-    },
-  );
-
   // ── Pre-Match Intelligence Brief ─────────────────────────────────────────
   const prematchBriefRateLimit = rateLimit({ windowMs: 30_000, max: 3 });
   const PREMATCH_BRIEF_SYSTEM_PROMPT =
@@ -3165,53 +2965,6 @@ export async function startWorker() {
         parsed.data.matchId,
       );
       return res.json({ ok: true, item, alreadyOwned });
-    },
-  );
-
-  // ── Spectator Prediction League ───────────────────────────────────────────
-  const predictionLeagueRateLimit = rateLimit({ windowMs: 30_000, max: 3 });
-
-  app.post(
-    "/api/vaultfront/prediction-league/predict",
-    predictionLeagueRateLimit,
-    async (req, res) => {
-      const parsed = z
-        .object({
-          gameId: z.string().max(64),
-          spectatorId: z.string().max(64).optional(),
-          outcome: z.enum(["intercept", "delivery"]),
-        })
-        .safeParse(req.body);
-      if (!parsed.success)
-        return res.status(400).json({ error: "Invalid request" });
-      const actor = await requireVaultFrontActor(req, res);
-      if (!actor || !acceptActorClaim(actor, parsed.data.spectatorId, res))
-        return;
-      predictionLeagueStore.recordPrediction(
-        parsed.data.gameId,
-        actor.persistentId,
-        parsed.data.outcome,
-      );
-      return res.json({ ok: true });
-    },
-  );
-
-  app.get("/api/vaultfront/prediction-league/leaderboard", (req, res) => {
-    const weekOnly = req.query.week === "1";
-    const limit = Math.min(50, parseInt(String(req.query.limit ?? "10")));
-    return res.json({
-      ok: true,
-      leaderboard: predictionLeagueStore.getLeaderboard(limit, weekOnly),
-    });
-  });
-
-  app.get(
-    "/api/vaultfront/prediction-league/stats/:spectatorId",
-    (req, res) => {
-      const spectatorId = String(req.params.spectatorId ?? "").slice(0, 64);
-      const stats = predictionLeagueStore.getSpectatorStats(spectatorId);
-      if (!stats) return res.json({ ok: true, stats: null });
-      return res.json({ ok: true, stats });
     },
   );
 

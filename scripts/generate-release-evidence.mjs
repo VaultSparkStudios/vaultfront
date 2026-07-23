@@ -24,6 +24,7 @@ const DEFAULT_MAX_AGE_MS = 24 * 60 * 60 * 1_000;
 
 export const canonicalReleaseGateDefinitions = Object.freeze([
   ["staging", "Staging deployment"],
+  ["healthObservation", "Live runtime health observation"],
   ["stagingParity", "Staging parity"],
   ["contactEmail", "Brevo project-domain contact email"],
   ["obeliskIdentity", "Obelisk relying-party identity"],
@@ -93,8 +94,12 @@ function evaluateObservation(key, label, observation, now, maxAgeMs) {
     observation?.digest ?? "",
   );
   const verified = observation?.status === "verified";
-  const pass =
+  const provenancePass =
     verified && freshnessState === "fresh" && sourceComplete && digestComplete;
+  const healthSemanticsPass =
+    key !== "healthObservation" ||
+    (observation?.httpStatus === 200 && observation?.healthy === true);
+  const pass = provenancePass && healthSemanticsPass;
   let detail;
   if (!observation) detail = "No evidence observation is attached.";
   else if (!verified)
@@ -106,6 +111,11 @@ function evaluateObservation(key, label, observation, now, maxAgeMs) {
   else if (!sourceComplete || !digestComplete)
     detail =
       "Evidence requires a named source and canonical sha256 digest provenance.";
+  else if (key === "healthObservation" && observation.httpStatus !== 200)
+    detail = `Runtime health probe returned HTTP ${observation.httpStatus ?? "unknown"}; HTTP 200 is required.`;
+  else if (key === "healthObservation" && observation.healthy !== true)
+    detail =
+      "Runtime health probe did not provide an explicit healthy=true observation.";
   else
     detail = observation.detail ?? "Fresh provenance-backed evidence verified.";
   return {
@@ -116,6 +126,12 @@ function evaluateObservation(key, label, observation, now, maxAgeMs) {
     source: observation?.source ?? null,
     observedAt: observation?.observedAt ?? null,
     digest: observation?.digest ?? null,
+    ...(key === "healthObservation"
+      ? {
+          httpStatus: observation?.httpStatus ?? null,
+          healthy: observation?.healthy ?? null,
+        }
+      : {}),
     freshness: { state: freshnessState, ageMs, maxAgeMs },
     detail,
   };
@@ -147,14 +163,14 @@ export function buildLocalSurfaceEvidence(projectRoot, observedAt) {
     const body = fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
     return !/app\.get\(\s*["']\/_health["']/.test(body);
   });
-  const healthEndpoint = {
-    status: missingHealthRoutes.length === 0 ? "pass" : "block",
+  const healthRouteContract = {
+    status: missingHealthRoutes.length === 0 ? "declared" : "missing",
     source: healthSources.join(" + "),
     observedAt,
     digest: digestFiles(projectRoot, healthSources),
     detail:
       missingHealthRoutes.length === 0
-        ? "Canonical /_health route is declared by both Master and Worker."
+        ? "Static source declares canonical /_health routes in Master and Worker; this is not a runtime health observation."
         : `Canonical /_health route missing from: ${missingHealthRoutes.join(", ")}.`,
   };
 
@@ -189,7 +205,7 @@ export function buildLocalSurfaceEvidence(projectRoot, observedAt) {
       detail: error instanceof Error ? error.message : String(error),
     };
   }
-  return { healthEndpoint, footerManifest };
+  return { healthRouteContract, footerManifest };
 }
 
 export function loadReleaseGateObservations(projectRoot) {
@@ -250,12 +266,12 @@ export function buildReleaseEvidence({
     detail: "No observation bundle supplied.",
   },
   localSurfaceEvidence = {
-    healthEndpoint: {
-      status: "block",
+    healthRouteContract: {
+      status: "missing",
       source: null,
       observedAt: null,
       digest: null,
-      detail: "Local health-route evidence was not supplied.",
+      detail: "Static health-route contract evidence was not supplied.",
     },
   },
   projectTruth = null,
@@ -278,9 +294,9 @@ export function buildReleaseEvidence({
     maxAgeMs: maxEvidenceAgeMs,
   });
   const releaseBlockers = [...launchGates.blockers];
-  if (localSurfaceEvidence.healthEndpoint.status !== "pass") {
+  if (localSurfaceEvidence.healthRouteContract.status !== "declared") {
     releaseBlockers.push(
-      `healthEndpoint: ${localSurfaceEvidence.healthEndpoint.detail}`,
+      `healthRouteContract: ${localSurfaceEvidence.healthRouteContract.detail}`,
     );
   }
   if (pendingWork.length > 0)
@@ -308,7 +324,11 @@ export function buildReleaseEvidence({
     launch: {
       mode: "join-alpha",
       status: launchGates.status,
-      runtimeAdvertised: false,
+      runtimeAdvertised:
+        launchGates.gates.find((gate) => gate.gate === "staging")?.status ===
+          "pass" &&
+        launchGates.gates.find((gate) => gate.gate === "healthObservation")
+          ?.status === "pass",
       liveOriginVerified:
         launchGates.gates.find((gate) => gate.gate === "staging")?.status ===
         "pass",

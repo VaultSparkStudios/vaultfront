@@ -2,42 +2,36 @@
 
 This repo keeps only a public-safe two-session handoff. Detailed operational history is maintained privately.
 
+## Where We Left Off — 2026-07-23 — Session 81 certified-loop and spectator-trust closeout
+
+**Session intent:** Run the complete agent-neutral arc continuously, verify every premise against live code, exhaust the audit and generated innovations, preserve direct exit-code truth, and close directly to `main` without inventing external launch evidence.
+
+**Shipped:** Six L3 items in `docs/AUDIT_2026-07-23.json` and three newly generated second-order invariants. The refreshed innovation pack is 20/20 shipped.
+
+- Every scheduled public playlist enables the vault-to-convoy loop, while private custom configuration remains explicit.
+- Seasonal contracts and loop evidence are certified, idempotent, PostgreSQL-durable when configured, privacy-minimal, and honest about process-local development scope.
+- Release evidence distinguishes a declared health route from a fresh observed HTTP 200 health receipt.
+- Prediction League is reachable in spectator mode, binds picks to authenticated actors, serializes submit/resolve per game, persists rank history, broadcasts privacy-minimal consensus, and retires the duplicate anonymous poll.
+- Three injected router seams are directly tested; route policy covers Worker plus extracted routers; public ingestion is capped at 10/10 and Worker at 4,040 lines.
+
+**Verification:** 155/155 Vitest files and 904/904 tests; production-inclusive coverage (30.96% lines); TypeScript; ESLint; production build; Prettier ratchet; bundle budgets; 26/26 Playwright desktop/mobile; 41 deploy-contract checks; audit 6/6; innovation pack 20/20; work exhaustion green; project doctor 11/11 with `blockingFailing: 0`.
+
+**Truth boundary:** Local proof does not establish a public deployment. Release remains NO-GO without staging and health observations, exact-digest parity, working project-domain delivery, native Obelisk, three authenticated human Alpha sessions, live headers/Core Web Vitals/themes, revenue, rollback observation, and founder approval.
+
+**Cross-repo boundary:** Studio Ops still reports `type=app`; VaultFront remains locally `type=game`. A tool-generated sibling release-gate write was detected and left untouched under CANON-018; closeout ships Ark evidence for the Studio Ops owner rather than editing or reverting that tree.
+
+**Deploy:** pending — deferred because the project is public-unlaunched and no approved external staging observation contract exists. Production deployment would violate the release gate.
+
+**Suggested next focus:** Receive the source-tagged registry/tool-contamination receipt, establish the approved staging corridor, then collect parity, email, identity, human, live-web, revenue, rollback, and founder evidence in that order.
+
+---
+
 ## Where We Left Off — 2026-07-22 — Session 80 durable-evidence closeout
 
 **Session intent:** Run the complete agent-neutral arc continuously, exhaust every live-code finding and generated innovation, preserve direct exit-code truth, and close directly to `main` without inventing external launch evidence.
 
-**Shipped:** Three new local items in `docs/AUDIT_2026-07-22.json`; two existing external corridors remain explicitly `externally-blocked`. The second-order pack is 17/17 shipped, including three new Session 80 invariants.
+**Shipped:** Durable privacy-minimal Alpha evidence, complete 42-route mutation policy coverage with an eleven-route public-ingest ceiling, and trusted-base Dependabot validation. The second-order pack reached 17/17.
 
-- Authenticated playtest evidence persists in PostgreSQL across restarts with actor/session binding, event idempotency, privacy-minimal 24-hour summaries, configured-database fail-closed behavior, and a 30-day retention ceiling.
-- A TypeScript abstract-syntax-tree inventory proves bidirectional policy coverage for all 42 mutation routes and caps public ingestion at the reviewed 11-route budget.
-- Dependabot automation is exact-identity and ecosystem scoped; the workflow loads the repository-owned validator from the trusted base SHA without retained credentials.
+**Verification:** 147/147 Vitest files and 873/873 tests; production-inclusive coverage; TypeScript; ESLint; production build; Prettier and bundle ratchets; 26/26 Playwright; 41 deploy checks; doctor 11/11 with `blockingFailing: 0`.
 
-**Verification:** 147/147 Vitest files and 873/873 tests; production-inclusive coverage; TypeScript; ESLint; production build; Prettier ratchet; bundle budgets; 26/26 Playwright desktop/mobile; 41 deploy-contract checks; audit 11/11; innovation pack 17/17; project doctor 11/11 with `blockingFailing: 0`.
-
-**Post-push repair:** The first Linux CI build exposed TypeScript self-reference in two test-harness parameter annotations that Windows accepted. The fixture factories were renamed to remove scope ambiguity; direct TypeScript, focused Vitest, and ESLint reruns pass.
-
-**Truth boundary:** The local suite proves deployable source, not a public deployment. Cloudflare/Brevo credentials are READY, but the available Cloudflare tokens returned 403 for Email Routing rules. No staging, native Obelisk, project-domain delivery, distinct-human Alpha, live-web, revenue, rollback, or founder-approval evidence was fabricated.
-
-**Ark:** Signed session outcome `01JU6FD3AGDB699E9CB5BD99B7`, reusable trust-boundary pattern `01JU6FD3VUA2A773FD5213F313`, and Studio Ops registry/Email Routing question `01JU6FD4KF023171AC83AF4650` shipped without editing a sibling tree.
-
-**Suggested next focus:** Obtain the source-tagged Studio Ops registry decision and a Cloudflare token authorized for Email Routing, deliberately establish external staging, then collect exact-digest parity and human/business evidence in gate order.
-
----
-
-## Where We Left Off — 2026-07-22 — Session 79 certified-mastery closeout
-
-**Session intent:** Run the complete agent-neutral arc as one continuous mission, exhaust every verified local item, implement generated second-order innovations, and close directly to `main` without inventing external evidence.
-
-**Shipped:** Six local items in `docs/AUDIT_2026-07-22.json`; two external corridors remain explicitly `externally-blocked`. The second-order pack is 14/14 shipped, including three new Session 79 innovations.
-
-- Daily Mastery derives only from certified match outcomes, persists exactly-once UTC-day progress and a Mastery wallet in PostgreSQL, labels the local fallback, returns typed progression receipts, and exposes an authenticated injected route.
-- Every project-status mutation uses one atomic invariant writer; startup, freshness, forecast, and closeout share one typed session ledger.
-- The production client graph is 181/181 reachable; eleven dead shipped-looking modules were removed.
-- E2E installs native canvas prerequisites before `npm ci`, runs Node 22, and deploy/promotion use canonical `/_health`.
-- Tests are non-duplicated and capped at four workers; coverage includes unloaded production code and keeps Worker honestly visible.
-
-**Verification:** 143/143 Vitest files and 856/856 tests; production coverage; TypeScript; ESLint; production build; 26/26 Playwright; 38 deploy checks; audit 8/8; innovations 14/14; doctor 10/10 with `blockingFailing: 0`.
-
-**Truth boundary:** Local E2E does not prove a remote run. Release evidence remains launch-blocked on real staging/parity, Obelisk, Brevo, live web/theme, three authenticated humans, revenue, rollback observation, and founder approval.
-
-**Suggested next focus:** Receive the source-tagged Studio Ops registry decision, deliberately establish external staging, then collect exact-digest parity and human/business evidence in gate order.
+**Truth boundary:** No staging, native Obelisk, project-domain delivery, distinct-human Alpha, live-web, revenue, rollback, or founder-approval evidence was fabricated.
