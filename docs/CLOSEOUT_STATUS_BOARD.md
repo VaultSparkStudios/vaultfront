@@ -1,19 +1,17 @@
 <!-- generated-by: scripts/render-closeout-board.mjs v1.0 -->
-<!-- generated-at: 2026-07-22 (Session 79 closeout) -->
+<!-- generated-at: 2026-07-23 (Session 80 closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
-╔══ SESSION CLOSEOUT · VaultFront · S79 ═════════════════════════╗
-║  Date: 2026-07-22 · SIL: 987/1000 · V:9  ·  Debt: down           ║
+╔══ SESSION CLOSEOUT · VaultFront · S80 ═════════════════════════╗
+║  Date: 2026-07-23 · SIL: 987/1000 · V:6  ·  Debt: down           ║
 ║  Mode: FOUNDER  ·  Agent: codex                                  ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WHAT SHIPPED ════════════════════════════════════════════════╗
-║  ✓ Daily Mastery now derives only from certified match outcomes  ║
-║  ✓ Every project-status mutation uses one atomic invariant writ  ║
-║  ✓ Startup, freshness, forecast, and closeout share one typed s  ║
-║  ✓ The production client graph is 181/181 reachable; eleven dea  ║
-║  ✓ E2E installs native canvas prerequisites before `npm ci`, ru  ║
+║  ✓ Authenticated playtest evidence persists in PostgreSQL acros  ║
+║  ✓ A TypeScript abstract-syntax-tree inventory proves bidirecti  ║
+║  ✓ Dependabot automation is exact-identity and ecosystem scoped  ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ SCORES · SIL 987/1000 ═══════════════════════════════════════╗
 ║    Dev Health         100  ██████████                            ║
@@ -49,16 +47,16 @@
 ║  Live:     N/A — pre-deploy (FORGE)                              ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
-║  Doctor:        10/10                                            ║
+║  Doctor:        11/11                                            ║
 ║  Compliance:    49/49                                            ║
-║  Tests:         856/856                                          ║
+║  Tests:         873/873                                          ║
 ║  IGNIS:         7d ago                                           ║
 ║  Truth:         green                                            ║
-║  Sanitization:  6d ago                                           ║
+║  Sanitization:  cleared S80                                      ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ NEXT SESSION ════════════════════════════════════════════════╗
-║  #1: Require a receipt before the registry can silently overrid  ║
-║      arc-profile still classifies VaultFront as app while PROJE  ║
+║  #1: Receive a source-tagged registry correction receipt         ║
+║      The arc profiler selected the wrong audit lens again while  ║
 ╚════════════════════════════════════════════════════════════════╝
 ```
 
