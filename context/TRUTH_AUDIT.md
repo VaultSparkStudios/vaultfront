@@ -225,3 +225,14 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 - Direct verification passed: 155 Vitest files / 904 tests, production-inclusive coverage, TypeScript, ESLint, production build, Prettier ratchet, bundle budgets, 26/26 Playwright, and 41 deploy checks.
 - The local tree contains a valid but mislabeled preexisting Session 81 commit; no reset, amend, force-push, or fabricated provenance was used.
 - A sibling Studio Ops release-gate file was changed by an accidentally invoked generator. VaultFront did not edit or revert the sibling; Ark owns the correction handoff.
+
+## 2026-07-23 — Session 82 entitlement and balance truth audit
+
+- `docs/AUDIT_2026-07-23.json` is cumulatively exhausted at 10/10 shipped; every new premise was rechecked against live code before implementation.
+- `docs/INNOVATION_PACK.json` is evidence-derived and exhausted at 25/25; five new second-order candidates were generated and implemented this session.
+- Protobufjs is exactly 7.6.5, the lock integrity is pinned, CI audits at moderate severity, and `npm audit --audit-level=moderate` reports zero vulnerabilities.
+- Season Pass state derives from certified player/game results. PostgreSQL owns replay keys, aggregates, and cosmetic entitlement claims; actor-bound routes reject cross-player reads/writes and configured persistence failure returns unavailable rather than falling back.
+- Convoy reward defaults and formula have one executable authority. The public envelope is byte-stable, verifies 28,125 deterministic scenarios across six invariants with zero counterexamples, and its source/artifact digests participate in tamper-sensitive release lineage.
+- Experiment summaries truthfully label assignment and aggregate storage as process-local with a worker-restart reset boundary. Worker is 3,108 physical lines against a 3,130 ceiling; five extracted domains are reclamation-checked.
+- Release evidence reports work exhausted and transfer budgets passing. It remains blocked on eight absent external observations plus dirty source before commit; local success is not staging, human, email, identity, theme, or approval evidence.
+- Direct verification passed: 160 Vitest files / 923 tests, 31.57% production-inclusive line coverage, TypeScript, ESLint, production build, Prettier ratchet, exact bundle/media budgets, 26/26 Playwright, 42/42 mutation policies, 10/10 public ingest, and zero npm vulnerabilities.

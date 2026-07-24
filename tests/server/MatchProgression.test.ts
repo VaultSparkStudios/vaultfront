@@ -53,7 +53,13 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       (_persistentId: string, event: { type: string }) =>
         event.type === "match_ended" ? ([{}] as any[]) : [],
     ) as any;
-    const recordSeasonActivity = vi.fn();
+    const recordSeasonPass = vi.fn().mockResolvedValue({
+      seasonId: "week-29",
+      milestones: [],
+      entitlements: [],
+      evidence: "certified-match-result",
+      durability: "process-local",
+    });
     const resolvePrediction = vi.fn(async () => ({
       gameId: "game-1",
       actualOutcome: "delivery" as const,
@@ -88,7 +94,7 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       recordMatch,
       getPlayerStats,
       checkAndUnlock,
-      recordSeasonActivity,
+      recordSeasonPass,
       resolvePrediction,
       recordDailyMastery,
       recordSeasonContracts,
@@ -139,6 +145,7 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       predictionsResolved: 4,
       dailyMastery: [expect.any(Object), expect.any(Object)],
       seasonContracts: [expect.any(Object), expect.any(Object)],
+      seasonPass: [expect.any(Object), expect.any(Object)],
     });
     expect(duplicate).toMatchObject({ duplicate: true, playersRecorded: 0 });
     expect(recordMatch).toHaveBeenCalledTimes(1);
@@ -156,11 +163,14 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       onMutator: true,
       eloRating: 1232,
     });
-    expect(recordSeasonActivity).toHaveBeenCalledWith(
-      "p1",
+    expect(recordSeasonPass).toHaveBeenCalledWith(
+      "game-1",
       "week-29",
-      "convoy_deliveries",
-      3,
+      expect.objectContaining({
+        persistentId: "p1",
+        convoyDeliveries: 3,
+        achievementsUnlocked: 1,
+      }),
     );
     expect(recordDailyMastery).toHaveBeenCalledTimes(2);
     expect(recordSeasonContracts).toHaveBeenCalledTimes(2);
@@ -183,7 +193,7 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       recordMatch: vi.fn(),
       getPlayerStats: vi.fn(),
       checkAndUnlock: vi.fn(),
-      recordSeasonActivity: vi.fn(),
+      recordSeasonPass: vi.fn(),
       resolvePrediction,
       recordLoopEvidence: vi.fn().mockResolvedValue(null),
     });

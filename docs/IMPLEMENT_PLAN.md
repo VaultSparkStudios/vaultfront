@@ -1,26 +1,27 @@
-# Session 81 Implementation Plan
+# Session 82 Implementation Plan
 
 Source: `docs/AUDIT_2026-07-23.json`
 
-## Wave 3A — Restore the flagship path and truth boundary
+## Wave 3A — Close the live supply-chain hole
 
-1. `public-playlist-vaultfront-loop-contract` — restore the VaultFront execution contract in every scheduled public playlist and ratchet it with integration tests.
-2. `runtime-health-observation-truth` — separate source-declared health capability from a provenance-bearing live observation.
+1. `protobuf-denial-of-service-patch` — package-trust and apply the bounded parser patch first, then lower the CI audit threshold while the diff is isolated.
 
-## Wave 3B — Certified progression and feedback
+## Wave 3B — Bank composition headroom
 
-3. `certified-season-contract-ledger` — build the durable match-certified progression store first because the later routers and prediction loop reuse its dependency-injection and persistence pattern.
-4. `certified-loop-funnel-evidence` — derive match-bound loop evidence from authoritative server state and retire the browser-authored funnel mutation.
+2. `bounded-experiment-router-composition` — extract the high-churn experiment control plane and lower the Worker budget before adding another route seam.
 
-## Wave 3C — Spectator loop and composition
+## Wave 3C — Converge progression authority
 
-5. `durable-reachable-prediction-league` — complete one authenticated, persistent prediction path resolved by the certified match outcome.
-6. `bounded-worker-router-composition` — reconcile the extracted season, loop-evidence, and prediction routers; add policy/composition tests and a non-regression budget.
+3. `certified-durable-season-pass` — replace the process-local second progression truth with a certified, restart-safe entitlement ledger and extracted actor-bound routes.
 
-## Wave 3D — Saturation
+## Wave 3D — Make balance executable
 
-7. Refresh the Unified Genius List and run the innovation pack.
-8. Implement every locally shippable second-order candidate and explicitly evidence any external-only boundary.
-9. Run the work-exhaustion verifier and session-floor gate; continue until both prove exhaustion.
+4. `release-bound-balance-envelope` — centralize tuning, generate deterministic fairness evidence, and bind the receipt into release lineage and agent surfaces after runtime structure is stable.
+
+## Wave 3E — Saturation
+
+5. Refresh the Unified Genius List and run the innovation pack.
+6. Implement every locally shippable second-order candidate and explicitly evidence any external-only boundary.
+7. Run the work-exhaustion verifier and session-floor gate; continue until both prove exhaustion.
 
 Every item is complete only after its behavior and relevant test surface pass. Partial work is recorded as blocked, never shipped.

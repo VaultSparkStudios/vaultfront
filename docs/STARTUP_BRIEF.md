@@ -1,12 +1,12 @@
 <!-- generated-by: scripts/render-startup-brief.mjs v3.1 -->
-<!-- generated-at: 2026-07-23 (Session 80 closeout) -->
+<!-- generated-at: 2026-07-24 (Session 82 closeout) -->
 <!-- fast-boot-valid-until: next session if within 24h -->
 <!-- brief-coherent: true -->
-<!-- brief-sources: {"schema":1,"session":80,"sources":{"context/PROJECT_STATUS.json":"b6a7bfc265822803","context/TASK_BOARD.md":"95b387b5705c4b98","context/LATEST_HANDOFF.md":"b1e01b20ad108749","context/SELF_IMPROVEMENT_LOOP.md":"4ed0c1cc53a02219","docs/GENIUS_LIST.md":"73213bba0c4d5465"}} -->
+<!-- brief-sources: {"schema":1,"session":82,"sources":{"context/PROJECT_STATUS.json":"7b47f6e9d2d918d9","context/TASK_BOARD.md":"2c593c899505344f","context/LATEST_HANDOFF.md":"e8a5dcad0dad8327","context/SELF_IMPROVEMENT_LOOP.md":"cc0da44a62554a07","docs/GENIUS_LIST.md":"f0389b89e67d2dfc"}} -->
 
 # Startup Brief — VaultFront
 
-> **Fast-boot brief** — generated at Session 80 closeout · 2026-07-23.
+> **Fast-boot brief** — generated at Session 82 closeout · 2026-07-24.
 > Valid for next session if started within 24h. For sessions >24h later, load context files fresh (start.md §3).
 
 ---
@@ -15,7 +15,7 @@
 ╔════════════════════════════════════════════════════════════════╗
 ║  🎮 VAULTFRONT                                                   ║
 ║  game · alpha/public-unlaunched · FORGE                          ║
-║  Session 81 · 2026-07-23 · FOUNDER MODE                          ║
+║  Session 83 · 2026-07-24 · FOUNDER MODE                          ║
 ║  Owner: VaultSpark Studios                                       ║
 ╚════════════════════════════════════════════════════════════════╝
 
@@ -34,55 +34,55 @@
 
 ╔══ SCORE ═══════════════════════════════════════════════════════╗
 ║                                                                  ║
-║    987/1000   ███████████████████████░   99%                     ║
-║    SIL v3.0  ·  Avg3: 986.3  ·  Velocity 6→                      ║
+║    991/1000   ███████████████████████░   99%                     ║
+║    SIL v3.0  ·  Avg3: 988.7  ·  Velocity 9↑                      ║
 ║    Last active: 0d  ·  Last closeout: 1d  ·  (active = newest o  ║
-║    Trend  ▆▁▇▇▆  →  (last 5 sessions)                            ║
+║    Trend  ▇▇▆▇▇  ↑  (last 5 sessions)                            ║
 ║                                                                  ║
 ║    Category         Score  Bar        Spark   Δ                  ║
 ║    ─────────────── ────── ────────── ──────── ─                  ║
-║    Dev Health       100    ██████████  ▇▇██████ →                ║
-║    Alignment        100    ██████████  ▇▇▇▇▇███ →                ║
+║    Dev Health       100    ██████████  ████████ →                ║
+║    Alignment        100    ██████████  ▇▇▇█████ →                ║
 ║    Momentum         100    ██████████  ████████ →                ║
-║    Engagement        94    █████████░  ▆▇▇▇▇▇▇▇ →                ║
-║    Process Qual     100    ██████████  ▇▇██████ →                ║
+║    Engagement        97    ██████████  ▇▇▇▇▇▇▇▇ →                ║
+║    Process Qual     100    ██████████  ████████ →                ║
 ║    Coherence         98    ██████████  ········ →                ║
 ║    Security         100    ██████████  ········ →                ║
-║    Ecosystem         95    ██████████  ········ →                ║
+║    Ecosystem         96    ██████████  ········ →                ║
 ║    Capital          100    ██████████  ········ →                ║
 ║    Automation       100    ██████████  ········ →                ║
 ║                                                                  ║
 ╚════════════════════════════════════════════════════════════════╝
 
-╔══ WHERE WE LEFT OFF  ·  Session 80 ════════════════════════════╗
+╔══ WHERE WE LEFT OFF  ·  Session 82 ════════════════════════════╗
 ║  Shipped:  see LATEST_HANDOFF.md                                 ║
-║  Tests:    873/873 passing  ·  Deploy: N/A                       ║
+║  Tests:    923/923 passing  ·  Deploy: N/A                       ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ CONTEXT METER ═══════════════════════════════════════════════╗
-║  ✓  ░░░░░░░░░░░░░░░░░░░░░░░░    1% used                          ║
-║     8,451 / 1,000,000 tok  ·  codex/codex-1m  ·  measured+heuri  ║
-║     ~4,226 tok/turn  ·  cache 50%  ·  215 turns to compact       ║
+║  ✓  █░░░░░░░░░░░░░░░░░░░░░░░    4% used                          ║
+║     39,020 / 1,000,000 tok  ·  codex/codex-1m  ·  measured+heur  ║
+║     ~19,510 tok/turn  ·  cache 50%  ·  45 turns to compact       ║
 ║     Verdict: CONTINUE                                            ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ SIGNALS ═════════════════════════════════════════════════════╗
-║  ✓  Tests         873/873 passing                                ║
-║  ✓  Velocity      6 →  ·  Debt: ↓                                ║
+║  ✓  Tests         923/923 passing                                ║
+║  ✓  Velocity      9 ↑  ·  Debt: ↓                                ║
 ║  ✓  Runway        authorized staging-evidence corridor           ║
 ║  ⛔  Context age   ?d                                             ║
-║  ✓  IGNIS         41663 FORGE  ·  0d old                         ║
+║  ✓  IGNIS         41663 FORGE  ·  1d old                         ║
 ║  ✓  Truth         green  ·  Genome: 24/25                        ║
 ║  ⚠  Compliance   not tracked — run: node scripts/ops.mjs compli  ║
 ║  ✓  Genome dims   all stable  (24/25)                            ║
-║  ✓  Entropy       0.058  (healthy)                               ║
+║  ✓  Entropy       0.044  (healthy)                               ║
 ║  ✓  CDR           no gap detected                                ║
 ║  ✓  Patterns      no recurring pressure detected                 ║
 ║  ✓  Templates     v3.3 aligned                                   ║
 ║  ⛔  Revenue sig.  not found  ⚠ stale                             ║
 ║  ✓  Deploy gaps   no gaps (run: ops deploy-gaps)                 ║
-║  ✓  Doctor        11/11 (100%)  ·  2026-07-23  ✓                 ║
-║  ✓  Cost          real $0.10/7d · 7d notional $1.58 (flat-rate   ║
+║  ✓  Doctor        11/11 (100%)  ·  2026-07-24  ✓                 ║
+║  ✓  Cost          real $0.12/7d · 7d notional $1.93 (flat-rate   ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ ORCHESTRATOR ════════════════════════════════════════════════╗
@@ -94,38 +94,38 @@
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ MOMENTUM METER ══════════════════════════════════════════════╗
-║  Velocity:   ▆▁▇▇▆  6→  (last 5 sessions)                        ║
+║  Velocity:   ▇▇▆▇▇  9↑  (last 5 sessions)                        ║
 ║  Intent:     100% achieved last 5                                ║
 ║  Streak:     — (last intent not achieved)                        ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ SIL FORECAST (next session) ═════════════════════════════════╗
-║  Projected:  987/1000  (→0 vs current 987)                       ║
+║  Projected:  994/1000  (↑3 vs current 991)                       ║
 ║  All categories forecast stable or rising.                       ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ╔══ GENIUS HIT LIST ═════════════════════════════════════════════╗
-║  ✓ #1 🔥 Rebuild Daily Challenge as a certified, durable Daily   ║
-║     8h · gamification / retention / security / feature depth ·   ║
-║  ✓ #2 🔥 Make authenticated Alpha evidence restart-durable and   ║
-║     6h · feedback loop / security / observability / engagement   ║
-║  ✓ #3 🔥 Make every PROJECT_STATUS mutation use one atomic inva  ║
-║     3h · security / observability / organization · sonnet        ║
-║  ✓ #4 🔥 Make the declared route-policy plane cover the real mu  ║
-║     4h · security / organization / observability · sonnet        ║
-║  ⏸ #5 ⚡ Receive a source-tagged registry correction receipt      ║
-║     1h · ecosystem / observability / security · sonnet           ║
-║  ✓ #6 🔥 Delete unreachable shipped-looking client code and mak  ║
-║     4h · feature depth / ux / speed / organization · sonnet      ║
-║  ✓ #7 🔥 Make E2E bootstrap survive canvas prebuild outages and  ║
-║     2h · dev health / release / reliability · sonnet             ║
-║  ✓ #8 ⚡ Converge startup, freshness, forecast, and closeout on   ║
-║     3h · observability / organization / token efficiency · sonn  ║
+║  ✓ #1 🔥 Make every scheduled public playlist actually run the   ║
+║     3h · feature depth / core loop / ux / soul fidelity · sonne  ║
+║  ✓ #2 🔥 Replace client-authoritative seasonal counters with a   ║
+║     8h · gamification / retention / security / progression · so  ║
+║  ✓ #3 🔥 Make the visible Season Pass a certified durable entit  ║
+║     8h · gamification / retention / security / progression · so  ║
+║  ✓ #4 🔥 Turn VaultFront balance into a self-verifying release-  ║
+║     8h · feedback loop / observability / game depth / automatio  ║
+║  ✓ #5 🔥 Measure the vault-to-convoy loop from certified game t  ║
+║     8h · feedback loop / observability / engagement / analytics  ║
+║  ✓ #6 🔥 Separate the static health-route contract from a live   ║
+║     3h · observability / release / security · sonnet             ║
+║  ✓ #7 ⚡ Turn Worker.ts into a composition root with bounded dom  ║
+║     6h · speed / organization / security / testability · sonnet  ║
+║  ✓ #8 ⚡ Extract the experiment control plane from Worker.ts beh  ║
+║     6h · speed / organization / security / testability · sonnet  ║
 ╚════════════════════════════════════════════════════════════════╝
 
 ```
 
 ---
 
-_Generated by `scripts/render-startup-brief.mjs v3.1` · Session 80 closeout · 2026-07-23_
+_Generated by `scripts/render-startup-brief.mjs v3.1` · Session 82 closeout · 2026-07-24_
 _Run `node scripts/ops.mjs doctor` for live health check · `node scripts/ops.mjs genius-list` to refresh hit list_

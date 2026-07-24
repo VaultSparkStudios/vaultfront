@@ -195,3 +195,14 @@ Append-only. Each session appends one entry. Never edit prior entries.
 - Generated and shipped three second-order innovations; work exhaustion passed at audit 6/6 and innovations 20/20.
 - Direct verification passed: 155 files / 904 tests and coverage, TypeScript, lint, build, format, bundles, 26/26 E2E, and 41 deploy checks.
 - The first exact-SHA CI run found a real `MatchProgression` branch-coverage regression. The repair covered certified mastery/season receipts plus the no-vault-capture branch, reran all 155 files / 904 tests, and passed the unchanged global + ten-critical-module ratchet.
+
+---
+
+## 2026-07-23 — Session 82 certified-entitlement and balance-authority arc
+
+- Goal: Execute one uninterrupted `/start → /audit → /implement → /closeout` mission, exhaust every verified primary item, then generate and implement second-order innovations.
+- What changed: Patched the direct protobuf denial-of-service advisory; extracted the complete experiment control plane; rebuilt Season Pass as a certified PostgreSQL event/progress/entitlement ledger with actor-bound routes and visible cosmetics; centralized convoy tuning and reward math; generated a deterministic 28,125-scenario balance envelope bound into release lineage and agent discovery.
+- Second order: Added visible entitlement projection, experiment reset-scope metadata, byte-stable balance artifacts, tamper-failing balance lineage, and fresh-store entitlement restoration proof. Innovation pack advanced from 20/20 to 25/25.
+- Verification: 160 Vitest files / 923 tests; 31.57% production-inclusive line coverage; TypeScript; ESLint; production build; Prettier ratchet; bundle/media budgets; 26/26 Playwright; 42/42 mutation policies; 10/10 public ingest; zero npm vulnerabilities; audit 10/10; innovations 25/25; work exhaustion green.
+- Risks removed: Parser DoS exposure, permissive audit severity, Worker composition pressure, replayable/restart-volatile Season Pass state, presentation-only claims, cross-player season reads, duplicated balance constants, random reward sampling, and release lineage blind to gameplay tuning.
+- Remaining boundary: Release stays NO-GO pending observed staging/parity, project-domain delivery, native Obelisk, live web/theme, distinct-human Alpha, revenue/rollback, and founder approval.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-07-23T10:07:24.482Z",
+  "generatedAt": "2026-07-24T02:31:58.746Z",
   "source": "scripts/innovation-pack.mjs",
   "primarySource": "latest audit-backed Unified Genius List",
   "items": [
@@ -180,9 +180,54 @@
       "status": "shipped",
       "id": "composition-ratchet-contraction",
       "title": "Cash router extraction into a tighter composition budget",
-      "description": "Convert the removed duplicate crowd domain into a lower Worker line ceiling and keep all three extracted domains behind bounded, directly tested registrars.",
+      "description": "Convert removed inline domains into a lower Worker line ceiling and keep every extracted domain behind bounded, directly tested registrars.",
       "complete": true,
-      "evidence": "4,040-line Worker ceiling, 180-line router ceiling, route reclamation detection, and executable regression test"
+      "evidence": "3,130-line Worker ceiling, explicit bounded-router ceilings, route reclamation detection, and executable regression test"
+    },
+    {
+      "rank": 21,
+      "status": "shipped",
+      "id": "season-entitlement-identity-projection",
+      "title": "Project claimed Season Pass cosmetics back into visible player identity",
+      "description": "Close the promise loop after durable claims by rendering exact title and badge entitlements from the certified server ledger, with honest durability scope beside them.",
+      "complete": true,
+      "evidence": "server-derived cosmetic chips, certified durability label, and no client-invented reward state"
+    },
+    {
+      "rank": 22,
+      "status": "shipped",
+      "id": "experiment-reset-scope",
+      "title": "Make experiment aggregate reset boundaries machine-readable",
+      "description": "Prevent process-local experiment summaries from masquerading as durable analytics by attaching the assignment, aggregate, and worker-restart scope to every summary surface.",
+      "complete": true,
+      "evidence": "shared storage-posture contract across dock, recap, runtime, unified, and outcome summaries with direct test"
+    },
+    {
+      "rank": 23,
+      "status": "shipped",
+      "id": "byte-stable-balance-envelope",
+      "title": "Make identical balance inputs produce byte-identical evidence",
+      "description": "Remove wall-clock noise from the generated envelope, publish it from the production public source, and pin the stable scenario digest so rebuilds measure balance rather than time.",
+      "complete": true,
+      "evidence": "deterministic public artifact with 28,125 scenarios, stable SHA-256 scenario digest, and no timestamp entropy"
+    },
+    {
+      "rank": 24,
+      "status": "shipped",
+      "id": "balance-lineage-tamper-proof",
+      "title": "Make balance evidence tampering invalidate release lineage",
+      "description": "Promote the envelope from an attached file to a lineage parent whose digest mutation makes release verification fail closed.",
+      "complete": true,
+      "evidence": "release-lineage balance parent, artifact/source digests, tamper test, and read-only agent discovery"
+    },
+    {
+      "rank": 25,
+      "status": "shipped",
+      "id": "season-ledger-restart-proof",
+      "title": "Prove certified Season Pass entitlements survive a fresh store instance",
+      "description": "Test the actual PostgreSQL read path after a claim through a newly constructed store, alongside composite replay keys and actor-bound routing, so restart durability is executable evidence.",
+      "complete": true,
+      "evidence": "fresh-store restoration fixture, composite certified-event key, entitlement table contract, and cross-actor rejection"
     }
   ]
 }

@@ -1,0 +1,116 @@
+import { describe, expect, test, vi } from "vitest";
+import {
+  ExperimentControlPlane,
+  registerExperimentRoutes,
+} from "../../src/server/ExperimentRouter";
+
+describe("ExperimentControlPlane", () => {
+  test("preserves legacy deterministic dock bucketing", () => {
+    const first = new ExperimentControlPlane();
+    const restarted = new ExperimentControlPlane();
+
+    expect(first.ensureDockAssignment("auth:player-0").variant).toBe("stack");
+    expect(first.ensureDockAssignment("auth:player-1").variant).toBe("top");
+    expect(restarted.ensureDockAssignment("auth:player-1").variant).toBe("top");
+  });
+
+  test("rejects duplicate and variant-forged events without inflating stats", () => {
+    const plane = new ExperimentControlPlane();
+    const identity = "auth:player-1";
+    const assignment = plane.ensureDockAssignment(identity);
+    const event = {
+      eventId: "dock-event-000001",
+      event: "hud_objective_rail_click",
+      value: 1 as const,
+      variant: assignment.variant,
+    };
+
+    expect(plane.checkDockEvent(identity, event).ok).toBe(true);
+    expect(plane.checkDockEvent(identity, event).ok).toBe(false);
+    expect(
+      plane.checkDockEvent(identity, {
+        ...event,
+        eventId: "dock-event-000002",
+        variant: assignment.variant === "top" ? "stack" : "top",
+      }).ok,
+    ).toBe(false);
+    expect(plane.dockSummary().variants[assignment.variant].events).toEqual({
+      hud_objective_rail_click: 1,
+    });
+  });
+
+  test("derives outcome rates from recorded source events", () => {
+    const plane = new ExperimentControlPlane();
+    const bucket = plane.recordOutcome({
+      won: true,
+      behindAtMinute8: true,
+      matchLengthSeconds: 900,
+      recapCtaVariant: "goal_focus",
+      recapCtaClicked: true,
+      requeueClicked: false,
+      hud: {
+        vaultNoticeJumps: 2,
+        objectiveRailClicks: 4,
+        timelineJumps: 1,
+      },
+    });
+
+    expect(bucket).toBe("behind8:mid:goal_focus");
+    expect(plane.outcomeSummary()).toMatchObject({
+      storage: {
+        assignments: "process-local",
+        aggregates: "process-local",
+        resetBoundary: "worker-restart",
+      },
+      totals: {
+        matches: 1,
+        winRate: 1,
+        recapCtaRate: 1,
+        requeueRate: 0,
+        hudPerMatch: {
+          vaultNoticeJumps: 2,
+          objectiveRailClicks: 4,
+          timelineJumps: 1,
+        },
+      },
+    });
+  });
+});
+
+describe("registerExperimentRoutes", () => {
+  test("registers the complete bounded surface and all mutation policies", () => {
+    const get = vi.fn();
+    const post = vi.fn();
+    const assertPolicyBinding = vi.fn();
+
+    registerExperimentRoutes(
+      { get, post },
+      {
+        resolveIdentity: async () => "identity",
+        resolveActor: async () => ({ persistentId: "player" }),
+        authorize: () => true,
+        assertPolicyBinding,
+        isAdmin: () => true,
+      },
+      new ExperimentControlPlane(),
+    );
+
+    expect(get.mock.calls.map(([path]) => path)).toEqual([
+      "/api/vaultfront/ab/dock/assignment",
+      "/api/vaultfront/ab/dock/summary",
+      "/api/vaultfront/ab/recap/assignment",
+      "/api/vaultfront/ab/recap/summary",
+      "/api/vaultfront/ab/runtime/assignment",
+      "/api/vaultfront/ab/runtime/summary",
+      "/api/admin/ab/results",
+      "/api/vaultfront/outcome/summary",
+    ]);
+    expect(post.mock.calls.map(([path]) => path)).toEqual([
+      "/api/vaultfront/ab/dock/event",
+      "/api/vaultfront/ab/recap/event",
+      "/api/vaultfront/ab/runtime/event",
+      "/api/vaultfront/outcome",
+    ]);
+    expect(assertPolicyBinding).toHaveBeenCalledTimes(3);
+  });
+});

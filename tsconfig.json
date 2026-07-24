@@ -33,6 +33,7 @@
     "generated/**/*",
     "tests/**/*",
     "src/scripts",
+    "scripts/**/*.ts",
     "vite.config.ts"
   ],
   "exclude": [

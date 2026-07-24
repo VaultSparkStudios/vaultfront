@@ -219,3 +219,15 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Decision:** Keep local commit `6328f044` intact even though its `feat(auth)` message does not describe its public-playlist changes. Do not reset, rewrite, or force-push; record the mismatch and include the remaining Session 81 work in a truthful follow-up closeout commit.
 
 **Why:** The content is valid and verified, but rewriting an unexpected shared-worktree commit would be destructive and could erase unknown provenance. Disclosure is safer than history surgery.
+
+## 2026-07-23 — Visible progression promises require certified events and durable entitlements
+
+**Decision:** Season Pass progress accepts one certified player/season/game result, aggregates transactionally in PostgreSQL, and claims materialize title/badge entitlement rows under the authenticated actor. A configured-but-unavailable database fails closed; database-free development is explicitly process-local.
+
+**Why:** A restart-volatile counter and claimed boolean cannot truthfully support a visible earned-reward promise. Game idempotency, actor ownership, durable reward identity, UI projection, and persistence scope must agree.
+
+## 2026-07-23 — Gameplay balance is an executable release input
+
+**Decision:** Convoy tuning lives in one versioned JSON authority and reward math in one pure planner shared by runtime and verification. Production builds publish a byte-stable deterministic envelope, reject counterexamples, and bind both artifact and source digests into release lineage. Experiment aggregates separately declare that they reset at worker restart.
+
+**Why:** Hand-copied constants, random property samples, and unlabeled process-local summaries can all look plausible while describing different systems. Reproducible bounds and explicit storage scope make balance and observability independently auditable.

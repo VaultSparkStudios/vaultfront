@@ -138,6 +138,11 @@ const EVENT_HISTORY_LIMIT = 800;
 const TREND_WINDOW_MS = 5 * 60 * 1000;
 const GUARDRAIL_MIN_ASSIGNED = 60;
 const GUARDRAIL_MIN_OBJECTIVE_EVENTS = 40;
+const EXPERIMENT_STORAGE_POSTURE = Object.freeze({
+  assignments: "process-local",
+  aggregates: "process-local",
+  resetBoundary: "worker-restart",
+});
 
 function stableHash(input: string): number {
   let hash = 2166136261;
@@ -303,6 +308,7 @@ export class ExperimentControlPlane {
     const stack = this.dockStats.get("stack")!;
     return {
       experimentId: "dock_layout_v1" as const,
+      storage: EXPERIMENT_STORAGE_POSTURE,
       generatedAt: Date.now(),
       variants: { top, stack },
       assignedTotal: top.assignedUsers + stack.assignedUsers,
@@ -319,6 +325,7 @@ export class ExperimentControlPlane {
     const requeueClicks = requeue.events.recap_requeue_click ?? 0;
     return {
       experimentId: "recap_cta_v1" as const,
+      storage: EXPERIMENT_STORAGE_POSTURE,
       generatedAt: Date.now(),
       assignedTotal: goal.assignedUsers + requeue.assignedUsers,
       variants: { goal_focus: goal, requeue_focus: requeue },
@@ -343,6 +350,7 @@ export class ExperimentControlPlane {
   runtimeSummary() {
     return {
       experimentId: "vault_runtime_v1" as const,
+      storage: EXPERIMENT_STORAGE_POSTURE,
       generatedAt: Date.now(),
       rewardVariants: Object.fromEntries(this.runtimeRewardStats.entries()),
       hudVariants: Object.fromEntries(this.runtimeHudStats.entries()),
@@ -355,6 +363,7 @@ export class ExperimentControlPlane {
     const recap = this.recapSummary();
     return {
       generatedAt: Date.now(),
+      storage: EXPERIMENT_STORAGE_POSTURE,
       integrity: this.integrity.snapshot(),
       experiments: [
         {
@@ -458,6 +467,7 @@ export class ExperimentControlPlane {
     });
     return {
       generatedAt: Date.now(),
+      storage: EXPERIMENT_STORAGE_POSTURE,
       totals: {
         matches: all.matches,
         winRate: rate(all.wins, all.matches),

@@ -36,7 +36,7 @@
       "auth": "verified-actor",
       "rateLimit": "global-standard",
       "evidence": "assignment-ledger",
-      "binding": "authorizeRoutePolicy"
+      "binding": "dependencies.authorize"
     },
     {
       "method": "POST",
@@ -44,7 +44,7 @@
       "auth": "verified-actor",
       "rateLimit": "global-standard",
       "evidence": "assignment-ledger",
-      "binding": "authorizeRoutePolicy"
+      "binding": "dependencies.authorize"
     },
     {
       "method": "POST",
@@ -52,7 +52,7 @@
       "auth": "verified-actor",
       "rateLimit": "global-standard",
       "evidence": "assignment-ledger",
-      "binding": "authorizeRoutePolicy"
+      "binding": "dependencies.authorize"
     },
     {
       "method": "POST",
@@ -60,7 +60,7 @@
       "auth": "identity",
       "rateLimit": "global-standard",
       "evidence": "authenticated-event",
-      "binding": "resolveVaultFrontIdentity"
+      "binding": "dependencies.resolveIdentity"
     },
     {
       "method": "POST",
@@ -250,9 +250,9 @@
       "method": "POST",
       "path": "/api/vaultfront/season-progress/claim",
       "auth": "verified-actor",
-      "rateLimit": "seasonProgressRateLimit",
+      "rateLimit": "dependencies.rateLimit",
       "evidence": "authenticated-event",
-      "binding": "requireVaultFrontActor"
+      "binding": "dependencies.authenticate"
     },
     {
       "method": "POST",

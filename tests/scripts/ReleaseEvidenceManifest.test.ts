@@ -63,6 +63,16 @@ describe("Release Evidence Manifest", () => {
     const truthTampered = structuredClone(clean);
     truthTampered.projectTruth.fingerprint = `sha256:${"d".repeat(64)}`;
     expect(verifyReleaseEvidenceLineage(truthTampered)).toBe(false);
+    const balanceBound = buildReleaseEvidence({
+      ...base,
+      balanceEnvelope: {
+        status: "verified",
+        scenarioDigest: `sha256:${"a".repeat(64)}`,
+      },
+    });
+    const balanceTampered = structuredClone(balanceBound);
+    balanceTampered.balance.scenarioDigest = `sha256:${"b".repeat(64)}`;
+    expect(verifyReleaseEvidenceLineage(balanceTampered)).toBe(false);
     expect(clean.lineage.nodes).toContainEqual(
       expect.objectContaining({
         id: "project-truth",

@@ -33,10 +33,20 @@ describe("public launch foundation", () => {
       project: "vaultfront",
       vaultStatus: "FORGE",
       releaseStatus: "public-unlaunched",
-      agentInteractions: [],
+      agentInteractions: [
+        expect.objectContaining({
+          method: "GET",
+          path: "/balance-envelope.json",
+        }),
+      ],
       authentication: { status: "not-wired" },
       availability: { publicRuntime: "unavailable" },
     });
+    expect(
+      descriptor.agentInteractions.every(
+        (interaction: { method: string }) => interaction.method === "GET",
+      ),
+    ).toBe(true);
     expect(descriptor.rights.code).toContain("AGPL-3.0");
   });
 

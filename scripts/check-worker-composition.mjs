@@ -3,9 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Session 81 convergence floor: the root is currently 4,029 physical lines.
-// Eleven lines of headroom make growth an explicit architectural decision.
-export const WORKER_LINE_BUDGET = 4040;
+// Session 82 convergence floor: the root is 3,108 physical lines after the
+// experiment and season-pass extractions. Twenty-two lines make growth explicit.
+export const WORKER_LINE_BUDGET = 3130;
 export const ROUTER_LINE_BUDGET = 180;
 
 export const EXTRACTED_DOMAINS = [
@@ -24,6 +24,18 @@ export const EXTRACTED_DOMAINS = [
     registration: "registerPredictionLeagueRoutes",
     forbiddenInWorker: "/api/vaultfront/prediction-league",
   },
+  {
+    router: "ExperimentRouter.ts",
+    registration: "registerExperimentRoutes",
+    forbiddenInWorker: "/api/vaultfront/ab/dock",
+    lineBudget: 750,
+  },
+  {
+    router: "SeasonPassRouter.ts",
+    registration: "registerSeasonPassRoutes",
+    forbiddenInWorker: "/api/vaultfront/season-progress",
+    lineBudget: 130,
+  },
 ];
 
 const lineCount = (source) => source.split(/\r?\n/).length;
@@ -41,10 +53,9 @@ export function inspectWorkerComposition(root = process.cwd()) {
   const routers = EXTRACTED_DOMAINS.map((domain) => {
     const source = fs.readFileSync(path.join(serverDir, domain.router), "utf8");
     const lines = lineCount(source);
-    if (lines > ROUTER_LINE_BUDGET) {
-      errors.push(
-        `${domain.router} line budget exceeded: ${lines}/${ROUTER_LINE_BUDGET}`,
-      );
+    const budget = domain.lineBudget ?? ROUTER_LINE_BUDGET;
+    if (lines > budget) {
+      errors.push(`${domain.router} line budget exceeded: ${lines}/${budget}`);
     }
     if (!worker.includes(domain.registration)) {
       errors.push(`Worker.ts does not compose ${domain.registration}`);
@@ -54,7 +65,7 @@ export function inspectWorkerComposition(root = process.cwd()) {
         `Worker.ts reclaimed extracted route ${domain.forbiddenInWorker}`,
       );
     }
-    return { file: domain.router, lines };
+    return { file: domain.router, lines, budget };
   });
   return {
     ok: errors.length === 0,

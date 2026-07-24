@@ -84,7 +84,7 @@
           ]
         },
         {
-          "path": "src/server/Worker.ts",
+          "path": "src/server/ExperimentRouter.ts",
           "includes": [
             "experiment-dock-event",
             "experiment-recap-event",

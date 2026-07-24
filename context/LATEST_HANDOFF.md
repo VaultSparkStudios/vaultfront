@@ -2,6 +2,25 @@
 
 This repo keeps only a public-safe two-session handoff. Detailed operational history is maintained privately.
 
+## Where We Left Off — 2026-07-23 — Session 82 certified-entitlement and balance-authority closeout
+
+**Session intent:** Run the complete agent-neutral arc as one continuous mission, exhaust verified primary and second-order work at a best-in-history quality bar, preserve direct exit-code truth, and close directly to `main` without inventing external evidence.
+
+**Shipped:** Four new L3 audit items and five newly generated second-order invariants. The cumulative audit is 10/10 and innovation pack 25/25.
+
+- Protobufjs is pinned at the fixed trusted version; CI and executable tests reject regression above moderate severity.
+- Experiment assignment/event/summary/outcome logic is one injected router/control plane with legacy bucket stability, replay/variant integrity, honest reset scope, and a 3,130-line Worker ceiling.
+- Season Pass progression is certified per player/game, PostgreSQL-durable, replay-safe, actor-bound, fail-closed when configured persistence is unavailable, and backed by real restorable title/badge entitlements rendered to the player.
+- Convoy tuning and reward math have one versioned executable authority. A byte-stable public envelope verifies 28,125 scenarios across six invariants and is a tamper-sensitive parent in release lineage.
+
+**Verification:** 160/160 Vitest files and 923/923 tests; production-inclusive coverage at 31.57% lines; TypeScript; ESLint; production build; Prettier ratchet; exact bundle/media budgets; 26/26 Playwright desktop/mobile; 42/42 mutation policy; 10/10 public ingest; zero npm vulnerabilities; audit 10/10; innovation pack 25/25; work exhaustion green.
+
+**Truth boundary:** Release remains NO-GO. READY credentials are not deployment authorization or observed delivery. No staging, runtime-health, parity, project-domain email, native Obelisk, live-theme, three-human Alpha, revenue, rollback, or founder-approval evidence was fabricated.
+
+**Suggested next focus:** Establish an explicitly approved staging origin/callback contract, then collect exact-digest parity, project-domain delivery, native identity, live-web/theme, distinct-human Alpha, revenue, rollback, and founder evidence in gate order.
+
+---
+
 ## Where We Left Off — 2026-07-23 — Session 81 certified-loop and spectator-trust closeout
 
 **Session intent:** Run the complete agent-neutral arc continuously, verify every premise against live code, exhaust the audit and generated innovations, preserve direct exit-code truth, and close directly to `main` without inventing external launch evidence.
@@ -23,15 +42,3 @@ This repo keeps only a public-safe two-session handoff. Detailed operational his
 **Deploy:** pending — deferred because the project is public-unlaunched and no approved external staging observation contract exists. Production deployment would violate the release gate.
 
 **Suggested next focus:** Receive the source-tagged registry/tool-contamination receipt, establish the approved staging corridor, then collect parity, email, identity, human, live-web, revenue, rollback, and founder evidence in that order.
-
----
-
-## Where We Left Off — 2026-07-22 — Session 80 durable-evidence closeout
-
-**Session intent:** Run the complete agent-neutral arc continuously, exhaust every live-code finding and generated innovation, preserve direct exit-code truth, and close directly to `main` without inventing external launch evidence.
-
-**Shipped:** Durable privacy-minimal Alpha evidence, complete 42-route mutation policy coverage with an eleven-route public-ingest ceiling, and trusted-base Dependabot validation. The second-order pack reached 17/17.
-
-**Verification:** 147/147 Vitest files and 873/873 tests; production-inclusive coverage; TypeScript; ESLint; production build; Prettier and bundle ratchets; 26/26 Playwright; 41 deploy checks; doctor 11/11 with `blockingFailing: 0`.
-
-**Truth boundary:** No staging, native Obelisk, project-domain delivery, distinct-human Alpha, live-web, revenue, rollback, or founder-approval evidence was fabricated.

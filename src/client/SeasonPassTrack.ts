@@ -8,6 +8,7 @@ import { customElement, state } from "lit/decorators.js";
 import {
   claimSeasonMilestone,
   fetchSeasonProgress,
+  type SeasonEntitlement,
   type SeasonMilestoneProgress,
 } from "./Api";
 
@@ -17,6 +18,7 @@ export class SeasonPassTrack extends LitElement {
   @state() private loading = false;
   @state() private currentSeason = "";
   @state() private durability: "postgres" | "process-local" | "" = "";
+  @state() private entitlements: SeasonEntitlement[] = [];
   @state() private claimingId: string | null = null;
 
   private persistentId = "";
@@ -54,6 +56,20 @@ export class SeasonPassTrack extends LitElement {
       overflow-x: auto;
       padding-bottom: 6px;
       gap: 0;
+    }
+    .entitlements {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .entitlement {
+      border: 1px solid rgba(52, 211, 153, 0.32);
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 0.66rem;
+      color: #047857;
+      background: rgba(52, 211, 153, 0.08);
     }
     .milestone {
       display: flex;
@@ -149,6 +165,7 @@ export class SeasonPassTrack extends LitElement {
       this.currentSeason = data.seasonId ?? "";
       this.milestones = data.milestones;
       this.durability = data.durability ?? "";
+      this.entitlements = data.entitlements ?? [];
     }
     this.loading = false;
   }
@@ -262,6 +279,18 @@ export class SeasonPassTrack extends LitElement {
           `;
         })}
       </div>
+      ${
+        this.entitlements.length > 0
+          ? html`<div class="entitlements" aria-label="Earned season cosmetics">
+              ${this.entitlements.map(
+                (item) =>
+                  html`<span class="entitlement">
+                    ${item.type === "title" ? "👑" : "🏅"} ${item.value}
+                  </span>`,
+              )}
+            </div>`
+          : ""
+      }
     `;
   }
 }

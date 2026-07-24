@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "authority": "vaultfront-convoy-reward-v1",
+  "status": "verified",
+  "tuningDigest": "sha256:81f27f7a71f96ed2bfb08460f023d48056ed37fe1f7d6123ce42adf2d8907cec",
+  "scenarioDigest": "sha256:1685be19c3dc3f056924798a7252551ffdc8f608d65546781302a3d054f41d5a",
+  "scenarioCount": 28125,
+  "invariants": [
+    "multiplier-clamp",
+    "non-negative-floor",
+    "distance-monotonicity",
+    "risk-monotonicity",
+    "reduced-scale-order",
+    "combo-scale-order"
+  ],
+  "counterexamples": [],
+  "bounds": {
+    "goldReward": {
+      "min": "69600",
+      "max": "249300"
+    },
+    "troopsReward": {
+      "min": 900,
+      "max": 3243
+    },
+    "rewardMultiplier": {
+      "min": 0.58,
+      "max": 1.5
+    }
+  }
+}

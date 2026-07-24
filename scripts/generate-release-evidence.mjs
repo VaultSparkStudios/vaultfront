@@ -275,6 +275,7 @@ export function buildReleaseEvidence({
     },
   },
   projectTruth = null,
+  balanceEnvelope = null,
   maxEvidenceAgeMs = DEFAULT_MAX_AGE_MS,
 }) {
   const audit = statusCounts(auditItems);
@@ -308,6 +309,9 @@ export function buildReleaseEvidence({
       `projectTruth: ${projectTruth.evaluation.contradictionIds.length} contradiction(s)`,
     );
   }
+  if (balanceEnvelope && balanceEnvelope.status !== "verified") {
+    releaseBlockers.push("balance: deterministic envelope failed verification");
+  }
 
   const evidenceCore = {
     schemaVersion: "2.0",
@@ -336,6 +340,7 @@ export function buildReleaseEvidence({
     },
     localSurface: localSurfaceEvidence,
     projectTruth,
+    balance: balanceEnvelope,
     work: {
       auditSource,
       audit,
@@ -350,6 +355,7 @@ export function buildReleaseEvidence({
     launch: evidenceCore.launch,
     "local-surface": evidenceCore.localSurface,
     "project-truth": evidenceCore.projectTruth,
+    balance: evidenceCore.balance,
     work: evidenceCore.work,
     transfer: evidenceCore.transfer,
     "release-decision": {
@@ -382,6 +388,12 @@ export function buildReleaseEvidence({
       evidence: lineageEvidence["project-truth"],
     },
     {
+      id: "balance",
+      kind: "deterministic-gameplay-envelope",
+      parents: ["source"],
+      evidence: lineageEvidence.balance,
+    },
+    {
       id: "work",
       kind: "exhaustion",
       parents: ["source"],
@@ -396,7 +408,14 @@ export function buildReleaseEvidence({
     {
       id: "release-decision",
       kind: "decision",
-      parents: ["launch", "local-surface", "project-truth", "work", "transfer"],
+      parents: [
+        "launch",
+        "local-surface",
+        "project-truth",
+        "balance",
+        "work",
+        "transfer",
+      ],
       evidence: lineageEvidence["release-decision"],
     },
   ]);
@@ -413,6 +432,7 @@ export function verifyReleaseEvidenceLineage(evidence) {
     launch: evidence.launch,
     "local-surface": evidence.localSurface,
     "project-truth": evidence.projectTruth,
+    balance: evidence.balance,
     work: evidence.work,
     transfer: evidence.transfer,
     "release-decision": {
@@ -506,6 +526,28 @@ export function generateReleaseEvidence(projectRoot = root) {
       ]),
     },
   });
+  const balancePath = path.join(projectRoot, "static", "balance-envelope.json");
+  const balancePayload = readJsonIfPresent(
+    projectRoot,
+    "static/balance-envelope.json",
+    null,
+  );
+  const balanceEnvelope = balancePayload
+    ? {
+        ...balancePayload,
+        artifactDigest: sha256(fs.readFileSync(balancePath)),
+        sourceDigest: digestFiles(projectRoot, [
+          "config/vaultfront-balance.v1.json",
+          "src/core/execution/VaultFrontBalance.ts",
+          "scripts/generate-balance-envelope.ts",
+        ]),
+      }
+    : {
+        status: "missing",
+        counterexamples: [],
+        artifactDigest: null,
+        sourceDigest: null,
+      };
   const releaseObservations = {
     ...observationBundle.observations,
     footerManifest: localSurfaceEvidence.footerManifest,
@@ -526,6 +568,7 @@ export function generateReleaseEvidence(projectRoot = root) {
     releaseObservations,
     localSurfaceEvidence,
     projectTruth,
+    balanceEnvelope,
     transfer: {
       initial: {
         ...initial,

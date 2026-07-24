@@ -1,8 +1,9 @@
 # VaultFront Gameplay Design Reference
 
-This document is the authoritative reference for VaultFront's mechanics, tuning
-constants, and reward formulas. Keep it in sync with `VaultFrontExecution.ts`
-when constants change.
+This document explains VaultFront's mechanics and reward intent. The executable
+convoy tuning authority is `config/vaultfront-balance.v1.json`; the shared pure
+formula is `src/core/execution/VaultFrontBalance.ts`; and every production build
+self-verifies the deterministic grid published at `/balance-envelope.json`.
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.0",
-  "generatedBy": "Codex /arc Session 81",
-  "generatedAt": "2026-07-23T06:05:00Z",
+  "generatedBy": "Codex /goal /arc Session 82",
+  "generatedAt": "2026-07-23T19:18:47.0022728Z",
   "project": {
     "slug": "vaultfront",
     "name": "VaultFront",
@@ -11,7 +11,7 @@
     "stage": "FORGE",
     "stagingType": "local"
   },
-  "summary": "Premise-verified Session 81 audit using the game/product rubric plus infrastructure and public-release lenses. The highest-severity finding is functional: scheduled public playlists omit both VaultFront feature flags, so the flagship vault-to-convoy loop is absent from the main public match path. The ranked local plan restores that loop, makes seasonal progression and loop analytics server-certified and restart-durable, separates static health-route contracts from live runtime observations, introduces bounded router seams in Worker.ts, and turns the visible Prediction League into a reachable durable spectator loop. External staging, email delivery, native Obelisk, three-human Alpha, revenue, and founder approval remain explicitly unobserved and cannot be fabricated.",
+  "summary": "Premise-verified Session 82 continuation audit using the founder-requested infrastructure rubric plus game-loop and public-release lenses. The prior six-item plan remains shipped. Four new local findings survive live-code verification: the visible Season Pass still resets on restart and mints claimed-looking rewards without durable entitlements; three experiment families remain embedded in the 4,027-line Worker composition root; gameplay tuning is duplicated between prose and private class constants without a release-bound balance proof; and npm reports a direct protobufjs denial-of-service advisory with a safe patch available while CI ignores moderate findings. External staging, email delivery, native Obelisk, three-human Alpha, revenue, and founder approval remain explicitly unobserved and cannot be fabricated.",
   "axes": {
     "featureDepth": 2,
     "innovation": 1.5,
@@ -43,16 +43,16 @@
   },
   "specialtyReviews": {
     "gameLoop": {
-      "score": 65,
+      "score": 82,
       "confidence": "code-grounded-low-empirical",
       "axes": {
-        "loopTightness": 58,
-        "progression": 61,
-        "sessionEngagement": 72,
-        "retention": 64,
-        "soulFidelity": 68
+        "loopTightness": 92,
+        "progression": 68,
+        "sessionEngagement": 88,
+        "retention": 70,
+        "soulFidelity": 93
       },
-      "boundary": "The enabled vault-to-convoy loop is coherent and richly instrumented, but the scheduled public playlist path does not enable it. No three-human Alpha corpus exists, so qualitative tuning remains out of scope."
+      "boundary": "The scheduled public vault-to-convoy loop, certified contracts, loop evidence, and Prediction League are now reachable and coherent. Retention remains materially weakened by a process-local Season Pass whose claims have no durable entitlement effect. No three-human Alpha corpus exists, so qualitative balance changes remain out of scope; this audit proves the current envelope instead of inventing tuning evidence."
     },
     "release": {
       "verdict": "no-go",
@@ -74,8 +74,10 @@
     },
     "infrastructure": {
       "topRisks": [
-        "release evidence conflates source-declared health route with live runtime health",
-        "Worker.ts remains a roughly 4,000-line route composition god object",
+        "the visible Season Pass is a second, process-local progression truth beside the certified contract ledger",
+        "Worker.ts remains a 4,027-line route composition root with three near-identical experiment families embedded",
+        "gameplay tuning is duplicated between documentation and private constants without a digestible balance contract",
+        "a direct protobufjs moderate denial-of-service advisory is currently below the CI audit threshold",
         "startup brief rendering mixes broad parsing, healing, status mutation, and telemetry",
         "human-action parsing exists in three incompatible implementations"
       ]
@@ -111,12 +113,22 @@
     {
       "candidate": "Bulk-upgrade dependencies",
       "result": "skipped",
-      "evidence": "The current mission has higher-severity functional and truth gaps; dependency changes also require package-trust review and migration-specific evidence."
+      "evidence": "A bulk upgrade remains unjustified. Live npm audit identifies one bounded direct protobufjs patch, which is promoted as a separate package-trust-gated item."
     },
     {
       "candidate": "Promote local theme proof or generated release evidence into launch proof",
       "result": "skipped",
       "evidence": "Local and static evidence explicitly cannot prove an external origin, live headers, Core Web Vitals, email delivery, identity, human use, or revenue."
+    },
+    {
+      "candidate": "Configure Brevo, Cloudflare, or Obelisk merely because credentials are READY",
+      "result": "skipped",
+      "evidence": "Secrets discovery reports all three capabilities READY, but the repository has no approved external staging origin, Brevo inbound webhook destination, or Obelisk relying-party callback contract. Creating provider state without those scoped targets would fabricate readiness rather than complete it."
+    },
+    {
+      "candidate": "Tune reward values from code review",
+      "result": "skipped",
+      "evidence": "The documented reward envelope lacks three-human playtest evidence. The valid local action is to make the current envelope executable and digest-bound, not to change balance constants from intuition."
     }
   ],
   "items": [
@@ -314,6 +326,142 @@
       },
       "executionLog": [
         "L3 shipped: spectator-only accessible pick panel, authenticated actor binding, PostgreSQL pending/history ledger, advisory-lock submit/resolve serialization, certified outcome resolution, private stats, and replay/restart truth tests."
+      ]
+    },
+    {
+      "id": 69,
+      "slug": "certified-durable-season-pass",
+      "tier": "🔥",
+      "axis": "gamification / retention / security / progression",
+      "effortHours": 8,
+      "impact": 10,
+      "innovation": 9,
+      "priority": 86,
+      "status": "shipped",
+      "title": "Make the visible Season Pass a certified durable entitlement ledger",
+      "why": "SeasonMilestoneStore is a process-local Map updated by the certified progression spine without game identifiers. Restarting erases progress and claims, replaying an outcome can double-count activity, and claim() only flips an in-memory boolean while the UI presents a title, badge, or gold-looking reward as earned. This is a second progression authority beside the durable certified contract ledger.",
+      "coreLoopStep": "certified match → exactly-once milestone progress → durable entitlement claim → visible profile identity",
+      "recipe": "Replace activity-by-activity mutation with one certified game-bound Season Pass update per player; persist progress events, aggregate progress, and claims in PostgreSQL with honest process-local fallback; bind claims to the authenticated actor; represent rewards as durable title/badge entitlements rather than ungranted currency; expose durability/evidence metadata; extract the routes; and add restart, replay, authorization, and entitlement tests.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Key in-memory activity by game and stop presenting ungranted rewards."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Create a typed certified store, actor-bound routes, idempotent game updates, and direct route/store tests."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Add PostgreSQL event/progress/claim transactions, restart-safe entitlements, explicit durability receipts, route extraction, and adversarial replay/auth tests."
+        }
+      },
+      "executionLog": [
+        "Session 82: replaced the process-local activity Map with a certified player/season/game event ledger, aggregate progress table, and cosmetic entitlement table; production fails closed when configured PostgreSQL is unavailable.",
+        "The progression spine now emits one game-bound receipt per player, replay is rejected by a composite primary key, and claims transact against locked progress before materializing title/badge entitlements that restore after restart.",
+        "Season routes moved behind an actor-bound injected router, both reads and writes reject cross-player access, the UI exposes postgres versus process-local durability, and focused replay/auth/restart/transaction/schema tests plus TypeScript and contract verification pass."
+      ]
+    },
+    {
+      "id": 70,
+      "slug": "release-bound-balance-envelope",
+      "tier": "🔥",
+      "axis": "feedback loop / observability / game depth / automation",
+      "effortHours": 8,
+      "impact": 9,
+      "innovation": 10,
+      "priority": 81,
+      "status": "shipped",
+      "title": "Turn VaultFront balance into a self-verifying release-bound envelope",
+      "why": "GAMEPLAY_DESIGN declares itself authoritative, but the reward and cadence constants remain private fields spread through VaultFrontExecution and manually duplicated in prose. Property tests use Math.random and prove only a few relations. A plausible doc/code drift can therefore ship without a deterministic artifact showing fairness bounds, monotonicity, caps, mutator effects, or the exact tuning digest used by a release.",
+      "coreLoopStep": "shared tuning authority → exhaustive deterministic scenarios → signed balance receipt → release lineage",
+      "recipe": "Extract the core convoy/cadence tuning into one typed frozen authority consumed by execution; expose a pure reward planner; generate a deterministic balance-envelope receipt across boundary and seeded scenario grids; fail on documented monotonicity, cap, comeback, and mutator invariants; bind the receipt digest into release evidence and public agent capability metadata; and replace random property checks with reproducible counterexamples.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Export core tuning constants and assert a few documented values."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Create a shared pure reward planner and deterministic grid tests with counterexample output."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Generate a digestible balance envelope, self-verify it, attach it to release lineage and dual-audience surfaces, and ratchet the build against drift."
+        }
+      },
+      "executionLog": [
+        "Session 82: created one versioned convoy tuning authority and one pure reward planner consumed by DefaultConfig, live VaultFrontExecution, deterministic tests, and the envelope generator.",
+        "The build now exhaustively verifies 28,125 boundary scenarios across multiplier clamps, reward floors, distance/risk monotonicity, reduced-reward ordering, and combo ordering; it emits zero counterexamples and stable tuning/scenario digests.",
+        "Production builds gate on the envelope, release evidence binds artifact and source digests into a self-validating lineage node, agents.json advertises only a read-only evidence endpoint, and the production build plus focused gameplay/release/public-surface tests pass."
+      ]
+    },
+    {
+      "id": 71,
+      "slug": "bounded-experiment-router-composition",
+      "tier": "⚡",
+      "axis": "speed / organization / security / testability",
+      "effortHours": 6,
+      "impact": 8,
+      "innovation": 7,
+      "priority": 58,
+      "status": "shipped",
+      "title": "Extract the experiment control plane from Worker.ts behind one bounded router",
+      "why": "Worker.ts is 4,027 lines against a 4,040-line ceiling and still embeds dock, recap, runtime, and unified experiment routes with repeated identity, integrity, admin, and summary logic. The prior router extraction created the seam but left this high-churn control plane one small edit away from breaking the composition budget.",
+      "recipe": "Move all experiment assignment/event/summary/admin routes into an injected ExperimentRouter; preserve policy binding and actor/admin checks; test invalid variants, replayed event IDs, summaries, and unified results directly; teach route inventory and the composition ratchet about the extracted domain; and lower the Worker budget to bank the reduction.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Extract the three event POST routes."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Extract all assignment/event/summary routes with injected dependencies and focused tests."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Extract the unified admin surface, add policy/integrity adversarial tests, scan the router in inventory, and ratchet Worker below its new measured size."
+        }
+      },
+      "executionLog": [
+        "Session 82: extracted twelve assignment, event, summary, admin, and outcome routes into ExperimentRouter with an injected control plane while preserving the legacy hash algorithm and objective-event vocabulary.",
+        "Worker.ts contracted from 4,029 to 3,138 physical lines; the executable ceiling is now 3,160 and route reclamation is rejected for the fourth extracted domain.",
+        "Direct tests pin deterministic assignments, reject duplicate and forged variants, verify derived outcome math, and inventory all routes/policy bindings; TypeScript, focused tests, and verify:contracts pass."
+      ]
+    },
+    {
+      "id": 72,
+      "slug": "protobuf-denial-of-service-patch",
+      "tier": "🔥",
+      "axis": "security / supply chain / automation",
+      "effortHours": 1,
+      "impact": 9,
+      "innovation": 4,
+      "priority": 23,
+      "status": "shipped",
+      "title": "Patch the direct protobuf parser denial-of-service advisory and ratchet CI",
+      "why": "Live npm audit reports direct dependency protobufjs 7.6.3 inside the affected 7.5.0–7.6.4 range for GHSA-j3f2-48v5-ccww. A non-major 7.6.5 fix is available, but CI runs npm audit at high severity and therefore permits this known moderate availability risk indefinitely.",
+      "recipe": "Run Obelisk package-trust for protobufjs@7.6.5, update only the pinned dependency and lockfile, verify the production build and protocol imports, change CI to audit at moderate severity, and add a contract test that prevents the threshold from drifting upward.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.25,
+          "recipe": "Apply the safe patch version and regenerate the lockfile."
+        },
+        "L2": {
+          "effortHours": 0.5,
+          "recipe": "Verify build/tests and npm audit returns zero known vulnerabilities."
+        },
+        "L3": {
+          "effortHours": 1,
+          "recipe": "Package-trust the patch, ratchet CI at moderate severity, and add a workflow-contract test."
+        }
+      },
+      "executionLog": [
+        "L3 shipped: Obelisk REVIEW was resolved with live registry evidence (13-year package lineage, stable maintainers, BSD-3-Clause, official source, exact integrity, 19-day cooldown); protobufjs is pinned at 7.6.5 with lifecycle scripts disabled during install, npm audit reports zero vulnerabilities, CI now rejects moderate advisories, the workflow/lock integrity test passes, and production build succeeds."
       ]
     }
   ]

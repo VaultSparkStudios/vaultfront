@@ -1,29 +1,28 @@
 <!-- generated-by: scripts/render-closeout-board.mjs v1.0 -->
-<!-- generated-at: 2026-07-23 (Session 81 closeout) -->
+<!-- generated-at: 2026-07-24 (Session 82 closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
-╔══ SESSION CLOSEOUT · VaultFront · S81 ═════════════════════════╗
-║  Date: 2026-07-23 · SIL: 988/1000 · V:9  ·  Debt: down           ║
+╔══ SESSION CLOSEOUT · VaultFront · S82 ═════════════════════════╗
+║  Date: 2026-07-24 · SIL: 991/1000 · V:9  ·  Debt: down           ║
 ║  Mode: FOUNDER  ·  Agent: codex                                  ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WHAT SHIPPED ════════════════════════════════════════════════╗
-║  ✓ Every scheduled public playlist enables the vault-to-convoy   ║
-║  ✓ Seasonal contracts and loop evidence are certified, idempote  ║
-║  ✓ Release evidence distinguishes a declared health route from   ║
-║  ✓ Prediction League is reachable in spectator mode, binds pick  ║
-║  ✓ Three injected router seams are directly tested; route polic  ║
+║  ✓ Protobufjs is pinned at the fixed trusted version; CI and ex  ║
+║  ✓ Experiment assignment/event/summary/outcome logic is one inj  ║
+║  ✓ Season Pass progression is certified per player/game, Postgr  ║
+║  ✓ Convoy tuning and reward math have one versioned executable   ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ SCORES · SIL 988/1000 ═══════════════════════════════════════╗
+╔══ SCORES · SIL 991/1000 ═══════════════════════════════════════╗
 ║    Dev Health         100  ██████████                            ║
 ║    Alignment          100  ██████████                            ║
 ║    Momentum           100  ██████████                            ║
-║    Engagement         96   ██████████                            ║
+║    Engagement         97   ██████████                            ║
 ║    Process Qual       100  ██████████                            ║
-║    Coherence          97   ██████████                            ║
+║    Coherence          98   ██████████                            ║
 ║    Security           100  ██████████                            ║
-║    Ecosystem          95   ██████████                            ║
+║    Ecosystem          96   ██████████                            ║
 ║    Capital            100  ██████████                            ║
 ║    Automation         100  ██████████                            ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -40,8 +39,8 @@
 ║  · agent memory (context/BRAIN.md or agent home)                 ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 0 files  ·  M:0 A:0 D:0 ?:0                            ║
-║  Ahead: 0  ·  Behind: 0                                          ║
+║  Changes: 44 files  ·  M:36 A:0 D:0 ?:8                          ║
+║  Ahead: 1  ·  Behind: 0                                          ║
 ║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ DEPLOYMENT ══════════════════════════════════════════════════╗
@@ -51,7 +50,7 @@
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
 ║  Doctor:        11/11                                            ║
 ║  Compliance:    49/49                                            ║
-║  Tests:         904/904                                          ║
+║  Tests:         923/923                                          ║
 ║  IGNIS:         1d ago                                           ║
 ║  Truth:         green                                            ║
 ║  Sanitization:  2d ago                                           ║

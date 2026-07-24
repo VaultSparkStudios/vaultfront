@@ -61,14 +61,22 @@ describe("VaultFrontExecution property tests", () => {
       }),
     };
 
-    for (let i = 0; i < 120; i++) {
-      const risk = Math.max(0, Math.min(1, Math.random()));
-      const near = 15 + Math.floor(Math.random() * 30);
-      const far = near + 20 + Math.floor(Math.random() * 50);
-      const a = execution.convoyRewardPlan(owner, near, risk, 3_600, 1);
-      const b = execution.convoyRewardPlan(owner, far, risk, 3_600, 1);
-      expect(b.goldReward >= a.goldReward).toBe(true);
-      expect(b.troopsReward >= a.troopsReward).toBe(true);
+    for (const risk of [0, 0.2, 0.5, 0.8, 1]) {
+      let previous: ReturnType<typeof execution.convoyRewardPlan> | null = null;
+      for (const distance of [0, 15, 35, 70, 140]) {
+        const current = execution.convoyRewardPlan(
+          owner,
+          distance,
+          risk,
+          3_600,
+          1,
+        );
+        if (previous) {
+          expect(current.goldReward >= previous.goldReward).toBe(true);
+          expect(current.troopsReward >= previous.troopsReward).toBe(true);
+        }
+        previous = current;
+      }
     }
   });
 

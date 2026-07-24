@@ -187,6 +187,17 @@ All 5 premise-verified infrastructure findings in docs/AUDIT_2026-07-20.json shi
 - [ ] [SIL:1] Generate the public nav/footer route graph from one source, preserve the scoped checker as the invariant, and attach desktop/mobile theme screenshots once staging exists.
 - [ ] [SIL:2] Verify Ark cargo 01JU1AEATS46E1C7F5DD9AE41C is accepted and the canonical release admission consumes the same complete project-truth fingerprint rather than private/public heuristics.
 
+## Completed (2026-07-23 — Session 82 certified-entitlement and balance-authority arc)
+
+All four new live-code findings in `docs/AUDIT_2026-07-23.json` shipped at L3, bringing the cumulative audit to 10/10. Five new evidence-derived second-order candidates shipped, taking `docs/INNOVATION_PACK.json` to 25/25 with zero pending unblocked work.
+
+- [done] Patched protobufjs to the trusted fixed version, lowered the continuous-integration audit threshold to moderate, and pinned version/integrity/threshold evidence.
+- [done] Extracted the complete experiment control plane, preserved deterministic bucketing semantics, labeled process-local reset scope, and contracted Worker to 3,108/3,130 lines.
+- [done] Rebuilt Season Pass as a certified per-game PostgreSQL event/progress/entitlement ledger with actor-bound routes, restart restoration, honest fallback scope, and visible cosmetic identity.
+- [done] Created one versioned convoy balance authority and pure planner; production builds verify 28,125 deterministic scenarios and bind stable source/artifact digests into release lineage.
+- [done] Generated and shipped five second-order invariants: visible entitlement projection, experiment reset scope, byte-stable balance evidence, tamper-failing lineage, and fresh-store entitlement proof.
+- [done] Full proof: 160 files / 923 tests and production coverage, TypeScript, lint, build, formatting, bundle budgets, 26/26 E2E, 42/42 mutation policies, 10/10 public ingest, zero npm vulnerabilities, audit 10/10, innovations 25/25.
+
 ## Completed (2026-07-23 — Session 81 certified-loop and spectator-trust arc)
 
 All six items in `docs/AUDIT_2026-07-23.json` shipped at L3. Three new second-order candidates shipped, taking `docs/INNOVATION_PACK.json` to 20/20 with zero pending unblocked work.

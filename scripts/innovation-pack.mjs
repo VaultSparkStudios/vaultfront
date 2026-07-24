@@ -288,16 +288,96 @@ const candidates = [
     id: "composition-ratchet-contraction",
     title: "Cash router extraction into a tighter composition budget",
     description:
-      "Convert the removed duplicate crowd domain into a lower Worker line ceiling and keep all three extracted domains behind bounded, directly tested registrars.",
+      "Convert removed inline domains into a lower Worker line ceiling and keep every extracted domain behind bounded, directly tested registrars.",
     complete:
       has(
         "scripts/check-worker-composition.mjs",
-        /WORKER_LINE_BUDGET = 4040/,
+        /WORKER_LINE_BUDGET = 3130/,
       ) &&
       has("scripts/check-worker-composition.mjs", /forbiddenInWorker/) &&
       has("tests/scripts/WorkerComposition.test.ts", /extracted domains/),
     evidence:
-      "4,040-line Worker ceiling, 180-line router ceiling, route reclamation detection, and executable regression test",
+      "3,130-line Worker ceiling, explicit bounded-router ceilings, route reclamation detection, and executable regression test",
+  },
+  {
+    id: "season-entitlement-identity-projection",
+    title:
+      "Project claimed Season Pass cosmetics back into visible player identity",
+    description:
+      "Close the promise loop after durable claims by rendering exact title and badge entitlements from the certified server ledger, with honest durability scope beside them.",
+    complete:
+      has("src/client/SeasonPassTrack.ts", /Earned season cosmetics/) &&
+      has("src/client/SeasonPassTrack.ts", /this\.entitlements/) &&
+      has("src/client/SeasonPassTrack.ts", /Durable ledger/),
+    evidence:
+      "server-derived cosmetic chips, certified durability label, and no client-invented reward state",
+  },
+  {
+    id: "experiment-reset-scope",
+    title: "Make experiment aggregate reset boundaries machine-readable",
+    description:
+      "Prevent process-local experiment summaries from masquerading as durable analytics by attaching the assignment, aggregate, and worker-restart scope to every summary surface.",
+    complete:
+      has("src/server/ExperimentRouter.ts", /EXPERIMENT_STORAGE_POSTURE/) &&
+      has(
+        "src/server/ExperimentRouter.ts",
+        /resetBoundary: "worker-restart"/,
+      ) &&
+      has(
+        "tests/server/ExperimentRouter.test.ts",
+        /aggregates: "process-local"/,
+      ),
+    evidence:
+      "shared storage-posture contract across dock, recap, runtime, unified, and outcome summaries with direct test",
+  },
+  {
+    id: "byte-stable-balance-envelope",
+    title: "Make identical balance inputs produce byte-identical evidence",
+    description:
+      "Remove wall-clock noise from the generated envelope, publish it from the production public source, and pin the stable scenario digest so rebuilds measure balance rather than time.",
+    complete:
+      has(
+        "scripts/generate-balance-envelope.ts",
+        /public.*balance-envelope\.json/s,
+      ) &&
+      !has("scripts/generate-balance-envelope.ts", /generatedAt:/) &&
+      has("tests/core/execution/VaultFrontBalance.test.ts", /scenarioDigest/),
+    evidence:
+      "deterministic public artifact with 28,125 scenarios, stable SHA-256 scenario digest, and no timestamp entropy",
+  },
+  {
+    id: "balance-lineage-tamper-proof",
+    title: "Make balance evidence tampering invalidate release lineage",
+    description:
+      "Promote the envelope from an attached file to a lineage parent whose digest mutation makes release verification fail closed.",
+    complete:
+      has(
+        "scripts/generate-release-evidence.mjs",
+        /deterministic-gameplay-envelope/,
+      ) &&
+      has("tests/scripts/ReleaseEvidenceManifest.test.ts", /balanceTampered/) &&
+      has("public/agents.json", /verified-balance-envelope/),
+    evidence:
+      "release-lineage balance parent, artifact/source digests, tamper test, and read-only agent discovery",
+  },
+  {
+    id: "season-ledger-restart-proof",
+    title:
+      "Prove certified Season Pass entitlements survive a fresh store instance",
+    description:
+      "Test the actual PostgreSQL read path after a claim through a newly constructed store, alongside composite replay keys and actor-bound routing, so restart durability is executable evidence.",
+    complete:
+      has("src/server/db/schema.sql", /season_pass_entitlements/) &&
+      has(
+        "tests/server/CertifiedSeasonPassStore.test.ts",
+        /after a store restart/,
+      ) &&
+      has(
+        "tests/server/SeasonPassRouter.test.ts",
+        /binds reads to the authenticated actor/,
+      ),
+    evidence:
+      "fresh-store restoration fixture, composite certified-event key, entitlement table contract, and cross-actor rejection",
   },
 ];
 

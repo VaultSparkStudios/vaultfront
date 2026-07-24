@@ -6,6 +6,14 @@ Public-safe summary:
 - Internal operating detail lives in the private Studio OS / ops repository.
 - This repo retains only the public-safe implementation and evidence boundary.
 
+## 2026-07-23 — Session 82 certified-entitlement and balance-authority arc
+
+The uninterrupted `/start → /audit → /implement → /closeout` mission exhausted all four new live-code findings and generated five additional second-order innovations; the cumulative audit is 10/10 shipped and the innovation pack is 25/25 shipped. The protobuf parser advisory is patched and CI now rejects moderate vulnerabilities. Experiment assignment, integrity, outcome, and summary routes live behind one tested control plane; Worker contracted to 3,108 lines under a 3,130-line executable ceiling, and every experiment summary declares its process-local worker-restart boundary.
+
+Season Pass progress now derives once from each certified player/game result. PostgreSQL owns the event, aggregate, and cosmetic-entitlement ledgers; configured persistence fails closed, database-free development says `process-local`, actor-bound reads/claims reject cross-player access, and earned titles/badges restore after restart and appear in the player-facing track. Convoy reward defaults and formula now have one versioned executable authority. Every production build verifies 28,125 deterministic scenarios across six invariants, publishes a byte-stable balance envelope, and binds its artifact/source digests into tamper-sensitive release lineage and read-only agent discovery.
+
+Direct verification is green: 160 Vitest files / 923 tests, production-inclusive coverage (31.57% lines), TypeScript, ESLint, production build, Prettier ratchet, exact bundle/media budgets, 26/26 Playwright desktop/mobile tests, 42/42 mutation policy coverage, 10/10 public-ingest ceiling, audit 10/10, innovation pack 25/25, work exhaustion, and zero known npm vulnerabilities. Release remains NO-GO because no fresh staging, runtime-health, parity, project-domain delivery, native Obelisk, live theme, three-human Alpha, or founder-approval evidence exists.
+
 ## 2026-07-23 — Session 81 certified-loop and spectator-trust arc
 
 The complete `/start → /audit → /implement → /closeout` mission shipped all six premise-verified audit findings and three new second-order innovations. Scheduled public playlists now enable the flagship VaultFront loop while preserving private opt-in semantics. Seasonal contracts and core-loop evidence derive only from certified match results, persist in PostgreSQL when configured, label the process-local development fallback honestly, and reject retired browser-authored mutation paths.

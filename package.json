@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build-dev": "concurrently \"tsc --noEmit\" \"vite build --mode development\"",
-    "build-prod": "tsc --noEmit && vite build && node scripts/generate-release-evidence.mjs",
+    "build-prod": "tsc --noEmit && npm run balance:verify && vite build && node scripts/generate-release-evidence.mjs",
     "build:pages": "concurrently --kill-others-on-fail \"tsc --noEmit\" \"vite build\" && node scripts/postbuild-pages.mjs",
     "start:client": "vite",
     "start:server": "tsx src/server/Server.ts",
@@ -38,6 +38,7 @@
     "e2e": "playwright test --config e2e/playwright.config.ts",
     "e2e:ui": "playwright test --config e2e/playwright.config.ts --ui",
     "bundle:check": "node scripts/check-bundle-budget.mjs",
+    "balance:verify": "tsx scripts/generate-balance-envelope.ts",
     "format:check": "node scripts/check-prettier-ratchet.mjs"
   },
   "lint-staged": {
@@ -97,7 +98,7 @@
     "prettier": "3.9.5",
     "prettier-plugin-organize-imports": "4.3.0",
     "prettier-plugin-sh": "0.19.0",
-    "protobufjs": "7.6.3",
+    "protobufjs": "7.6.5",
     "semantic-release": "25.0.7",
     "sinon": "21.0.1",
     "sinon-chai": "4.0.1",
