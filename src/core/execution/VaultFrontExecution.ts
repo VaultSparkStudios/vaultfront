@@ -18,6 +18,7 @@ import {
 } from "../game/GameUpdates";
 import { PseudoRandom } from "../PseudoRandom";
 import { simpleHash } from "../Util";
+import { planConvoyReward, type ConvoyRewardPlan } from "./VaultFrontBalance";
 
 interface VaultSite {
   id: number;
@@ -61,17 +62,6 @@ interface BeaconState {
   cooldownUntil: number;
   maskedUntil: number;
   anchorTile?: TileRef;
-}
-
-interface RewardPlan {
-  goldReward: bigint;
-  troopsReward: number;
-  rewardMultiplier: number;
-  rewardScale: number;
-  strengthMultiplier: number;
-  phaseMultiplier: number;
-  riskMultiplier: number;
-  rewardMath: string;
 }
 
 interface SquadObjectiveWindow {
@@ -1850,20 +1840,10 @@ export class VaultFrontExecution implements Execution {
     routeRisk: number,
     ticks: number,
     rewardScale: number,
-  ): RewardPlan {
+  ): ConvoyRewardPlan {
     const tuning = this.game.config().vaultConvoyRewardTuning();
     const strengthMultiplier = this.strengthAdjustmentMultiplier(owner);
     const phaseMultiplier = this.phaseAdjustmentMultiplier(ticks);
-    const riskMultiplier =
-      tuning.riskMultiplierBase + routeRisk * tuning.riskMultiplierScale;
-    const rewardMultiplier = Math.max(
-      tuning.rewardMultiplierMin,
-      Math.min(
-        tuning.rewardMultiplierMax,
-        strengthMultiplier * phaseMultiplier * riskMultiplier * rewardScale,
-      ),
-    );
-
     const alive = this.game.players().filter((p) => p.isAlive());
     const avgStrength =
       alive.length > 0
@@ -1871,53 +1851,18 @@ export class VaultFrontExecution implements Execution {
           alive.length
         : this.playerStrengthScore(owner);
     const ownerStrength = this.playerStrengthScore(owner);
-    const baselineGold = Math.max(
-      tuning.minGoldReward,
-      Math.floor(
-        (ownerStrength * tuning.baselineGoldOwnerStrengthScale +
-          avgStrength * tuning.baselineGoldAvgStrengthScale) *
-          (tuning.baselineGoldRiskBase +
-            routeRisk * tuning.baselineGoldRiskScale),
-      ),
+    return planConvoyReward(
+      {
+        ownerStrength,
+        averageStrength: avgStrength,
+        distance,
+        routeRisk,
+        rewardScale,
+        strengthMultiplier,
+        phaseMultiplier,
+      },
+      tuning,
     );
-    const distanceGold = Math.max(
-      tuning.distanceGoldMin,
-      Math.floor(
-        (ownerStrength * tuning.distanceGoldOwnerStrengthScale +
-          tuning.distanceGoldFlat) *
-          (tuning.distanceGoldRiskBase +
-            routeRisk * tuning.distanceGoldRiskScale),
-      ),
-    );
-
-    const goldReward = BigInt(
-      Math.floor((baselineGold + distance * distanceGold) * rewardMultiplier),
-    );
-    const troopsReward = Math.max(
-      tuning.minTroopsReward,
-      Math.floor(
-        (Math.sqrt(Math.max(1, baselineGold)) * tuning.troopsSqrtGoldScale +
-          distance *
-            (tuning.troopsDistanceBase +
-              routeRisk * tuning.troopsDistanceRiskScale)) *
-          rewardMultiplier,
-      ),
-    );
-
-    const rewardMath =
-      `Gold=(${baselineGold}+${distance}*${distanceGold})x${rewardMultiplier.toFixed(2)} | ` +
-      `Troops=max(${tuning.minTroopsReward},f(distance,risk)x${rewardMultiplier.toFixed(2)})`;
-
-    return {
-      goldReward,
-      troopsReward,
-      rewardMultiplier,
-      rewardScale,
-      strengthMultiplier,
-      phaseMultiplier,
-      riskMultiplier,
-      rewardMath,
-    };
   }
 
   private startConvoy(

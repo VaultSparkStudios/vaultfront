@@ -300,6 +300,49 @@ CREATE TABLE IF NOT EXISTS season_contract_progress (
   PRIMARY KEY (persistent_id, season_id)
 );
 
+-- ── Certified Season Pass ──────────────────────────────────────────────────
+-- Progress is accepted once per certified player/season/game result. Claims
+-- materialize cosmetic entitlements and survive worker restarts.
+CREATE TABLE IF NOT EXISTS season_pass_events (
+  persistent_id         VARCHAR(64) NOT NULL,
+  season_id             VARCHAR(32) NOT NULL,
+  game_id               VARCHAR(64) NOT NULL,
+  matches_played        INT NOT NULL DEFAULT 0 CHECK (matches_played >= 0),
+  gold_delivered_k      INT NOT NULL DEFAULT 0 CHECK (gold_delivered_k >= 0),
+  vault_captures        INT NOT NULL DEFAULT 0 CHECK (vault_captures >= 0),
+  convoy_deliveries     INT NOT NULL DEFAULT 0 CHECK (convoy_deliveries >= 0),
+  achievements_unlocked INT NOT NULL DEFAULT 0 CHECK (achievements_unlocked >= 0),
+  chain_combos          INT NOT NULL DEFAULT 0 CHECK (chain_combos >= 0),
+  recorded_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (persistent_id, season_id, game_id)
+);
+
+CREATE TABLE IF NOT EXISTS season_pass_progress (
+  persistent_id         VARCHAR(64) NOT NULL,
+  season_id             VARCHAR(32) NOT NULL,
+  matches_played        INT NOT NULL DEFAULT 0 CHECK (matches_played >= 0),
+  gold_delivered_k      INT NOT NULL DEFAULT 0 CHECK (gold_delivered_k >= 0),
+  vault_captures        INT NOT NULL DEFAULT 0 CHECK (vault_captures >= 0),
+  convoy_deliveries     INT NOT NULL DEFAULT 0 CHECK (convoy_deliveries >= 0),
+  achievements_unlocked INT NOT NULL DEFAULT 0 CHECK (achievements_unlocked >= 0),
+  chain_combos          INT NOT NULL DEFAULT 0 CHECK (chain_combos >= 0),
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (persistent_id, season_id)
+);
+
+CREATE TABLE IF NOT EXISTS season_pass_entitlements (
+  persistent_id VARCHAR(64) NOT NULL,
+  season_id     VARCHAR(32) NOT NULL,
+  milestone_id VARCHAR(16) NOT NULL,
+  reward_type   VARCHAR(16) NOT NULL CHECK (reward_type IN ('title', 'badge')),
+  reward_value  VARCHAR(96) NOT NULL,
+  claimed_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (persistent_id, season_id, milestone_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_season_pass_entitlements_player
+  ON season_pass_entitlements (persistent_id, claimed_at DESC);
+
 -- ── Certified Core-Loop Evidence ───────────────────────────────────────────
 -- One privacy-minimal aggregate per certified game. No player identity or
 -- browser-authored telemetry is stored here.

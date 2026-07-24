@@ -1,5 +1,6 @@
 import { JWK } from "jose";
 import { z } from "zod";
+import { DEFAULT_VAULT_CONVOY_REWARD_TUNING } from "../execution/VaultFrontBalance";
 import {
   Difficulty,
   Game,
@@ -261,25 +262,7 @@ export class DefaultConfig implements Config {
   }
   vaultConvoyRewardTuning(): VaultConvoyRewardTuning {
     const defaults: VaultConvoyRewardTuning = {
-      minGoldReward: 120_000,
-      minTroopsReward: 900,
-      lowSignalEarlyWindowTicks: 900,
-      riskMultiplierBase: 0.88,
-      riskMultiplierScale: 0.5,
-      rewardMultiplierMin: 0.58,
-      rewardMultiplierMax: 1.5,
-      baselineGoldOwnerStrengthScale: 360,
-      baselineGoldAvgStrengthScale: 280,
-      baselineGoldRiskBase: 0.9,
-      baselineGoldRiskScale: 0.3,
-      distanceGoldMin: 320,
-      distanceGoldOwnerStrengthScale: 1.9,
-      distanceGoldFlat: 260,
-      distanceGoldRiskBase: 0.65,
-      distanceGoldRiskScale: 0.6,
-      troopsSqrtGoldScale: 2.2,
-      troopsDistanceBase: 4,
-      troopsDistanceRiskScale: 6,
+      ...DEFAULT_VAULT_CONVOY_REWARD_TUNING,
     };
     const base = this.lastValidVaultTuning ?? defaults;
     const raw = this._gameConfig.vaultConvoyRewardTuning as

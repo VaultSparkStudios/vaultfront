@@ -1491,6 +1491,13 @@ export interface SeasonMilestoneProgress {
   claimed: boolean;
 }
 
+export interface SeasonEntitlement {
+  milestoneId: string;
+  type: "title" | "badge";
+  value: string;
+  claimedAt: string;
+}
+
 export async function fetchAchievements(persistentId: string): Promise<{
   achievements: AchievementProgress[];
   metaChains: MetaChainProgress[];
@@ -1661,15 +1668,22 @@ export async function postMatchRating(params: {
 export async function fetchSeasonProgress(persistentId: string): Promise<{
   seasonId: string;
   milestones: SeasonMilestoneProgress[];
+  entitlements?: SeasonEntitlement[];
+  evidence?: "certified-match-result";
+  durability?: "postgres" | "process-local";
 } | null> {
   try {
     const res = await fetch(
       `${getApiBase()}/api/vaultfront/season-progress/${encodeURIComponent(persistentId)}`,
+      { headers: await vaultFrontIdentityHeaders() },
     );
     if (!res.ok) return null;
     return (await res.json()) as {
       seasonId: string;
       milestones: SeasonMilestoneProgress[];
+      entitlements?: SeasonEntitlement[];
+      evidence?: "certified-match-result";
+      durability?: "postgres" | "process-local";
     };
   } catch {
     return null;

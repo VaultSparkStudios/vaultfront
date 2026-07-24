@@ -5,20 +5,33 @@
   "vaultStatus": "FORGE",
   "releaseStatus": "public-unlaunched",
   "archetype": "game",
-  "capabilities": ["browser-game", "multiplayer", "single-player", "replays"],
+  "capabilities": [
+    "browser-game",
+    "multiplayer",
+    "single-player",
+    "replays",
+    "verified-balance-envelope"
+  ],
   "endpoints": {
     "landing": "https://vaultsparkstudios.com/vaultfront/",
     "docs": "https://vaultsparkstudios.com/vaultfront/#how-to-play",
     "contact": "mailto:founder@vaultsparkstudios.com?subject=VaultFront%20alpha%20interest",
     "source": "https://github.com/VaultSparkStudios/VaultFront",
-    "capabilityManifest": "/capability-reachability.json"
+    "capabilityManifest": "/capability-reachability.json",
+    "balanceEnvelope": "/balance-envelope.json"
   },
   "availability": {
     "publicRuntime": "unavailable",
     "joinAlpha": "mailto:founder@vaultsparkstudios.com?subject=VaultFront%20alpha%20interest",
     "note": "No public gameplay origin is currently declared ready."
   },
-  "agentInteractions": [],
+  "agentInteractions": [
+    {
+      "method": "GET",
+      "path": "/balance-envelope.json",
+      "purpose": "Inspect deterministic convoy reward bounds, tuning lineage, and invariant counterexamples."
+    }
+  ],
   "authentication": {
     "provider": "Obelisk",
     "status": "not-wired"

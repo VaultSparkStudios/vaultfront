@@ -16,6 +16,7 @@ export class SeasonPassTrack extends LitElement {
   @state() private milestones: SeasonMilestoneProgress[] = [];
   @state() private loading = false;
   @state() private currentSeason = "";
+  @state() private durability: "postgres" | "process-local" | "" = "";
   @state() private claimingId: string | null = null;
 
   private persistentId = "";
@@ -41,6 +42,11 @@ export class SeasonPassTrack extends LitElement {
     .season-id {
       font-size: 0.72rem;
       color: #475569;
+    }
+    .evidence {
+      margin-left: auto;
+      font-size: 0.64rem;
+      color: #047857;
     }
     .track {
       display: flex;
@@ -142,6 +148,7 @@ export class SeasonPassTrack extends LitElement {
     if (data) {
       this.currentSeason = data.seasonId ?? "";
       this.milestones = data.milestones;
+      this.durability = data.durability ?? "";
     }
     this.loading = false;
   }
@@ -184,6 +191,12 @@ export class SeasonPassTrack extends LitElement {
       <div class="header">
         <span class="season-label">Season Pass</span>
         <span class="season-id">${this.currentSeason}</span>
+        <span
+          class="evidence"
+          title="Progress is derived from certified match results"
+        >
+          ${this.durability === "postgres" ? "Durable ledger" : "Local session ledger"}
+        </span>
       </div>
       <div class="track">
         ${this.milestones.map((m, i) => {
