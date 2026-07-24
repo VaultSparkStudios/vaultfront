@@ -379,6 +379,44 @@ const candidates = [
     evidence:
       "fresh-store restoration fixture, composite certified-event key, entitlement table contract, and cross-actor rejection",
   },
+  {
+    id: "progression-receipt-verifier",
+    title:
+      "Make progression completion receipts independently tamper-verifiable",
+    description:
+      "Turn the replay-safe fan-out digest into an executable verifier so downstream consumers can reject altered completion totals instead of trusting a producer-owned hash string.",
+    complete:
+      has("src/server/MatchProgression.ts", /verifyProgressionReceipt/) &&
+      has("src/server/MatchProgression.ts", /timingSafeEqual/) &&
+      has("tests/server/MatchProgression.test.ts", /achievementsUnlocked: 999/),
+    evidence:
+      "canonical completion payload, constant-time digest verification, duplicate-boundary rule, and tamper regression",
+  },
+  {
+    id: "state-scope-catalog-fingerprint",
+    title: "Fingerprint persistence capability truth inside runtime evidence",
+    description:
+      "Digest the executable store ownership/capability catalog so any readiness metadata change becomes provenance-visible through the Runtime Integrity Passport.",
+    complete:
+      has("src/server/StateScopeLedger.ts", /stateScopeCatalogDigest/) &&
+      has("src/server/StateScopeLedger.ts", /catalogDigest/) &&
+      has("tests/server/StateScopeLedger.test.ts", /ready\.catalogDigest/),
+    evidence:
+      "stable SHA-256 catalog fingerprint, runtime-ledger projection, and mutation-sensitive test",
+  },
+  {
+    id: "release-bound-vault-pressure-rules",
+    title:
+      "Promote the flagship climax rules into release-bound balance evidence",
+    description:
+      "Move the Vault Pressure threshold and breach duration into the versioned balance authority, validate their domain, and publish them in the deterministic envelope that already feeds release lineage.",
+    complete:
+      has("config/vaultfront-balance.v1.json", /"pressure"/) &&
+      has("scripts/generate-balance-envelope.ts", /pressureRules/) &&
+      has("public/balance-envelope.json", /"breachWindowDurationTicks": 900/),
+    evidence:
+      "single JSON authority, executable threshold/window invariants, deterministic public projection, and release-lineage source binding",
+  },
 ];
 
 const payload = {

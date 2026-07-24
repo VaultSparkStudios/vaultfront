@@ -1,0 +1,267 @@
+{
+  "schemaVersion": "1.0",
+  "generatedBy": "Codex /goal /arc Session 83",
+  "generatedAt": "2026-07-24T05:26:00.000Z",
+  "project": {
+    "slug": "vaultfront",
+    "name": "VaultFront",
+    "type": "game",
+    "registryType": "app",
+    "audience": "public-unlaunched",
+    "stage": "FORGE",
+    "stagingType": "local"
+  },
+  "summary": "Premise-verified Session 83 audit applying the game/product lens and the founder-requested infrastructure rubric. Four locally executable findings survive live-code review: progression fan-out pre-claims a game before asynchronous legs finish while match history lacks durable replay protection; achievement reads expose arbitrary persistent-ID progress without the actor binding already used by season progression; the source-of-truth state ledger falsely reports the PostgreSQL-capable PlaytestEvidenceStore as always volatile; and the 2,900-line VaultFrontExecution embeds its breach-pressure state machine without a bounded composition contract. External staging, project-domain delivery, native Obelisk relying-party registration, three-human Alpha, revenue, rollback observation, and founder approval remain unobserved and are not audit implementation items.",
+  "axes": {
+    "featureDepth": 1.5,
+    "innovation": 1.5,
+    "ux": 2,
+    "feedbackLoop": 1.5,
+    "gamification": 3,
+    "aiIntegration": 1,
+    "security": 2,
+    "speedOrganization": 2,
+    "tokenApiReduction": 1.5
+  },
+  "sample": {
+    "method": "live code and contract survey; sample-codebase helper absent; manual survey capped to 20 primary files",
+    "filesSurveyed": 20,
+    "primarySurfaces": [
+      "src/server/MatchProgression.ts",
+      "src/server/PlayerStatsStore.ts",
+      "src/server/AchievementStore.ts",
+      "src/server/Worker.ts",
+      "src/server/SeasonPassRouter.ts",
+      "src/server/PlaytestEvidenceStore.ts",
+      "src/server/VaultFrontPlaytestPulse.ts",
+      "src/server/StateScopeLedger.ts",
+      "src/server/VaultFrontReadiness.ts",
+      "src/server/db/schema.sql",
+      "src/core/execution/VaultFrontExecution.ts",
+      "src/core/execution/VaultFrontBalance.ts",
+      "src/client/Api.ts",
+      "src/client/ConvoyMastery.ts",
+      "src/client/components/ProgressionDebrief.ts",
+      "src/client/graphics/layers/ControlPanel.ts",
+      "src/client/graphics/layers/WinModal.ts",
+      "scripts/check-worker-composition.mjs",
+      "scripts/check-route-policy-coverage.mjs",
+      "tests/server/MatchProgression.test.ts"
+    ]
+  },
+  "specialtyReviews": {
+    "gameLoop": {
+      "score": 90,
+      "confidence": "code-grounded-low-empirical",
+      "axes": {
+        "loopTightness": 94,
+        "progression": 82,
+        "sessionEngagement": 91,
+        "retention": 86,
+        "soulFidelity": 96
+      },
+      "nextMoves": [
+        "Make the certified progression spine safely replayable after partial failure.",
+        "Protect private progression reads with the same actor contract as Season Pass.",
+        "Extract and exhaustively test the breach-pressure state machine without changing balance."
+      ],
+      "boundary": "Public playlists, certified seasonal progression, prediction resolution, balance evidence, and visible entitlements are live in source. The remaining product uncertainty is empirical: no distinct-human Alpha corpus exists, so this audit does not invent tuning or retention claims."
+    },
+    "release": {
+      "verdict": "no-go",
+      "passing": [
+        "main-branch CI, E2E, semantic-release verification, and database workflow are green at 70781454",
+        "CANON-029 release and cost-bleeder gates pass as cost-neutral",
+        "sitemap, footer, legal/IP exception, local theme proof, and immutable promotion contracts are checked in",
+        "Brevo, Cloudflare, and Obelisk capabilities resolve READY through the secrets gateway"
+      ],
+      "red": [
+        "only the github-pages environment exists; no approved staging deployment/promotion receipt exists",
+        "no live origin health, exact-digest parity, headers, Core Web Vitals, or theme observation exists",
+        "no project-domain delivery or native Obelisk relying-party callback receipt exists",
+        "three-human Alpha, revenue, rollback-drill, and founder-approval receipts are absent"
+      ]
+    },
+    "infrastructure": {
+      "topRisks": [
+        "partial progression failure is suppressed by a pre-claimed process-local game ID",
+        "player match history has no per-player/game replay uniqueness contract",
+        "achievement progress reads bypass the actor-bound trust model",
+        "readiness derives a false volatility warning from a stale handwritten state-scope row",
+        "VaultFrontExecution owns a large embedded pressure/breach state machine without a ratchet"
+      ]
+    }
+  },
+  "evidenceBoundary": [
+    "Local automation cannot manufacture staging, project-domain delivery, relying-party registration, distinct-human Alpha, revenue, rollback observation, or founder approval.",
+    "The registry still classifies VaultFront as app while local project truth says game. CANON-018 forbids editing the sibling registry; correction must travel through signed Ark cargo.",
+    "No dependency install, paid service, license change, sibling tree edit, or fabricated data is required for the four admitted items.",
+    "The latest visible CI failure belongs to the protobufjs 8.7.1 Dependabot pull request; main at 70781454 is green and remains pinned to trusted 7.6.5."
+  ],
+  "rejectedPremises": [
+    {
+      "candidate": "Rebuild durable Playtest Pulse storage",
+      "result": "skipped",
+      "evidence": "PlaytestEvidenceStore already writes and summarizes authenticated events in PostgreSQL. The valid bug is the stale StateScopeLedger declaration, not missing persistence."
+    },
+    {
+      "candidate": "Retune convoy rewards or breach timing from code review",
+      "result": "skipped",
+      "evidence": "The balance envelope is executable and deterministic, but no three-human Alpha corpus exists. Code review cannot honestly choose better human-facing values."
+    },
+    {
+      "candidate": "Upgrade protobufjs to the Dependabot-proposed 8.7.1",
+      "result": "skipped",
+      "evidence": "The main branch is intentionally pinned to trusted patched 7.6.5; the live Dependabot pull request fails the repository supply-chain contract because it crosses the approved major-version boundary."
+    },
+    {
+      "candidate": "Treat READY Cloudflare, Brevo, and Obelisk credentials as launch authorization",
+      "result": "skipped",
+      "evidence": "Credential readiness does not provide an approved staging origin, inbound route target, relying-party origin, or callback contract. Provider mutation without those targets would fabricate release progress."
+    },
+    {
+      "candidate": "Delete old workflows or TODO-marked upstream mechanics by age",
+      "result": "skipped",
+      "evidence": "The surveyed workflows and core mechanics remain referenced. Age and TODO text alone do not establish dead code or a VaultFront-specific defect."
+    },
+    {
+      "candidate": "Replace deterministic coaching with remote artificial intelligence",
+      "result": "skipped",
+      "evidence": "Certified deterministic prescriptions already preserve a cost-neutral baseline; no measured player outcome supports adding latency or variable inference to the core loop."
+    }
+  ],
+  "items": [
+    {
+      "id": 73,
+      "slug": "replay-safe-progression-fanout",
+      "tier": "🔥",
+      "axis": "gamification / retention / security / infrastructure",
+      "effortHours": 8,
+      "impact": 10,
+      "innovation": 9,
+      "priority": 96,
+      "status": "shipped",
+      "title": "Turn certified progression into a replay-safe recoverable fan-out",
+      "why": "MatchProgression inserts gameId into processedGameIds before its first asynchronous leg. A thrown leg leaves the ID claimed and every retry returns duplicate, while PlayerStatsStore can increment Elo and match counters again after restart because match_history has no (persistent_id, game_id) uniqueness. The visible progression stack is individually durable but its orchestration is not recoverable.",
+      "coreLoopStep": "certified match result → rating/achievement/season fan-out → durable receipt",
+      "recipe": "Make PlayerStatsStore atomically idempotent per game across memory and PostgreSQL, add the schema uniqueness invariant, replace pre-claim suppression with explicit in-flight/completed state that releases failed claims, and add concurrency, partial-failure, and fresh-spine replay tests proving each player/game changes rating once while failed fan-out can resume.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Release processedGameIds on failure."
+        },
+        "L2": {
+          "effortHours": 4,
+          "recipe": "Add store-level player/game idempotency and failure-retry tests."
+        },
+        "L3": {
+          "effortHours": 8,
+          "recipe": "Add PostgreSQL advisory serialization plus unique schema protection, concurrent same-process promise coalescing, restart-safe downstream replay, and a canonical completion receipt digest."
+        }
+      },
+      "executionLog": [
+        "L3 shipped: PostgreSQL advisory serialization and a player/game unique index backstop restart replay; memory deduplicates the same contract; the progression spine coalesces concurrent calls, releases failed attempts for safe retry, and publishes a stable SHA-256 completion receipt. Focused replay, partial-failure, concurrency, and TypeScript gates passed."
+      ]
+    },
+    {
+      "id": 74,
+      "slug": "actor-bound-achievement-profile",
+      "tier": "🔥",
+      "axis": "security / ux / organization",
+      "effortHours": 5,
+      "impact": 9,
+      "innovation": 7,
+      "priority": 84,
+      "status": "shipped",
+      "title": "Make achievement progression an actor-bound profile contract",
+      "why": "GET /api/vaultfront/achievements/:persistentId and the meta-chain variant accept any caller-supplied persistent ID and expose progress without a play token. Newer season and contract reads authenticate the actor and reject cross-player claims. Achievement progress is private player progression and should share that boundary.",
+      "coreLoopStep": "authenticated player → private progression profile → visible Command Center/debrief",
+      "recipe": "Extract an AchievementRouter with injected authentication, bind optional path claims to the verified actor, update the client to send VaultFront identity headers, retain a compatibility path that fails closed on mismatch, add direct router tests, and include the router in the Worker composition budget.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Require authentication on the two reads."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Bind the path claim, update the client, and add authorization tests."
+        },
+        "L3": {
+          "effortHours": 5,
+          "recipe": "Extract an injected router, test missing/cross-player/valid reads directly, and ratchet Worker composition so the trust boundary cannot drift back."
+        }
+      },
+      "executionLog": [
+        "L3 shipped: an injected AchievementRouter requires a verified play actor, rejects cross-player and malformed claims, rate-limits reads, updates client identity headers, and is protected by direct authorization tests plus the Worker composition ratchet (3,098/3,130 lines)."
+      ]
+    },
+    {
+      "id": 75,
+      "slug": "self-validating-state-scope-ledger",
+      "tier": "⚡",
+      "axis": "feedback loop / observability / release truth",
+      "effortHours": 4,
+      "impact": 9,
+      "innovation": 8,
+      "priority": 88,
+      "status": "shipped",
+      "title": "Make persistence readiness derive from executable store capabilities",
+      "why": "StateScopeLedger declares playtest-pulse as process-only and release-critical even though Worker writes authenticated events through PlaytestEvidenceStore, which uses PostgreSQL when configured and labels process-local fallback honestly. Readiness can therefore emit a false volatility warning from stale handwritten metadata.",
+      "coreLoopStep": "authenticated playtest evidence → durable pulse → honest Alpha/release readiness",
+      "recipe": "Correct the playtest evidence owner/scope, represent store capability separately from effective runtime scope, self-validate declared database-capable owners against an executable capability catalog, and add tests proving ready/absent/failed database postures produce truthful pass/warn/block outcomes.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 0.5,
+          "recipe": "Correct the stale playtest-pulse ledger row."
+        },
+        "L2": {
+          "effortHours": 2,
+          "recipe": "Test the row against all database postures."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Add an executable store-capability catalog and a ledger integrity assertion so owner/scope drift fails tests instead of lying in readiness."
+        }
+      },
+      "executionLog": [
+        "L3 shipped: PlaytestEvidenceStore is correctly modeled as PostgreSQL-capable with process-local development fallback; capability and effective scope are distinct; contradictory metadata blocks the ledger; disabled/ready/failed database tests and readiness/passport integration are green."
+      ]
+    },
+    {
+      "id": 76,
+      "slug": "vault-pressure-kernel",
+      "tier": "⚡",
+      "axis": "feature depth / game loop / speed / testability",
+      "effortHours": 6,
+      "impact": 8,
+      "innovation": 8,
+      "priority": 80,
+      "status": "shipped",
+      "title": "Extract the Vault Pressure climax into a deterministic domain kernel",
+      "why": "VaultFrontExecution is roughly 2,900 lines and directly owns the three-delivery breach threshold, 90-second expiry, win trigger, and fallback-to-two behavior inside mutable maps. That flagship climax has no pure transition contract or file-size ratchet, making balance-preserving changes harder to prove than the newer reward planner.",
+      "coreLoopStep": "convoy deliveries → pressure escalation → breach window → extraction win or recoverable expiry",
+      "recipe": "Extract a pure VaultPressureKernel that receives prior state plus certified transition input and emits next state/events, preserve the current three-delivery and expiry semantics exactly, adapt VaultFrontExecution as composition only, add exhaustive transition/property tests, and add a source composition ratchet that forbids the extracted state-machine body from returning.",
+      "recommendedModel": "sonnet",
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Extract pressure arithmetic into pure helpers."
+        },
+        "L2": {
+          "effortHours": 3,
+          "recipe": "Model delivery/expiry transitions and cover threshold edge cases."
+        },
+        "L3": {
+          "effortHours": 6,
+          "recipe": "Emit typed domain events, exhaustively verify deterministic transition sequences, integrate without balance changes, and ratchet the composition boundary."
+        }
+      },
+      "executionLog": [
+        "L3 shipped: the three-delivery breach climax is a pure typed transition kernel with open, expiry, final-tick, normalization, victory, and deterministic sequence coverage. VaultFrontExecution composes the kernel without balance changes and is ratcheted at the exact formatter-stable 2,917-line baseline."
+      ]
+    }
+  ]
+}

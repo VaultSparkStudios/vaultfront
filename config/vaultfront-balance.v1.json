@@ -22,6 +22,10 @@
     "troopsDistanceBase": 4,
     "troopsDistanceRiskScale": 6
   },
+  "pressure": {
+    "threshold": 3,
+    "breachWindowDurationTicks": 900
+  },
   "envelope": {
     "ownerStrength": [0.4, 0.7, 1, 1.5, 2.2],
     "averageStrength": [0.6, 1, 1.8],

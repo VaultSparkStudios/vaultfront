@@ -1,5 +1,5 @@
 <!-- generated-by: scripts/innovation-pack.mjs -->
-<!-- generated-at: 2026-07-24T02:31:58.746Z -->
+<!-- generated-at: 2026-07-24T05:18:23.152Z -->
 
 # Second-Order Innovation Pack
 
@@ -30,3 +30,6 @@ Generated only after the audit-backed Unified Genius List was exhausted. Complet
 23. [x] **byte-stable-balance-envelope** — Make identical balance inputs produce byte-identical evidence. Remove wall-clock noise from the generated envelope, publish it from the production public source, and pin the stable scenario digest so rebuilds measure balance rather than time. Evidence: deterministic public artifact with 28,125 scenarios, stable SHA-256 scenario digest, and no timestamp entropy.
 24. [x] **balance-lineage-tamper-proof** — Make balance evidence tampering invalidate release lineage. Promote the envelope from an attached file to a lineage parent whose digest mutation makes release verification fail closed. Evidence: release-lineage balance parent, artifact/source digests, tamper test, and read-only agent discovery.
 25. [x] **season-ledger-restart-proof** — Prove certified Season Pass entitlements survive a fresh store instance. Test the actual PostgreSQL read path after a claim through a newly constructed store, alongside composite replay keys and actor-bound routing, so restart durability is executable evidence. Evidence: fresh-store restoration fixture, composite certified-event key, entitlement table contract, and cross-actor rejection.
+26. [x] **progression-receipt-verifier** — Make progression completion receipts independently tamper-verifiable. Turn the replay-safe fan-out digest into an executable verifier so downstream consumers can reject altered completion totals instead of trusting a producer-owned hash string. Evidence: canonical completion payload, constant-time digest verification, duplicate-boundary rule, and tamper regression.
+27. [x] **state-scope-catalog-fingerprint** — Fingerprint persistence capability truth inside runtime evidence. Digest the executable store ownership/capability catalog so any readiness metadata change becomes provenance-visible through the Runtime Integrity Passport. Evidence: stable SHA-256 catalog fingerprint, runtime-ledger projection, and mutation-sensitive test.
+28. [x] **release-bound-vault-pressure-rules** — Promote the flagship climax rules into release-bound balance evidence. Move the Vault Pressure threshold and breach duration into the versioned balance authority, validate their domain, and publish them in the deterministic envelope that already feeds release lineage. Evidence: single JSON authority, executable threshold/window invariants, deterministic public projection, and release-lineage source binding.

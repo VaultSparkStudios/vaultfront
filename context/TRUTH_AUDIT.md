@@ -236,3 +236,15 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 - Experiment summaries truthfully label assignment and aggregate storage as process-local with a worker-restart reset boundary. Worker is 3,108 physical lines against a 3,130 ceiling; five extracted domains are reclamation-checked.
 - Release evidence reports work exhausted and transfer budgets passing. It remains blocked on eight absent external observations plus dirty source before commit; local success is not staging, human, email, identity, theme, or approval evidence.
 - Direct verification passed: 160 Vitest files / 923 tests, 31.57% production-inclusive line coverage, TypeScript, ESLint, production build, Prettier ratchet, exact bundle/media budgets, 26/26 Playwright, 42/42 mutation policies, 10/10 public ingest, and zero npm vulnerabilities.
+
+## 2026-07-24 — Session 83 progression and pressure truth audit
+
+- `docs/AUDIT_2026-07-24.json` is exhausted at 4/4 shipped; six attractive premises were rejected against live code or absent external evidence.
+- `docs/INNOVATION_PACK.json` is evidence-derived and exhausted at 28/28; three receipt/catalog/rules invariants were generated and implemented this session.
+- Certified progression coalesces concurrent player/game attempts, releases failures for retry, serializes PostgreSQL writes with an advisory lock, and enforces one match-history row per player/game. Completion receipts carry a stable digest and tamper verification.
+- Achievement progress reads authenticate the player, reject cross-player claims, and are isolated behind an injected router included in the Worker composition contract.
+- State-scope readiness distinguishes store capability from effective runtime scope, fingerprints the capability catalog, and blocks contradictory owner/capability declarations instead of rendering plausible stale prose.
+- Vault Pressure open/expiry/final-tick/victory transitions are pure and deterministic. The three-delivery threshold and 900-tick window come from the versioned balance authority consumed by runtime and the 28,125-scenario public envelope.
+- Worker is 3,098 physical lines against 3,130; VaultFrontExecution is exactly 2,917 formatter-stable lines against its new composition ceiling; mutation policy is 42/42 and public ingest 10/10.
+- Direct verification passed: 165 Vitest files / 935 tests, production-inclusive coverage, TypeScript, ESLint, production build, Prettier ratchet, exact bundle/media budgets, 26/26 Playwright desktop/mobile, and 41 deploy-contract checks.
+- Release remains NO-GO. Credential readiness did not authorize provider mutation, and no staging/parity, project-domain delivery, native Obelisk, live-web, distinct-human Alpha, revenue, rollback, or founder-approval evidence was inferred.

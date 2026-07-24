@@ -41,6 +41,12 @@ CREATE TABLE IF NOT EXISTS match_history (
 CREATE INDEX IF NOT EXISTS idx_match_history_pid_date
   ON match_history (persistent_id, created_at DESC);
 
+-- One certified game may update each participant exactly once. This is both a
+-- replay guard after worker restart and the final database backstop behind the
+-- in-process progression coalescer.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_match_history_player_game
+  ON match_history (persistent_id, game_id);
+
 -- ── Leaderboard Cache ─────────────────────────────────────────────────────────
 -- Materialized snapshot refreshed after each match via application code.
 -- TODO: replace with a Postgres materialized view and schedule a refresh

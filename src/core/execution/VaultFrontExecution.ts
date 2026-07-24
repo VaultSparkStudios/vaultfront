@@ -19,6 +19,14 @@ import {
 import { PseudoRandom } from "../PseudoRandom";
 import { simpleHash } from "../Util";
 import { planConvoyReward, type ConvoyRewardPlan } from "./VaultFrontBalance";
+import {
+  DEFAULT_VAULT_PRESSURE_CONFIG,
+  deliverToVaultPressure,
+  expireVaultPressureWindow,
+  initialVaultPressureState,
+  projectVaultPressure,
+  type VaultPressureKernelState,
+} from "./VaultPressureKernel";
 
 interface VaultSite {
   id: number;
@@ -110,11 +118,8 @@ export class VaultFrontExecution implements Execution {
   // Window; one further delivery during that window wins. All state lives in
   // deterministic simulation memory, so clients and replays derive the same
   // outcome without a server-side timing oracle.
-  private vaultPressure = new Map<number, number>();
-  private breachWindowUntilTick = new Map<number, number>();
+  private vaultPressureStates = new Map<number, VaultPressureKernelState>();
   private vaultBreachVictorID: number | null = null;
-  private readonly vaultPressureThreshold = 3;
-  private readonly breachWindowDurationTicks = 900;
 
   // Chain Guardian: consecutive vault captures per player (resets on site loss)
   private consecutiveVaultCaptures = new Map<number, number>();
@@ -260,8 +265,10 @@ export class VaultFrontExecution implements Execution {
       this.deepIntelActiveUntilTick.set(player.smallID(), 0);
       this.sabotageCharges.set(player.smallID(), new Map());
       this.dispatchDelayUntilTick.set(player.smallID(), 0);
-      this.vaultPressure.set(player.smallID(), 0);
-      this.breachWindowUntilTick.set(player.smallID(), 0);
+      this.vaultPressureStates.set(
+        player.smallID(),
+        initialVaultPressureState(),
+      );
     }
 
     this.nextMapEventTick =
@@ -2715,38 +2722,21 @@ export class VaultFrontExecution implements Execution {
 
   private buildPressureStates(): Record<number, VaultFrontPressureState> {
     const result: Record<number, VaultFrontPressureState> = {};
-    for (const playerID of this.vaultPressure.keys()) {
-      const breachWindowUntilTick =
-        this.breachWindowUntilTick.get(playerID) ?? 0;
-      result[playerID] = {
-        pressure: Math.max(
-          0,
-          Math.min(
-            this.vaultPressureThreshold,
-            this.vaultPressure.get(playerID) ?? 0,
-          ),
-        ),
-        threshold: this.vaultPressureThreshold,
-        breachWindowUntilTick,
-        deliveriesRequired:
-          breachWindowUntilTick > this.game.ticks() &&
-          this.vaultBreachVictorID === null
-            ? 1
-            : 0,
-        victorySecured: this.vaultBreachVictorID === playerID,
-      };
+    for (const [playerID, state] of this.vaultPressureStates.entries()) {
+      result[playerID] = projectVaultPressure(
+        state,
+        this.game.ticks(),
+        DEFAULT_VAULT_PRESSURE_CONFIG,
+      );
     }
     return result;
   }
 
   private sweepExpiredBreachWindows(ticks: number): void {
     if (this.vaultBreachVictorID !== null) return;
-    for (const [playerID, untilTick] of this.breachWindowUntilTick.entries()) {
-      if (untilTick <= 0 || ticks <= untilTick) continue;
-      this.breachWindowUntilTick.set(playerID, 0);
-      // Expiry creates counterplay without erasing the whole arc: the player
-      // must land one delivery to reopen, then another to breach.
-      this.vaultPressure.set(playerID, this.vaultPressureThreshold - 1);
+    for (const [playerID, state] of this.vaultPressureStates.entries()) {
+      const transition = expireVaultPressureWindow(state, ticks);
+      this.vaultPressureStates.set(playerID, transition.state);
     }
   }
 
@@ -2760,10 +2750,15 @@ export class VaultFrontExecution implements Execution {
     }
 
     const playerID = owner.smallID();
-    const windowUntil = this.breachWindowUntilTick.get(playerID) ?? 0;
-    if (windowUntil > ticks) {
+    const transition = deliverToVaultPressure(
+      this.vaultPressureStates.get(playerID) ?? initialVaultPressureState(),
+      ticks,
+    );
+    this.vaultPressureStates.set(playerID, transition.state);
+    if (
+      transition.events.some((event) => event.type === "vault-breach-victory")
+    ) {
       this.vaultBreachVictorID = playerID;
-      this.breachWindowUntilTick.set(playerID, 0);
       this.emitActivity(
         "vault_breach_victory",
         tile,
@@ -2781,16 +2776,11 @@ export class VaultFrontExecution implements Execution {
       this.active = false;
       return;
     }
-
-    const nextPressure = Math.min(
-      this.vaultPressureThreshold,
-      (this.vaultPressure.get(playerID) ?? 0) + 1,
-    );
-    this.vaultPressure.set(playerID, nextPressure);
-    if (nextPressure < this.vaultPressureThreshold) return;
-
-    const untilTick = ticks + this.breachWindowDurationTicks;
-    this.breachWindowUntilTick.set(playerID, untilTick);
+    if (
+      !transition.events.some((event) => event.type === "breach-window-opened")
+    ) {
+      return;
+    }
     this.emitActivity(
       "breach_window_opened",
       tile,

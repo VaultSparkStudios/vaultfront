@@ -206,3 +206,14 @@ Append-only. Each session appends one entry. Never edit prior entries.
 - Verification: 160 Vitest files / 923 tests; 31.57% production-inclusive line coverage; TypeScript; ESLint; production build; Prettier ratchet; bundle/media budgets; 26/26 Playwright; 42/42 mutation policies; 10/10 public ingest; zero npm vulnerabilities; audit 10/10; innovations 25/25; work exhaustion green.
 - Risks removed: Parser DoS exposure, permissive audit severity, Worker composition pressure, replayable/restart-volatile Season Pass state, presentation-only claims, cross-player season reads, duplicated balance constants, random reward sampling, and release lineage blind to gameplay tuning.
 - Remaining boundary: Release stays NO-GO pending observed staging/parity, project-domain delivery, native Obelisk, live web/theme, distinct-human Alpha, revenue/rollback, and founder approval.
+
+---
+
+## 2026-07-24 — Session 83 replay-safe progression and pressure-authority arc
+
+- Goal: Execute one continuous `/start → /audit → /implement → /closeout` mission, exhaust every verified primary item, then generate and implement second-order innovation without inventing external evidence.
+- What changed: Made certified match progression concurrency-safe, failure-recoverable, and restart-idempotent; extracted actor-bound achievement reads; made state-scope observability self-validating; extracted the Vault Pressure climax into a deterministic typed kernel.
+- Second order: Added progression-receipt verification, a deterministic state-scope catalog fingerprint, and versioned release-bound Vault Pressure rules. Innovation pack advanced from 25/25 to 28/28.
+- Verification: 165 Vitest files / 935 tests; production-inclusive coverage; TypeScript; ESLint; production build; Prettier ratchet; exact bundle/media budgets; 26/26 Playwright desktop/mobile; 42/42 mutation policies; 10/10 public ingest; 41 deploy-contract checks; audit 4/4; innovations 28/28; work exhaustion green.
+- Risks removed: Partial-failure progression loss, same-game replay inflation, cross-player achievement reads, stale handwritten persistence scope, embedded pressure-transition drift, unverifiable progression receipts, and balance rules split from release evidence.
+- Remaining boundary: Release stays NO-GO pending approved staging/parity, project-domain delivery, native Obelisk, live web/theme, distinct-human Alpha, revenue/rollback, and founder approval.

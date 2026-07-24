@@ -230,3 +230,14 @@ All three new local items in `docs/AUDIT_2026-07-22.json` shipped; the two exist
 - [done] Complete mutation-route policy coverage: 42/42 bidirectional abstract-syntax-tree inventory with auth, rate, evidence, source binding, public-ingest rationale, and an 11-route risk ceiling.
 - [done] Dependency automation contract: exact Dependabot identity, ecosystem-specific changed-file allowlists, hostile fixture coverage, and trusted-base validator checkout without retained credentials.
 - [done] Full proof: 147 files / 873 tests, production coverage, TypeScript, lint, build, formatting, bundle budgets, 26/26 E2E, 41 deploy checks, audit 11/11, innovations 17/17, doctor 11/11 with `blockingFailing: 0`.
+
+## Completed (2026-07-24 — Session 83 replay-safe progression and pressure-authority arc)
+
+All four premise-verified findings in `docs/AUDIT_2026-07-24.json` shipped at L3. Three generated second-order candidates shipped, taking `docs/INNOVATION_PACK.json` to 28/28 with zero pending unblocked work.
+
+- [done] Certified progression coalesces concurrent calls, releases failed attempts, deduplicates each player/game across memory and PostgreSQL, and emits a verifiable SHA-256 completion receipt.
+- [done] Achievement profile reads are actor-bound through an injected, rate-limited router with direct missing/mismatch/valid authorization tests.
+- [done] Runtime state-scope truth distinguishes declared store capability from effective scope and blocks contradictory catalog metadata.
+- [done] Vault Pressure is a pure typed kernel with threshold, expiry, final-tick, normalization, victory, and sequence coverage; the composition root is ratcheted at 2,917 lines.
+- [done] Three second-order invariants shipped: progression receipt verification, state-scope catalog fingerprinting, and release-bound pressure rules sourced from the versioned balance authority.
+- [done] Full proof: 165 files / 935 tests and coverage, TypeScript, lint, build, formatting, exact bundles/media, 26/26 E2E, 42/42 mutation policies, 10/10 public ingest, 41 deploy checks, audit 4/4, innovations 28/28.

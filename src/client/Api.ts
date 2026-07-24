@@ -1505,6 +1505,7 @@ export async function fetchAchievements(persistentId: string): Promise<{
   try {
     const res = await fetch(
       `${getApiBase()}/api/vaultfront/achievements/${encodeURIComponent(persistentId)}`,
+      { headers: await vaultFrontIdentityHeaders() },
     );
     if (!res.ok) return null;
     return (await res.json()) as {

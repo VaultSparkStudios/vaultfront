@@ -4,10 +4,10 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 988/1000 | Velocity: 9 | Debt: ↓ | Velocity trend: ↑
-Avgs — 3: 987.3 | Momentum runway: authorized staging-evidence corridor | Intent rate: 100%
-Categories: Dev 100 | Align 100 | Momentum 100 | Engage 96 | Process 100 | Coherence 97 | Security 100 | Ecosystem 95 | Capital 100 | Automation 100
-Last session: 2026-07-23 Session 81 certified-loop and spectator-trust arc
+Total: 993/1000 | Velocity: 7 | Debt: ↓ | Velocity trend: →
+Avgs — 3: 990.7 | Momentum runway: authorized staging-evidence corridor | Intent rate: 100%
+Categories: Dev 100 | Align 100 | Momentum 100 | Engage 98 | Process 100 | Coherence 98 | Security 100 | Ecosystem 97 | Capital 100 | Automation 100
+Last session: 2026-07-24 Session 83 replay-safe progression and pressure-authority arc
 
 <!-- rolling-status-end -->
 
@@ -503,3 +503,39 @@ capitalEfficiency +7 (oracle/prophecy cache eliminates >80% redundant Haiku call
 - [SIL:3] Require an approved staging contract before using READY Cloudflare, Brevo, or Obelisk credentials to create external state.
 
 **Honest refusal:** The session did not fabricate staging, delivery, identity, human, revenue, rollback, theme, or approval evidence; did not edit a sibling tree; did not weaken a failing gate; and did not alarm on flat-rate Max-plan cost.
+
+## 2026-07-24 — Session 83 | Total: 993/1000 | Velocity: 7
+
+| SIL v3 category       |        Score | Evidence                                                                                                                                                         |
+| --------------------- | -----------: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev Health            |          100 | 165 Vitest files and 935 tests, production coverage, TypeScript, lint, build, format, exact bundles/media, 26/26 E2E, and contract gates pass directly.          |
+| Creative Alignment    |          100 | Replay-safe progression and a pure Vault Pressure climax strengthen the extraction-command identity instead of adding a generic side system.                     |
+| Momentum              |          100 | Four L3 audit items and three generated innovations shipped; audit 4/4 and innovation pack 28/28 are exhausted.                                                  |
+| Engagement            |           98 | Reliable earned progression and deterministic climax rules improve return-loop trust; no human retention result is invented.                                     |
+| Process Quality       |          100 | Pull-first chronology, live-premise rejection, source-derived receipts, direct exits, and explicit evidence boundaries make the mission independently auditable. |
+| Cross-Repo Coherence  |           98 | Registry correction remains Ark-owned, credentials used the gateway, and no sibling implementation tree was edited.                                              |
+| Security Posture      |          100 | Actor-bound achievement reads, advisory serialization, database uniqueness, receipt verification, and complete mutation policy coverage are enforced.            |
+| Ecosystem Integration |           97 | State-scope and balance artifacts now self-identify and self-validate; staging, delivery, native identity, and human evidence remain external.                   |
+| Capital Efficiency    |          100 | No dependency or variable-cost service was added; deterministic local behavior remains cost-neutral and Max-plan cost stays notional.                            |
+| Automation Coverage   |          100 | Replay, failure recovery, receipt tamper, scope contradiction, pressure sequence, composition, browser, exhaustion, and release contracts are executable.        |
+| **Total**             | **993/1000** | Exact sum; Engagement, Cross-Repo, and Ecosystem remain honestly capped by absent human/live/external receipts.                                                  |
+
+**Rolling data:** Avg3 990.7 · Avg5 989.2 · Avg10/Avg25/all 985.8 · velocity 7 · debt ↓ · sparkline █████.
+
+**Top win:** A certified match result can now survive concurrency, partial failure, process restart, private-profile access, and receipt verification while the flagship climax derives from the same balance evidence promoted with the build.
+
+**Top gap:** There is still no approved external staging/callback corridor or distinct-human Alpha corpus.
+
+### Brainstorm
+
+1. Add a durable progression outbox only when all downstream stores expose the same explicit idempotency contract; do not claim atomic multi-store delivery before that boundary exists.
+2. Promote pressure-rule parity into a live observation only after an approved exact-digest staging runtime can report the same catalog digest.
+3. Tune breach timing only from a source-tagged three-human corpus; deterministic envelope coverage is not a proxy for player delight.
+
+### Commitments
+
+- [SIL:1] Keep progression completion failure-recoverable, store-idempotent, and receipt-verifiable; never restore pre-claim suppression.
+- [SIL:2] Treat 3,130 Worker lines, 2,917 VaultFrontExecution lines, and ten public-ingest routes as maxima, not targets.
+- [SIL:3] Require an approved staging contract before using READY Cloudflare, Brevo, or Obelisk credentials to create external state.
+
+**Honest refusal:** The session rejected six live-premise failures, did not fabricate staging/delivery/identity/human/revenue/rollback/approval evidence, did not edit a sibling tree, and did not alarm on flat-rate Max-plan cost.

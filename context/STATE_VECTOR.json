@@ -1,12 +1,12 @@
 {
   "vectorVersion": "1.0",
   "generatedAt": "2026-07-24",
-  "generatedAtMs": 1784866699025,
-  "session": 82,
-  "vectorHash": "fef5457628aebb56",
-  "silTotal": 991,
-  "silAvg3": 988.7,
-  "velocity": 9,
+  "generatedAtMs": 1784871844642,
+  "session": 83,
+  "vectorHash": "3b54b9607fefdb9d",
+  "silTotal": 993,
+  "silAvg3": 990.7,
+  "velocity": 7,
   "debt": "down",
   "runway": "authorized staging-evidence corridor",
   "intentRate": "100%",
@@ -34,7 +34,7 @@
   "type": "game",
   "lifecycle": "alpha",
   "nextMilestone": "Establish an explicitly approved staging origin/callback contract, then collect exact-digest parity and live identity/email/human/revenue evidence in gate order.",
-  "currentFocus": "Session 82 complete: certified durable Season Pass entitlements, bounded experiment control plane, trusted protobuf patch, and release-bound deterministic convoy balance shipped.",
+  "currentFocus": "Session 83 complete: replay-safe certified progression, actor-bound achievements, self-validating state scope, and release-bound Vault Pressure authority shipped.",
   "lastShipped": "see LATEST_HANDOFF.md",
   "blockers": []
 }

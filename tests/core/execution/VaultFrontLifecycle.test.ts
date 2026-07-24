@@ -336,8 +336,11 @@ describe("VaultFront lifecycle integration", () => {
     execution.advanceVaultPressure(player, 1010, 5);
     execution.advanceVaultPressure(player, 1020, 5);
 
-    expect(execution.vaultPressure.get(1)).toBe(3);
-    expect(execution.breachWindowUntilTick.get(1)).toBe(1920);
+    expect(execution.vaultPressureStates.get(1)).toMatchObject({
+      pressure: 3,
+      breachWindowUntilTick: 1920,
+      victorySecured: false,
+    });
     expect(game.setWinner).not.toHaveBeenCalled();
 
     execution.advanceVaultPressure(player, 1030, 5);
@@ -350,12 +353,18 @@ describe("VaultFront lifecycle integration", () => {
   test("expired breach window falls back one pressure step", () => {
     const player = makePlayer(1);
     const { execution } = baseExecution([player]);
-    execution.vaultPressure.set(1, 3);
-    execution.breachWindowUntilTick.set(1, 1100);
+    execution.vaultPressureStates.set(1, {
+      pressure: 3,
+      breachWindowUntilTick: 1100,
+      victorySecured: false,
+    });
 
     execution.sweepExpiredBreachWindows(1101);
 
-    expect(execution.breachWindowUntilTick.get(1)).toBe(0);
-    expect(execution.vaultPressure.get(1)).toBe(2);
+    expect(execution.vaultPressureStates.get(1)).toMatchObject({
+      pressure: 2,
+      breachWindowUntilTick: 0,
+      victorySecured: false,
+    });
   });
 });

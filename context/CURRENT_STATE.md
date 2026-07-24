@@ -6,6 +6,14 @@ Public-safe summary:
 - Internal operating detail lives in the private Studio OS / ops repository.
 - This repo retains only the public-safe implementation and evidence boundary.
 
+## 2026-07-24 — Session 83 replay-safe progression and pressure-authority arc
+
+The uninterrupted `/start → /audit → /implement → /closeout` mission shipped all four live-code findings and three generated second-order innovations. Certified progression now coalesces concurrent work, releases failed attempts for retry, records each player/game once in memory and PostgreSQL, and emits a tamper-sensitive completion receipt. Achievement reads are actor-bound behind an injected router. Runtime state-scope evidence self-validates its store capability catalog rather than repeating stale persistence prose.
+
+Vault Pressure is now a pure typed transition kernel with exhaustive boundary coverage and a formatter-stable 2,917-line composition ratchet. Its three-delivery threshold and 900-tick breach window derive from the same versioned balance authority as production runtime and the 28,125-scenario public balance envelope. The audit is 4/4 shipped and the cumulative innovation pack is 28/28 shipped, with zero pending unblocked work.
+
+Direct verification is green: 165 Vitest files / 935 tests, production-inclusive coverage, TypeScript, ESLint, production build, Prettier ratchet, exact bundle/media budgets, 26/26 Playwright desktop/mobile tests, 42/42 mutation policies, 10/10 public ingest, 41 deploy-contract checks, and work exhaustion. Release remains NO-GO because no approved staging, exact-digest parity, project-domain delivery, native Obelisk, live-web, three-human Alpha, revenue, rollback, or founder-approval evidence exists.
+
 ## 2026-07-23 — Session 82 certified-entitlement and balance-authority arc
 
 The uninterrupted `/start → /audit → /implement → /closeout` mission exhausted all four new live-code findings and generated five additional second-order innovations; the cumulative audit is 10/10 shipped and the innovation pack is 25/25 shipped. The protobuf parser advisory is patched and CI now rejects moderate vulnerabilities. Experiment assignment, integrity, outcome, and summary routes live behind one tested control plane; Worker contracted to 3,108 lines under a 3,130-line executable ceiling, and every experiment summary declares its process-local worker-restart boundary.

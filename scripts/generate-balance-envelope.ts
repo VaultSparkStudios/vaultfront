@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import {
   VAULTFRONT_BALANCE_AUTHORITY as authority,
   planConvoyReward,
+  DEFAULT_VAULT_PRESSURE_CONFIG as pressureRules,
   DEFAULT_VAULT_CONVOY_REWARD_TUNING as tuning,
   type ConvoyRewardInputs,
 } from "../src/core/execution/VaultFrontBalance";
@@ -24,6 +25,16 @@ const envelope = authority.envelope;
 const plan = (input: ConvoyRewardInputs) => planConvoyReward(input, tuning);
 const fail = (invariant: string, input: unknown) =>
   counterexamples.push({ invariant, input });
+
+if (!Number.isInteger(pressureRules.threshold) || pressureRules.threshold < 2) {
+  fail("pressure-threshold", pressureRules);
+}
+if (
+  !Number.isInteger(pressureRules.breachWindowDurationTicks) ||
+  pressureRules.breachWindowDurationTicks <= 0
+) {
+  fail("pressure-window", pressureRules);
+}
 
 for (const ownerStrength of envelope.ownerStrength) {
   for (const averageStrength of envelope.averageStrength) {
@@ -142,8 +153,11 @@ const payload = {
     "risk-monotonicity",
     "reduced-scale-order",
     "combo-scale-order",
+    "pressure-threshold",
+    "pressure-window",
   ],
   counterexamples,
+  pressureRules,
   bounds: {
     goldReward: {
       min: scenarios.reduce(

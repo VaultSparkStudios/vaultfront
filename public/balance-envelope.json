@@ -2,7 +2,7 @@
   "schemaVersion": "1.0",
   "authority": "vaultfront-convoy-reward-v1",
   "status": "verified",
-  "tuningDigest": "sha256:81f27f7a71f96ed2bfb08460f023d48056ed37fe1f7d6123ce42adf2d8907cec",
+  "tuningDigest": "sha256:ec2ea2e1fa13166d078629003f3ae8aa2e7387fcf06017e7d0e4fd41a8e1131f",
   "scenarioDigest": "sha256:1685be19c3dc3f056924798a7252551ffdc8f608d65546781302a3d054f41d5a",
   "scenarioCount": 28125,
   "invariants": [
@@ -11,9 +11,15 @@
     "distance-monotonicity",
     "risk-monotonicity",
     "reduced-scale-order",
-    "combo-scale-order"
+    "combo-scale-order",
+    "pressure-threshold",
+    "pressure-window"
   ],
   "counterexamples": [],
+  "pressureRules": {
+    "threshold": 3,
+    "breachWindowDurationTicks": 900
+  },
   "bounds": {
     "goldReward": {
       "min": "69600",

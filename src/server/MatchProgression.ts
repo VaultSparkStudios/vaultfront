@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import { achievementStore, type AchievementEvent } from "./AchievementStore";
 import {
   certifiedDailyMasteryStore,
@@ -59,6 +60,8 @@ export interface ProgressionReceipt {
   seasonContracts: CertifiedSeasonContractState[];
   seasonPass: CertifiedSeasonPassState[];
   loopEvidence: CertifiedLoopEvidenceReceipt | null;
+  /** Digest of the completed fan-out, stable across duplicate observations. */
+  receiptDigest: string;
 }
 
 interface ProgressionDependencies {
@@ -108,13 +111,53 @@ export function derivePredictionOutcome(
   return deliveries >= intercepts ? "delivery" : "intercept";
 }
 
+function digestProgressionReceipt(
+  receipt: Omit<ProgressionReceipt, "receiptDigest">,
+): string {
+  return `sha256:${createHash("sha256")
+    .update(
+      JSON.stringify({
+        gameId: receipt.gameId,
+        playersRecorded: receipt.playersRecorded,
+        achievementsUnlocked: receipt.achievementsUnlocked,
+        predictionOutcome: receipt.predictionOutcome,
+        predictionsResolved: receipt.predictionsResolved,
+        dailyMastery: receipt.dailyMastery,
+        seasonContracts: receipt.seasonContracts,
+        seasonPass: receipt.seasonPass,
+        loopEvidence: receipt.loopEvidence,
+      }),
+    )
+    .digest("hex")}`;
+}
+
+/** Verify a completed receipt without trusting the producer that supplied it. */
+export function verifyProgressionReceipt(receipt: ProgressionReceipt): boolean {
+  if (
+    receipt.duplicate ||
+    !/^sha256:[a-f0-9]{64}$/.test(receipt.receiptDigest)
+  ) {
+    return false;
+  }
+  const { receiptDigest, ...payload } = receipt;
+  const expected = digestProgressionReceipt(payload);
+  return timingSafeEqual(Buffer.from(receiptDigest), Buffer.from(expected));
+}
+
+function finalizeProgressionReceipt(
+  receipt: Omit<ProgressionReceipt, "receiptDigest">,
+): ProgressionReceipt {
+  return { ...receipt, receiptDigest: digestProgressionReceipt(receipt) };
+}
+
 /**
  * One authoritative match envelope fans into Elo/history, achievements, and
  * season milestones. The idempotency set intentionally claims only
  * process-lifetime safety: this does not pretend to be a durable event ledger.
  */
 export class ServerAuthoritativeProgressionSpine {
-  private readonly processedGameIds = new Set<string>();
+  private readonly completed = new Map<string, ProgressionReceipt>();
+  private readonly inFlight = new Map<string, Promise<ProgressionReceipt>>();
   private readonly dependencies: ProgressionDependencies;
 
   constructor(dependencies: Partial<ProgressionDependencies> = {}) {
@@ -124,24 +167,45 @@ export class ServerAuthoritativeProgressionSpine {
   async record(
     outcome: AuthoritativeMatchOutcome,
   ): Promise<ProgressionReceipt> {
-    if (this.processedGameIds.has(outcome.gameId)) {
-      return {
-        gameId: outcome.gameId,
-        duplicate: true,
-        playersRecorded: 0,
-        achievementsUnlocked: 0,
-        predictionOutcome: derivePredictionOutcome(outcome.players),
-        predictionsResolved: 0,
-        dailyMastery: [],
-        seasonContracts: [],
-        seasonPass: [],
-        loopEvidence: null,
-      };
+    const completed = this.completed.get(outcome.gameId);
+    if (completed) return this.duplicateReceipt(completed);
+
+    const concurrent = this.inFlight.get(outcome.gameId);
+    if (concurrent) {
+      return this.duplicateReceipt(await concurrent);
     }
 
-    // Claim before the first async side effect. If a downstream store fails,
-    // retrying this envelope in-process could duplicate earlier fan-out legs.
-    this.processedGameIds.add(outcome.gameId);
+    const attempt = this.recordOnce(outcome);
+    this.inFlight.set(outcome.gameId, attempt);
+    try {
+      const receipt = await attempt;
+      this.completed.set(outcome.gameId, receipt);
+      return receipt;
+    } finally {
+      // A failed attempt deliberately releases the claim. Every downstream
+      // store owns idempotency, so the same certified envelope can safely
+      // resume instead of becoming permanently suppressed.
+      this.inFlight.delete(outcome.gameId);
+    }
+  }
+
+  private duplicateReceipt(completed: ProgressionReceipt): ProgressionReceipt {
+    return {
+      ...completed,
+      duplicate: true,
+      playersRecorded: 0,
+      achievementsUnlocked: 0,
+      predictionsResolved: 0,
+      dailyMastery: [],
+      seasonContracts: [],
+      seasonPass: [],
+      loopEvidence: null,
+    };
+  }
+
+  private async recordOnce(
+    outcome: AuthoritativeMatchOutcome,
+  ): Promise<ProgressionReceipt> {
     const predictionOutcome = derivePredictionOutcome(outcome.players);
     const predictionReceipt = await this.dependencies.resolvePrediction(
       outcome.gameId,
@@ -149,7 +213,7 @@ export class ServerAuthoritativeProgressionSpine {
     );
     if (outcome.players.length === 0) {
       const loopEvidence = await this.dependencies.recordLoopEvidence(outcome);
-      return {
+      return finalizeProgressionReceipt({
         gameId: outcome.gameId,
         duplicate: false,
         playersRecorded: 0,
@@ -160,7 +224,7 @@ export class ServerAuthoritativeProgressionSpine {
         seasonContracts: [],
         seasonPass: [],
         loopEvidence,
-      };
+      });
     }
 
     const allPlayers = outcome.players.map((player) => ({
@@ -276,7 +340,7 @@ export class ServerAuthoritativeProgressionSpine {
 
     const loopEvidence = await this.dependencies.recordLoopEvidence(outcome);
 
-    const receipt = {
+    const receipt = finalizeProgressionReceipt({
       gameId: outcome.gameId,
       duplicate: false,
       playersRecorded: outcome.players.length,
@@ -287,7 +351,7 @@ export class ServerAuthoritativeProgressionSpine {
       seasonContracts,
       seasonPass,
       loopEvidence,
-    };
+    });
     log.info("authoritative progression recorded", receipt);
     return receipt;
   }

@@ -116,10 +116,11 @@ interface InMemoryMatchEntry {
 
 // ── Store implementation ───────────────────────────────────────────────────────
 
-class PlayerStatsStore {
+export class PlayerStatsStore {
   // In-memory state (used when pool is null)
   private readonly memPlayers = new Map<string, InMemoryPlayerRecord>();
   private readonly memHistory: InMemoryMatchEntry[] = [];
+  private readonly memCompletedGameIds = new Set<string>();
   private nextId = 1;
 
   constructor() {
@@ -225,7 +226,7 @@ class PlayerStatsStore {
     displayName: string,
     gameId: string,
     result: MatchResult,
-  ): Promise<void> {
+  ): Promise<boolean> {
     if (pool) {
       return this.pgRecordMatch(persistentId, displayName, gameId, result);
     }
@@ -237,10 +238,27 @@ class PlayerStatsStore {
     displayName: string,
     gameId: string,
     result: MatchResult,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const client = await pool!.connect();
     try {
       await client.query("BEGIN");
+
+      // Serialize all fan-out attempts for one certified game. The subsequent
+      // history probe is inside the same transaction, so a worker restart or
+      // concurrent replay cannot increment Elo twice.
+      await client.query(
+        "SELECT pg_advisory_xact_lock(hashtextextended($1, 0))",
+        [gameId],
+      );
+      const existing = await client.query(
+        "SELECT 1 FROM match_history WHERE game_id = $1 LIMIT 1",
+        [gameId],
+      );
+      if (existing.rowCount && existing.rowCount > 0) {
+        await client.query("COMMIT");
+        log.info("certified match replay ignored (pg)", { gameId });
+        return false;
+      }
 
       // Ensure all participants exist and collect their current Elo + match count
       const eloMap = new Map<string, number>();
@@ -349,6 +367,7 @@ class PlayerStatsStore {
 
       await this.pgRefreshLeaderboard(client);
       await client.query("COMMIT");
+      return true;
     } catch (err) {
       await client.query("ROLLBACK");
       log.error("pgRecordMatch failed, rolled back", { err: String(err) });
@@ -363,7 +382,11 @@ class PlayerStatsStore {
     displayName: string,
     gameId: string,
     result: MatchResult,
-  ): Promise<void> {
+  ): Promise<boolean> {
+    if (this.memCompletedGameIds.has(gameId)) {
+      log.info("certified match replay ignored (mem)", { gameId });
+      return false;
+    }
     for (const p of result.allPlayers) {
       const name =
         p.displayName ?? (p.persistentId === persistentId ? displayName : "");
@@ -430,6 +453,8 @@ class PlayerStatsStore {
         eloAfter: rec.eloRating,
       });
     }
+    this.memCompletedGameIds.add(gameId);
+    return true;
   }
 
   /** Retrieve match history for a player, most recent first. */

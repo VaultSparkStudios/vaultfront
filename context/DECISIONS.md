@@ -231,3 +231,15 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Decision:** Convoy tuning lives in one versioned JSON authority and reward math in one pure planner shared by runtime and verification. Production builds publish a byte-stable deterministic envelope, reject counterexamples, and bind both artifact and source digests into release lineage. Experiment aggregates separately declare that they reset at worker restart.
 
 **Why:** Hand-copied constants, random property samples, and unlabeled process-local summaries can all look plausible while describing different systems. Reproducible bounds and explicit storage scope make balance and observability independently auditable.
+
+## 2026-07-24 — Certified progression completion means every leg completed exactly once
+
+**Decision:** One player/game progression attempt is serialized at the stats store, coalesced while in flight, released on failure, and complete only after every fan-out leg succeeds. Its completion receipt is digest-bound and independently verifiable; duplicate references are not represented as fresh proof.
+
+**Why:** Pre-claiming an event before asynchronous work finishes converts a recoverable dependency failure into silent permanent data loss, while retrying without store idempotency can inflate player state. Completion, replay protection, and receipt semantics must describe the same boundary.
+
+## 2026-07-24 — Vault Pressure rules are versioned balance authority
+
+**Decision:** The breach threshold and window duration live in `config/vaultfront-balance.v1.json`, flow through one typed balance projection, and drive both runtime transitions and the deterministic public envelope. `VaultFrontExecution` composes the pure pressure kernel and may not re-embed its state machine.
+
+**Why:** Vault Pressure is the match climax. Its transition semantics and release evidence must derive from one reviewable authority rather than matching constants by convention.

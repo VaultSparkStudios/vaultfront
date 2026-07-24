@@ -92,8 +92,10 @@ describe("Runtime Integrity Passport", () => {
       health: { ...base.health, ipc: { ...base.health.ipc, ageMs: 101 } },
     });
 
-    expect(first.status).toBe("warn");
-    expect(first.warnings).toContain("release-critical-state-is-process-local");
+    expect(first.status).toBe("pass");
+    expect(first.warnings).not.toContain(
+      "release-critical-state-is-process-local",
+    );
     expect(first.evidenceDigest).toMatch(/^[a-f0-9]{64}$/);
     expect(repeat.evidenceDigest).toBe(first.evidenceDigest);
     expect(tampered.evidenceDigest).not.toBe(first.evidenceDigest);

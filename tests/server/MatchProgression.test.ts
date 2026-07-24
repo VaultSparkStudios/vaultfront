@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 import {
   derivePredictionOutcome,
   ServerAuthoritativeProgressionSpine,
+  verifyProgressionReceipt,
 } from "../../src/server/MatchProgression";
 
 vi.mock("../../src/server/Logger", () => {
@@ -146,8 +147,15 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       dailyMastery: [expect.any(Object), expect.any(Object)],
       seasonContracts: [expect.any(Object), expect.any(Object)],
       seasonPass: [expect.any(Object), expect.any(Object)],
+      receiptDigest: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
     });
     expect(duplicate).toMatchObject({ duplicate: true, playersRecorded: 0 });
+    expect(duplicate.receiptDigest).toBe(first.receiptDigest);
+    expect(verifyProgressionReceipt(first)).toBe(true);
+    expect(verifyProgressionReceipt(duplicate)).toBe(false);
+    expect(
+      verifyProgressionReceipt({ ...first, achievementsUnlocked: 999 }),
+    ).toBe(false);
     expect(recordMatch).toHaveBeenCalledTimes(1);
     expect(resolvePrediction).toHaveBeenCalledTimes(1);
     expect(resolvePrediction).toHaveBeenCalledWith("game-1", "delivery");
@@ -180,6 +188,64 @@ describe("ServerAuthoritativeProgressionSpine", () => {
       "week-29",
       expect.objectContaining({ persistentId: "p1", convoysLost: 1 }),
     );
+  });
+
+  test("coalesces concurrent envelopes and releases a failed fan-out for retry", async () => {
+    let releaseFirst!: () => void;
+    const firstGate = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+    const recordMatch = vi.fn().mockResolvedValue(true);
+    const resolvePrediction = vi
+      .fn()
+      .mockImplementationOnce(async () => {
+        await firstGate;
+        return {
+          gameId: "retry-game",
+          actualOutcome: "delivery" as const,
+          resolvedPredictions: 0,
+          durability: "process-local" as const,
+        };
+      })
+      .mockResolvedValue({
+        gameId: "retry-game",
+        actualOutcome: "delivery" as const,
+        resolvedPredictions: 0,
+        durability: "process-local" as const,
+      });
+    const recordLoopEvidence = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("temporary downstream failure"))
+      .mockResolvedValue({
+        gameId: "retry-game",
+        evidence: "certified-match-result",
+      });
+    const spine = new ServerAuthoritativeProgressionSpine({
+      recordMatch,
+      resolvePrediction,
+      recordLoopEvidence,
+    });
+    const outcome = {
+      gameId: "retry-game",
+      durationSeconds: 0,
+      mapName: "plains",
+      seasonId: "week-30",
+      onMutator: false,
+      turnIntervalMs: 100,
+      intentFunnel: { early: {}, mid: {}, late: {} },
+      players: [],
+    };
+
+    const first = spine.record(outcome);
+    const concurrent = spine.record(outcome);
+    releaseFirst();
+    await expect(first).rejects.toThrow("temporary downstream failure");
+    await expect(concurrent).rejects.toThrow("temporary downstream failure");
+
+    const recovered = await spine.record(outcome);
+    expect(recovered).toMatchObject({ duplicate: false, gameId: "retry-game" });
+    expect(resolvePrediction).toHaveBeenCalledTimes(2);
+    expect(recordLoopEvidence).toHaveBeenCalledTimes(2);
   });
 
   test("resolves an intercept-dominant match once even without progression players", async () => {

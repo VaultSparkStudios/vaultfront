@@ -10,6 +10,11 @@ export const ROUTER_LINE_BUDGET = 180;
 
 export const EXTRACTED_DOMAINS = [
   {
+    router: "AchievementRouter.ts",
+    registration: "registerAchievementRoutes",
+    forbiddenInWorker: "/api/vaultfront/achievements/:persistentId",
+  },
+  {
     router: "SeasonContractRouter.ts",
     registration: "registerSeasonContractRoutes",
     forbiddenInWorker: "/api/vaultfront/contracts",

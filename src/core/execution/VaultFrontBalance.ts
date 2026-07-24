@@ -5,6 +5,9 @@ export const VAULTFRONT_BALANCE_AUTHORITY = balanceAuthority;
 export const DEFAULT_VAULT_CONVOY_REWARD_TUNING = Object.freeze(
   balanceAuthority.tuning,
 ) satisfies Readonly<VaultConvoyRewardTuning>;
+export const DEFAULT_VAULT_PRESSURE_CONFIG = Object.freeze(
+  balanceAuthority.pressure,
+);
 
 export interface ConvoyRewardInputs {
   ownerStrength: number;

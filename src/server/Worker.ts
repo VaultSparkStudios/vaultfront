@@ -61,6 +61,7 @@ import {
 } from "./RoutePolicyManifest";
 
 import { GameEnv } from "../core/configuration/Config";
+import { registerAchievementRoutes } from "./AchievementRouter";
 import { achievementStore } from "./AchievementStore";
 import { antiCheatMonitor } from "./AntiCheatMonitor";
 import { clanStore } from "./ClanStore";
@@ -1995,27 +1996,16 @@ export async function startWorker() {
   });
 
   // ── Achievement Profile + Meta-Chains API ────────────────────────────────
-  app.get("/api/vaultfront/achievements/:persistentId", async (req, res) => {
-    const persistentId = String(req.params.persistentId ?? "").slice(0, 64);
-    if (!persistentId)
-      return res.status(400).json({ error: "Missing persistentId" });
-    const progress = achievementStore.getProgress(persistentId);
-    const metaChains = achievementStore.getMetaChainProgress(persistentId);
-    return res.json({ ok: true, achievements: progress, metaChains });
+  const achievementProfileRateLimit = rateLimit({ windowMs: 60_000, max: 30 });
+  registerAchievementRoutes(app, {
+    authenticate: (req, res) => requireVaultFrontActor(req, res),
+    rateLimit: achievementProfileRateLimit,
+    getProgress: (persistentId) => achievementStore.getProgress(persistentId),
+    getMetaChainProgress: (persistentId) =>
+      achievementStore.getMetaChainProgress(persistentId),
+    reportError: (error) =>
+      log.error("achievement profile unavailable", { error: String(error) }),
   });
-
-  app.get(
-    "/api/vaultfront/achievements/meta-chains/:persistentId",
-    async (req, res) => {
-      const persistentId = String(req.params.persistentId ?? "").slice(0, 64);
-      if (!persistentId)
-        return res.status(400).json({ error: "Missing persistentId" });
-      return res.json({
-        ok: true,
-        metaChains: achievementStore.getMetaChainProgress(persistentId),
-      });
-    },
-  );
 
   // ── Play-Style Career Arc API ─────────────────────────────────────────────
   app.post("/api/vaultfront/style-history", async (req, res) => {

@@ -1,28 +1,29 @@
 <!-- generated-by: scripts/render-closeout-board.mjs v1.0 -->
-<!-- generated-at: 2026-07-24 (Session 82 closeout) -->
+<!-- generated-at: 2026-07-24 (Session 83 closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
-╔══ SESSION CLOSEOUT · VaultFront · S82 ═════════════════════════╗
-║  Date: 2026-07-24 · SIL: 991/1000 · V:9  ·  Debt: down           ║
+╔══ SESSION CLOSEOUT · VaultFront · S83 ═════════════════════════╗
+║  Date: 2026-07-24 · SIL: 993/1000 · V:7  ·  Debt: down           ║
 ║  Mode: FOUNDER  ·  Agent: codex                                  ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WHAT SHIPPED ════════════════════════════════════════════════╗
-║  ✓ Protobufjs is pinned at the fixed trusted version; CI and ex  ║
-║  ✓ Experiment assignment/event/summary/outcome logic is one inj  ║
-║  ✓ Season Pass progression is certified per player/game, Postgr  ║
-║  ✓ Convoy tuning and reward math have one versioned executable   ║
+║  ✓ Certified progression now coalesces concurrent calls, releas  ║
+║  ✓ Achievement progress is a private actor-bound profile behind  ║
+║  ✓ State-scope evidence distinguishes store capability from eff  ║
+║  ✓ Vault Pressure is a pure typed transition kernel. Its three-  ║
+║  ✓ Worker remains below its 3,130-line ceiling at 3,098; VaultF  ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ SCORES · SIL 991/1000 ═══════════════════════════════════════╗
+╔══ SCORES · SIL 993/1000 ═══════════════════════════════════════╗
 ║    Dev Health         100  ██████████                            ║
 ║    Alignment          100  ██████████                            ║
 ║    Momentum           100  ██████████                            ║
-║    Engagement         97   ██████████                            ║
+║    Engagement         98   ██████████                            ║
 ║    Process Qual       100  ██████████                            ║
 ║    Coherence          98   ██████████                            ║
 ║    Security           100  ██████████                            ║
-║    Ecosystem          96   ██████████                            ║
+║    Ecosystem          97   ██████████                            ║
 ║    Capital            100  ██████████                            ║
 ║    Automation         100  ██████████                            ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -36,10 +37,10 @@
 ║  ✓ docs/CREATIVE_DIRECTION_RECORD.md                             ║
 ║  ✓ context/TRUTH_AUDIT.md                                        ║
 ║  ✓ context/PROJECT_STATUS.json                                   ║
-║  · agent memory (context/BRAIN.md or agent home)                 ║
+║  ✓ agent memory (Codex home: MEMORY.md + Session 83)             ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 1 files  ·  M:1 A:0 D:0 ?:0                            ║
+║  Changes: 45 files  ·  M:33 A:0 D:0 ?:12                         ║
 ║  Ahead: 0  ·  Behind: 0                                          ║
 ║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -50,10 +51,10 @@
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
 ║  Doctor:        11/11                                            ║
 ║  Compliance:    49/49                                            ║
-║  Tests:         923/923                                          ║
+║  Tests:         935/935                                          ║
 ║  IGNIS:         1d ago                                           ║
 ║  Truth:         green                                            ║
-║  Sanitization:  2d ago                                           ║
+║  Sanitization:  0d ago                                           ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ NEXT SESSION ════════════════════════════════════════════════╗
 ║  #1: Unified Genius List exhausted                               ║

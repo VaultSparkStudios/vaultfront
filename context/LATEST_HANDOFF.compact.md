@@ -1,57 +1,49 @@
 <!-- generated-by: scripts/compact-handoff.mjs v3.1 -->
-<!-- source-hash: fb84e33dfd5a -->
-<!-- generated-at: 2026-07-23T19:08:58.296Z -->
+<!-- source-hash: e8a5dcad0dad -->
+<!-- generated-at: 2026-07-24T05:02:16.429Z -->
 
 # LATEST_HANDOFF (compact)
 
-# Handoff Summary — Session 81
+SESSION
 
-## Session
+- Session 82; closeout for certified-entitlement and balance-authority.
 
-- Session 81, dated 2026-07-23
-- Certified-loop and spectator-trust closeout, closed to main
-- Intent: run agent-neutral arc, verify premises against live code, preserve exit-code truth, no fabricated launch evidence
+SHIPPED (S82)
 
-## Shipped
+- 4 new L3 audit items, 5 new second-order invariants; audit 10/10, innovation pack 25/25.
+- Protobufjs pinned to fixed version; CI/tests reject regression above moderate severity.
+- Experiment logic unified into one injected router/control plane; legacy bucket stability, replay/variant integrity, honest reset scope, 3,130-line Worker ceiling.
+- Season Pass certified per player/game, PostgreSQL-durable, replay-safe, actor-bound, fail-closed on missing persistence, real restorable entitlements rendered.
+- Convoy tuning/reward math under one versioned executable authority; byte-stable envelope verifies 28,125 scenarios across six invariants, tamper-sensitive release-lineage parent.
 
-- Six L3 items in docs/AUDIT_2026-07-23.json plus three new second-order invariants; innovation pack 20/20
-- Public playlists enable vault-to-convoy loop; private config explicit
-- Seasonal contracts and loop evidence certified, idempotent, PostgreSQL-durable, privacy-minimal
-- Prediction League: spectator mode, auth-bound picks, per-game serialized submit/resolve, rank history, consensus broadcast; duplicate anonymous poll retired
-- Three router seams tested; public ingestion capped 10/10; Worker 4,040 lines
+VERIFICATION
 
-## Verification
+- 160/160 Vitest files, 923/923 tests; coverage 31.57% lines.
+- TypeScript, ESLint, prod build, Prettier ratchet, bundle/media budgets clean.
+- 26/26 Playwright; 42/42 mutation policy; 10/10 public ingest; zero npm vulns; work exhaustion green.
 
-- 155/155 Vitest files, 904/904 tests; coverage 30.97% lines
-- TypeScript, ESLint, build, Prettier ratchet, bundle budgets all green
-- 26/26 Playwright; 41 deploy-contract checks; audit 6/6; work exhaustion green
-- Project doctor 11/11, blockingFailing: 0
-- First exact-SHA CI exposed MatchProgression coverage-ratchet deficit; repaired both certified-receipt and no-vault-capture branches, floors retained
+INTENT
 
-## Now (top 3)
+- Run full agent-neutral arc continuously at best-in-history quality, preserve exit-code truth, close to main without fabricating external evidence.
 
-- Receive source-tagged registry/tool-contamination receipt
-- Establish approved staging corridor
-- Collect parity, email, identity, human, live-web, revenue, rollback, founder evidence in order
+NOW (top 3)
 
-## Blockers (top 3)
+- Establish explicitly approved staging origin/callback contract.
+- Collect exact-digest parity and project-domain email delivery evidence.
+- Collect native identity, live-web/theme, distinct-human Alpha evidence in gate order.
 
-- Release NO-GO: no staging or health observations
-- Missing exact-digest parity and working project-domain delivery
-- Native Obelisk absent
+BLOCKERS (top 3)
 
-## Human-Blocked
+- Release NO-GO: no staging or runtime-health/parity observation exists.
+- No approved external staging observation contract; production deploy would violate release gate.
+- Cross-repo contamination: tool-generated sibling release-gate write left untouched under CANON-018; awaiting source-tagged registry/contamination receipt.
 
-- Three authenticated human Alpha sessions (pending)
-- Founder approval (pending)
-- Revenue and rollback observation (pending)
-- Note: ages not tracked in handoff
+HUMAN-BLOCKED (age from S81, ~1 session)
 
-## Boundaries
+- Three authenticated distinct-human Alpha sessions: pending.
+- Founder approval / deployment authorization: pending.
+- Revenue and rollback observation: pending.
 
-- Local proof does not establish public deployment
-- Studio Ops reports type=app; VaultFront locally type=game
-- Tool-generated sibling release-gate write left untouched under CANON-018; ship Ark evidence to Studio Ops owner, do not edit that tree
-- Deploy pending: public-unlaunched, no approved staging contract
+NEXT SESSION
 
-Next session: obtain contamination receipt, then open staging corridor and gather launch evidence in prescribed order.
+- Secure approved staging corridor, then gather parity/email/identity/human/live-web/revenue/rollback/founder evidence in gate order.
