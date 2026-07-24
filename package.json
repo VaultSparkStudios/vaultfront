@@ -106,7 +106,7 @@
     "tsconfig-paths": "4.2.0",
     "typescript": "5.8.3",
     "typescript-eslint": "8.64.0",
-    "vite": "7.3.5",
+    "vite": "8.1.5",
     "vite-plugin-html": "3.2.2",
     "vite-plugin-static-copy": "3.1.4",
     "vite-tsconfig-paths": "6.1.1",
