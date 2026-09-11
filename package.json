@@ -126,7 +126,7 @@
     "@opentelemetry/sdk-metrics": "2.9.0",
     "@opentelemetry/semantic-conventions": "1.43.0",
     "@opentelemetry/winston-transport": "0.30.0",
-    "colord": "2.9.3",
+    "colord": "2.9.4",
     "colorjs.io": "0.7.0",
     "compression": "1.8.1",
     "cors": "2.8.6",
