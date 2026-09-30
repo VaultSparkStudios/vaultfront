@@ -39,11 +39,11 @@
 // Consumers treat it as honest-dark — proceed if they have other grounds, but they
 // may NOT report a context percentage, and they may NOT substitute 0.
 export const VERDICTS = Object.freeze([
-  "CONTINUE",
-  "WARN_COMPACT_SOON",
-  "CONSIDER_CLOSEOUT",
-  "CLOSEOUT",
-  "UNMEASURED",
+  'CONTINUE',
+  'WARN_COMPACT_SOON',
+  'CONSIDER_CLOSEOUT',
+  'CLOSEOUT',
+  'UNMEASURED',
 ]);
 
 export const VERDICT_EXITS = Object.freeze({
@@ -56,7 +56,7 @@ export const VERDICT_EXITS = Object.freeze({
 
 /** True when the verdict carries no usable context reading. */
 export function isUnmeasured(v) {
-  return v === "UNMEASURED";
+  return v === 'UNMEASURED';
 }
 
 export function isValidVerdict(v) {
@@ -65,26 +65,4 @@ export function isValidVerdict(v) {
 
 export function exitForVerdict(v) {
   return VERDICT_EXITS[v] ?? 0;
-}
-
-export function deriveContextUsage({ usedTokens = 0, limit = 0 } = {}) {
-  const safeUsed = Number.isFinite(Number(usedTokens))
-    ? Math.max(0, Number(usedTokens))
-    : 0;
-  const safeLimit = Number.isFinite(Number(limit))
-    ? Math.max(0, Number(limit))
-    : 0;
-  const fraction = Math.max(
-    0,
-    Math.min(1, safeLimit > 0 ? safeUsed / safeLimit : 0),
-  );
-  const percent = fraction * 100;
-  return Object.freeze({
-    usedTokens: safeUsed,
-    limit: safeLimit,
-    remainingTokens: Math.max(0, safeLimit - safeUsed),
-    fraction,
-    percent,
-    roundedPercent: Math.round(percent),
-  });
 }

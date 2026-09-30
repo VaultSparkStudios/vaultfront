@@ -21,8 +21,8 @@
 // Pure by construction: parseSidecar() takes the ndjson TEXT (unit-testable with no
 // filesystem); loadSidecar() is the thin fs wrapper that also returns file age.
 
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
 /**
  * Parse the failures-only sidecar ndjson text.
@@ -39,30 +39,22 @@ import path from "node:path";
  */
 export function parseSidecar(text) {
   const out = {
-    present: false,
-    complete: false,
-    summary: null,
-    lastFailures: [],
-    failureCount: 0,
-    lastFailureCause: null,
+    present: false, complete: false, summary: null,
+    lastFailures: [], failureCount: 0, lastFailureCause: null,
   };
-  if (!text || typeof text !== "string") return out;
+  if (!text || typeof text !== 'string') return out;
   const records = [];
-  for (const raw of text.split("\n")) {
+  for (const raw of text.split('\n')) {
     const line = raw.trim();
     if (!line) continue;
-    try {
-      records.push(JSON.parse(line));
-    } catch {
-      /* skip malformed line, stay greppable */
-    }
+    try { records.push(JSON.parse(line)); } catch { /* skip malformed line, stay greppable */ }
   }
   if (!records.length) return out;
   out.present = true;
 
   // The closing record (if the run finished). Take the LAST summary so a re-run
   // appended to the same file reports the latest verdict, never an earlier one.
-  const summaries = records.filter((r) => r && r.phase === "summary");
+  const summaries = records.filter(r => r && r.phase === 'summary');
   if (summaries.length) {
     const s = summaries[summaries.length - 1];
     out.complete = true;
@@ -83,14 +75,14 @@ export function parseSidecar(text) {
   // the same file (final classification), so key by file and let retry win.
   const byFile = new Map();
   for (const r of records) {
-    if (!r || (r.phase !== "run" && r.phase !== "retry")) continue;
+    if (!r || (r.phase !== 'run' && r.phase !== 'retry')) continue;
     if (!r.file) continue;
     const prev = byFile.get(r.file);
-    if (!prev || r.phase === "retry") {
+    if (!prev || r.phase === 'retry') {
       byFile.set(r.file, {
         file: String(r.file),
-        tier: r.tier != null ? String(r.tier) : "?",
-        cause: r.cause ? String(r.cause) : "",
+        tier: r.tier != null ? String(r.tier) : '?',
+        cause: r.cause ? String(r.cause) : '',
         phase: r.phase,
       });
     }
@@ -98,7 +90,7 @@ export function parseSidecar(text) {
   out.lastFailures = [...byFile.values()];
   out.failureCount = out.lastFailures.length;
   out.lastFailureCause = out.lastFailures.length
-    ? out.lastFailures[out.lastFailures.length - 1].cause || null
+    ? (out.lastFailures[out.lastFailures.length - 1].cause || null)
     : null;
   return out;
 }
@@ -111,16 +103,13 @@ export function parseSidecar(text) {
  * @returns {ReturnType<typeof parseSidecar> & { ageSec: number|null, sidecarPath: string }}
  */
 export function loadSidecar(rootDir, nowMs = Date.now()) {
-  const sidecarPath = path.join(rootDir, ".cache", "test-failures.ndjson");
-  let text = "",
-    ageSec = null;
+  const sidecarPath = path.join(rootDir, '.cache', 'test-failures.ndjson');
+  let text = '', ageSec = null;
   try {
-    text = fs.readFileSync(sidecarPath, "utf8");
+    text = fs.readFileSync(sidecarPath, 'utf8');
     const st = fs.statSync(sidecarPath);
     ageSec = Math.max(0, Math.round((nowMs - st.mtimeMs) / 1000));
-  } catch {
-    /* absent → present:false below */
-  }
+  } catch { /* absent → present:false below */ }
   return { ...parseSidecar(text), ageSec, sidecarPath };
 }
 
@@ -131,10 +120,10 @@ export function loadSidecar(rootDir, nowMs = Date.now()) {
  * @returns {string}
  */
 export function formatSidecarSignal(parsed) {
-  if (!parsed || !parsed.present) return "no local sidecar";
+  if (!parsed || !parsed.present) return 'no local sidecar';
   const s = parsed.summary;
   if (!s) return `in-progress · ${parsed.failureCount} failure(s) so far`;
-  const verdict = s.ok ? "ok" : "FAIL";
-  const tail = s.ok ? "" : ` · last: ${parsed.lastFailureCause || "unknown"}`;
+  const verdict = s.ok ? 'ok' : 'FAIL';
+  const tail = s.ok ? '' : ` · last: ${parsed.lastFailureCause || 'unknown'}`;
   return `${verdict} ${s.totalPass}/${s.totalAll} · ${s.files} files · ${s.failures} fail · ${s.flaky} flaky${tail}`;
 }

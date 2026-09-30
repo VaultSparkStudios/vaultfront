@@ -19,79 +19,53 @@
  *   node scripts/detect-session-mode.mjs --messages "give me a portfolio review"
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { writeProjectStatus } from "./lib/write-project-status.mjs";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { updateProjectStatus } from './lib/write-project-status.mjs';
+import { resolveTier } from './lib/model-routing.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
-const STATUS = path.join(ROOT, "context", "PROJECT_STATUS.json");
-const HANDOFF = path.join(ROOT, "context", "LATEST_HANDOFF.md");
-const TASKBOARD = path.join(ROOT, "context", "TASK_BOARD.md");
+const ROOT = path.resolve(__dirname, '..');
+const STATUS = path.join(ROOT, 'context', 'PROJECT_STATUS.json');
+const HANDOFF = path.join(ROOT, 'context', 'LATEST_HANDOFF.md');
+const TASKBOARD = path.join(ROOT, 'context', 'TASK_BOARD.md');
 
 const args = process.argv.slice(2);
-const jsonMode = args.includes("--json");
-const explain = args.includes("--explain");
-const msgIdx = args.indexOf("--messages");
-const userMessages = msgIdx >= 0 ? args.slice(msgIdx + 1).join(" ") : "";
+const jsonMode = args.includes('--json');
+const explain = args.includes('--explain');
+const msgIdx = args.indexOf('--messages');
+const userMessages = msgIdx >= 0 ? args.slice(msgIdx + 1).join(' ') : '';
 
-function readText(p) {
-  try {
-    return fs.readFileSync(p, "utf8");
-  } catch {
-    return "";
-  }
-}
-function readJson(p, fb) {
-  try {
-    return JSON.parse(fs.readFileSync(p, "utf8"));
-  } catch {
-    return fb;
-  }
-}
+function readText(p) { try { return fs.readFileSync(p, 'utf8'); } catch { return ''; } }
+function readJson(p, fb) { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return fb; } }
 
 // Founder-mode signals
 const FOUNDER_PHRASES = [
-  /\bportfolio\b/i,
-  /\ball\s+(projects|25)\b/i,
-  /\bstudio[- ]wide\b/i,
-  /\bstudio[- ]hub\b/i,
-  /\bacross\s+projects\b/i,
-  /\bcross[- ]project\b/i,
-  /\bevery\s+project\b/i,
-  /\bfounder mode\b/i,
-  /\bfounder[- ]level\b/i,
-  /\bstudio[- ]owner\b/i,
-  /\bstrategic\b/i,
-  /\bstrategy\b/i,
-  /\broadmap\b/i,
-  /\bportfolio review\b/i,
-  /\bstudio[- ]ops\s+itself\b/i,
-  /\bstudio[- ]review\b/i,
+  /\bportfolio\b/i, /\ball\s+(projects|25)\b/i, /\bstudio[- ]wide\b/i, /\bstudio[- ]hub\b/i,
+  /\bacross\s+projects\b/i, /\bcross[- ]project\b/i, /\bevery\s+project\b/i,
+  /\bfounder mode\b/i, /\bfounder[- ]level\b/i, /\bstudio[- ]owner\b/i,
+  /\bstrategic\b/i, /\bstrategy\b/i, /\broadmap\b/i, /\bportfolio review\b/i,
+  /\bstudio[- ]ops\s+itself\b/i, /\bstudio[- ]review\b/i,
 ];
 
 // Builder-mode signals (this-project focus)
 const BUILDER_PHRASES = [
-  /\bimplement\b/i,
-  /\bfix\s+bug\b/i,
-  /\badd\s+feature\b/i,
-  /\brefactor\b/i,
-  /\bship\s+this\b/i,
-  /\bcomplete\s+task\b/i,
+  /\bimplement\b/i, /\bfix\s+bug\b/i, /\badd\s+feature\b/i, /\brefactor\b/i,
+  /\bship\s+this\b/i, /\bcomplete\s+task\b/i,
 ];
 
 const status = readJson(STATUS, {});
 const handoff = readText(HANDOFF);
 const taskboard = readText(TASKBOARD);
-const currentMode = status.sessionMode || "builder";
+const currentMode = status.sessionMode || 'builder';
 
 // Collect text to analyze
 const text = [
   userMessages,
   handoff.slice(0, 3000),
   taskboard.slice(0, 6000),
-].join("\n");
+].join('\n');
 
 // Count signals
 let founderHits = 0;
@@ -100,94 +74,59 @@ const matchedFounder = [];
 const matchedBuilder = [];
 for (const p of FOUNDER_PHRASES) {
   const m = text.match(p);
-  if (m) {
-    founderHits++;
-    matchedFounder.push(m[0]);
-  }
+  if (m) { founderHits++; matchedFounder.push(m[0]); }
 }
 for (const p of BUILDER_PHRASES) {
   const m = text.match(p);
-  if (m) {
-    builderHits++;
-    matchedBuilder.push(m[0]);
-  }
+  if (m) { builderHits++; matchedBuilder.push(m[0]); }
 }
 
 // Cross-project references in TASK_BOARD = Founder signal
-const crossProjectRefs = (
-  taskboard.match(
-    /\b(mindframe|velaxis|call-of-doodie|football-gm|vaultfront|voidfall|promogrind|vorn|ideaforge|scriptorium|social-dashboard|spark-funnel)\b/gi,
-  ) || []
-).length;
+const crossProjectRefs = (taskboard.match(/\b(mindframe|velaxis|call-of-doodie|football-gm|vaultfront|voidfall|promogrind|vorn|ideaforge|scriptorium|social-dashboard|spark-funnel)\b/gi) || []).length;
 
 // Portfolio-wide commands in recent intent = Founder
-const portfolioCommands =
-  (userMessages + handoff.slice(0, 2000)).match(
-    /\b(studio[- ]review|portfolio[- ]ignis|propagate[- ]templates|studio[- ]brain|weekly[- ]digest|pulse|founder[- ]queue)\b/gi,
-  )?.length || 0;
+const portfolioCommands = (userMessages + handoff.slice(0, 2000)).match(/\b(studio[- ]review|portfolio[- ]ignis|propagate[- ]templates|studio[- ]brain|weekly[- ]digest|pulse|founder[- ]queue)\b/gi)?.length || 0;
 
 // Ledger-derived signal (v2): which Studio Ops scripts have consumed tokens
 // this session? Portfolio-scope scripts (rescore-ignis, studio-conductor,
 // compile-automation-queue, generate-genius-list --portfolio, propagate-*,
 // studio-pulse) skew FOUNDER. Per-project scripts skew BUILDER.
 const PORTFOLIO_SCRIPTS = new Set([
-  "rescore-ignis",
-  "studio-conductor",
-  "compile-automation-queue",
-  "studio-pulse",
-  "propagate-protocol-scripts",
-  "propagate-templates",
-  "generate-genius-list:portfolio",
-  "render-launch-momentum",
-  "weekly-digest",
-  "build-memory-graph",
-  "render-feedback-loop-dashboard",
-  "render-rollout-scoreboard",
+  'rescore-ignis', 'studio-conductor', 'compile-automation-queue',
+  'studio-pulse', 'propagate-protocol-scripts', 'propagate-templates',
+  'generate-genius-list:portfolio', 'render-launch-momentum', 'weekly-digest',
+  'build-memory-graph', 'render-feedback-loop-dashboard', 'render-rollout-scoreboard',
 ]);
 let ledgerPortfolioTokens = 0;
 let ledgerBuilderTokens = 0;
 let ledgerScripts = [];
 try {
-  const lockPath = path.join(ROOT, "context/.session-lock");
+  const lockPath = path.join(ROOT, 'context/.session-lock');
   let sessionStart = Date.now() - 86_400_000;
   if (fs.existsSync(lockPath)) {
-    const m = fs.readFileSync(lockPath, "utf8").match(/session_start:\s*(\S+)/);
+    const m = fs.readFileSync(lockPath, 'utf8').match(/session_start:\s*(\S+)/);
     if (m) sessionStart = new Date(m[1]).getTime();
   }
-  const ledgerPath = path.join(ROOT, "docs/cache-ledger.ndjson");
+  const ledgerPath = path.join(ROOT, 'docs/cache-ledger.ndjson');
   if (fs.existsSync(ledgerPath)) {
-    for (const line of fs.readFileSync(ledgerPath, "utf8").split("\n")) {
+    for (const line of fs.readFileSync(ledgerPath, 'utf8').split('\n')) {
       if (!line) continue;
       const e = JSON.parse(line);
       if (new Date(e.ts).getTime() < sessionStart) continue;
-      const tok =
-        (e.input || 0) +
-        (e.output || 0) +
-        (e.cache_read || 0) +
-        (e.cache_create || 0);
+      const tok = (e.input || 0) + (e.output || 0) + (e.cache_read || 0) + (e.cache_create || 0);
       ledgerScripts.push(e.script);
       if (PORTFOLIO_SCRIPTS.has(e.script)) ledgerPortfolioTokens += tok;
       else ledgerBuilderTokens += tok;
     }
   }
-} catch {
-  /* ledger optional */
-}
+} catch { /* ledger optional */ }
 const ledgerFounderSignal = ledgerPortfolioTokens > ledgerBuilderTokens ? 2 : 0;
-const ledgerBuilderSignal =
-  ledgerBuilderTokens > 3 * ledgerPortfolioTokens && ledgerBuilderTokens > 2000
-    ? 2
-    : 0;
+const ledgerBuilderSignal = ledgerBuilderTokens > 3 * ledgerPortfolioTokens && ledgerBuilderTokens > 2000 ? 2 : 0;
 
-const founderScore =
-  founderHits * 2 +
-  Math.min(crossProjectRefs, 6) +
-  portfolioCommands * 2 +
-  ledgerFounderSignal;
-const builderScore =
-  builderHits * 2 + (crossProjectRefs === 0 ? 3 : 0) + ledgerBuilderSignal;
+const founderScore = founderHits * 2 + Math.min(crossProjectRefs, 6) + portfolioCommands * 2 + ledgerFounderSignal;
+const builderScore = builderHits * 2 + (crossProjectRefs === 0 ? 3 : 0) + ledgerBuilderSignal;
 
-const recommended = founderScore > builderScore + 2 ? "founder" : "builder";
+const recommended = founderScore > builderScore + 2 ? 'founder' : 'builder';
 const shouldFlip = recommended !== currentMode;
 
 // Emit a model recommendation based on (mode, current tier).
@@ -199,70 +138,64 @@ let currentTierModel = status.modelTierDefault || null;
 let planModeSlash = status.modelPlanModeSlash || null;
 let planModeActive = !!status.modelPlanMode;
 try {
-  const routingPath = path.join(ROOT, "portfolio", "MODEL_ROUTING.json");
+  const routingPath = path.join(ROOT, 'portfolio', 'MODEL_ROUTING.json');
   if (fs.existsSync(routingPath)) {
-    const routing = JSON.parse(fs.readFileSync(routingPath, "utf8"));
-    if (recommended === "founder") {
+    const routing = JSON.parse(fs.readFileSync(routingPath, 'utf8'));
+    if (recommended === 'founder') {
       recommendedModel = routing.modeOverrides?.founderMode
         ? routing.tiers[routing.modeOverrides.founderMode]?.model
-        : "opus";
+        : 'opus';
     } else {
-      recommendedModel =
-        currentTierModel || routing.tiers?.T1_sonnet?.model || "sonnet";
+      // S310: this used to fall back to T1_sonnet whenever PROJECT_STATUS lacked
+      // a modelTierDefault stamp — the same silent-cheapest-default that made the
+      // dead derivation rule invisible. Resolve the repo's ACTUAL tier instead;
+      // T1 is only correct when the rule actually says T1.
+      let derived = null;
+      try {
+        const regPath = path.join(ROOT, 'portfolio', 'PROJECT_REGISTRY.json');
+        const slug = status.slug || path.basename(ROOT);
+        if (fs.existsSync(regPath)) {
+          const reg = JSON.parse(fs.readFileSync(regPath, 'utf8'));
+          const proj = (reg.projects || []).find(p => p.slug === slug);
+          if (proj) derived = routing.tiers?.[resolveTier(proj, routing).tier]?.model || null;
+        }
+      } catch { /* best effort */ }
+      recommendedModel = currentTierModel
+        || derived
+        || routing.tiers?.T1_sonnet?.model
+        || 'sonnet';
     }
   }
-} catch {
-  /* best effort */
-}
-const modelShiftSuggested =
-  currentTierModel && recommendedModel && recommendedModel !== currentTierModel;
+} catch { /* best effort */ }
+const modelShiftSuggested = currentTierModel && recommendedModel && recommendedModel !== currentTierModel;
 
 // ── Session-mode hints + intent classification (S63e) ──────────────────────
 let hint = null;
 let hintSlug = null;
 try {
-  const hintsPath = path.join(ROOT, "portfolio", "SESSION_MODE_HINTS.json");
+  const hintsPath = path.join(ROOT, 'portfolio', 'SESSION_MODE_HINTS.json');
   if (fs.existsSync(hintsPath)) {
-    const hints = JSON.parse(fs.readFileSync(hintsPath, "utf8"));
+    const hints = JSON.parse(fs.readFileSync(hintsPath, 'utf8'));
     // Match current repo slug via PROJECT_STATUS.slug or basename.
     const slug = status.slug || path.basename(ROOT);
     hintSlug = slug;
     hint = hints.bySlug?.[slug] || null;
   }
-} catch {
-  /* best-effort */
-}
+} catch { /* best-effort */ }
 
 let intentClassification = null;
 try {
-  const mod = await import("./classify-session-intent.mjs");
+  const mod = await import('./classify-session-intent.mjs');
   intentClassification = mod.classifyIntent(ROOT);
-} catch {
-  /* non-fatal — defaults apply */
-}
+} catch { /* non-fatal — defaults apply */ }
 
 // Auto-de-escalation: once plan-phase recorded + intent=execution + hint allows,
 // recommend dropping to sonnet mid-session.
 let autoDeescalateSuggested = false;
-if (
-  hint?.autoDeescalate &&
-  intentClassification?.intent === "execution" &&
-  currentTierModel === "opus"
-) {
+if (hint?.autoDeescalate && intentClassification?.intent === 'execution' && currentTierModel === 'opus') {
   // Was plan-mode active earlier this session?
-  const lockText = (() => {
-    try {
-      return fs.readFileSync(
-        path.join(ROOT, "context", ".session-lock"),
-        "utf8",
-      );
-    } catch {
-      return "";
-    }
-  })();
-  const planDetectedActive =
-    /plan_mode_detected:\s*active/i.test(lockText) ||
-    !!status.planModeLastActivatedAt;
+  const lockText = (() => { try { return fs.readFileSync(path.join(ROOT, 'context', '.session-lock'), 'utf8'); } catch { return ''; } })();
+  const planDetectedActive = /plan_mode_detected:\s*active/i.test(lockText) || !!status.planModeLastActivatedAt;
   if (planDetectedActive) autoDeescalateSuggested = true;
 }
 
@@ -270,11 +203,7 @@ if (
 // using hint as strong signal + classifier as observed reality. If the two
 // agree, boost confidence.
 let effectiveIntent = intentClassification?.intent || null;
-if (
-  hint?.preferredIntent &&
-  (!effectiveIntent ||
-    (intentClassification?.scores?.[hint.preferredIntent] || 0) > 0)
-) {
+if (hint?.preferredIntent && (!effectiveIntent || (intentClassification?.scores?.[hint.preferredIntent] || 0) > 0)) {
   effectiveIntent = hint.preferredIntent;
 }
 const intentModel = intentClassification?.intentModel || null;
@@ -284,11 +213,10 @@ const intentModel = intentClassification?.intentModel || null;
 // rate-limit headroom (Opus burns the weekly limit ~5× faster per token) +
 // latency. Recommend Sonnet for routine execution work in builder mode even when
 // plan-mode was never toggled — generalizes autoDeescalate to the common case.
-const downRouteSuggested =
-  recommended === "builder" &&
-  currentTierModel === "opus" &&
-  effectiveIntent === "execution" &&
-  !autoDeescalateSuggested; // avoid double-printing with the plan-mode path
+const downRouteSuggested = recommended === 'builder'
+  && currentTierModel === 'opus'
+  && effectiveIntent === 'execution'
+  && !autoDeescalateSuggested; // avoid double-printing with the plan-mode path
 
 const result = {
   currentMode,
@@ -326,106 +254,63 @@ if (jsonMode) {
 }
 
 if (shouldFlip) {
-  console.log(
-    `⚡ Mode shift detected: ${currentMode.toUpperCase()} → ${recommended.toUpperCase()}`,
-  );
-  console.log(
-    `   Founder score: ${founderScore}  ·  Builder score: ${builderScore}`,
-  );
-  if (matchedFounder.length)
-    console.log(`   Founder signals: ${matchedFounder.slice(0, 4).join(", ")}`);
+  console.log(`⚡ Mode shift detected: ${currentMode.toUpperCase()} → ${recommended.toUpperCase()}`);
+  console.log(`   Founder score: ${founderScore}  ·  Builder score: ${builderScore}`);
+  if (matchedFounder.length) console.log(`   Founder signals: ${matchedFounder.slice(0, 4).join(', ')}`);
   // Persist the flip
-  status.sessionMode = recommended;
-  status.sessionModeAutoShiftedAt = new Date().toISOString();
-  writeProjectStatus(ROOT, status, { touchLastUpdated: false });
+  updateProjectStatus(ROOT, (current) => ({
+    ...current,
+    sessionMode: recommended,
+    sessionModeAutoShiftedAt: new Date().toISOString(),
+  }), { touchLastUpdated: false });
   console.log(`   PROJECT_STATUS.json updated.`);
 } else {
-  console.log(
-    `= Mode stable: ${currentMode.toUpperCase()}  (founder ${founderScore} / builder ${builderScore})`,
-  );
+  console.log(`= Mode stable: ${currentMode.toUpperCase()}  (founder ${founderScore} / builder ${builderScore})`);
 }
 
 if (modelShiftSuggested) {
-  console.log(
-    `⚡ Model shift recommended: ${currentTierModel} → ${recommendedModel}  (mode: ${recommended})`,
-  );
-  console.log(
-    `   Run /model ${recommendedModel} to apply, or keep current to continue.`,
-  );
+  console.log(`⚡ Model shift recommended: ${currentTierModel} → ${recommendedModel}  (mode: ${recommended})`);
+  console.log(`   Run /model ${recommendedModel} to apply, or keep current to continue.`);
 }
 
-if (planModeActive && planModeSlash && recommended !== "founder") {
-  console.log(
-    `ℹ Plan-mode reminder: this repo is ${currentTier} — run ${planModeSlash} once this session to activate Opus-plans-Sonnet-executes.`,
-  );
-  console.log(
-    `   (settings.json can only pin concrete models; plan-mode is a runtime slash-command toggle.)`,
-  );
+if (planModeActive && planModeSlash && recommended !== 'founder') {
+  console.log(`ℹ Plan-mode reminder: this repo is ${currentTier} — run ${planModeSlash} once this session to activate Opus-plans-Sonnet-executes.`);
+  console.log(`   (settings.json can only pin concrete models; plan-mode is a runtime slash-command toggle.)`);
   // Emit the literal slash string on its own line so Claude Code re-reads it
   // as an in-session instruction (S63e #2 auto-emit).
-  console.log("");
+  console.log('');
   console.log(planModeSlash);
-  console.log("");
-  console.log(
-    `   (After running the above, stamp it with: node scripts/mark-plan-mode.mjs)`,
-  );
+  console.log('');
+  console.log(`   (After running the above, stamp it with: node scripts/mark-plan-mode.mjs)`);
 }
 
 if (effectiveIntent) {
-  const intentTag =
-    intentClassification?.intent === effectiveIntent
-      ? ""
-      : " (hint-overridden)";
-  console.log(
-    `◆ Session intent: ${effectiveIntent.toUpperCase()}${intentTag} · prefers ${intentModel || "?"}`,
-  );
+  const intentTag = intentClassification?.intent === effectiveIntent ? '' : ' (hint-overridden)';
+  console.log(`◆ Session intent: ${effectiveIntent.toUpperCase()}${intentTag} · prefers ${intentModel || '?'}`);
   if (hint?.note) console.log(`  hint: ${hint.note}`);
 }
 
 if (autoDeescalateSuggested) {
-  console.log(
-    `⚡ Auto-de-escalate: plan phase complete + execution intent detected.`,
-  );
-  console.log(
-    `   Consider /model sonnet for the remaining implementation work (hint: ${hintSlug}).`,
-  );
+  console.log(`⚡ Auto-de-escalate: plan phase complete + execution intent detected.`);
+  console.log(`   Consider /model sonnet for the remaining implementation work (hint: ${hintSlug}).`);
 }
 
 if (downRouteSuggested) {
-  console.log(
-    `⚡ Down-route opportunity: builder-mode execution work on Opus.`,
-  );
-  console.log(
-    `   Consider /model sonnet — on the flat Max plan this costs $0 but reclaims`,
-  );
-  console.log(
-    `   shared rate-limit headroom (Opus burns the weekly limit ~5× faster).`,
-  );
-  console.log(
-    `   Keep Opus only for genuine deep reasoning / cross-file architecture.`,
-  );
+  console.log(`⚡ Down-route opportunity: builder-mode execution work on Opus.`);
+  console.log(`   Consider /model sonnet — on the flat Max plan this costs $0 but reclaims`);
+  console.log(`   shared rate-limit headroom (Opus burns the weekly limit ~5× faster).`);
+  console.log(`   Keep Opus only for genuine deep reasoning / cross-file architecture.`);
 }
 
 if (explain) {
-  console.log("\nExplanation:");
-  console.log(
-    `  • Founder phrases matched: ${matchedFounder.join(", ") || "(none)"}`,
-  );
-  console.log(
-    `  • Builder phrases matched: ${matchedBuilder.join(", ") || "(none)"}`,
-  );
+  console.log('\nExplanation:');
+  console.log(`  • Founder phrases matched: ${matchedFounder.join(', ') || '(none)'}`);
+  console.log(`  • Builder phrases matched: ${matchedBuilder.join(', ') || '(none)'}`);
   console.log(`  • Cross-project refs: ${crossProjectRefs}`);
   console.log(`  • Portfolio commands: ${portfolioCommands}`);
-  if (currentTier)
-    console.log(
-      `  • Current tier: ${currentTier} (${currentTierModel}) · recommended: ${recommendedModel}`,
-    );
+  if (currentTier) console.log(`  • Current tier: ${currentTier} (${currentTierModel}) · recommended: ${recommendedModel}`);
   if (ledgerScripts.length) {
-    console.log(
-      `  • Ledger scripts this session: ${[...new Set(ledgerScripts)].join(", ")}`,
-    );
-    console.log(
-      `  • Ledger tokens  — portfolio-scope: ${ledgerPortfolioTokens.toLocaleString()}  builder-scope: ${ledgerBuilderTokens.toLocaleString()}`,
-    );
+    console.log(`  • Ledger scripts this session: ${[...new Set(ledgerScripts)].join(', ')}`);
+    console.log(`  • Ledger tokens  — portfolio-scope: ${ledgerPortfolioTokens.toLocaleString()}  builder-scope: ${ledgerBuilderTokens.toLocaleString()}`);
   }
 }

@@ -12,20 +12,32 @@
  * exceeded its budget.
  */
 
-import fs from "fs";
-import os from "os";
-import path from "path";
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 
-const LEDGER = path.join(".cache", "skill-costs.jsonl");
-const MANIFEST = path.join(os.homedir(), ".claude", "skills", "MANIFEST.json");
+const LEDGER = path.join('.cache', 'skill-costs.jsonl');
+
+/** Resolve the skills manifest at CALL time, never at import time.
+ *
+ * S343: this was a module-level `const` computed from os.homedir() when the
+ * module first loaded. Every caller therefore read the REAL home directory, so
+ * a test that synthesizes a manifest and redirects USERPROFILE/HOME was silently
+ * ignored — lifecycle's SLO-guard case only ever passed because the developer's
+ * own ~/.claude/skills/MANIFEST.json happened to declare studio-start with an
+ * 8000-token budget. It went red the moment that file was absent, having never
+ * once exercised its own fixture. Resolving per call makes the fixture real
+ * (os.homedir() reads USERPROFILE/HOME at call time) and costs one path.join.
+ */
+function manifestPath() {
+  return path.join(os.homedir(), '.claude', 'skills', 'MANIFEST.json');
+}
 
 function readManifestSlo(skill) {
   try {
-    const m = JSON.parse(fs.readFileSync(MANIFEST, "utf8"));
+    const m = JSON.parse(fs.readFileSync(manifestPath(), 'utf8'));
     return m.skills?.[skill]?.slo || null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 /**
@@ -41,29 +53,30 @@ export function recordSkillCost(repoRoot, info) {
     skill: info.skill,
     sessionId: info.sessionId || null,
     medium: info.medium || null,
-    slo: slo
-      ? { tokenBudget: slo.tokenBudget, wallClockMaxSec: slo.wallClockMaxSec }
+    slo: slo ? { tokenBudget: slo.tokenBudget, wallClockMaxSec: slo.wallClockMaxSec } : null,
+    actual: { tokens: info.actualTokens ?? null, durationSec: info.durationSec ?? null },
+    measurement: { tokenSource: info.tokenSource || (info.actualTokens == null ? 'unmeasured' : 'caller-reported'), durationScope: info.durationScope || null },
+    ...(info.estimatedTokens != null ? { estimate: { tokens: info.estimatedTokens, method: info.estimateMethod || 'unspecified', scope: info.estimateScope || null } } : {}),
+    overrun: slo?.tokenBudget && info.actualTokens
+      ? { tokens: Math.max(0, info.actualTokens - slo.tokenBudget),
+          pct: Math.round(((info.actualTokens - slo.tokenBudget) / slo.tokenBudget) * 100) }
       : null,
-    actual: {
-      tokens: info.actualTokens ?? null,
-      durationSec: info.durationSec ?? null,
-    },
-    overrun:
-      slo?.tokenBudget && info.actualTokens
-        ? {
-            tokens: Math.max(0, info.actualTokens - slo.tokenBudget),
-            pct: Math.round(
-              ((info.actualTokens - slo.tokenBudget) / slo.tokenBudget) * 100,
-            ),
-          }
-        : null,
-    status: info.status || "completed",
+    status: info.status || 'completed',
     // S156 #14 — optional §-step decomposition [{id, tokens}] incl. residual
     // "(unattributed)" bucket; sum reconciles with actual.tokens.
     ...(info.steps?.length ? { steps: info.steps } : {}),
   };
-  fs.appendFileSync(ledgerPath, JSON.stringify(entry) + "\n");
+  fs.appendFileSync(ledgerPath, JSON.stringify(entry) + '\n');
   return entry;
+}
+
+/** Older startup producers recorded brief byte estimates as actual usage.
+ * Normalize on read; retain the original append-only ledger bytes. */
+export function normalizeSkillCost(entry) {
+  if (!entry || !['start', 'start-v5'].includes(entry.skill) || entry.measurement || entry.actual?.tokens == null) return entry;
+  return { ...entry, actual: { ...entry.actual, tokens: null },
+    estimate: { tokens: entry.actual.tokens, method: 'legacy-brief-bytes/4', scope: 'rendered-brief' },
+    measurement: { tokenSource: 'unmeasured', durationScope: null }, overrun: null };
 }
 
 /**
@@ -72,17 +85,9 @@ export function recordSkillCost(repoRoot, info) {
 export function recentSkillCosts(repoRoot, { skill, limit = 10 } = {}) {
   const p = path.join(repoRoot, LEDGER);
   if (!fs.existsSync(p)) return [];
-  const lines = fs.readFileSync(p, "utf8").trim().split("\n").filter(Boolean);
-  const parsed = lines
-    .map((l) => {
-      try {
-        return JSON.parse(l);
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
-  const filtered = skill ? parsed.filter((e) => e.skill === skill) : parsed;
+  const lines = fs.readFileSync(p, 'utf8').trim().split('\n').filter(Boolean);
+  const parsed = lines.map(l => { try { return normalizeSkillCost(JSON.parse(l)); } catch { return null; } }).filter(Boolean);
+  const filtered = skill ? parsed.filter(e => e.skill === skill) : parsed;
   return filtered.slice(-limit).reverse();
 }
 
@@ -102,22 +107,11 @@ export function priorOverrun(repoRoot, skill) {
  * Returns array of { skill, consecutiveOverruns, lastOverrunPct, samples }
  * for skills with ≥threshold consecutive overruns in their most-recent runs.
  */
-export function detectRegressions(
-  repoRoot,
-  { threshold = 3, lookback = 5 } = {},
-) {
+export function detectRegressions(repoRoot, { threshold = 3, lookback = 5 } = {}) {
   const p = path.join(repoRoot, LEDGER);
   if (!fs.existsSync(p)) return [];
-  const lines = fs.readFileSync(p, "utf8").trim().split("\n").filter(Boolean);
-  const parsed = lines
-    .map((l) => {
-      try {
-        return JSON.parse(l);
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
+  const lines = fs.readFileSync(p, 'utf8').trim().split('\n').filter(Boolean);
+  const parsed = lines.map(l => { try { return normalizeSkillCost(JSON.parse(l)); } catch { return null; } }).filter(Boolean);
   const bySkill = new Map();
   for (const e of parsed) {
     if (!e.skill) continue;
@@ -138,12 +132,7 @@ export function detectRegressions(
       } else break;
     }
     if (consecutive >= threshold) {
-      regressions.push({
-        skill,
-        consecutiveOverruns: consecutive,
-        lastOverrunPct,
-        samples: recent.length,
-      });
+      regressions.push({ skill, consecutiveOverruns: consecutive, lastOverrunPct, samples: recent.length });
     }
   }
   return regressions;
@@ -157,22 +146,11 @@ export function detectRegressions(
  * (S153 divergent-observability lesson — no manifest-flag intermediary).
  * Returns [{ skill, consecutive, lastPct, budget, lastActual, hint }].
  */
-export function detectSevereOverruns(
-  repoRoot,
-  { pctThreshold = 50, consecutive = 2, lookback = 6 } = {},
-) {
+export function detectSevereOverruns(repoRoot, { pctThreshold = 50, consecutive = 2, lookback = 6 } = {}) {
   const p = path.join(repoRoot, LEDGER);
   if (!fs.existsSync(p)) return [];
-  const lines = fs.readFileSync(p, "utf8").trim().split("\n").filter(Boolean);
-  const parsed = lines
-    .map((l) => {
-      try {
-        return JSON.parse(l);
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
+  const lines = fs.readFileSync(p, 'utf8').trim().split('\n').filter(Boolean);
+  const parsed = lines.map(l => { try { return normalizeSkillCost(JSON.parse(l)); } catch { return null; } }).filter(Boolean);
   const bySkill = new Map();
   for (const e of parsed) {
     if (!e.skill) continue;
@@ -210,50 +188,35 @@ export function detectSevereOverruns(
  */
 export function flagRegressionsInManifest(repoRoot, opts = {}) {
   const regressions = detectRegressions(repoRoot, opts);
-  if (!fs.existsSync(MANIFEST)) return 0;
+  const manifest = manifestPath();
+  if (!fs.existsSync(manifest)) return 0;
   try {
-    const m = JSON.parse(fs.readFileSync(MANIFEST, "utf8"));
+    const m = JSON.parse(fs.readFileSync(manifest, 'utf8'));
     if (!m.skills) return 0;
     let flagged = 0;
     for (const [skill, spec] of Object.entries(m.skills)) {
-      const r = regressions.find((x) => x.skill === skill);
+      const r = regressions.find(x => x.skill === skill);
       if (r) {
-        spec.regressionFlag = {
-          consecutiveOverruns: r.consecutiveOverruns,
-          lastOverrunPct: r.lastOverrunPct,
-          flaggedAt: new Date().toISOString(),
-        };
+        spec.regressionFlag = { consecutiveOverruns: r.consecutiveOverruns, lastOverrunPct: r.lastOverrunPct, flaggedAt: new Date().toISOString() };
         flagged++;
       } else if (spec.regressionFlag) {
         delete spec.regressionFlag;
       }
     }
-    fs.writeFileSync(MANIFEST, JSON.stringify(m, null, 2) + "\n");
+    fs.writeFileSync(manifest, JSON.stringify(m, null, 2) + '\n');
     return flagged;
-  } catch {
-    return 0;
-  }
+  } catch { return 0; }
 }
 
 // S125 audit #23: per-medium skill-cost bucketing
 // Average actual-tokens per (skill, medium) across history. Used by
 // render-startup-brief to emit soft budget hints sized to project complexity.
-export function mediumBucketAvg(
-  repoRoot,
-  { skill, medium, lookback = 20 } = {},
-) {
+export function mediumBucketAvg(repoRoot, { skill, medium, lookback = 20 } = {}) {
   const all = recentSkillCosts(repoRoot, { skill, limit: lookback * 4 });
-  const byMedium = all
-    .filter((e) => e.medium === medium && e.actual?.tokens != null)
-    .slice(0, lookback);
+  const byMedium = all.filter(e => e.medium === medium && e.actual?.tokens != null).slice(0, lookback);
   if (!byMedium.length) return null;
   const sum = byMedium.reduce((s, e) => s + e.actual.tokens, 0);
-  return {
-    skill,
-    medium,
-    samples: byMedium.length,
-    avgTokens: Math.round(sum / byMedium.length),
-  };
+  return { skill, medium, samples: byMedium.length, avgTokens: Math.round(sum / byMedium.length) };
 }
 
 // Recommended budget for a skill in a given medium. Falls back to SLO budget
@@ -262,26 +225,11 @@ export function recommendedBudget(repoRoot, skill, medium) {
   const bucket = mediumBucketAvg(repoRoot, { skill, medium });
   if (bucket && bucket.samples >= 3) {
     // soft target: 1.2× rolling average (gives headroom without overshoot)
-    return {
-      source: "medium-bucket",
-      budget: Math.round(bucket.avgTokens * 1.2),
-      basis: `${bucket.samples} samples`,
-      medium,
-    };
+    return { source: 'medium-bucket', budget: Math.round(bucket.avgTokens * 1.2), basis: `${bucket.samples} samples`, medium };
   }
   const slo = readManifestSlo(skill);
-  if (slo?.tokenBudget)
-    return { source: "manifest-slo", budget: slo.tokenBudget, medium };
-  return { source: "default", budget: 5000, medium };
+  if (slo?.tokenBudget) return { source: 'manifest-slo', budget: slo.tokenBudget, medium };
+  return { source: 'default', budget: 5000, medium };
 }
 
-export default {
-  recordSkillCost,
-  recentSkillCosts,
-  priorOverrun,
-  detectRegressions,
-  detectSevereOverruns,
-  flagRegressionsInManifest,
-  mediumBucketAvg,
-  recommendedBudget,
-};
+export default { recordSkillCost, recentSkillCosts, priorOverrun, detectRegressions, detectSevereOverruns, flagRegressionsInManifest, mediumBucketAvg, recommendedBudget };

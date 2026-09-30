@@ -24,9 +24,33 @@
 // Enforced by scripts/check-windows-hide.mjs (no direct child_process import outside
 // this wrapper) and propagated studio-wide (CANON-016).
 
-import * as cp from "node:child_process";
-import { promisify } from "node:util";
-import { withGitWindowGuardEnv } from "./git-window-guard.mjs";
+import * as cp from 'node:child_process';
+import { promisify } from 'node:util';
+import { withGitWindowGuardEnv } from './git-window-guard.mjs';
+import { fastNodePath } from './fast-node.mjs';
+
+// S292 [audit #1] — spend the node spawn tax once, not 191 times.
+//
+// The installed node binary carries a measured 7-12x path-specific tax (900-1900 ms
+// per invocation vs 60-190 ms for a byte-identical copy elsewhere). 256 studio call
+// sites pass `process.execPath` as argv0, and every one of them already routes
+// through this wrapper — so the mitigation is one substitution here rather than 256
+// edits. See lib/fast-node.mjs for the guarantee and the fail-closed contract.
+//
+// SUBSTITUTE ONLY THE EXACT INSTALLED BINARY. A caller naming 'node', 'npm', 'npx'
+// or any other command is left completely alone: those resolve through PATH and
+// carry semantics this module has no business changing. Verified this session that
+// nothing in scripts/ or ignis/ builds paths relative to process.execPath, so the
+// clone's neighbours are never consulted.
+function substituteNodeExe(args) {
+  if (!args.length || typeof args[0] !== 'string') return args;
+  if (args[0] !== process.execPath) return args;
+  const fast = fastNodePath(process.execPath);
+  if (fast === process.execPath) return args; // unprovisioned / drifted / opted out
+  const a = args.slice();
+  a[0] = fast;
+  return a;
+}
 
 // Force windowsHide:true into a spawn-family call's options, matching every signature:
 //   fn(cmd) · fn(cmd,args) · fn(cmd,opts) · fn(cmd,args,opts) · fn(cmd,cb) · fn(cmd,opts,cb)
@@ -34,62 +58,62 @@ import { withGitWindowGuardEnv } from "./git-window-guard.mjs";
 // fill windowsHide only when the caller left it unset (explicit choices are respected).
 // If no options object exists, insert one before a trailing callback, else append.
 function harden(args) {
-  const a = args.slice();
+  // argv0 substitution first, so every spawn-family export inherits it (including
+  // the promisify.custom paths below). fork() is unaffected by construction: its
+  // first argument is a module path, which can never equal process.execPath.
+  const a = substituteNodeExe(args).slice();
   let optIdx = -1;
   for (let i = a.length - 1; i >= 0; i--) {
     const v = a[i];
     if (
       v !== null &&
-      typeof v === "object" &&
+      typeof v === 'object' &&
       !Array.isArray(v) &&
       !Buffer.isBuffer(v) &&
       !ArrayBuffer.isView(v)
-    ) {
-      optIdx = i;
-      break;
-    }
+    ) { optIdx = i; break; }
   }
   if (optIdx >= 0) {
     a[optIdx] = {
       ...a[optIdx],
-      windowsHide:
-        a[optIdx].windowsHide === undefined ? true : a[optIdx].windowsHide,
+      windowsHide: a[optIdx].windowsHide === undefined ? true : a[optIdx].windowsHide,
       env: withGitWindowGuardEnv(a[optIdx].env || process.env),
     };
     return a;
   }
-  if (a.length && typeof a[a.length - 1] === "function") {
-    a.splice(a.length - 1, 0, {
-      windowsHide: true,
-      env: withGitWindowGuardEnv(),
-    });
+  if (a.length && typeof a[a.length - 1] === 'function') {
+    a.splice(a.length - 1, 0, { windowsHide: true, env: withGitWindowGuardEnv() });
   } else {
     a.push({ windowsHide: true, env: withGitWindowGuardEnv() });
   }
   return a;
 }
 
-export function spawn(...args) {
-  return cp.spawn(...harden(args));
+export function spawn(...args) { return cp.spawn(...harden(args)); }
+export function spawnSync(...args) { return cp.spawnSync(...harden(args)); }
+
+// spawnExact — hardened exactly like spawnSync (windowsHide + git window guard),
+// but with NO argv0 substitution: it runs the literal binary it is handed.
+//
+// THIS EXISTS BECAUSE THE MITIGATION BLINDED ITS OWN INSTRUMENT (S292, caught live).
+// `node-spawn-tax.mjs` measures the installed binary against a control copy, and it
+// spawns through this wrapper. The moment substitution went in, its "installed" arm
+// silently became the clone: it reported `installed 100ms · no tax` while an
+// unsubstituted measurement of the same binary, seconds later, read 1580 ms. A
+// measurement instrument must observe the subject, never the mitigation — so any
+// code whose PURPOSE is to compare node binaries must use this, not spawnSync.
+// Asserted by scripts/test/tier1-fast-node.mjs.
+export function spawnExact(...args) {
+  // Reuse harden() for the windowsHide/env contract, then restore the caller's argv0.
+  const hardened = harden(args);
+  if (args.length && typeof args[0] === 'string') hardened[0] = args[0];
+  return cp.spawnSync(...hardened);
 }
-export function spawnSync(...args) {
-  return cp.spawnSync(...harden(args));
-}
-export function exec(...args) {
-  return cp.exec(...harden(args));
-}
-export function execSync(...args) {
-  return cp.execSync(...harden(args));
-}
-export function execFile(...args) {
-  return cp.execFile(...harden(args));
-}
-export function execFileSync(...args) {
-  return cp.execFileSync(...harden(args));
-}
-export function fork(...args) {
-  return cp.fork(...harden(args));
-}
+export function exec(...args) { return cp.exec(...harden(args)); }
+export function execSync(...args) { return cp.execSync(...harden(args)); }
+export function execFile(...args) { return cp.execFile(...harden(args)); }
+export function execFileSync(...args) { return cp.execFileSync(...harden(args)); }
+export function fork(...args) { return cp.fork(...harden(args)); }
 
 // Preserve the util.promisify contract that native cp.exec / cp.execFile carry.
 // Native exec/execFile expose a `util.promisify.custom` implementation that resolves
@@ -108,13 +132,5 @@ execFile[promisify.custom] = (...args) => _execFileP(...harden(args));
 // Pass through anything else child_process exports (ChildProcess, constants, etc.).
 export const { ChildProcess } = cp;
 
-export default {
-  spawn,
-  spawnSync,
-  exec,
-  execSync,
-  execFile,
-  execFileSync,
-  fork,
-  ChildProcess,
-};
+export default { spawn, spawnSync, exec, execSync, execFile, execFileSync, fork, ChildProcess };
+

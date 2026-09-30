@@ -5,111 +5,107 @@
  * Each function returns a multi-line string fragment (no trailing newline).
  */
 
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = path.resolve(__dirname, "..", "..");
+const REPO_ROOT = path.resolve(__dirname, '..', '..');
 
-const W = 62;
+const W  = 62;
 const BW = W + 4;
 
-function pad(s, w) {
-  const str = String(s ?? "");
-  return str.length >= w ? str.slice(0, w) : str + " ".repeat(w - str.length);
+// Parsing contracts shared by brief-diff and brief-delta. Keep these exact:
+// narrow uppercase titles, last duplicate wins, one border stripped before
+// trimming, and null when the SIL score shape is absent.
+export function extractBriefBlocks(text) {
+  const re = /╔══\s*([A-Z][A-Z 0-9·]+?)\s*═+╗\s*\n([\s\S]*?)╚═+╝/g;
+  const blocks = {};
+  for (const match of text.matchAll(re)) blocks[match[1].trim()] = match[2];
+  return blocks;
 }
-function row(content) {
-  return `║  ${pad(content, W)}  ║`;
+
+export function extractBriefSilScore(text) {
+  const match = text.match(/(\d{3,4})\/1000\s+[█░]+\s+(\d+)%/);
+  return match ? { score: parseInt(match[1], 10), pct: parseInt(match[2], 10) } : null;
 }
-function blank() {
-  return `║  ${" ".repeat(W)}  ║`;
+
+export function extractBriefRows(block) {
+  return (block || '')
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^║/, '').replace(/║$/, '').trim())
+    .filter(Boolean);
 }
+
+function pad(s, w) { const str = String(s ?? ''); return str.length >= w ? str.slice(0, w) : str + ' '.repeat(w - str.length); }
+function row(content) { return `║  ${pad(content, W)}  ║`; }
+function blank() { return `║  ${' '.repeat(W)}  ║`; }
 function top(title) {
-  const t = title ? `══ ${title} ` : "";
-  return "╔" + t + "═".repeat(Math.max(1, W + 2 - t.length)) + "╗";
+  const t = title ? `══ ${title} ` : '';
+  return '╔' + t + '═'.repeat(Math.max(1, W + 2 - t.length)) + '╗';
 }
-function bottom() {
-  return "╚" + "═".repeat(W + 2) + "╝";
-}
+function bottom() { return '╚' + '═'.repeat(W + 2) + '╝'; }
 
 /**
  * Render the project title header block.
  * Emoji based on type; mode from sessionMode.
  */
-export function renderTitleHeader({
-  name,
-  type,
-  lifecycle,
-  audience,
-  vaultStatus,
-  session,
-  date,
-  mode = "BUILDER",
-  owner,
-}) {
-  const emoji =
-    {
-      game: "🎮",
-      app: "📱",
-      platform: "🌐",
-      infrastructure: "⚙️ ",
-      novel: "📖",
-      tool: "🔧",
-    }[type] || "🚀";
-  const nameUpper = (name || "Project").toUpperCase();
+export function renderTitleHeader({ name, type, lifecycle, audience, vaultStatus, session, date, mode = 'BUILDER', owner }) {
+  const emoji = {
+    game:           '🎮',
+    app:            '📱',
+    platform:       '🌐',
+    infrastructure: '⚙️ ',
+    novel:          '📖',
+    tool:           '🔧',
+  }[type] || '🚀';
+  const nameUpper = (name || 'Project').toUpperCase();
   const modeLabel = mode.toUpperCase();
   return [
     top(),
     row(`${emoji} ${nameUpper}`),
-    row(
-      `${type || "project"} · ${lifecycle || "—"}/${audience || "—"} · ${(vaultStatus || "FORGE").toUpperCase()}`,
-    ),
-    row(`Session ${session || "?"} · ${date || "—"} · ${modeLabel} MODE`),
-    row(`Owner: ${owner || "VaultSpark Studios"}`),
+    row(`${type || 'project'} · ${lifecycle || '—'}/${audience || '—'} · ${(vaultStatus || 'FORGE').toUpperCase()}`),
+    row(`Session ${session || '?'} · ${date || '—'} · ${modeLabel} MODE`),
+    row(`Owner: ${owner || 'VaultSpark Studios'}`),
     bottom(),
-  ].join("\n");
+  ].join('\n');
 }
 
 /**
  * Render the "Last session · what shipped" block from PROJECT_STATUS.lastSessionSummary.
  */
 export function renderLastCompleted(summary, opts = {}) {
-  if (typeof summary === "string") {
-    const session = summary.match(/\b(?:S|Session\s+)(\d+)\b/i)?.[1] || "?";
-    const expected =
-      opts.expectedSession != null ? String(opts.expectedSession) : null;
-    if (expected && session !== "?" && session !== expected) {
-      const fallback =
-        opts.fallback ||
-        "Use WHERE WE LEFT OFF and CURRENT_STATE for the live latest-session summary.";
+  if (typeof summary === 'string') {
+    const session = summary.match(/\bS(\d+)\b/i)?.[1] || '?';
+    const expected = opts.expectedSession != null ? String(opts.expectedSession) : null;
+    if (expected && session !== '?' && session !== expected) {
+      const fallback = opts.fallback || 'Use WHERE WE LEFT OFF and CURRENT_STATE for the live latest-session summary.';
       return [
         top(`STALE LAST SESSION SUMMARY`),
         row(`Expected S${expected}; PROJECT_STATUS summary says S${session}.`),
         row(fallback.slice(0, W)),
         row(`Repair: update PROJECT_STATUS.lastSessionSummary at closeout.`),
         bottom(),
-      ].join("\n");
+      ].join('\n');
     }
     return [
       top(`LAST SESSION (S${session}) - WHAT SHIPPED`),
       row(summary.slice(0, W)),
-      row(`Tests  ${opts.tests || "No direct suite count recorded"}`),
-      row(`Deploy ${opts.deploy || "No deployment observation recorded"}`),
+      row(`Tests  -`),
+      row(`Deploy -`),
       bottom(),
-    ].join("\n");
+    ].join('\n');
   }
-  if (!summary) return "";
+  if (!summary) return '';
   const header = top(`LAST SESSION (S${summary.session}) · WHAT SHIPPED`);
-  const shipLines = (summary.shipped || [])
-    .slice(0, 5)
-    .map((s) => row(`✓ ${s.slice(0, W - 2)}`));
+  const shipLines = (summary.shipped || []).slice(0, 5).map(s => row(`✓ ${s.slice(0, W - 2)}`));
   return [
     header,
     ...shipLines,
-    row(`Tests  ${summary.tests || "—"}`),
-    row(`Deploy ${summary.deploy || "—"}`),
+    row(`Tests  ${summary.tests || '—'}`),
+    row(`Deploy ${summary.deploy || '—'}`),
     bottom(),
-  ].join("\n");
+  ].join('\n');
 }
 
 /**
@@ -118,49 +114,45 @@ export function renderLastCompleted(summary, opts = {}) {
  * with URL/command and last-checked age.
  */
 export function renderTestItNow({ name, testingSurfaces = [] }) {
-  const header = top(`WHERE TO TEST · ${name || "Project"}`);
+  const header = top(`WHERE TO TEST · ${name || 'Project'}`);
   if (!testingSurfaces.length) {
-    return [
-      header,
-      row("(no testing surfaces registered — add to PROJECT_STATUS.json)"),
-      bottom(),
-    ].join("\n");
+    return [header, row('(no testing surfaces registered — add to PROJECT_STATUS.json)'), bottom()].join('\n');
   }
   const typeLabel = {
-    local: "Local dev     →",
-    tests: "Unit tests    →",
-    doctor: "Doctor        →",
-    staging: "Staging       →",
-    production: "Production    →",
-    preview: "Preview       →",
-    supabase: "Supabase      →",
-    github: "GitHub        →",
-    vercel: "Vercel        →",
-    netlify: "Netlify       →",
-    cloudflare: "CF Pages      →",
-    render: "Render        →",
-    railway: "Railway       →",
-    hetzner: "Hetzner       →",
-    custom: "Custom        →",
+    local:       'Local dev     →',
+    tests:       'Unit tests    →',
+    doctor:      'Doctor        →',
+    staging:     'Staging       →',
+    production:  'Production    →',
+    preview:     'Preview       →',
+    supabase:    'Supabase      →',
+    github:      'GitHub        →',
+    vercel:      'Vercel        →',
+    netlify:     'Netlify       →',
+    cloudflare:  'CF Pages      →',
+    render:      'Render        →',
+    railway:     'Railway       →',
+    hetzner:     'Hetzner       →',
+    custom:      'Custom        →',
   };
-  const statusIcon = { green: "✓", yellow: "⚠", red: "⛔", unknown: "·" };
-  const lines = testingSurfaces.slice(0, 8).map((s) => {
+  const statusIcon = { green: '✓', yellow: '⚠', red: '⛔', unknown: '·' };
+  const lines = testingSurfaces.slice(0, 8).map(s => {
     const label = typeLabel[s.type] || `${s.type.padEnd(12)} →`;
-    const icon = statusIcon[s.status || "unknown"] || "·";
-    const target = s.url || s.command || "—";
+    const icon = statusIcon[s.status || 'unknown'] || '·';
+    const target = s.url || s.command || '—';
     const truncated = target.slice(0, W - label.length - 4);
     return row(`${label} ${truncated} ${icon}`);
   });
-  return [header, ...lines, bottom()].join("\n");
+  return [header, ...lines, bottom()].join('\n');
 }
 
 /**
  * Render a compact mode-indicator line (BUILDER / FOUNDER + reason).
  * Used mid-brief to flag when mode was auto-shifted.
  */
-export function renderModeBanner({ mode, auto = false, reason = "" }) {
+export function renderModeBanner({ mode, auto = false, reason = '' }) {
   const modeLabel = mode.toUpperCase();
-  const flag = auto ? `⚡ auto-shift: ${reason}` : "";
-  const line = `Mode: ${modeLabel}${flag ? "  ·  " + flag : ""}`;
-  return [top("MODE"), row(line.slice(0, W)), bottom()].join("\n");
+  const flag = auto ? `⚡ auto-shift: ${reason}` : '';
+  const line = `Mode: ${modeLabel}${flag ? '  ·  ' + flag : ''}`;
+  return [top('MODE'), row(line.slice(0, W)), bottom()].join('\n');
 }

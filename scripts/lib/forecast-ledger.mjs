@@ -13,21 +13,16 @@
 // Ledger: portfolio/compiled/FORECAST_LEDGER.json
 // Rollback: delete the ledger file — the brief renders without the MAE line.
 
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
-const LEDGER_REL = path.join("portfolio", "compiled", "FORECAST_LEDGER.json");
+const LEDGER_REL = path.join('portfolio', 'compiled', 'FORECAST_LEDGER.json');
 
-function ledgerPath(root) {
-  return path.join(root, LEDGER_REL);
-}
+function ledgerPath(root) { return path.join(root, LEDGER_REL); }
 
 export function loadLedger(root) {
-  try {
-    return JSON.parse(fs.readFileSync(ledgerPath(root), "utf8"));
-  } catch {
-    return { schemaVersion: 1, entries: [] };
-  }
+  try { return JSON.parse(fs.readFileSync(ledgerPath(root), 'utf8')); }
+  catch { return { schemaVersion: 1, entries: [] }; }
 }
 
 /**
@@ -36,12 +31,9 @@ export function loadLedger(root) {
  * @param forecastTotal predicted total for that session
  * @param actuals array of { session, total } known actual SIL totals (newest first ok)
  */
-export function recordAndResolve(
-  root,
-  { forSession, forecastTotal, actuals = [] },
-) {
+export function recordAndResolve(root, { forSession, forecastTotal, actuals = [] }) {
   const ledger = loadLedger(root);
-  const bySession = new Map(actuals.map((a) => [a.session, a.total]));
+  const bySession = new Map(actuals.map(a => [a.session, a.total]));
 
   // Resolve pending entries whose target session now has an actual.
   for (const e of ledger.entries) {
@@ -54,17 +46,9 @@ export function recordAndResolve(
 
   // Upsert the new pending forecast (re-render of the same session updates in place).
   if (Number.isFinite(forSession) && Number.isFinite(forecastTotal)) {
-    const existing = ledger.entries.find(
-      (e) => e.forSession === forSession && e.actual == null,
-    );
+    const existing = ledger.entries.find(e => e.forSession === forSession && e.actual == null);
     if (existing) existing.forecast = forecastTotal;
-    else
-      ledger.entries.push({
-        forSession,
-        forecast: forecastTotal,
-        recordedAt: new Date().toISOString().slice(0, 10),
-        actual: null,
-      });
+    else ledger.entries.push({ forSession, forecast: forecastTotal, recordedAt: new Date().toISOString().slice(0, 10), actual: null });
   }
 
   // Bound the ledger (rotation-in-place; this is a small calibration record, not history).
@@ -77,7 +61,7 @@ export function recordAndResolve(
 
 /** Rolling MAE over the last n resolved forecasts. Returns null when <min samples. */
 export function rollingMae(ledger, n = 10, min = 3) {
-  const resolved = ledger.entries.filter((e) => e.absErr != null).slice(-n);
+  const resolved = ledger.entries.filter(e => e.absErr != null).slice(-n);
   if (resolved.length < min) return { mae: null, samples: resolved.length };
   const mae = resolved.reduce((s, e) => s + e.absErr, 0) / resolved.length;
   return { mae: Math.round(mae * 10) / 10, samples: resolved.length };

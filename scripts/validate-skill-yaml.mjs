@@ -16,18 +16,18 @@
 //   node scripts/validate-skill-yaml.mjs --fix        # auto-replace `Target: ` → `Target — `
 //   node scripts/validate-skill-yaml.mjs --paths      # list scanned paths + exit
 
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
 
-const FIX = process.argv.includes("--fix");
-const PATHS_ONLY = process.argv.includes("--paths");
+const FIX = process.argv.includes('--fix');
+const PATHS_ONLY = process.argv.includes('--paths');
 
 const HOME = os.homedir();
 const ROOTS = [
-  path.join(HOME, ".claude", "skills"),
-  path.join(HOME, ".agents", "skills"),
-  path.join(process.cwd(), ".claude", "skills"),
+  path.join(HOME, '.claude', 'skills'),
+  path.join(HOME, '.agents', 'skills'),
+  path.join(process.cwd(), '.claude', 'skills'),
 ];
 
 function collectSkillFiles() {
@@ -35,7 +35,7 @@ function collectSkillFiles() {
   for (const root of ROOTS) {
     if (!fs.existsSync(root)) continue;
     for (const entry of fs.readdirSync(root)) {
-      const p = path.join(root, entry, "SKILL.md");
+      const p = path.join(root, entry, 'SKILL.md');
       if (fs.existsSync(p)) out.push(p);
     }
   }
@@ -44,9 +44,9 @@ function collectSkillFiles() {
 
 // Extract YAML frontmatter (between leading --- and next ---).
 function extractFrontmatter(content) {
-  const lines = content.split("\n");
-  if (lines[0].trim() !== "---") return null;
-  const end = lines.slice(1).findIndex((l) => l.trim() === "---");
+  const lines = content.split('\n');
+  if (lines[0].trim() !== '---') return null;
+  const end = lines.slice(1).findIndex((l) => l.trim() === '---');
   if (end < 0) return null;
   return { start: 1, end: end + 1, lines: lines.slice(1, end + 1) };
 }
@@ -67,13 +67,13 @@ function findCodexHazards(fmLines, lineOffset) {
     // Look for unescaped `: ` inside the value.
     // (Escaped would be `\:` but YAML double-quoted doesn't require that; the
     // only way to be safe in Codex is to not include `: ` at all.)
-    const idx = value.indexOf(": ");
+    const idx = value.indexOf(': ');
     if (idx >= 0) {
       findings.push({
         line: lineOffset + i,
-        col: m[1].length + 1 + idx + 1, // 1-indexed column of the `:`
+        col: (m[1].length + 1) + idx + 1, // 1-indexed column of the `:`
         snippet: value.slice(Math.max(0, idx - 20), idx + 30),
-        key: m[1].trim().replace(/:$/, ""),
+        key: m[1].trim().replace(/:$/, ''),
       });
     }
   }
@@ -83,7 +83,7 @@ function findCodexHazards(fmLines, lineOffset) {
 function applyFix(content) {
   // Safe auto-fix: `Target: ` → `Target — ` (the observed pattern).
   // Leaves other `: ` cases for human review (they may be intentional).
-  return content.replace(/Target: /g, "Target — ");
+  return content.replace(/Target: /g, 'Target — ');
 }
 
 const files = collectSkillFiles();
@@ -94,13 +94,13 @@ if (PATHS_ONLY) {
 }
 
 console.log(`validate-skill-yaml · scanning ${files.length} SKILL.md files`);
-console.log("─".repeat(68));
+console.log('─'.repeat(68));
 
 let totalFindings = 0;
 let fixedFiles = 0;
 
 for (const file of files) {
-  const content = fs.readFileSync(file, "utf8");
+  const content = fs.readFileSync(file, 'utf8');
   const fm = extractFrontmatter(content);
   if (!fm) {
     console.log(`  ⊘ ${path.relative(HOME, file)} — no frontmatter`);
@@ -110,12 +110,10 @@ for (const file of files) {
   if (!findings.length) continue;
 
   totalFindings += findings.length;
-  const label = FIX ? "FIX" : "FAIL";
+  const label = FIX ? 'FIX' : 'FAIL';
   console.log(`  ✗ [${label}] ${path.relative(HOME, file)}`);
   for (const f of findings) {
-    console.log(
-      `       line ${f.line} col ${f.col} · key \`${f.key}\` · …${f.snippet}…`,
-    );
+    console.log(`       line ${f.line} col ${f.col} · key \`${f.key}\` · …${f.snippet}…`);
   }
 
   if (FIX) {
@@ -130,19 +128,12 @@ for (const file of files) {
   }
 }
 
-console.log("─".repeat(68));
+console.log('─'.repeat(68));
 if (totalFindings === 0) {
-  console.log(
-    "✓ All SKILL.md frontmatter parses under strict Codex-compatible YAML.",
-  );
+  console.log('✓ All SKILL.md frontmatter parses under strict Codex-compatible YAML.');
   process.exit(0);
 } else {
-  console.log(
-    `${FIX ? "Fixed" : "Found"}: ${FIX ? fixedFiles : totalFindings} file(s) with Codex-incompatible YAML`,
-  );
-  if (!FIX)
-    console.log(
-      "\nRun with --fix to auto-patch `Target: ` cases. Other patterns need manual edit.",
-    );
+  console.log(`${FIX ? 'Fixed' : 'Found'}: ${FIX ? fixedFiles : totalFindings} file(s) with Codex-incompatible YAML`);
+  if (!FIX) console.log('\nRun with --fix to auto-patch `Target: ` cases. Other patterns need manual edit.');
   process.exit(FIX ? 0 : 1);
 }

@@ -12,17 +12,31 @@
  *   ages[title] -> { firstSeen: '2026-01-02', session: 45 }
  */
 
-import fs from "node:fs";
-import path from "node:path";
-import { parseHumanItemsResult } from "./task-board.mjs";
+import fs from 'node:fs';
+import path from 'node:path';
 
-const LEDGER_REL = "portfolio/HUMAN_ACTION_AGES.json";
+const LEDGER_REL = 'portfolio/HUMAN_ACTION_AGES.json';
+
+function parseHumanItems(taskBoardText) {
+  const parts = taskBoardText.split(/^## /m);
+  const section = parts.find((p) => p.startsWith('Human Action Required'));
+  if (!section) return [];
+  const body = section.slice(section.indexOf('\n') + 1);
+  return body
+    .split(/\r?\n/)
+    .filter((l) => /^- \[ \]/.test(l))
+    .map((line) => {
+      const clean = line.replace(/^- \[ \]\s*/, '').replace(/\*\*/g, '');
+      const title = clean.split(/\s+—\s+/)[0].trim();
+      return { title, raw: line };
+    });
+}
 
 function readLedger(root) {
   const p = path.join(root, LEDGER_REL);
   if (!fs.existsSync(p)) return {};
   try {
-    return JSON.parse(fs.readFileSync(p, "utf8"));
+    return JSON.parse(fs.readFileSync(p, 'utf8'));
   } catch {
     return {};
   }
@@ -37,14 +51,15 @@ function writeLedger(root, ledger) {
 export function ensureAges(taskBoardText, opts = {}) {
   const root = opts.root || process.cwd();
   const ledger = readLedger(root);
-  const parsed = parseHumanItemsResult(taskBoardText);
-  if (parsed.status === "unknown") {
-    opts.onUnknown?.(parsed.reason);
-    return ledger;
-  }
-  const items = parsed.items;
+  const items = parseHumanItems(taskBoardText);
   const today = new Date().toISOString().slice(0, 10);
-  const session = opts.currentSession || null;
+  // S337 — resolve the session when the caller does not supply one. Every one of the
+  // four call sites omitted `currentSession`, so `session` was null for all 8 rows in
+  // the ledger: a recorded field that had never once held a value. Read from
+  // PROJECT_STATUS.json (a plain file read, no spawn — this runs in the startup-brief
+  // hot path). Still null if that cannot be resolved, which is honest; the consumers
+  // use `firstSeen` and none of them coerce a null session.
+  const session = opts.currentSession ?? resolveSessionFromStatus(root);
   let dirty = false;
 
   // Add any new items with today's date.
@@ -73,3 +88,14 @@ export function daysSince(isoDate) {
   if (!Number.isFinite(d)) return null;
   return Math.floor((Date.now() - d) / 86400000);
 }
+
+function resolveSessionFromStatus(root) {
+  try {
+    const status = JSON.parse(fs.readFileSync(path.join(root, 'context', 'PROJECT_STATUS.json'), 'utf8'));
+    for (const candidate of [status.currentSession, status.lastSession, status.silLastSession]) {
+      if (typeof candidate === 'number' && Number.isFinite(candidate)) return candidate;
+    }
+  } catch { /* absent or malformed — the session stays unknown */ }
+  return null;
+}
+

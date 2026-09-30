@@ -4,71 +4,33 @@
  * cites the pair it collapsed so the provenance is greppable.
  */
 // extracted from scripts/run-doctor.mjs:124 <-> scripts/validate-studio-manifest.mjs:24 (similarity 1)
-export const STUDIO_MANIFEST_REQUIRED_KEYS = [
-  "identity",
-  "studioOs",
-  "listingMetadata",
-  "surfaces",
-  "capabilities",
-  "integrations",
-  "hosting",
-  "capacity",
-  "publicMetadata",
-  "automation",
-  "contracts",
-];
+export const STUDIO_MANIFEST_REQUIRED_KEYS = ['identity', 'studioOs', 'listingMetadata', 'surfaces', 'capabilities', 'integrations', 'hosting', 'capacity', 'publicMetadata', 'automation', 'contracts'];
 
 // extracted S159 from scripts/check-model-router-adherence.mjs:39 <-> scripts/protocol-doctor.mjs:137 (similarity 1).
 // Canonical directory-walk ignore set. Callers needing extra entries spread it:
 //   new Set([...WALK_IGNORE_DIRS, '.wrangler']). Do NOT re-declare a literal —
 // a scanner that silently omits one of these dirs is the S153 divergent-
 // observability class (one scanner sees a tree another is blind to).
-export const WALK_IGNORE_DIRS = [
-  ".git",
-  "node_modules",
-  ".cache",
-  "dist",
-  "build",
-];
+export const WALK_IGNORE_DIRS = ['.git', 'node_modules', '.cache', 'dist', 'build'];
 
 // extracted S159 from scripts/render-protocol-biography.mjs:135 <-> scripts/run-studio-review.mjs:179 (similarity 1).
 // Sparkline ramp, low→high. Index a normalized 0..7 value into this.
-export const SPARK_RAMP = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
+export const SPARK_RAMP = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
 
 // extracted S159 from scripts/skill-doctor.mjs:238 <-> scripts/sync-agent-skills.mjs:158 (similarity 1).
 // Skill frontmatter keys whose values must be scalar (not block/flow mappings).
-export const SKILL_FRONTMATTER_SCALAR_KEYS = [
-  "name",
-  "description",
-  "when_to_use",
-  "argument-hint",
-  "allowed-tools",
-];
+export const SKILL_FRONTMATTER_SCALAR_KEYS = ['name', 'description', 'when_to_use', 'argument-hint', 'allowed-tools'];
 
 // extracted S159 from scripts/plan-next-session.mjs:118 <-> scripts/render-startup-brief.mjs:434 (similarity 1).
 // Core blocked-status labels used to partition unified-list items into the
 // "blocked" bucket in brief/plan renderers. (generate-genius-list carries a
 // deliberately broader superset incl. staged/blocked-on-deploy — kept forked.)
-export const BLOCKED_STATUSES_CORE = [
-  "human-blocked",
-  "cross-repo-locked",
-  "externally-blocked",
-  "blocked-on-hub",
-];
+export const BLOCKED_STATUSES_CORE = ['human-blocked', 'cross-repo-locked', 'externally-blocked', 'blocked-on-hub'];
 
 // extracted S159 from scripts/lib/skill-brief.mjs:83 <-> scripts/render-closeout-brief.mjs:101 (similarity 1).
 // Required per-item fields every skill-brief item must carry (validated by both
 // the library validator and the independent closeout-brief validator).
-export const BRIEF_REQUIRED_ITEM_FIELDS = [
-  "id",
-  "slug",
-  "title",
-  "axis",
-  "leftScore",
-  "rightScore",
-  "insight",
-  "evidence",
-];
+export const BRIEF_REQUIRED_ITEM_FIELDS = ['id', 'slug', 'title', 'axis', 'leftScore', 'rightScore', 'insight', 'evidence'];
 
 // extracted S168 from scripts/lib/skill-brief.mjs:78 <-> scripts/render-closeout-brief.mjs:99 (similarity 0.86).
 // Required TOP-LEVEL brief fields (the per-item list above is separate). The
@@ -76,14 +38,7 @@ export const BRIEF_REQUIRED_ITEM_FIELDS = [
 // 'kind' itself, so it validates only this shared six. Consumers needing 'kind'
 // spread it in front: ['kind', ...BRIEF_REQUIRED_TOP_FIELDS]. Two validators
 // drifting on which fields a brief must carry is the S153 divergent class.
-export const BRIEF_REQUIRED_TOP_FIELDS = [
-  "session",
-  "date",
-  "agent",
-  "repo",
-  "headline",
-  "items",
-];
+export const BRIEF_REQUIRED_TOP_FIELDS = ['session', 'date', 'agent', 'repo', 'headline', 'items'];
 
 // extracted S168 from scripts/sync-to-vorn.mjs:28 <-> scripts/validate-agent-dna.mjs:31 (similarity 0.86).
 // Leak-detection keywords: an agent-DNA public payload (bio, etc.) containing any
@@ -91,12 +46,22 @@ export const BRIEF_REQUIRED_TOP_FIELDS = [
 // published to Vorn. validate-agent-dna had DRIFTED (missing 'proprietary'),
 // meaning it would pass a payload sync-to-vorn would catch — the exact S153
 // divergent-observability bug. The superset is canonical; both import it now.
-export const AGENT_DNA_STRATEGY_KEYWORDS = [
-  "guardrail",
-  "trust_tier",
-  "scope_statement",
-  "budget_ceiling",
-  "studio-internal",
-  "confidential",
-  "proprietary",
-];
+export const AGENT_DNA_STRATEGY_KEYWORDS = ['guardrail', 'trust_tier', 'scope_statement', 'budget_ceiling', 'studio-internal', 'confidential', 'proprietary'];
+
+// extracted S309 from scripts/deploy-console-if-changed.mjs:127 <-> scripts/deploy-studio-console-release.mjs:30 (similarity 1).
+// Canonical `git status` argv asking one question: does the studio-console build
+// tree differ from HEAD? Both console deploy entry points must ask it identically
+// — the release gate REFUSES on a dirty tree while the if-changed deployer only
+// STAMPS `source.dirty` on the receipt, so a drift here would let one entry point
+// ship a tree the other would have blocked, and the receipt would still read clean.
+// That is the S153 divergent-observability class on the studio's only production
+// surface. Pass to the local `git()` helper: git(CONSOLE_TREE_DIRTY_GIT_ARGS).
+export const CONSOLE_TREE_DIRTY_GIT_ARGS = ['status', '--short', '--', 'studio-console'];
+
+// extracted S347 from scripts/check-writeback-currency.mjs <-> scripts/rollout-compliance.mjs (similarity 1).
+// Canonical `git rev-parse` argv resolving the current branch's upstream tracking
+// ref. Both callers decide "is this tree behind its remote" from it — rollout
+// compliance refuses a cross-repo write, write-back currency labels its verdict
+// pre-sync — so the two must resolve the SAME ref, or one could call a tree
+// synced that the other calls behind.
+export const GIT_UPSTREAM_REF_ARGS = ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'];

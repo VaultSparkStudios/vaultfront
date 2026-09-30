@@ -9,16 +9,8 @@
 // for a local convenience.
 
 export const V3_CATS = [
-  "devHealth",
-  "creativeAlignment",
-  "momentum",
-  "engagement",
-  "processQuality",
-  "crossRepoCoherence",
-  "securityPosture",
-  "ecosystemIntegration",
-  "capitalEfficiency",
-  "automationCoverage",
+  'devHealth', 'creativeAlignment', 'momentum', 'engagement', 'processQuality',
+  'crossRepoCoherence', 'securityPosture', 'ecosystemIntegration', 'capitalEfficiency', 'automationCoverage',
 ];
 
 export const V3_MAX_PER_CATEGORY = 100;
