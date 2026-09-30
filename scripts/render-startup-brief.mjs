@@ -13,55 +13,68 @@
  *   node scripts/ops.mjs startup-brief
  */
 
-import fs from 'fs';
-import os from 'os';
-import path from 'path';
-import { decideBriefDestination, emitBrief } from './lib/brief-destination.mjs';
-import { fileURLToPath } from 'url';
-import { resolveTestSignal, testSignalSeverity, testSignalMark } from './lib/test-signal.mjs';
-import { spawnSync } from './lib/safe-spawn.mjs';
-import { renderTitleHeader, renderLastCompleted, renderTestItNow } from './lib/brief-blocks.mjs';
-import { extractSection, parseUnifiedItems } from './lib/task-board.mjs';
-import { loadPortfolioTaskBoards } from './lib/cross-repo-tasks.mjs';
-import { loadIgnisInsight } from './lib/ignis-insight.mjs';
-import { contextWindowForAgent } from './lib/model-router.mjs';
-import { loadProvenanceMap } from './classify-warning-provenance.mjs';
-import { isWarning } from './lib/doctor-predicates.mjs';
-import { sparkline as _sparkline } from './lib/visual-blocks.mjs';
-import { parseSilHistory, forecastNext } from './lib/sil-forecaster.mjs';
-import { parseSilSessions } from './lib/sil-ledger.mjs';
-import { recordAndResolve, rollingMae } from './lib/forecast-ledger.mjs';
-import { BLOCKED_STATUSES_CORE } from './lib/shared-policies.mjs';
-import { runBriefPreflight } from './lib/brief-preflight.mjs';
-import { writeProjectStatus } from './lib/write-project-status.mjs';
-import { buildBriefSemanticFingerprint, formatBriefSemanticFingerprint } from './lib/brief-semantic-fingerprint.mjs';
-import { run as codexTrustedProjectRun } from './check-codex-trusted-project.mjs';
-import { readableDoctorScore } from './lib/doctor-score-coherence.mjs';
-import { isMeasured as isMeasuredCompliance } from './lib/compliance-measurement.mjs';
+import fs from "fs";
+import os from "os";
+import path from "path";
+import { fileURLToPath } from "url";
+import { run as codexTrustedProjectRun } from "./check-codex-trusted-project.mjs";
+import { loadProvenanceMap } from "./classify-warning-provenance.mjs";
+import {
+  renderLastCompleted,
+  renderTestItNow,
+  renderTitleHeader,
+} from "./lib/brief-blocks.mjs";
+import { buildBriefSourceManifest } from "./lib/brief-freshness.mjs";
+import { runBriefPreflight } from "./lib/brief-preflight.mjs";
+import {
+  buildBriefSemanticFingerprint,
+  formatBriefSemanticFingerprint,
+} from "./lib/brief-semantic-fingerprint.mjs";
+import { loadPortfolioTaskBoards } from "./lib/cross-repo-tasks.mjs";
+import { isWarning } from "./lib/doctor-predicates.mjs";
+import { readableDoctorScore } from "./lib/doctor-score-coherence.mjs";
+import { recordAndResolve, rollingMae } from "./lib/forecast-ledger.mjs";
+import { loadIgnisInsight } from "./lib/ignis-insight.mjs";
+import { contextWindowForAgent } from "./lib/model-router.mjs";
+import { spawnSync } from "./lib/safe-spawn.mjs";
+import { BLOCKED_STATUSES_CORE } from "./lib/shared-policies.mjs";
+import { forecastNext, parseSilHistory } from "./lib/sil-forecaster.mjs";
+import { parseSilSessions } from "./lib/sil-ledger.mjs";
+import { parseUnifiedItems } from "./lib/task-board.mjs";
+import {
+  resolveTestSignal,
+  testSignalMark,
+  testSignalSeverity,
+} from "./lib/test-signal.mjs";
+import { sparkline as _sparkline } from "./lib/visual-blocks.mjs";
+import { writeProjectStatus } from "./lib/write-project-status.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(__dirname, '..');
-const outputPath = path.join(root, 'docs', 'STARTUP_BRIEF.md');
-// S305 [audit #3] — hermetic destination: a test spawning this renderer must not touch the tracked plane.
-const BRIEF_DEST = decideBriefDestination({ defaultPath: outputPath, kind: 'brief' });
-const SIGNALS_DEST = decideBriefDestination({ defaultPath: path.join(root, 'context', 'SIGNALS.md'), kind: 'signals' });
+const root = path.resolve(__dirname, "..");
+const outputPath = path.join(root, "docs", "STARTUP_BRIEF.md");
 const node = process.execPath;
-if (process.argv.includes('--help') || process.argv.includes('-h')) {
-  console.log('Usage: node scripts/render-startup-brief.mjs [--v5] [--legacy]');
+if (process.argv.includes("--help") || process.argv.includes("-h")) {
+  console.log("Usage: node scripts/render-startup-brief.mjs [--v5] [--legacy]");
   process.exit(0);
 }
 
 // S120 #1 — brief-v5 promote opt-in. Set BRIEF_V5=1 or pass --v5 to delegate
 // to render-startup-brief-v5.mjs (71% token reduction, validated S117). Default
 // remains v3.1 until 3-session hash-stability monitoring completes.
-if (process.argv.includes('--v5') || process.env.BRIEF_V5 === '1') {
-  const { spawnSync } = await import('./lib/safe-spawn.mjs');
-  const r = spawnSync(node, [path.join(__dirname, 'render-startup-brief-v5.mjs'), ...process.argv.slice(2).filter(a => a !== '--v5')], { stdio: 'inherit', cwd: root });
+if (process.argv.includes("--v5") || process.env.BRIEF_V5 === "1") {
+  const r = spawnSync(
+    node,
+    [
+      path.join(__dirname, "render-startup-brief-v5.mjs"),
+      ...process.argv.slice(2).filter((a) => a !== "--v5"),
+    ],
+    { stdio: "inherit", cwd: root },
+  );
   process.exit(r.status ?? 0);
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const W  = 62; // inner box width (content between ║  and  ║)
+const W = 62; // inner box width (content between ║  and  ║)
 const BW = W + 4; // total line width including ║  prefix/suffix
 
 // ── Preflight: doctor --fix --update-json (S120 audit #2 — clear stable warns) ─
@@ -79,77 +92,176 @@ const BW = W + 4; // total line width including ║  prefix/suffix
 // the flag-file flow (v3 render → spawned v5 render) runs the doctor once.
 try {
   runBriefPreflight(root);
-} catch { /* non-fatal — a broken preflight must never block a brief render */ }
+} catch {
+  /* non-fatal — a broken preflight must never block a brief render */
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 // S126 audit #28: PROJECT_PROFILE lens — one-line header above SCORE
 function renderProfileLensHeader() {
   try {
-    const p = readJson(path.join(root, '.cache', 'project-profile.json'), null);
-    if (!p) return '';
-    const m = p.medium || '—';
-    const stage = p.stage || '—';
-    const arch = p.archetype || '—';
-    const ax = (p.ignisTopAxes || [])[0] || '—';
+    const p = readJson(path.join(root, ".cache", "project-profile.json"), null);
+    if (!p) return "";
+    const m = p.medium || "—";
+    const stage = p.stage || "—";
+    const arch = p.archetype || "—";
+    const ax = (p.ignisTopAxes || [])[0] || "—";
     const line = `Profile · ${m} · ${stage} · arch=${arch} · top-axis=${ax}`;
-    return [top('PROJECT PROFILE'), row(line), bot()].join('\n');
-  } catch { return ''; }
+    return [top("PROJECT PROFILE"), row(line), bot()].join("\n");
+  } catch {
+    return "";
+  }
 }
 
-function readText(p) { try { return fs.readFileSync(p, 'utf8'); } catch { return ''; } }
-function readJson(p, fb) { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return fb; } }
-function daysBetween(a, b) { try { return Math.floor((new Date(b) - new Date(a)) / 86400000); } catch { return 999; } }
-function bytesOf(rel) { try { return fs.statSync(path.join(root, rel)).size; } catch { return 0; } }
+function readText(p) {
+  try {
+    return fs.readFileSync(p, "utf8");
+  } catch {
+    return "";
+  }
+}
+function readJson(p, fb) {
+  try {
+    return JSON.parse(fs.readFileSync(p, "utf8"));
+  } catch {
+    return fb;
+  }
+}
+function daysBetween(a, b) {
+  try {
+    return Math.floor((new Date(b) - new Date(a)) / 86400000);
+  } catch {
+    return 999;
+  }
+}
+function bytesOf(rel) {
+  try {
+    return fs.statSync(path.join(root, rel)).size;
+  } catch {
+    return 0;
+  }
+}
 function lockValue(key) {
-  const lock = readText(path.join(root, 'context', '.session-lock'));
-  return lock.match(new RegExp(`^${key}:\\s*(\\S+)`, 'm'))?.[1] ?? '';
+  const lock = readText(path.join(root, "context", ".session-lock"));
+  return lock.match(new RegExp(`^${key}:\\s*(\\S+)`, "m"))?.[1] ?? "";
 }
 
 // ── Parallel file loader (performance: all reads in one Promise.all tick) ─────
 async function loadAllFiles(filePaths) {
   return Promise.all(
-    filePaths.map(({ key, path: p, json: isJson }) =>
-      new Promise(resolve => {
-        fs.readFile(p, 'utf8', (err, data) => {
-          if (err || !data) { resolve({ key, value: isJson ? {} : '' }); return; }
-          if (isJson) {
-            try { resolve({ key, value: JSON.parse(data) }); }
-            catch { resolve({ key, value: {} }); }
-          } else {
-            resolve({ key, value: data });
-          }
-        });
-      })
-    )
+    filePaths.map(
+      ({ key, path: p, json: isJson }) =>
+        new Promise((resolve) => {
+          fs.readFile(p, "utf8", (err, data) => {
+            if (err || !data) {
+              resolve({ key, value: isJson ? {} : "" });
+              return;
+            }
+            if (isJson) {
+              try {
+                resolve({ key, value: JSON.parse(data) });
+              } catch {
+                resolve({ key, value: {} });
+              }
+            } else {
+              resolve({ key, value: data });
+            }
+          });
+        }),
+    ),
   );
 }
 
 const FILE_MANIFEST = [
-  { key: 'status',    path: path.join(root, 'context', 'PROJECT_STATUS.json'),        json: true  },
-  { key: 'sil',       path: path.join(root, 'context', 'SELF_IMPROVEMENT_LOOP.md'),   json: false },
-  { key: 'taskBoard', path: path.join(root, 'context', 'TASK_BOARD.md'),              json: false },
-  { key: 'handoff',   path: path.join(root, 'context', 'LATEST_HANDOFF.md'),          json: false },
-  { key: 'genome',    path: path.join(root, 'context', 'GENOME_HISTORY.json'),        json: true  },
-  { key: 'state',     path: path.join(root, 'context', 'STATE_VECTOR.json'),          json: true  },
-  { key: 'cdr',       path: path.join(root, 'docs', 'CREATIVE_DIRECTION_RECORD.md'),  json: false },
-  { key: 'sessionPlan', path: path.join(root, 'docs', 'SESSION_PLAN.md'),             json: false },
-  { key: 'startMd',  path: path.join(root, 'prompts', 'start.md'),                    json: false },
-  { key: 'startTpl', path: path.join(root, 'docs', 'templates', 'project-system', 'START_PROMPT.template.md'), json: false },
-  { key: 'registry', path: path.join(root, 'portfolio', 'PROJECT_REGISTRY.json'),    json: true  },
-  { key: 'revSig',   path: path.join(root, 'portfolio', 'REVENUE_SIGNALS.md'),       json: false },
-  { key: 'doctorOut', path: path.join(root, 'context', 'PROJECT_STATUS.json'),       json: true  }, // same as status, reuse
+  {
+    key: "status",
+    path: path.join(root, "context", "PROJECT_STATUS.json"),
+    json: true,
+  },
+  {
+    key: "sil",
+    path: path.join(root, "context", "SELF_IMPROVEMENT_LOOP.md"),
+    json: false,
+  },
+  {
+    key: "taskBoard",
+    path: path.join(root, "context", "TASK_BOARD.md"),
+    json: false,
+  },
+  {
+    key: "handoff",
+    path: path.join(root, "context", "LATEST_HANDOFF.md"),
+    json: false,
+  },
+  {
+    key: "genome",
+    path: path.join(root, "context", "GENOME_HISTORY.json"),
+    json: true,
+  },
+  {
+    key: "state",
+    path: path.join(root, "context", "STATE_VECTOR.json"),
+    json: true,
+  },
+  {
+    key: "cdr",
+    path: path.join(root, "docs", "CREATIVE_DIRECTION_RECORD.md"),
+    json: false,
+  },
+  {
+    key: "sessionPlan",
+    path: path.join(root, "docs", "SESSION_PLAN.md"),
+    json: false,
+  },
+  { key: "startMd", path: path.join(root, "prompts", "start.md"), json: false },
+  {
+    key: "startTpl",
+    path: path.join(
+      root,
+      "docs",
+      "templates",
+      "project-system",
+      "START_PROMPT.template.md",
+    ),
+    json: false,
+  },
+  {
+    key: "registry",
+    path: path.join(root, "portfolio", "PROJECT_REGISTRY.json"),
+    json: true,
+  },
+  {
+    key: "revSig",
+    path: path.join(root, "portfolio", "REVENUE_SIGNALS.md"),
+    json: false,
+  },
+  {
+    key: "doctorOut",
+    path: path.join(root, "context", "PROJECT_STATUS.json"),
+    json: true,
+  }, // same as status, reuse
 ];
 
 // Load all files in parallel
 const startMs = Date.now();
 const loaded = await loadAllFiles(FILE_MANIFEST);
-const fileCache = Object.fromEntries(loaded.map(({ key, value }) => [key, value]));
+const fileCache = Object.fromEntries(
+  loaded.map(({ key, value }) => [key, value]),
+);
 process.stderr.write(`  ⚡ Parallel file load: ${Date.now() - startMs}ms\n`);
 
 function extractBetween(content, start, end) {
-  const s = content.indexOf(start); const e = content.indexOf(end);
-  if (s === -1 || e === -1 || e <= s) return '';
+  const s = content.indexOf(start);
+  const e = content.indexOf(end);
+  if (s === -1 || e === -1 || e <= s) return "";
   return content.slice(s + start.length, e).trim();
+}
+function extractSection(content, heading) {
+  const parts = content.split(/^## /m);
+  const match = parts.find((p) => p.startsWith(heading));
+  if (!match) return "";
+  const nl = match.indexOf("\n");
+  return nl === -1 ? "" : match.slice(nl + 1);
 }
 
 // ── Box-drawing helpers ───────────────────────────────────────────────────────
@@ -160,69 +272,89 @@ function extractBetween(content, start, end) {
 function truncateWordAware(str, w) {
   if (str.length <= w) return str;
   const cut = str.slice(0, w - 1);
-  const lastSpace = cut.lastIndexOf(' ');
-  return (lastSpace > Math.floor(w * 0.6) ? cut.slice(0, lastSpace) : cut) + '…';
+  const lastSpace = cut.lastIndexOf(" ");
+  return (
+    (lastSpace > Math.floor(w * 0.6) ? cut.slice(0, lastSpace) : cut) + "…"
+  );
 }
 function pad(s, w) {
-  let str = String(s ?? '');
+  let str = String(s ?? "");
   if (str.length > w) str = truncateWordAware(str, w);
-  return str + ' '.repeat(Math.max(0, w - str.length));
+  return str + " ".repeat(Math.max(0, w - str.length));
 }
-function row(content) { return `║  ${pad(content, W)}  ║`; }
+function row(content) {
+  return `║  ${pad(content, W)}  ║`;
+}
 // S220 audit #7 — persist the SIGNALS box verbatim as context/SIGNALS.md, the
 // single-file producer for brief v5's 'signals' computed block (v5 resolver
 // already targets this path; it resolved null since S209). Pass-through: the
 // caller spreads the same rows into the brief. Advisory write — never blocks.
 function writeSignalsArtifact(rows) {
-  if (SIGNALS_DEST.skip) { process.stderr.write(`  · ${SIGNALS_DEST.reason}\n`); return rows; }
   try {
-    fs.writeFileSync(SIGNALS_DEST.path, rows.join('\n') + '\n');
-  } catch { /* advisory */ }
+    fs.writeFileSync(
+      path.join(root, "context", "SIGNALS.md"),
+      rows.join("\n") + "\n",
+    );
+  } catch {
+    /* advisory */
+  }
   return rows;
 }
-function blank() { return `║  ${' '.repeat(W)}  ║`; }
+function blank() {
+  return `║  ${" ".repeat(W)}  ║`;
+}
 function top(title) {
-  const t = title ? `══ ${title} ` : '';
-  return '╔' + t + '═'.repeat(Math.max(1, W + 2 - t.length)) + '╗';
+  const t = title ? `══ ${title} ` : "";
+  return "╔" + t + "═".repeat(Math.max(1, W + 2 - t.length)) + "╗";
 }
 function mid(title) {
-  const t = title ? `══ ${title} ` : '';
-  return '╠' + t + '═'.repeat(Math.max(1, W + 2 - t.length)) + '╣';
+  const t = title ? `══ ${title} ` : "";
+  return "╠" + t + "═".repeat(Math.max(1, W + 2 - t.length)) + "╣";
 }
-function bot() { return '╚' + '═'.repeat(W + 2) + '╝'; }
+function bot() {
+  return "╚" + "═".repeat(W + 2) + "╝";
+}
 
 // Progress bar: score /100 → 20 chars  █░
 function bar20(score) {
   const n = Math.min(20, Math.max(0, Math.round(score / 5)));
-  return '█'.repeat(n) + '░'.repeat(20 - n);
+  return "█".repeat(n) + "░".repeat(20 - n);
 }
 // 10-char proportional bar for category rows (score 0-100 → 0-10 blocks).
 function bar10(score) {
   const n = Math.min(10, Math.max(0, Math.round((score ?? 0) / 10)));
-  return '█'.repeat(n) + '░'.repeat(10 - n);
+  return "█".repeat(n) + "░".repeat(10 - n);
 }
 // Progress bar: total / silMax → 24 chars  █░  (SIL v3.0 default 1000)
 function bar24(total, max = 1000) {
-  const n = Math.min(24, Math.max(0, Math.floor((total ?? 0) / max * 24)));
-  return '█'.repeat(n) + '░'.repeat(24 - n);
+  const n = Math.min(24, Math.max(0, Math.floor(((total ?? 0) / max) * 24)));
+  return "█".repeat(n) + "░".repeat(24 - n);
 }
 
 // ── Load source files ─────────────────────────────────────────────────────────
-const status      = readJson(path.join(root, 'context', 'PROJECT_STATUS.json'), {});
-const taskBoard   = readText(path.join(root, 'context', 'TASK_BOARD.md'));
-const handoff     = readText(path.join(root, 'context', 'LATEST_HANDOFF.md'));
-const sil         = readText(path.join(root, 'context', 'SELF_IMPROVEMENT_LOOP.md'));
-const truth       = readText(path.join(root, 'context', 'TRUTH_AUDIT.md'));
-const csmd        = readText(path.join(root, 'context', 'CURRENT_STATE.md'));
-const sessionPlan = readText(path.join(root, 'docs', 'SESSION_PLAN.md'));
-const cdr         = readText(path.join(root, 'docs', 'CREATIVE_DIRECTION_RECORD.md'));
-const revSig      = readText(path.join(root, 'portfolio', 'REVENUE_SIGNALS.md'));
-const complianceHistory = readJson(path.join(root, 'context', 'COMPLIANCE_HISTORY.json'), { snapshots: [] });
-const intentPlan  = readText(path.join(root, 'context', 'SESSION_INTENT_PLAN.md'));
-const canonAdoption = readText(path.join(root, 'context', 'CANON_ADOPTION.md'));
-const humanPressure = readJson(path.join(root, 'portfolio', 'compiled', 'HUMAN_ACTION_PRESSURE.json'), { items: [] });
+const status = readJson(path.join(root, "context", "PROJECT_STATUS.json"), {});
+const taskBoard = readText(path.join(root, "context", "TASK_BOARD.md"));
+const handoff = readText(path.join(root, "context", "LATEST_HANDOFF.md"));
+const sil = readText(path.join(root, "context", "SELF_IMPROVEMENT_LOOP.md"));
+const truth = readText(path.join(root, "context", "TRUTH_AUDIT.md"));
+const csmd = readText(path.join(root, "context", "CURRENT_STATE.md"));
+const sessionPlan = readText(path.join(root, "docs", "SESSION_PLAN.md"));
+const cdr = readText(path.join(root, "docs", "CREATIVE_DIRECTION_RECORD.md"));
+const revSig = readText(path.join(root, "portfolio", "REVENUE_SIGNALS.md"));
+const complianceHistory = readJson(
+  path.join(root, "context", "COMPLIANCE_HISTORY.json"),
+  { snapshots: [] },
+);
+const intentPlan = readText(
+  path.join(root, "context", "SESSION_INTENT_PLAN.md"),
+);
+const canonAdoption = readText(path.join(root, "context", "CANON_ADOPTION.md"));
+const humanPressure = readJson(
+  path.join(root, "portfolio", "compiled", "HUMAN_ACTION_PRESSURE.json"),
+  { items: [] },
+);
 
-const meterAgent = lockValue('agent') || 'unknown';
+const meterAgent = lockValue("agent") || "unknown";
 const meterLimit = contextWindowForAgent(meterAgent);
 
 // ── S119 founder directive: live context meter (replaces static byte-count) ─
@@ -230,9 +362,15 @@ const meterLimit = contextWindowForAgent(meterAgent);
 // of a stale on-disk byte estimate that didn't reflect actual session burn.
 function loadLiveContextMeter() {
   try {
-    const res = spawnSync(node, [path.join(__dirname, 'context-meter.mjs'), '--json'], {
-      cwd: root, encoding: 'utf8', timeout: 5000,
-    });
+    const res = spawnSync(
+      node,
+      [path.join(__dirname, "context-meter.mjs"), "--json"],
+      {
+        cwd: root,
+        encoding: "utf8",
+        timeout: 5000,
+      },
+    );
     if (res.status === 0 && res.stdout) {
       const meter = JSON.parse(res.stdout);
       return {
@@ -246,16 +384,25 @@ function loadLiveContextMeter() {
         recommendation: meter.recommendation,
         confidence: meter.confidence,
         agent: meter.agent || meterAgent,
-        model: meter.model || '',
+        model: meter.model || "",
       };
     }
-  } catch { /* fall through */ }
+  } catch {
+    /* fall through */
+  }
   // Heuristic fallback — old behavior
   const bytes = [
-    'AGENTS.md', 'CLAUDE.md', 'context/PROJECT_BRIEF.md', 'context/SOUL.md',
-    'context/BRAIN.md', 'context/CURRENT_STATE.md', 'context/DECISIONS.md',
-    'context/TASK_BOARD.md', 'context/LATEST_HANDOFF.md',
-    'context/SELF_IMPROVEMENT_LOOP.md', 'context/TRUTH_AUDIT.md',
+    "AGENTS.md",
+    "CLAUDE.md",
+    "context/PROJECT_BRIEF.md",
+    "context/SOUL.md",
+    "context/BRAIN.md",
+    "context/CURRENT_STATE.md",
+    "context/DECISIONS.md",
+    "context/TASK_BOARD.md",
+    "context/LATEST_HANDOFF.md",
+    "context/SELF_IMPROVEMENT_LOOP.md",
+    "context/TRUTH_AUDIT.md",
   ].reduce((sum, file) => sum + bytesOf(file), 0);
   const usedTokens = Math.round(bytes / 4);
   return {
@@ -266,10 +413,11 @@ function loadLiveContextMeter() {
     turnsToCompact: null,
     continueCostPerTurn: null,
     cacheHitRate: null,
-    recommendation: usedTokens / meterLimit > 0.75 ? 'CONSIDER_CLOSEOUT' : 'CONTINUE',
-    confidence: 'heuristic-stale',
+    recommendation:
+      usedTokens / meterLimit > 0.75 ? "CONSIDER_CLOSEOUT" : "CONTINUE",
+    confidence: "heuristic-stale",
     agent: meterAgent,
-    model: '',
+    model: "",
   };
 }
 
@@ -278,39 +426,56 @@ const meterUsed = meter.usedTokens;
 const meterRemaining = Math.max(0, meter.limit - meterUsed);
 const meterRemainingPct = Math.round((meterRemaining / meter.limit) * 100);
 // context-meter returns pctUsed in percentage form (0-100), not 0-1. Normalize.
-const meterUsedPctRaw = meter.pctUsed == null ? null : (meter.pctUsed > 1 ? meter.pctUsed : meter.pctUsed * 100);
+const meterUsedPctRaw =
+  meter.pctUsed == null
+    ? null
+    : meter.pctUsed > 1
+      ? meter.pctUsed
+      : meter.pctUsed * 100;
 // S262 — the `Math.min(100, …)` here clamped the DISPLAY while the brief's own
 // token figure said 154%, and that internal disagreement is what tripped
 // check-startup-meter-freshness. An overrun is the single most important thing
 // this line can say, and clipping it hides the magnitude. The number is now
 // unclamped; only the bar fill (below) is bounded, because it is a fixed width.
-const meterUsedPct = meterUsedPctRaw == null ? null : Math.max(0, Math.round(meterUsedPctRaw));
+const meterUsedPct =
+  meterUsedPctRaw == null ? null : Math.max(0, Math.round(meterUsedPctRaw));
 // pctUsedFraction is 0-1 for bar rendering math
 const meterUsedFrac = (meterUsedPctRaw ?? 0) / 100;
 const estimatedItemsFit = Math.max(0, Math.floor(meterRemaining / 100000));
 
 // ── Parse Rolling Status ──────────────────────────────────────────────────────
-const silHeader = extractBetween(sil, '<!-- rolling-status-start -->', '<!-- rolling-status-end -->');
+const silHeader = extractBetween(
+  sil,
+  "<!-- rolling-status-start -->",
+  "<!-- rolling-status-end -->",
+);
 
 const silTotalMatch = silHeader.match(/Total:\s*(\d+)\/(\d+)/);
 // Headline metrics: prefer the latest scored SIL entry (set below, after the
 // robust session parser) over the rolling-status block, which can lag closeouts.
-let silTotal        = parseInt(silTotalMatch?.[1] ?? '') || 0;
-let silMax          = parseInt(silTotalMatch?.[2] ?? '') || status.silMax || 1000;
-let velocity        = parseInt(silHeader.match(/Velocity:\s*(\d+)/)?.[1] ?? '') || 0;
-const sparkline     = silHeader.match(/Sparkline[^:]*:\s*([▁▂▃▄▅▆▇█ ]+)/)?.[1]?.trim() ?? '';
-const avg3Raw       = parseFloat(silHeader.match(/Avgs — 3:\s*([\d.]+)/)?.[1] ?? '') || null;
-const runwayRaw     = silHeader.match(/[Mm]omentum runway:\s*([^|]+)/)?.[1]?.trim()
-                   ?? silHeader.match(/Runway:\s*([^|]+)/)?.[1]?.trim()
-                   ?? 'unknown';
-const intentRate    = silHeader.match(/Intent rate:\s*([^\n|]+)/)?.[1]?.trim() ?? 'unknown';
-const lastSessionStr = silHeader.match(/Last session:\s*(.+)/)?.[1]?.trim() ?? '';
-const debtRaw       = silHeader.match(/Debt:\s*([↑↓→])/)?.[1] ?? '→';
-const velTrend      = silHeader.match(/Velocity trend:\s*([↑↓→])/)?.[1] ?? '';
+let silTotal = parseInt(silTotalMatch?.[1] ?? "") || 0;
+let silMax = parseInt(silTotalMatch?.[2] ?? "") || status.silMax || 1000;
+let velocity = parseInt(silHeader.match(/Velocity:\s*(\d+)/)?.[1] ?? "") || 0;
+const sparkline =
+  silHeader.match(/Sparkline[^:]*:\s*([▁▂▃▄▅▆▇█ ]+)/)?.[1]?.trim() ?? "";
+const avg3Raw =
+  parseFloat(silHeader.match(/Avgs — 3:\s*([\d.]+)/)?.[1] ?? "") || null;
+const runwayRaw =
+  silHeader.match(/[Mm]omentum runway:\s*([^|]+)/)?.[1]?.trim() ??
+  silHeader.match(/Runway:\s*([^|]+)/)?.[1]?.trim() ??
+  "unknown";
+const intentRate =
+  silHeader.match(/Intent rate:\s*([^\n|]+)/)?.[1]?.trim() ?? "unknown";
+const lastSessionStr =
+  silHeader.match(/Last session:\s*(.+)/)?.[1]?.trim() ?? "";
+const debtRaw = silHeader.match(/Debt:\s*([↑↓→])/)?.[1] ?? "→";
+const velTrend = silHeader.match(/Velocity trend:\s*([↑↓→])/)?.[1] ?? "";
 
 // Per-category 3-session avgs
 const cat3 = {};
-const cat3Match = silHeader.match(/3-session:\s*Dev ([\d.]+)\s*\|\s*Align ([\d.]+)\s*\|\s*Momentum ([\d.]+)\s*\|\s*Engage ([\d.]+)\s*\|\s*Process ([\d.]+)/);
+const cat3Match = silHeader.match(
+  /3-session:\s*Dev ([\d.]+)\s*\|\s*Align ([\d.]+)\s*\|\s*Momentum ([\d.]+)\s*\|\s*Engage ([\d.]+)\s*\|\s*Process ([\d.]+)/,
+);
 if (cat3Match) {
   cat3.dev = parseFloat(cat3Match[1]);
   cat3.align = parseFloat(cat3Match[2]);
@@ -334,8 +499,10 @@ const allSilEntries = parseSilSessions(sil);
 const silMaxSession = allSilEntries.length ? allSilEntries[0].session : null;
 
 // Latest entry that actually carries category scores (for the per-category bars).
-const lastEntry = (allSilEntries.find(e => /\|\s*Dev Health\s*\|/i.test(e.body))?.body)
-               ?? (allSilEntries[0]?.body ?? '');
+const lastEntry =
+  allSilEntries.find((e) => /\|\s*Dev Health\s*\|/i.test(e.body))?.body ??
+  allSilEntries[0]?.body ??
+  "";
 
 // Latest entry that carries a Total — header-inline (format A) OR a **Total: X/Y** body line (format B).
 function entryTotal(e) {
@@ -344,36 +511,44 @@ function entryTotal(e) {
 function entryVelocity(e) {
   return e?.velocity ?? null;
 }
-const latestScored = allSilEntries.find(e => entryTotal(e) !== null) ?? null;
+const latestScored = allSilEntries.find((e) => entryTotal(e) !== null) ?? null;
 
 // Override headline metrics from the latest scored entry when it is fresher than
 // the rolling-status block (compared by session number). Falls back to the
 // rolling-status values, then PROJECT_STATUS.json.
 if (latestScored) {
   const t = entryTotal(latestScored);
-  if (t) { silTotal = t.total; silMax = t.max; }
+  if (t) {
+    silTotal = t.total;
+    silMax = t.max;
+  }
   const v = entryVelocity(latestScored);
   if (v != null) velocity = v;
 }
-if (!silTotal && status.silScore) { silTotal = status.silScore; silMax = status.silMax || 1000; }
-const silStreak = status.silStreak ?? 0;  // S202: consecutive max-score sessions
+if (!silTotal && status.silScore) {
+  silTotal = status.silScore;
+  silMax = status.silMax || 1000;
+}
+const silStreak = status.silStreak ?? 0; // S202: consecutive max-score sessions
 function parseScore(label) {
   // Tolerate suffixes like "Engagement (infra)" — match label followed by optional
   // whitespace + parenthesized note before the column separator.
-  const m = lastEntry.match(new RegExp(`\\|\\s*${label}(?:\\s*\\([^)]*\\))?\\s*\\|\\s*(\\d+)`, 'i'));
+  const m = lastEntry.match(
+    new RegExp(`\\|\\s*${label}(?:\\s*\\([^)]*\\))?\\s*\\|\\s*(\\d+)`, "i"),
+  );
   return m ? parseInt(m[1]) : null;
 }
-const lastDev      = parseScore('Dev Health') ?? cat3.dev ?? 0;
-const lastAlign    = parseScore('Creative Alignment') ?? cat3.align ?? 0;
-const lastMomentum = parseScore('Momentum') ?? cat3.momentum ?? 0;
-const lastEngage   = parseScore('Engagement') ?? cat3.engage ?? 0;
-const lastProcess  = parseScore('Process Quality') ?? cat3.process ?? 0;
+const lastDev = parseScore("Dev Health") ?? cat3.dev ?? 0;
+const lastAlign = parseScore("Creative Alignment") ?? cat3.align ?? 0;
+const lastMomentum = parseScore("Momentum") ?? cat3.momentum ?? 0;
+const lastEngage = parseScore("Engagement") ?? cat3.engage ?? 0;
+const lastProcess = parseScore("Process Quality") ?? cat3.process ?? 0;
 
 // Trend arrows per category (compare last to avg3)
 function trend(last, avg) {
-  if (!last || !avg) return '→';
+  if (!last || !avg) return "→";
   const delta = last - avg;
-  return delta >= 2 ? '↑' : delta <= -2 ? '↓' : '→';
+  return delta >= 2 ? "↑" : delta <= -2 ? "↓" : "→";
 }
 
 // ── v4.0: Per-category sparkline history (last N sessions) ────────────────────
@@ -384,61 +559,75 @@ function parseCategoryHistory(label) {
   // allSilEntries is sorted newest→oldest by session number; reverse at the end
   // to render oldest→newest sparklines.
   for (const entry of allSilEntries) {
-    const m = entry.body.match(new RegExp(`\\|\\s*${label}(?:\\s*\\([^)]*\\))?\\s*\\|\\s*(\\d+)`, 'i'));
+    const m = entry.body.match(
+      new RegExp(`\\|\\s*${label}(?:\\s*\\([^)]*\\))?\\s*\\|\\s*(\\d+)`, "i"),
+    );
     if (m) series.push(parseInt(m[1], 10));
   }
-  return series.reverse().slice(-8);  // oldest → newest, last 8
+  return series.reverse().slice(-8); // oldest → newest, last 8
 }
 // Migrated to scripts/lib/visual-blocks.mjs (S114 compound refinement).
 // Library uses min=0,max=100 by default → mathematically identical output.
 const spark = (values, max = 100) => _sparkline(values, { max, min: 0 });
 const catHistory = {
-  dev:      parseCategoryHistory('Dev Health'),
-  align:    parseCategoryHistory('Creative Alignment'),
-  momentum: parseCategoryHistory('Momentum'),
-  engage:   parseCategoryHistory('Engagement'),
-  process:  parseCategoryHistory('Process Quality'),
+  dev: parseCategoryHistory("Dev Health"),
+  align: parseCategoryHistory("Creative Alignment"),
+  momentum: parseCategoryHistory("Momentum"),
+  engage: parseCategoryHistory("Engagement"),
+  process: parseCategoryHistory("Process Quality"),
 };
 // v3 categories — single-point snapshot (will grow as new sessions score v3)
 const v3Cats = status.silCategoriesV3 || {};
-const lastCoherence  = v3Cats.crossRepoCoherence ?? 0;
-const lastSecurity   = v3Cats.securityPosture ?? 0;
-const lastEcosystem  = v3Cats.ecosystemIntegration ?? 0;
-const lastCapital    = v3Cats.capitalEfficiency ?? 0;
+const lastCoherence = v3Cats.crossRepoCoherence ?? 0;
+const lastSecurity = v3Cats.securityPosture ?? 0;
+const lastEcosystem = v3Cats.ecosystemIntegration ?? 0;
+const lastCapital = v3Cats.capitalEfficiency ?? 0;
 const lastAutomation = v3Cats.automationCoverage ?? 0;
 
 // ── v4.0: Session voice — pull a distinctive line from SOUL.md (or BRAIN.md) ──
 function extractSessionVoice() {
   const candidates = [
-    path.join(root, 'context', 'SOUL.md'),
-    path.join(root, 'context', 'BRAIN.md'),
-    path.join(root, 'context', 'PROJECT_BRIEF.md'),
-    path.join(root, 'context', 'CURRENT_STATE.md'),
+    path.join(root, "context", "SOUL.md"),
+    path.join(root, "context", "BRAIN.md"),
+    path.join(root, "context", "PROJECT_BRIEF.md"),
+    path.join(root, "context", "CURRENT_STATE.md"),
   ];
   // Reject boilerplate template lines: they all describe the template itself or have placeholder syntax.
   const TEMPLATE_MARKERS = [
     /describe the (emotional|creative|mission|promise)/i,
-    /must always be true/i, /audience should feel/i, /quality bar/i,
-    /must never drift/i, /cheap imitation/i, /tonal failure mode/i,
-    /how this project wins/i, /^<.*>$/, /^\[.*\]$/,
+    /must always be true/i,
+    /audience should feel/i,
+    /quality bar/i,
+    /must never drift/i,
+    /cheap imitation/i,
+    /tonal failure mode/i,
+    /how this project wins/i,
+    /^<.*>$/,
+    /^\[.*\]$/,
     /template|placeholder|fill in|TODO/i,
   ];
   // Require real content: a verb or structural word that indicates lived description.
-  const SUBSTANTIVE = /\b(is|are|ships?|builds?|must|always|every|never|powered|operates?|tracks?|runs?|orchestrat|manag|serves?|coordinat|enforces?|protocol|canon|rubric|audit|pipeline|portfolio)\b/i;
+  const SUBSTANTIVE =
+    /\b(is|are|ships?|builds?|must|always|every|never|powered|operates?|tracks?|runs?|orchestrat|manag|serves?|coordinat|enforces?|protocol|canon|rubric|audit|pipeline|portfolio)\b/i;
 
   for (const p of candidates) {
     if (!fs.existsSync(p)) continue;
-    const src = fs.readFileSync(p, 'utf8');
-    const lines = src.split('\n');
+    const src = fs.readFileSync(p, "utf8");
+    const lines = src.split("\n");
     for (const line of lines) {
       if (/^#/.test(line) || !line.trim()) continue;
       const bulletMatch = line.match(/^\s*[-*]\s+(.{25,140}?)(?:\s*\.|$)/);
       const proseMatch = line.match(/^(?!\s*[-*#])(.{40,140}?)\.\s*$/);
-      let text = (bulletMatch?.[1] || proseMatch?.[1] || '').trim();
+      let text = (bulletMatch?.[1] || proseMatch?.[1] || "").trim();
       // Strip markdown artifacts: bold/italic, backticks, link brackets.
-      text = text.replace(/\*\*/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').trim();
-      if (!text || text.endsWith(':')) continue;
-      if (TEMPLATE_MARKERS.some(re => re.test(text))) continue;
+      text = text
+        .replace(/\*\*/g, "")
+        .replace(/\*/g, "")
+        .replace(/`/g, "")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+        .trim();
+      if (!text || text.endsWith(":")) continue;
+      if (TEMPLATE_MARKERS.some((re) => re.test(text))) continue;
       if (!SUBSTANTIVE.test(text)) continue;
       return { text, source: path.basename(p) };
     }
@@ -457,51 +646,67 @@ function momentumStreak() {
   // itself). Now reads entry.body — the same entries the header rate summarizes.
   let streak = 0;
   for (const entry of allSilEntries.slice(0, 10)) {
-    const body = entry.body ?? '';
-    if (/Classification:.*(Achieved|achieved)|Intent outcome:\*{0,2}\s*(Achieved|achieved|✓)/i.test(body)) streak++;
+    const body = entry.body ?? "";
+    if (
+      /Classification:.*(Achieved|achieved)|Intent outcome:\*{0,2}\s*(Achieved|achieved|✓)/i.test(
+        body,
+      )
+    )
+      streak++;
     else break;
   }
   return streak;
 }
 const streak = momentumStreak();
-const intentPct = parseFloat(intentRate.match(/(\d+)%/)?.[1] ?? '0');
-const cacheLedger = readJson(path.join(root, 'portfolio', 'compiled', 'CACHE_HIT_LEDGER.json'), {});
-const cacheHitPct = typeof cacheLedger.avgHitRate === 'number' ? Math.round(cacheLedger.avgHitRate * 100) : null;
+const intentPct = parseFloat(intentRate.match(/(\d+)%/)?.[1] ?? "0");
+const cacheLedger = readJson(
+  path.join(root, "portfolio", "compiled", "CACHE_HIT_LEDGER.json"),
+  {},
+);
+const cacheHitPct =
+  typeof cacheLedger.avgHitRate === "number"
+    ? Math.round(cacheLedger.avgHitRate * 100)
+    : null;
 const weeklyCost = cacheLedger.weeklyCostUsd ?? null;
 
 // ── v4.0: Genius-list autonomy cue (agent-owned vs human-blocked) ─────────────
 function autonomyCue(item) {
-  if (!item) return '  ';
-  const status = (item.status || '').toLowerCase();
-  if (status.includes('human') || status.includes('founder')) return '🔒';
-  if (status.includes('blocked') || status.includes('locked')) return '⏳';
-  return '⚡';
+  if (!item) return "  ";
+  const status = (item.status || "").toLowerCase();
+  if (status.includes("human") || status.includes("founder")) return "🔒";
+  if (status.includes("blocked") || status.includes("locked")) return "⏳";
+  return "⚡";
 }
 
 // ── Parse TASK_BOARD ──────────────────────────────────────────────────────────
-const unifiedItems   = parseUnifiedItems(taskBoard);
-const openNow        = unifiedItems.filter((item) => item.status === 'unblocked');
-const openNext       = openNow.slice(3);
-const openBlocked    = unifiedItems.filter((item) =>
-  BLOCKED_STATUSES_CORE.includes(item.status)
+const unifiedItems = parseUnifiedItems(taskBoard);
+const openNow = unifiedItems.filter((item) => item.status === "unblocked");
+const openNext = openNow.slice(3);
+const openBlocked = unifiedItems.filter((item) =>
+  BLOCKED_STATUSES_CORE.includes(item.status),
 );
 
 function taskLabel(item, maxLen = 54) {
-  const text = typeof item === 'string'
-    ? item
-    : `${item.rank} · ${item.category} · ${item.title}`;
-  return text.replace(/\*\*/g, '').replace(/`[^`]+`/g, m => m.replace(/`/g, '')).slice(0, maxLen);
+  const text =
+    typeof item === "string"
+      ? item
+      : `${item.rank} · ${item.category} · ${item.title}`;
+  return text
+    .replace(/\*\*/g, "")
+    .replace(/`[^`]+`/g, (m) => m.replace(/`/g, ""))
+    .slice(0, maxLen);
 }
 
 // ── Derived values ─────────────────────────────────────────────────────────────
-const today          = new Date().toISOString().slice(0, 10);
+const today = new Date().toISOString().slice(0, 10);
 // Next session = (latest session in the SIL log) + 1. The SIL log is the source
 // of truth; PROJECT_STATUS.currentSession is only a fallback when the log can't
 // be parsed (it has lagged real state before — see S142 audit item 1).
 const currentSession = (silMaxSession ?? status.currentSession ?? 62) + 1;
-const ctxUpdated     = csmd.match(/^Last updated:\s*(\d{4}-\d{2}-\d{2})/m)?.[1] ?? null;
-const ctxAge         = ctxUpdated ? daysBetween(ctxUpdated, today) : '?';
-const scopeCap       = velocity > 0 ? Math.floor(velocity * 1.5) : null;
+const ctxUpdated =
+  csmd.match(/^Last updated:\s*(\d{4}-\d{2}-\d{2})/m)?.[1] ?? null;
+const ctxAge = ctxUpdated ? daysBetween(ctxUpdated, today) : "?";
+const scopeCap = velocity > 0 ? Math.floor(velocity * 1.5) : null;
 
 // ── Last active (freshest of: SIL closeout, lastUpdated, lastHandoffDate) ────
 // "Days since last" was previously SIL-only, which lied when sessions shipped without
@@ -516,52 +721,95 @@ const candidateDates = [
   status.lastUpdated,
   status.lastHandoffDate,
   status.silLastSession,
-].filter(v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v));
-const freshestDate = candidateDates.length > 0
-  ? candidateDates.sort().slice(-1)[0]  // max lex-sorted date
-  : null;
-const daysSinceActive = freshestDate ? daysBetween(freshestDate, today) : '?';
-const daysSinceClosedOut = lastSilDate ? daysBetween(lastSilDate, today) : '?';
+].filter((v) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}/.test(v));
+const freshestDate =
+  candidateDates.length > 0
+    ? candidateDates.sort().slice(-1)[0] // max lex-sorted date
+    : null;
+const daysSinceActive = freshestDate ? daysBetween(freshestDate, today) : "?";
+const daysSinceClosedOut = lastSilDate ? daysBetween(lastSilDate, today) : "?";
 // Keep daysSinceLast alias for any downstream reader, but prefer the new honest value.
 const daysSinceLast = daysSinceActive;
 
 // IGNIS freshness
-const ignisAge = status.ignisLastComputed ? daysBetween(status.ignisLastComputed, today) : '?';
+const ignisAge = status.ignisLastComputed
+  ? daysBetween(status.ignisLastComputed, today)
+  : "?";
 
 // ── SESSION_PLAN prediction ───────────────────────────────────────────────────
-const planGenAt  = sessionPlan.match(/<!-- generated-at: (\d{4}-\d{2}-\d{2})/)?.[1] ?? null;
-const planAge    = planGenAt ? daysBetween(planGenAt, today) : null;
-const planFresh  = planAge !== null && planAge < 2;
-const planPredSIL = planFresh ? sessionPlan.match(/Predicted SIL:\s*([^\n(]+)/)?.[1]?.trim() : null;
-const planTrend  = planFresh ? sessionPlan.match(/Trend:\s*([^\n]+)/)?.[1]?.trim() : null;
-const planCap    = planFresh ? sessionPlan.match(/Scope cap:\s*([\d]+)/)?.[1] ?? null : null;
+const planGenAt =
+  sessionPlan.match(/<!-- generated-at: (\d{4}-\d{2}-\d{2})/)?.[1] ?? null;
+const planAge = planGenAt ? daysBetween(planGenAt, today) : null;
+const planFresh = planAge !== null && planAge < 2;
+const planPredSIL = planFresh
+  ? sessionPlan.match(/Predicted SIL:\s*([^\n(]+)/)?.[1]?.trim()
+  : null;
+const planTrend = planFresh
+  ? sessionPlan.match(/Trend:\s*([^\n]+)/)?.[1]?.trim()
+  : null;
+const planCap = planFresh
+  ? (sessionPlan.match(/Scope cap:\s*([\d]+)/)?.[1] ?? null)
+  : null;
 const intentLine = intentPlan.match(/- \*\*Intent:\*\* (.+)/)?.[1] ?? null;
-const repoTouchLine = intentPlan.match(/- \*\*Repo touch set:\*\* (.+)/)?.[1] ?? null;
-const yieldLine = intentPlan.match(/- \*\*Expected yield:\*\* (.+)/)?.[1] ?? null;
-const topPressure = Array.isArray(humanPressure.items) && humanPressure.items.length > 0 ? humanPressure.items[0] : null;
+const repoTouchLine =
+  intentPlan.match(/- \*\*Repo touch set:\*\* (.+)/)?.[1] ?? null;
+const yieldLine =
+  intentPlan.match(/- \*\*Expected yield:\*\* (.+)/)?.[1] ?? null;
+const topPressure =
+  Array.isArray(humanPressure.items) && humanPressure.items.length > 0
+    ? humanPressure.items[0]
+    : null;
+const releasePressure =
+  !topPressure &&
+  Array.isArray(status.releaseGates) &&
+  status.releaseGates.length > 0
+    ? {
+        title: String(status.releaseGates[0]),
+        count: status.releaseGates.length,
+      }
+    : null;
 
 // ── CDR gap detection ─────────────────────────────────────────────────────────
-const cdrEntryDates  = [...cdr.matchAll(/\*\*(2\d{3}-\d{2}-\d{2})\*\*/g)].map(m => m[1]);
-const lastCdrDate    = cdrEntryDates.length > 0 ? cdrEntryDates[cdrEntryDates.length - 1] : null;
-const handoffDate    = handoff.match(/Last updated:\s*(\d{4}-\d{2}-\d{2})/)?.[1] ?? null;
-const cdrGapDays     = lastCdrDate && handoffDate ? daysBetween(lastCdrDate, handoffDate) : 0;
-const cdrGap         = cdrGapDays > 0;
+const cdrEntryDates = [...cdr.matchAll(/\*\*(2\d{3}-\d{2}-\d{2})\*\*/g)].map(
+  (m) => m[1],
+);
+const lastCdrDate =
+  cdrEntryDates.length > 0 ? cdrEntryDates[cdrEntryDates.length - 1] : null;
+const handoffDate =
+  handoff.match(/Last updated:\s*(\d{4}-\d{2}-\d{2})/)?.[1] ?? null;
+const cdrGapDays =
+  lastCdrDate && handoffDate ? daysBetween(lastCdrDate, handoffDate) : 0;
+const cdrGap = cdrGapDays > 0;
 
 // ── Protocol version drift ────────────────────────────────────────────────────
-function extractVersion(p) { return readText(path.join(root, p)).match(/template-version: ([\d.]+)/)?.[1] ?? null; }
-const startVer    = extractVersion('prompts/start.md');
-const startTplVer = extractVersion('docs/templates/project-system/START_PROMPT.template.md');
-const closVer     = extractVersion('prompts/closeout.md');
-const closTplVer  = extractVersion('docs/templates/project-system/CLOSEOUT_PROMPT.template.md');
-const versionDrift = (startVer && startTplVer && startVer !== startTplVer) ||
-                     (closVer  && closTplVer  && closVer  !== closTplVer);
+function extractVersion(p) {
+  return (
+    readText(path.join(root, p)).match(/template-version: ([\d.]+)/)?.[1] ??
+    null
+  );
+}
+const startVer = extractVersion("prompts/start.md");
+const startTplVer = extractVersion(
+  "docs/templates/project-system/START_PROMPT.template.md",
+);
+const closVer = extractVersion("prompts/closeout.md");
+const closTplVer = extractVersion(
+  "docs/templates/project-system/CLOSEOUT_PROMPT.template.md",
+);
+const versionDrift =
+  (startVer && startTplVer && startVer !== startTplVer) ||
+  (closVer && closTplVer && closVer !== closTplVer);
 
 // ── Revenue signals freshness ─────────────────────────────────────────────────
-const revGenDate  = revSig.match(/Generated:\s*(\d{4}-\d{2}-\d{2})/)?.[1] ?? null;
-const revAge      = revGenDate ? daysBetween(revGenDate, today) : 999;
+const revGenDate =
+  revSig.match(/Generated:\s*(\d{4}-\d{2}-\d{2})/)?.[1] ?? null;
+const revAge = revGenDate ? daysBetween(revGenDate, today) : 999;
 
 // ── Truth status ──────────────────────────────────────────────────────────────
-const truthStatus = truth.match(/^Overall status:\s*(.+)$/m)?.[1] ?? status.truthAuditStatus ?? 'unknown';
+const truthStatus =
+  truth.match(/^Overall status:\s*(.+)$/m)?.[1] ??
+  status.truthAuditStatus ??
+  "unknown";
 
 // ── Pattern-memory (S85 pattern-memory auto-writer surfacing) ─────────────────
 // Reads `project_pattern_*.md` entries from the Studio Ops Claude memory root
@@ -572,41 +820,51 @@ function loadPatternMemory() {
   const patterns = [];
   const memoryRoot = path.join(
     os.homedir(),
-    '.claude',
-    'projects',
-    'C--Users-p4cka-documents-development-vaultspark-studio-ops',
-    'memory'
+    ".claude",
+    "projects",
+    "C--Users-p4cka-documents-development-vaultspark-studio-ops",
+    "memory",
   );
 
   try {
     if (fs.existsSync(memoryRoot)) {
-      const files = fs.readdirSync(memoryRoot)
-        .filter(f => /^project_pattern_.+\.md$/.test(f));
+      const files = fs
+        .readdirSync(memoryRoot)
+        .filter((f) => /^project_pattern_.+\.md$/.test(f));
       for (const file of files) {
-        const body = fs.readFileSync(path.join(memoryRoot, file), 'utf8');
-        const name = body.match(/^name:\s*(.+)$/m)?.[1]?.trim() ?? '';
-        const nameMatch = name.match(/Recurring\s+(\S+)\s+pressure\s*\((\d+)\s*sessions\)/i);
+        const body = fs.readFileSync(path.join(memoryRoot, file), "utf8");
+        const name = body.match(/^name:\s*(.+)$/m)?.[1]?.trim() ?? "";
+        const nameMatch = name.match(
+          /Recurring\s+(\S+)\s+pressure\s*\((\d+)\s*sessions\)/i,
+        );
         if (!nameMatch) continue;
         const windowMatch = body.match(/\((S\d+(?:,\s*S\d+)+)\)/);
         patterns.push({
           category: nameMatch[1].toUpperCase(),
           sessions: parseInt(nameMatch[2], 10),
-          window: windowMatch?.[1] ?? '',
-          source: 'memory',
+          window: windowMatch?.[1] ?? "",
+          source: "memory",
         });
       }
     }
-  } catch { /* fall through to history fallback */ }
+  } catch {
+    /* fall through to history fallback */
+  }
 
   if (patterns.length === 0) {
     // Fallback: recompute from GENIUS_HISTORY.json (same logic as pattern-memory.mjs).
     // Skip if the most recent history entry is older than 14 days — a frozen history
     // would otherwise produce phantom carry-forward pressure long after the pattern cleared.
-    const hist = readJson(path.join(root, 'portfolio', 'compiled', 'GENIUS_HISTORY.json'), null);
+    const hist = readJson(
+      path.join(root, "portfolio", "compiled", "GENIUS_HISTORY.json"),
+      null,
+    );
     const entries = Array.isArray(hist?.entries) ? hist.entries : [];
     const latest = entries[entries.length - 1];
-    const histAgeDays = latest?.date ? Math.floor((Date.now() - new Date(latest.date).getTime()) / 86400000) : 999;
-    if (histAgeDays > 3) return patterns;  // stale — memory-based detection is canonical; frozen history produces phantom pressure
+    const histAgeDays = latest?.date
+      ? Math.floor((Date.now() - new Date(latest.date).getTime()) / 86400000)
+      : 999;
+    if (histAgeDays > 3) return patterns; // stale — memory-based detection is canonical; frozen history produces phantom pressure
     const THRESH = 3;
     if (entries.length >= THRESH) {
       const window = entries.slice(-THRESH);
@@ -624,8 +882,8 @@ function loadPatternMemory() {
           patterns.push({
             category: cat.toUpperCase(),
             sessions: n,
-            window: window.map(e => `S${e.session}`).join(', '),
-            source: 'history',
+            window: window.map((e) => `S${e.session}`).join(", "),
+            source: "history",
           });
         }
       }
@@ -636,67 +894,53 @@ function loadPatternMemory() {
   return patterns;
 }
 const patternMemory = loadPatternMemory();
-const sigPatterns = patternMemory.length > 0 ? '⚠' : '✓';
-const patternsDetail = patternMemory.length === 0
-  ? 'no recurring pressure detected'
-  : patternMemory.length === 1
-    ? `${patternMemory[0].category} top-5 × ${patternMemory[0].sessions} sessions — carry-forward`
-    : `${patternMemory[0].category} × ${patternMemory[0].sessions} · +${patternMemory.length - 1} more — carry-forward`;
+const sigPatterns = patternMemory.length > 0 ? "⚠" : "✓";
+const patternsDetail =
+  patternMemory.length === 0
+    ? "no recurring pressure detected"
+    : patternMemory.length === 1
+      ? `${patternMemory[0].category} top-5 × ${patternMemory[0].sessions} sessions — carry-forward`
+      : `${patternMemory[0].category} × ${patternMemory[0].sessions} · +${patternMemory.length - 1} more — carry-forward`;
 
 // ── Genome history (dimension alert) ─────────────────────────────────────────
-const genomeData   = readJson(path.join(root, 'context', 'GENOME_HISTORY.json'), { snapshots: [] });
-const genSnaps     = genomeData.snapshots ?? [];
-const genLast      = genSnaps.length > 0 ? (genSnaps[genSnaps.length - 1]?.dimensions ?? {}) : {};
-const genPrev      = genSnaps.length >= 2 ? (genSnaps[genSnaps.length - 2]?.dimensions ?? {}) : {};
-const droppedDims  = Object.entries(genLast)
+const genomeData = readJson(path.join(root, "context", "GENOME_HISTORY.json"), {
+  snapshots: [],
+});
+const genSnaps = genomeData.snapshots ?? [];
+const genLast =
+  genSnaps.length > 0 ? (genSnaps[genSnaps.length - 1]?.dimensions ?? {}) : {};
+const genPrev =
+  genSnaps.length >= 2 ? (genSnaps[genSnaps.length - 2]?.dimensions ?? {}) : {};
+const droppedDims = Object.entries(genLast)
   .filter(([k, v]) => genPrev[k] != null && v < genPrev[k])
-  .map(([k, v]) => ({ dim: k.replace(/_/g, '-'), from: genPrev[k], to: v }));
-const sigGenome    = droppedDims.length > 0 ? '⚠' : '✓';
-const genomeDetail = droppedDims.length > 0
-  ? `drop: ${droppedDims.map(d => `${d.dim} ${d.from}→${d.to}`).join(' · ')}`
-  : `all stable  (${genSnaps.length > 0 ? genSnaps[genSnaps.length - 1].total : '?'}/25)`;
+  .map(([k, v]) => ({ dim: k.replace(/_/g, "-"), from: genPrev[k], to: v }));
+const sigGenome = droppedDims.length > 0 ? "⚠" : "✓";
+const genomeDetail =
+  droppedDims.length > 0
+    ? `drop: ${droppedDims.map((d) => `${d.dim} ${d.from}→${d.to}`).join(" · ")}`
+    : `all stable  (${genSnaps.length > 0 ? genSnaps[genSnaps.length - 1].total : "?"}/25)`;
 
 // ── Deploy gaps ──────────────────────────────────────────────────────────────
-//
-// S301 [audit #15] — THIS BLOCK USED TO PRINT A COUNT FROM A FROZEN FILE.
-//
-// It read DEPLOY_GAPS.json and emitted `gaps.flaggedCount` with no read of
-// generatedAt anywhere — while the cost block twenty lines below recomputes live
-// from the ledger. The artifact was dated 2026-04-26 and its only producer was
-// launch-control-refresh.yml, whose schedule was retired for hosted-runner cost.
-// So for 119 days every /start printed "⚠ Deploy gaps 1/7 SPARKED flagged
-// (vaultspark-football-gm)" — a slug that no longer exists — against a portfolio
-// of 8 SPARKED repos, two of which (veilos, franchise-architect-football) had
-// never been checked at all. No doctor probe reads this file, so the staleness
-// was invisible from every surface.
-//
-// The rule this restores is one the repo already wrote: freshness belongs to the
-// producer of the numbers it dates, and an absent measurement is a finding, not
-// a clean signal. An absent file is UNMEASURED too — not "no gaps".
-const DEPLOY_GAPS_MAX_AGE_MS = 7 * 24 * 3_600_000;
-let sigDeploy = '⚠';
-let deployLabel = 'UNMEASURED — run: node scripts/detect-deploy-gaps.mjs';
+let sigDeploy = "✓";
+let deployLabel = "no gaps (run: ops deploy-gaps)";
 try {
-  const { readArtifact } = await import('./lib/artifact-io.mjs');
-  const gapsPath = path.join(root, 'portfolio', 'DEPLOY_GAPS.json');
-  const read = readArtifact(gapsPath, { maxAgeMs: DEPLOY_GAPS_MAX_AGE_MS, allowForeign: false });
-  if (!read.ok) {
-    const days = read.ageMs ? ` (${Math.round(read.ageMs / 86_400_000)}d old)` : '';
-    const why = read.reason === 'missing' ? 'never generated' : read.reason.split(':')[0];
-    deployLabel = `UNMEASURED — ${why}${days}; run: node scripts/detect-deploy-gaps.mjs`;
-  } else {
-    const gaps = read.data;
+  const gapsPath = path.join(root, "portfolio", "DEPLOY_GAPS.json");
+  if (fs.existsSync(gapsPath)) {
+    const gaps = JSON.parse(fs.readFileSync(gapsPath, "utf8"));
     if (gaps.flaggedCount > 0) {
-      sigDeploy = gaps.flaggedCount >= 3 ? '⛔' : '⚠';
-      const top = (gaps.results || []).filter(r => r.flagged).slice(0, 2).map(r => r.slug).join(', ');
-      deployLabel = `${gaps.flaggedCount}/${gaps.sparkedCount} SPARKED flagged (${top}${gaps.flaggedCount > 2 ? '…' : ''})`;
+      sigDeploy = gaps.flaggedCount >= 3 ? "⛔" : "⚠";
+      const top = (gaps.results || [])
+        .filter((r) => r.flagged)
+        .slice(0, 2)
+        .map((r) => r.slug)
+        .join(", ");
+      deployLabel = `${gaps.flaggedCount}/${gaps.sparkedCount} SPARKED flagged (${top}${gaps.flaggedCount > 2 ? "…" : ""})`;
     } else if (gaps.sparkedCount > 0) {
-      sigDeploy = '✓';
       deployLabel = `0/${gaps.sparkedCount} gaps — all SPARKED shipped through`;
     }
   }
-} catch (err) {
-  deployLabel = `UNMEASURED — deploy-gaps read failed (${String(err?.message || err).slice(0, 40)})`;
+} catch {
+  /* keep defaults */
 }
 
 // ── Cost anomaly signal — SHARED evaluator (S181 [audit #1]) ─────────────────
@@ -705,10 +949,12 @@ try {
 // → a phantom ⛔ "$916 4.4× spike". It also diverged from check-cost-anomaly.mjs
 // (the S153 two-implementations class). Now both surfaces call ONE evaluator that
 // runs the alarm on REAL metered cost and reports notional separately.
-let sigCost = '✓', costDetail = 'no ledger data';
+let sigCost = "✓",
+  costDetail = "no ledger data";
 try {
-  const { readEntries, evaluateCostAnomaly } = await import('./cache-ledger-rollup.mjs');
-  const ledgerPath = path.join(root, 'docs', 'cache-ledger.ndjson');
+  const { readEntries, evaluateCostAnomaly } =
+    await import("./cache-ledger-rollup.mjs");
+  const ledgerPath = path.join(root, "docs", "cache-ledger.ndjson");
   const ledEntries = readEntries(ledgerPath);
   if (ledEntries.length > 0) {
     const v = evaluateCostAnomaly(ledEntries);
@@ -716,16 +962,24 @@ try {
     const realPart = `real $${v.realMetered7d.toFixed(2)}/7d`;
     costDetail = v.notionalNote
       ? `${realPart} · ${v.notionalNote}`
-      : `${realPart} · ${v.reasons[0] || 'normal'}`;
+      : `${realPart} · ${v.reasons[0] || "normal"}`;
   }
-} catch { /* best-effort */ }
+} catch {
+  /* best-effort */
+}
 
 // ── Doctor score ─────────────────────────────────────────────────────────────
 // Shape-guarded: a malformed doctorScore (S276 found a bare `124`) is treated as
 // UNMEASURED rather than dereferenced into `undefined/undefined (undefined%)`.
-const doctorRead   = readableDoctorScore(status.doctorScore);
-const doctorScore  = doctorRead.score;
-const sigDoctor    = !doctorScore ? '⚠' : doctorScore.failing === 0 ? (doctorScore.warning > 0 ? '⚠' : '✓') : '⛔';
+const doctorRead = readableDoctorScore(status.doctorScore);
+const doctorScore = doctorRead.score;
+const sigDoctor = !doctorScore
+  ? "⚠"
+  : doctorScore.failing === 0
+    ? doctorScore.warning > 0
+      ? "⚠"
+      : "✓"
+    : "⛔";
 // S171 [audit #4] — aggregate-honesty: a bare "9 warning" reads as 9 studio-ops
 // problems. Append the ownership split (self vs sibling-rollout) so the founder
 // sees that ~all of them are portfolio-rollout trackers studio-ops surfaces but
@@ -733,7 +987,7 @@ const sigDoctor    = !doctorScore ? '⚠' : doctorScore.failing === 0 ? (doctorS
 // degrades gracefully to the bare count if checks/map are unavailable.
 // Compact ownership split (box inner width is 62; date is dropped when warnings
 // exist so the split fits — ownership is the load-bearing signal, not the date).
-let ownershipSplit = '';
+let ownershipSplit = "";
 try {
   if (doctorScore?.checks && doctorScore.warning > 0) {
     // Classify exactly the set the doctor TALLIES as warnings (the canonical
@@ -746,16 +1000,18 @@ try {
     const byOwner = { self: 0, sibling: 0, chronic: 0 };
     for (const c of doctorScore.checks) {
       if (!isWarning(c)) continue;
-      const o = map[c.id]?.owner || 'self';
+      const o = map[c.id]?.owner || "self";
       byOwner[o] = (byOwner[o] || 0) + 1;
     }
     const parts = [];
     if (byOwner.self) parts.push(`${byOwner.self} self`);
     if (byOwner.sibling) parts.push(`${byOwner.sibling} sib`);
     if (byOwner.chronic) parts.push(`${byOwner.chronic} chronic`);
-    if (parts.length) ownershipSplit = `: ${parts.join('·')}`;
+    if (parts.length) ownershipSplit = `: ${parts.join("·")}`;
   }
-} catch { /* split is advisory */ }
+} catch {
+  /* split is advisory */
+}
 const doctorDetail = !doctorScore
   ? `${doctorRead.reason} — run: node scripts/ops.mjs doctor --update-json`
   : doctorScore.failing > 0
@@ -763,78 +1019,93 @@ const doctorDetail = !doctorScore
     : doctorScore.warning > 0
       ? `${doctorScore.passing}/${doctorScore.total} (${doctorScore.score}%)  ·  ${doctorScore.warning} warn${ownershipSplit}`
       : `${doctorScore.passing}/${doctorScore.total} (${doctorScore.score}%)  ·  ${doctorScore.date}  ✓`;
-let sigCodexTrust = '⚠';
-let codexTrustDetail = 'not checked';
+let sigCodexTrust = "⚠";
+let codexTrustDetail;
 try {
   const trust = codexTrustedProjectRun(root);
-  sigCodexTrust = trust.ok ? '✓' : '⚠';
-  codexTrustDetail = trust.ok ? 'trusted project active' : 'local hooks/config not trusted';
+  sigCodexTrust = trust.ok ? "✓" : "⚠";
+  codexTrustDetail = trust.ok
+    ? "trusted project active"
+    : "local hooks/config not trusted";
 } catch {
-  codexTrustDetail = 'trust check unavailable';
+  codexTrustDetail = "trust check unavailable";
 }
-let sigCanonAdoption = '⚠';
-let canonAdoptionDetail = 'not checked';
+let sigCanonAdoption = "⚠";
+let canonAdoptionDetail = "not checked";
 try {
-  const m = canonAdoption.match(/Live ACTIVE canons:\s*(\d+)\s*·\s*Pending review:\s*(\d+)/i);
+  const m = canonAdoption.match(
+    /Live ACTIVE canons:\s*(\d+)\s*·\s*Pending review:\s*(\d+)/i,
+  );
   if (m) {
     const total = Number(m[1]);
     const pending = Number(m[2]);
-    sigCanonAdoption = pending === 0 ? '✓' : '⚠';
+    sigCanonAdoption = pending === 0 ? "✓" : "⚠";
     canonAdoptionDetail = `${pending}/${total} pending review`;
   }
 } catch {
-  canonAdoptionDetail = 'summary unavailable';
+  canonAdoptionDetail = "summary unavailable";
 }
 
 // ── Entropy ───────────────────────────────────────────────────────────────────
-const entropy      = status.entropyScore ?? null;
-const sigEntropy   = entropy === null ? '⚠' : entropy < 0.3 ? '✓' : entropy < 0.6 ? '⚠' : '⛔';
-const entropyLabel = entropy !== null
-  ? `${entropy.toFixed(3)}  ${entropy < 0.3 ? '(healthy)' : entropy < 0.6 ? '(elevated)' : '(high)'}`
-  : 'not computed';
+const entropy = status.entropyScore ?? null;
+const sigEntropy =
+  entropy === null ? "⚠" : entropy < 0.3 ? "✓" : entropy < 0.6 ? "⚠" : "⛔";
+const entropyLabel =
+  entropy !== null
+    ? `${entropy.toFixed(3)}  ${entropy < 0.3 ? "(healthy)" : entropy < 0.6 ? "(elevated)" : "(high)"}`
+    : "not computed";
 
 // ── Velocity history (last 5 session velocities from SIL entries) ──────────
 // Velocity history from inline-metric session headers (format A), newest→oldest → reverse to chronological.
-const velEntries  = [...sil.matchAll(/##[^\n]*?\bSession\s+\d+\b[^\n]*Velocity:\s*(\d+)/g)].map(m => parseInt(m[1])).reverse();
-const velLast5    = velEntries.slice(-5);
-const velBar      = v => v === 0 ? '▁' : v <= 2 ? '▂' : v <= 5 ? '▄' : v <= 8 ? '▆' : v <= 12 ? '▇' : '█';
-const velHistBar  = velLast5.length > 0 ? velLast5.map(velBar).join('') : sparkline;
+const velEntries = [
+  ...sil.matchAll(/##[^\n]*?\bSession\s+\d+\b[^\n]*Velocity:\s*(\d+)/g),
+]
+  .map((m) => parseInt(m[1]))
+  .reverse();
+const velLast5 = velEntries.slice(-5);
+const velBar = (v) =>
+  v === 0
+    ? "▁"
+    : v <= 2
+      ? "▂"
+      : v <= 5
+        ? "▄"
+        : v <= 8
+          ? "▆"
+          : v <= 12
+            ? "▇"
+            : "█";
+const velHistBar =
+  velLast5.length > 0 ? velLast5.map(velBar).join("") : sparkline;
 
 // ── Handoff "shipped" line ────────────────────────────────────────────────────
-const handoffBlock = handoff.match(/^## Where We Left Off \([^)]+\)\n([\s\S]*?)(?=\n---|\n## )/m)?.[1]?.trim() ?? '';
-const shippedLine  = handoffBlock.match(/^- Shipped:\s*(.+)$/m)?.[1] ?? 'see LATEST_HANDOFF.md';
+const handoffBlock =
+  handoff
+    .match(/^## Where We Left Off \([^)]+\)\n([\s\S]*?)(?=\n---|\n## )/m)?.[1]
+    ?.trim() ?? "";
+const shippedLine =
+  handoffBlock.match(/^- Shipped:\s*(.+)$/m)?.[1] ?? "see LATEST_HANDOFF.md";
 
 // ── Signal thresholds ─────────────────────────────────────────────────────────
 function sig(val, green, warn) {
   // green fn, warn fn — if green(val) → ✓, if warn(val) → ⚠, else ⛔
-  if (green(val)) return '✓';
-  if (warn(val))  return '⚠';
-  return '⛔';
+  if (green(val)) return "✓";
+  if (warn(val)) return "⚠";
+  return "⛔";
 }
 // Runway is qualitative ("strong"/"healthy") OR quantitative ("~3 sessions"). Never match embedded version numbers like "v1.3".
 const runwayQualitative = /\b(strong|healthy|robust)\b/i.test(runwayRaw);
 const runwayWeak = /\b(weak|low|critical|depleted|empty)\b/i.test(runwayRaw);
-const runwayNumMatch = runwayRaw.match(/~\s*([\d.]+)\s*(?:session|sprint|run)/i);
-// S311 [audit #7] — the final `: 5` was an unknown laundered into a pass.
-//
-// `Momentum runway:` in the rolling header is a CARRIED, free-prose field (see
-// lib/sil-rolling-header.mjs — it is classified `carried`, not `derived`, precisely
-// because no parser can produce it). In practice closeouts have been writing a
-// next-steps sentence there. Measured at S311 it held "generalise the premise-adapter
-// target contract; re-verify AUDIT_2026-08-21 ...". None of the three recognisers
-// below match a sentence like that, so it fell to 5, and `sig(5, v => v > 4, …)`
-// rendered a green tick: the brief reported healthy runway from a to-do list. The
-// explicit 'unknown' fallback assigned above lands in exactly the same place.
-//
-// CANON-031: an unrecognised value is UNKNOWN, and unknown is never green. Runway is
-// now three-state — measured, weak, or unrecognised — and unrecognised renders ⚠ with
-// the reason, which is also the only thing that will ever prompt anyone to start
-// writing a real runway measure into that field.
-const runwayKnown = Boolean(runwayNumMatch) || runwayQualitative || runwayWeak;
-const runwayNum = runwayNumMatch ? parseFloat(runwayNumMatch[1])
-                : runwayQualitative ? 9
-                : runwayWeak ? 1
-                : null;
+const runwayNumMatch = runwayRaw.match(
+  /~\s*([\d.]+)\s*(?:session|sprint|run)/i,
+);
+const runwayNum = runwayNumMatch
+  ? parseFloat(runwayNumMatch[1])
+  : runwayQualitative
+    ? 9
+    : runwayWeak
+      ? 1
+      : null;
 // G1 S121 — prefer fresh .cache/test-count.json (from refresh-test-count.mjs) over PROJECT_STATUS values.
 // S181 [audit #2] — freshness guard: the cache silently went stale (179 files cached
 // while the live suite had 225), so the brief reported a confident-but-wrong count.
@@ -842,14 +1113,20 @@ const runwayNum = runwayNumMatch ? parseFloat(runwayNumMatch[1])
 // — a stale count is surfaced as such, never as fresh truth (CANON-031).
 let testsStale = false;
 try {
-  const tcPath = path.join(root, '.cache', 'test-count.json');
+  const tcPath = path.join(root, ".cache", "test-count.json");
   if (fs.existsSync(tcPath)) {
-    const tc = JSON.parse(fs.readFileSync(tcPath, 'utf8'));
+    const tc = JSON.parse(fs.readFileSync(tcPath, "utf8"));
     // S220 audit #1 — foreign-root artifact rejection: a test-count generated in
     // another repo (shared/copied cache) must not be read as this repo's truth.
     const tcRoot = tc.__provenance?.root;
-    const foreign = tcRoot && path.resolve(tcRoot).toLowerCase() !== path.resolve(root).toLowerCase();
-    if (!foreign && typeof tc.total === 'number' && typeof tc.passed === 'number') {
+    const foreign =
+      tcRoot &&
+      path.resolve(tcRoot).toLowerCase() !== path.resolve(root).toLowerCase();
+    if (
+      !foreign &&
+      typeof tc.total === "number" &&
+      typeof tc.passed === "number"
+    ) {
       status.testsTotal = tc.total;
       status.testsPassing = tc.passed;
       if (tc.generatedAt) status.testsLastRun = tc.generatedAt.slice(0, 10);
@@ -857,32 +1134,50 @@ try {
       const ageH = (Date.now() - cacheMs) / 3.6e6;
       let newestTestMs = 0;
       try {
-        const td = path.join(root, 'scripts', 'test');
+        const td = path.join(root, "scripts", "test");
         for (const f of fs.readdirSync(td)) {
           if (!/\.(mjs|ts)$/.test(f)) continue;
           const m = fs.statSync(path.join(td, f)).mtimeMs;
           if (m > newestTestMs) newestTestMs = m;
         }
-      } catch { /* no test dir */ }
+      } catch {
+        /* no test dir */
+      }
       testsStale = ageH > 24 || (newestTestMs > 0 && newestTestMs > cacheMs);
     }
   }
-} catch { /* non-fatal — fall through to PROJECT_STATUS values */ }
+} catch {
+  /* non-fatal — fall through to PROJECT_STATUS values */
+}
 function listSignalCount(value) {
-  return Array.isArray(value) ? value.length : (typeof value === 'number' ? value : 0);
+  return Array.isArray(value)
+    ? value.length
+    : typeof value === "number"
+      ? value
+      : 0;
 }
 
 function compactFileList(files, max = 2) {
   const list = Array.isArray(files) ? files : [];
-  const names = list.slice(0, max).map(f => path.basename(String(f)));
+  const names = list.slice(0, max).map((f) => path.basename(String(f)));
   const extra = Math.max(0, list.length - names.length);
-  return names.join(', ') + (extra ? ` +${extra}` : '');
+  return names.join(", ") + (extra ? ` +${extra}` : "");
 }
 
 // Prefer explicit pass/total from run-tests; fall back to testsTotal only; then exempt; else warn.
-const testsExempt = !status.testsTotal && (status.audience === 'internal' || status.type === 'infrastructure' || status.type === 'internal-ops') && !status.testsPassing;
+const testsExempt =
+  !status.testsTotal &&
+  (status.audience === "internal" ||
+    status.type === "infrastructure" ||
+    status.type === "internal-ops") &&
+  !status.testsPassing;
 let sigTests, testsLabel;
-if (typeof status.testsPassing === 'number' && typeof status.testsTotal === 'number' && status.testsTotal > 0) {
+const resolvedTestSignal = resolveTestSignal(status);
+if (
+  typeof status.testsPassing === "number" &&
+  typeof status.testsTotal === "number" &&
+  status.testsTotal > 0
+) {
   const deferredCount = listSignalCount(status.testsDeferred);
   const envBlockedCount = listSignalCount(status.testsEnvBlocked);
   const allPass = status.testsPassing === status.testsTotal;
@@ -893,77 +1188,103 @@ if (typeof status.testsPassing === 'number' && typeof status.testsTotal === 'num
   // S283 — severity comes from the library, so a state this renderer has never
   // heard of cannot fall through to the green branch (the enumeration here was
   // fail-open in exactly that way).
-  const signal = resolveTestSignal(status);
-  const contradicted = testSignalSeverity(signal) !== 'ok';
-  sigTests = contradicted ? testSignalMark(signal) : testsStale || deferredCount || envBlockedCount ? '⚠' : allPass ? '✓' : mostlyPass ? '⚠' : '⛔';
-  testsLabel = contradicted
-    ? signal.detail
-    : `${status.testsPassing}/${status.testsTotal} passing` + (status.testsLastRun ? ` (${status.testsLastRun})` : '');
-  if (deferredCount) testsLabel += ` · ${deferredCount} deferred: ${compactFileList(status.testsDeferred)}`;
-  if (envBlockedCount) testsLabel += ` · ${envBlockedCount} env-blocked: ${compactFileList(status.testsEnvBlocked)}`;
-  if (testsStale) testsLabel += ' · STALE — run node scripts/run-tests.mjs';
+  const signal = resolvedTestSignal;
+  const contradicted = testSignalSeverity(signal) !== "ok";
+  sigTests = contradicted
+    ? testSignalMark(signal)
+    : testsStale || deferredCount || envBlockedCount
+      ? "⚠"
+      : allPass
+        ? "✓"
+        : mostlyPass
+          ? "⚠"
+          : "⛔";
+  testsLabel =
+    signal.detail +
+    (signal.ok && status.testsLastRun ? ` (${status.testsLastRun})` : "");
+  if (deferredCount)
+    testsLabel += ` · ${deferredCount} deferred: ${compactFileList(status.testsDeferred)}`;
+  if (envBlockedCount)
+    testsLabel += ` · ${envBlockedCount} env-blocked: ${compactFileList(status.testsEnvBlocked)}`;
+  if (testsStale) testsLabel += " · STALE — run node scripts/run-tests.mjs";
 } else if (testsExempt) {
-  sigTests = '✓';
-  testsLabel = 'N/A (protocol repo)';
+  sigTests = "✓";
+  testsLabel = "N/A (protocol repo)";
 } else {
-  sigTests = '⚠';
-  testsLabel = `${status.testsTotal ?? '?'}/? passing`;
+  sigTests = "⚠";
+  testsLabel = `${status.testsTotal ?? "?"}/? passing`;
 }
-const sigVel    = sig(velocity, v => v >= 2, v => v === 1);
-// S311 [audit #7] — unknown is ⚠, never ✓. `sig()` cannot express a third state, so
-// the unrecognised case is decided before it is consulted.
-const sigRun    = runwayKnown ? sig(runwayNum, v => v > 4, v => v >= 2) : '⚠';
-const sigCtx    = sig(typeof ctxAge === 'number' ? ctxAge : 99, v => v <= 7, v => v <= 14);
-const sigIgnis  = sig(typeof ignisAge === 'number' ? ignisAge : 99, v => v < 7, v => v < 14);
-const sigCdr    = cdrGap ? '⚠' : '✓';
-const sigVer    = versionDrift ? '⚠' : '✓';
-const sigRev    = revAge <= 7 ? '✓' : revAge <= 14 ? '⚠' : '⛔';
-const sigTruth  = truthStatus === 'green' ? '✓' : truthStatus === 'yellow' ? '⚠' : '⛔';
-const complianceSnapshots = Array.isArray(complianceHistory.snapshots) ? complianceHistory.snapshots : [];
-// S337 — the tile reports the latest MEASURED snapshot, and says so when the newest
-// row was not a measurement. Reading `snapshots[last]` unconditionally is how this
-// tile came to lead the founder's brief with `⛔ Compliance 0/36 (0%) ↓` on a day
-// whose live re-measurement was 94%: the out-of-session lane, which has no sibling
-// checkouts, had written the day's last row. `⛔ 0%` and "nobody could measure this"
-// are different sentences and must not share a glyph.
-const complianceNewest = complianceSnapshots[complianceSnapshots.length - 1] ?? null;
-const complianceMeasured = complianceSnapshots.filter(isMeasuredCompliance);
-const complianceLatest = complianceMeasured[complianceMeasured.length - 1] ?? null;
-const compliancePrev = complianceMeasured[complianceMeasured.length - 2] ?? null;
-const complianceStaleNewest = complianceNewest && !isMeasuredCompliance(complianceNewest);
-const complianceTrend = complianceLatest && compliancePrev
-  ? complianceLatest.score - compliancePrev.score >= 2 ? '↑' : compliancePrev.score - complianceLatest.score >= 2 ? '↓' : '→'
-  : '→';
-const complianceSpark = complianceSnapshots.slice(-8).map(s => {
-  // S337 — an unmeasured day is '·'. Previously `Number(s.score || 0)` drew it as
-  // '▁', the sub-50% bar: the worst-looking glyph for the one day nothing was known.
-  if (!isMeasuredCompliance(s)) return '·';
-  const score = Number(s.score);
-  if (score >= 100) return '█';
-  if (score >= 95) return '▇';
-  if (score >= 85) return '▆';
-  if (score >= 70) return '▄';
-  if (score >= 50) return '▂';
-  return '▁';
-}).join('') || '—';
-// A gap in measurement is ⚠ (attention, unknown), never ⛔ (a bad known value).
+const sigVel = sig(
+  velocity,
+  (v) => v >= 2,
+  (v) => v === 1,
+);
+const sigRun =
+  runwayNum === null
+    ? "⚠"
+    : sig(
+        runwayNum,
+        (v) => v > 4,
+        (v) => v >= 2,
+      );
+const sigCtx = sig(
+  typeof ctxAge === "number" ? ctxAge : 99,
+  (v) => v <= 7,
+  (v) => v <= 14,
+);
+const sigIgnis = sig(
+  typeof ignisAge === "number" ? ignisAge : 99,
+  (v) => v < 7,
+  (v) => v < 14,
+);
+const sigCdr = cdrGap ? "⚠" : "✓";
+const sigVer = versionDrift ? "⚠" : "✓";
+const sigRev = revAge <= 7 ? "✓" : revAge <= 14 ? "⚠" : "⛔";
+const sigTruth =
+  truthStatus === "green" ? "✓" : truthStatus === "yellow" ? "⚠" : "⛔";
+const complianceSnapshots = Array.isArray(complianceHistory.snapshots)
+  ? complianceHistory.snapshots
+  : [];
+const complianceLatest =
+  complianceSnapshots[complianceSnapshots.length - 1] ?? null;
+const compliancePrev =
+  complianceSnapshots[complianceSnapshots.length - 2] ?? null;
+const complianceTrend =
+  complianceLatest && compliancePrev
+    ? complianceLatest.score - compliancePrev.score >= 2
+      ? "↑"
+      : compliancePrev.score - complianceLatest.score >= 2
+        ? "↓"
+        : "→"
+    : "→";
+const complianceSpark =
+  complianceSnapshots
+    .slice(-8)
+    .map((s) => {
+      const score = Number(s.score || 0);
+      if (score >= 100) return "█";
+      if (score >= 95) return "▇";
+      if (score >= 85) return "▆";
+      if (score >= 70) return "▄";
+      if (score >= 50) return "▂";
+      return "▁";
+    })
+    .join("") || "—";
 const sigCompliance = !complianceLatest
-  ? '⚠'
-  : complianceStaleNewest ? '⚠'
-  : complianceLatest.score >= 100 ? '✓'
-  : complianceLatest.score >= 95 ? '⚠'
-  : '⛔';
-const complianceCoverageNote = complianceLatest && complianceLatest.unmeasurable
-  ? ` · ${complianceLatest.unmeasurable} unmeasurable`
-  : '';
+  ? "⚠"
+  : complianceLatest.score >= 100
+    ? "✓"
+    : complianceLatest.score >= 95
+      ? "⚠"
+      : "⛔";
 const complianceDetail = complianceLatest
-  ? `${complianceLatest.passed}/${complianceLatest.measuredTotal ?? complianceLatest.total} (${complianceLatest.score}%) ${complianceTrend} ${complianceSpark}${complianceCoverageNote}`
-    + (complianceStaleNewest ? ` · ${complianceNewest.date} not measured (${complianceNewest.unmeasurableReason ?? 'no reason recorded'})` : '')
-  : 'not tracked — run: node scripts/ops.mjs compliance-velocity';
+  ? `${complianceLatest.passed}/${complianceLatest.total} (${complianceLatest.score}%) ${complianceTrend} ${complianceSpark}`
+  : "not tracked — run: node scripts/ops.mjs compliance-velocity";
 
 function buildGeniusBoxFromMarkdown(markdown) {
   const entries = [];
-  const regex = /##\s+([^\n]+)\n\n\*\*Tier:\*\*.*?\n\n([^\n]+)(?:\n\n```bash\n([^\n]+)\n```)?/g;
+  const regex =
+    /##\s+([^\n]+)\n\n\*\*Tier:\*\*.*?\n\n([^\n]+)(?:\n\n```bash\n([^\n]+)\n```)?/g;
   let match;
   while ((match = regex.exec(markdown)) !== null && entries.length < 5) {
     entries.push({
@@ -972,9 +1293,9 @@ function buildGeniusBoxFromMarkdown(markdown) {
       command: match[3]?.trim() || null,
     });
   }
-  if (entries.length === 0) return '';
+  if (entries.length === 0) return "";
 
-  const out = [top('GENIUS HIT LIST')];
+  const out = [top("GENIUS HIT LIST")];
   // S211 [SIL S209 #2]: surface the IGNIS rank source so a fallback-degraded list
   // (D-S209.4 — once ~2mo stale on fallback while live was reachable) is never
   // silent. Parsed from the GENIUS_LIST.md header (`**Rank source:** live`).
@@ -982,12 +1303,13 @@ function buildGeniusBoxFromMarkdown(markdown) {
   if (rankMatch) {
     const src = rankMatch[1].toLowerCase();
     const genMatch = markdown.match(/\*\*Generated:\*\*\s*(\S+)/);
-    let ageStr = '';
+    let ageStr = "";
     if (genMatch) {
       const ageD = (Date.now() - new Date(genMatch[1])) / 86_400_000;
-      if (!Number.isNaN(ageD)) ageStr = ` · ${ageD < 1 ? '<1' : Math.round(ageD)}d old`;
+      if (!Number.isNaN(ageD))
+        ageStr = ` · ${ageD < 1 ? "<1" : Math.round(ageD)}d old`;
     }
-    const icon = src === 'live' ? '✓' : '⚠';
+    const icon = src === "live" ? "✓" : "⚠";
     out.push(row(`${icon} rank source: ${src}${ageStr}`));
     out.push(blank());
   }
@@ -998,35 +1320,55 @@ function buildGeniusBoxFromMarkdown(markdown) {
     out.push(blank());
   }
   out.push(bot());
-  return out.join('\n');
+  return out.join("\n");
 }
 
 // ── Cross-repo TASK_BOARD aggregation ─────────────────────────────────────────
 let portfolioTasks = null;
-try { portfolioTasks = loadPortfolioTaskBoards({ studioRoot: root, currentRepoPath: root }); } catch { /* best-effort */ }
+try {
+  portfolioTasks = loadPortfolioTaskBoards({
+    studioRoot: root,
+    currentRepoPath: root,
+  });
+} catch {
+  /* best-effort */
+}
 
 function buildPortfolioBoxLines() {
   if (!portfolioTasks?.byProject?.length) return null;
   const t = portfolioTasks.totals;
-  const out = [top('PORTFOLIO TASK BOARDS')];
-  out.push(row(`Total: ${t.remaining} open · ${t.unblocked} unblocked · ${t.blocked} blocked`));
-  out.push(row(`Crit ${t.critical} · High ${t.high} · ${portfolioTasks.projectsWithWork}/${portfolioTasks.projectsScanned} repos active`));
+  const out = [top("PORTFOLIO TASK BOARDS")];
+  out.push(
+    row(
+      `Total: ${t.remaining} open · ${t.unblocked} unblocked · ${t.blocked} blocked`,
+    ),
+  );
+  out.push(
+    row(
+      `Crit ${t.critical} · High ${t.high} · ${portfolioTasks.projectsWithWork}/${portfolioTasks.projectsScanned} repos active`,
+    ),
+  );
   out.push(blank());
   // Top-2 pattern keeps the founder-mode brief under the 15KB hard cap even
   // when the orchestrator and human-pressure tiles are present. The long tail
   // is one ops command away via cross-repo-tasks.mjs.
-  const allActive = portfolioTasks.byProject.filter(p => p.present && p.remaining > 0);
+  const allActive = portfolioTasks.byProject.filter(
+    (p) => p.present && p.remaining > 0,
+  );
   const active = allActive.slice(0, 1);
   for (const p of active) {
-    const marker = p.isCurrent ? '>' : ' ';
-    const nm = (p.name || p.slug || '').slice(0, 24).padEnd(24);
+    const marker = p.isCurrent ? ">" : " ";
+    const nm = (p.name || p.slug || "").slice(0, 24).padEnd(24);
     const line = `${marker} ${nm} ${String(p.remaining).padStart(3)} open · ${String(p.unblocked).padStart(2)} unblk · C${String(p.critical).padStart(2)} H${String(p.high).padStart(2)}`;
     out.push(row(line));
   }
   const hidden = allActive.length - active.length;
-  if (hidden > 0) out.push(row(`  … +${hidden} more — run: node scripts/lib/cross-repo-tasks.mjs`));
+  if (hidden > 0)
+    out.push(
+      row(`  … +${hidden} more — run: node scripts/lib/cross-repo-tasks.mjs`),
+    );
   out.push(bot());
-  return out.join('\n');
+  return out.join("\n");
 }
 
 function buildOrchestratorBox() {
@@ -1034,44 +1376,77 @@ function buildOrchestratorBox() {
   // refresh the conductor snapshot inline when >6h old (cheap, <5s, idempotent).
   // Failure keeps the stale data; the age badge below stays honest either way.
   try {
-    const pre = readJson(path.join(root, 'portfolio', 'ACTIVE_SESSIONS.json'), null);
-    const ageMin = pre?._generatedAt ? (Date.now() - new Date(pre._generatedAt).getTime()) / 60000 : Infinity;
+    const pre = readJson(
+      path.join(root, "portfolio", "ACTIVE_SESSIONS.json"),
+      null,
+    );
+    const ageMin = pre?._generatedAt
+      ? (Date.now() - new Date(pre._generatedAt).getTime()) / 60000
+      : Infinity;
     if (ageMin > 360) {
-      spawnSync(process.execPath, [path.join(root, 'scripts', 'studio-conductor.mjs')], { timeout: 30000, windowsHide: true, stdio: 'ignore' });
+      spawnSync(
+        process.execPath,
+        [path.join(root, "scripts", "studio-conductor.mjs")],
+        { timeout: 30000, windowsHide: true, stdio: "ignore" },
+      );
     }
-  } catch { /* badge stays honest */ }
-  const active = readJson(path.join(root, 'portfolio', 'ACTIVE_SESSIONS.json'), null);
-  const pending = readJson(path.join(root, 'portfolio', 'PENDING_PROPAGATION.json'), null);
-  const activeSessions = Array.isArray(active?.activeSessions) ? active.activeSessions : [];
+  } catch {
+    /* badge stays honest */
+  }
+  const active = readJson(
+    path.join(root, "portfolio", "ACTIVE_SESSIONS.json"),
+    null,
+  );
+  const pending = readJson(
+    path.join(root, "portfolio", "PENDING_PROPAGATION.json"),
+    null,
+  );
+  const activeSessions = Array.isArray(active?.activeSessions)
+    ? active.activeSessions
+    : [];
   const staleLocks = Array.isArray(active?.staleLocks) ? active.staleLocks : [];
   const conflicts = Array.isArray(active?.conflicts) ? active.conflicts : [];
-  const generatedAt = active?._generatedAt ? new Date(active._generatedAt).getTime() : null;
-  const snapshotAgeMin = generatedAt ? Math.max(0, Math.round((Date.now() - generatedAt) / 60000)) : null;
-  const snapshotLabel = snapshotAgeMin == null
-    ? 'snapshot unknown'
-    : snapshotAgeMin < 60
-      ? `${snapshotAgeMin}m old`
-      : `${Math.round(snapshotAgeMin / 60)}h old`;
+  const generatedAt = active?._generatedAt
+    ? new Date(active._generatedAt).getTime()
+    : null;
+  const snapshotAgeMin = generatedAt
+    ? Math.max(0, Math.round((Date.now() - generatedAt) / 60000))
+    : null;
+  const snapshotLabel =
+    snapshotAgeMin == null
+      ? "snapshot unknown"
+      : snapshotAgeMin < 60
+        ? `${snapshotAgeMin}m old`
+        : `${Math.round(snapshotAgeMin / 60)}h old`;
 
   const pendingItems = (() => {
     if (!pending) return [];
-    const raw = Array.isArray(pending) ? pending : (pending.pending || pending.queue || Object.values(pending));
+    const raw = Array.isArray(pending)
+      ? pending
+      : pending.pending || pending.queue || Object.values(pending);
     return Array.isArray(raw) ? raw.filter(Boolean) : [];
   })();
-  const locked = new Set(activeSessions.map(s => s.slug));
-  const lockedPending = pendingItems.filter(item => locked.has(item.slug)).length;
+  const locked = new Set(activeSessions.map((s) => s.slug));
+  const lockedPending = pendingItems.filter((item) =>
+    locked.has(item.slug),
+  ).length;
 
   const arkCount = (() => {
     const cutoff = Date.now() - 24 * 3600 * 1000;
-    const dir = path.join(root, 'portfolio', 'ark', 'log');
+    const dir = path.join(root, "portfolio", "ark", "log");
     try {
-      return fs.readdirSync(dir)
-        .filter(f => f.endsWith('.ndjson'))
-        .flatMap(f => readText(path.join(dir, f)).split(/\r?\n/).filter(Boolean))
+      return fs
+        .readdirSync(dir)
+        .filter((f) => f.endsWith(".ndjson"))
+        .flatMap((f) =>
+          readText(path.join(dir, f)).split(/\r?\n/).filter(Boolean),
+        )
         .reduce((count, line) => {
           try {
             const item = JSON.parse(line);
-            const ts = new Date(item.ts || item.timestamp || item.shippedAt || 0).getTime();
+            const ts = new Date(
+              item.ts || item.timestamp || item.shippedAt || 0,
+            ).getTime();
             return ts >= cutoff ? count + 1 : count;
           } catch {
             return count;
@@ -1083,10 +1458,14 @@ function buildOrchestratorBox() {
   })();
 
   const untracked = (() => {
-    const detector = path.join(root, 'scripts', 'detect-new-dev-folders.mjs');
+    const detector = path.join(root, "scripts", "detect-new-dev-folders.mjs");
     if (!fs.existsSync(detector)) return null;
     try {
-      const res = spawnSync(node, [detector, '--json'], { cwd: root, encoding: 'utf8', timeout: 5000 });
+      const res = spawnSync(node, [detector, "--json"], {
+        cwd: root,
+        encoding: "utf8",
+        timeout: 5000,
+      });
       return res.status === 0 && res.stdout ? JSON.parse(res.stdout) : null;
     } catch {
       return null;
@@ -1095,39 +1474,58 @@ function buildOrchestratorBox() {
   const projectLike = untracked?.categories?.projectLike?.length ?? 0;
   const scratch = untracked?.categories?.scratch?.length ?? 0;
 
-  const out = [top('ORCHESTRATOR')];
-  out.push(row(`Workers: ${activeSessions.length}/${active?.portfolio?.totalProjects ?? '?'} active · ${staleLocks.length} stale · ${conflicts.length} conflicts`));
+  const out = [top("ORCHESTRATOR")];
+  out.push(
+    row(
+      `Workers: ${activeSessions.length}/${active?.portfolio?.totalProjects ?? "?"} active · ${staleLocks.length} stale · ${conflicts.length} conflicts`,
+    ),
+  );
   // S220 audit #17 — a stale snapshot must not drive routing silently: badge
   // the recommendation when the snapshot is >24h old.
   const snapStale = snapshotAgeMin != null && snapshotAgeMin > 1440;
-  out.push(row(snapStale
-    ? `Snapshot: ${snapshotLabel} ⚠ STALE · next ${active?.recommendedNextRepo?.slug || 'n/a'} (unreliable — refresh: studio-conductor)`
-    : `Snapshot: ${snapshotLabel} · next ${active?.recommendedNextRepo?.slug || 'n/a'}`));
-  out.push(row(`Propagation: ${pendingItems.length} queued · ${lockedPending} lock-blocked`));
-  out.push(row(`Ark: ${arkCount} cargo in 24h · full view: node scripts/orchestrate.mjs`));
+  out.push(
+    row(
+      snapStale
+        ? `Snapshot: ${snapshotLabel} ⚠ STALE · next ${active?.recommendedNextRepo?.slug || "n/a"} (unreliable — refresh: studio-conductor)`
+        : `Snapshot: ${snapshotLabel} · next ${active?.recommendedNextRepo?.slug || "n/a"}`,
+    ),
+  );
+  out.push(
+    row(
+      `Propagation: ${pendingItems.length} queued · ${lockedPending} lock-blocked`,
+    ),
+  );
+  out.push(
+    row(
+      `Ark: ${arkCount} cargo in 24h · full view: node scripts/orchestrate.mjs`,
+    ),
+  );
   out.push(row(`Untracked: ${projectLike} project-like · ${scratch} scratch`));
   out.push(bot());
-  return out.join('\n');
+  return out.join("\n");
 }
 
 // ── FOUNDER UNLOCKS — outstanding human actions that reopen sprint surface ───
-import { ensureAges, daysSince } from './lib/human-action-ages.mjs';
+import { daysSince, ensureAges } from "./lib/human-action-ages.mjs";
 function buildFounderUnlocksBox() {
   const humanSection = (() => {
     const parts = taskBoard.split(/^## /m);
-    const m = parts.find(p => p.startsWith('Human Action Required'));
-    if (!m) return '';
-    const nl = m.indexOf('\n');
-    return nl === -1 ? '' : m.slice(nl + 1);
+    const m = parts.find((p) => p.startsWith("Human Action Required"));
+    if (!m) return "";
+    const nl = m.indexOf("\n");
+    return nl === -1 ? "" : m.slice(nl + 1);
   })();
-  const items = humanSection.split(/\r?\n/).filter(l => /^- \[ \]/.test(l)).slice(0, 2);
+  const items = humanSection
+    .split(/\r?\n/)
+    .filter((l) => /^- \[ \]/.test(l))
+    .slice(0, 2);
   if (items.length === 0) return null;
   // Backfill first-seen dates so items without ~N sessions notation still age.
   const ledger = ensureAges(taskBoard, { root });
-  const out = [top('FOUNDER UNLOCKS')];
-  out.push(row('Single founder actions that reopen sprint surface:'));
+  const out = [top("FOUNDER UNLOCKS")];
+  out.push(row("Single founder actions that reopen sprint surface:"));
   for (const line of items) {
-    const clean = line.replace(/^- \[ \]\s*/, '').replace(/\*\*/g, '');
+    const clean = line.replace(/^- \[ \]\s*/, "").replace(/\*\*/g, "");
     const ageMatch = clean.match(/~?(\d+)\s*sessions/);
     const title = clean.split(/\s+—\s+/)[0];
     let age;
@@ -1135,67 +1533,107 @@ function buildFounderUnlocksBox() {
       age = `${ageMatch[1]}s`;
     } else if (ledger[title]?.firstSeen) {
       const d = daysSince(ledger[title].firstSeen);
-      age = d === 0 ? 'today' : `${d}d`;
+      age = d === 0 ? "today" : `${d}d`;
     } else {
-      age = 'new';
+      age = "new";
     }
     out.push(row(`${age.padStart(5)} · ${title.slice(0, W - 12)}`));
   }
   out.push(bot());
-  return out.join('\n');
+  return out.join("\n");
 }
 
 // ── IGNIS INSIGHT summary ─────────────────────────────────────────────────────
-const ignisInsight = (() => { try { return loadIgnisInsight({ studioRoot: root }); } catch { return { present: false }; } })();
+const ignisInsight = (() => {
+  try {
+    return loadIgnisInsight({ studioRoot: root });
+  } catch {
+    return { present: false };
+  }
+})();
 
 function buildIgnisInsightBox() {
   if (!ignisInsight?.present) return null;
-  const out = [top('IGNIS INSIGHT')];
-  if (ignisInsight.generated) out.push(row(`Synth:    ${ignisInsight.generated} (${ignisInsight.daysSinceSynth}d old) · ${ignisInsight.phase || ''}`));
+  const out = [top("IGNIS INSIGHT")];
+  if (ignisInsight.generated)
+    out.push(
+      row(
+        `Synth:    ${ignisInsight.generated} (${ignisInsight.daysSinceSynth}d old) · ${ignisInsight.phase || ""}`,
+      ),
+    );
   if (ignisInsight.avgIq) out.push(row(`Avg IQ:   ${ignisInsight.avgIq}`));
-  if (ignisInsight.coverage) out.push(row(`Coverage: ${ignisInsight.coverage}`));
-  if (ignisInsight.topProject) out.push(row(`Top:      ${ignisInsight.topProject}`));
+  if (ignisInsight.coverage)
+    out.push(row(`Coverage: ${ignisInsight.coverage}`));
+  if (ignisInsight.topProject)
+    out.push(row(`Top:      ${ignisInsight.topProject}`));
   if (ignisInsight.topRisk) out.push(row(`Top risk: ${ignisInsight.topRisk}`));
-  if (ignisInsight.truthMix) out.push(row(`Truth:    ${ignisInsight.truthMix}`));
-  if (ignisInsight.firstAction) out.push(row(`Do next:  ${ignisInsight.firstAction}`));
-  if (ignisInsight.summaryLead) out.push(row(`Summary:  ${ignisInsight.summaryLead}`));
+  if (ignisInsight.truthMix)
+    out.push(row(`Truth:    ${ignisInsight.truthMix}`));
+  if (ignisInsight.firstAction)
+    out.push(row(`Do next:  ${ignisInsight.firstAction}`));
+  if (ignisInsight.summaryLead)
+    out.push(row(`Summary:  ${ignisInsight.summaryLead}`));
   out.push(bot());
-  return out.join('\n');
+  return out.join("\n");
 }
 
 // ── External signal summary ──────────────────────────────────────────────────
 function buildExternalSignalsBox() {
-  const log = readText(path.join(root, 'portfolio', 'EXTERNAL_SIGNAL_LOG.md'));
+  const log = readText(path.join(root, "portfolio", "EXTERNAL_SIGNAL_LOG.md"));
   if (!log) return null;
   const entries = log.split(/^### /m).slice(1);
   if (entries.length === 0) return null;
   const latest = entries[entries.length - 1];
-  const title = latest.split(/\r?\n/)[0]?.trim() || 'latest signal';
-  const body = latest.split(/\r?\n/).slice(1).join(' ').replace(/\s+/g, ' ').trim();
-  const out = [top('EXTERNAL SIGNALS')];
+  const title = latest.split(/\r?\n/)[0]?.trim() || "latest signal";
+  const body = latest
+    .split(/\r?\n/)
+    .slice(1)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const out = [top("EXTERNAL SIGNALS")];
   out.push(row(`${entries.length} logged · latest: ${title}`));
   if (body) out.push(row(body));
   out.push(bot());
-  return out.join('\n');
+  return out.join("\n");
 }
 
 // ── Genius list: call generate-genius-list.mjs --brief ────────────────────────
-let geniusBlock = '';
+let geniusBlock = "";
 try {
   // --top 8: the brief is a fast-boot surface and must stay under the 15KB hard
   // budget (validate-brief-format). Full ranked list lives in docs/GENIUS_LIST.md.
-  const res = spawnSync(node, [path.join(root, 'scripts', 'generate-genius-list.mjs'), '--brief', '--top', '8'], {
-    cwd: root,
-    encoding: 'utf8',
-    timeout: 15000,
-  });
-  geniusBlock = (res.stdout ?? '').trim();
-} catch { /* fallback below */ }
-if (!geniusBlock) {
-  geniusBlock = buildGeniusBoxFromMarkdown(readText(path.join(root, 'docs', 'GENIUS_LIST.md')));
+  const res = spawnSync(
+    node,
+    [
+      path.join(root, "scripts", "generate-genius-list.mjs"),
+      "--brief",
+      "--top",
+      "8",
+    ],
+    {
+      cwd: root,
+      encoding: "utf8",
+      timeout: 15000,
+    },
+  );
+  geniusBlock = (res.stdout ?? "").trim();
+} catch {
+  /* fallback below */
 }
 if (!geniusBlock) {
-  geniusBlock = [top('GENIUS HIT LIST'), row('Run `node scripts/ops.mjs genius-list` to generate fresh recommendations.'), bot()].join('\n');
+  geniusBlock = buildGeniusBoxFromMarkdown(
+    readText(path.join(root, "docs", "GENIUS_LIST.md")),
+  );
+}
+if (!geniusBlock) {
+  geniusBlock = [
+    top("GENIUS HIT LIST"),
+    row(
+      "Run `node scripts/ops.mjs genius-list` to generate fresh recommendations.",
+    ),
+    bot(),
+  ].join("\n");
 }
 
 // ── Brief integrity self-assertion (S142 audit item 2) ──────────────────────
@@ -1204,50 +1642,61 @@ if (!geniusBlock) {
 // the rendered headline must agree on the latest session. On divergence we either
 // self-heal (PROJECT_STATUS lag) or render a ⛔ STALE BRIEF banner that the
 // validator turns into a hard /start stop.
-const statusLatest = (typeof status.currentSession === 'number') ? status.currentSession : null;
+const statusLatest =
+  typeof status.currentSession === "number" ? status.currentSession : null;
 let briefCoherent = true;
-let staleReason = '';
+let staleReason = "";
 if (silMaxSession == null) {
   briefCoherent = false;
-  staleReason = 'SIL log unparseable — no session headers matched. Brief cannot establish current state.';
+  staleReason =
+    "SIL log unparseable — no session headers matched. Brief cannot establish current state.";
 } else if (!silTotal) {
   briefCoherent = false;
   staleReason = `SIL session S${silMaxSession} has no parseable Total — headline score is untrustworthy.`;
 } else if (statusLatest != null && statusLatest !== silMaxSession) {
   // PROJECT_STATUS.json lagged the SIL log (the historical failure mode). Self-heal it.
   try {
-    const statusPath = path.join(root, 'context', 'PROJECT_STATUS.json');
-    const live = JSON.parse(fs.readFileSync(statusPath, 'utf8'));
+    const statusPath = path.join(root, "context", "PROJECT_STATUS.json");
+    const live = JSON.parse(fs.readFileSync(statusPath, "utf8"));
     // Sync ONLY the session number. silScore/silCategoriesV3 are owned by the
     // closeout SIL scorer — writing silScore here would desync it from the
     // category breakdown (tier1-sil-migration invariant: score == sum(categories)).
     live.currentSession = silMaxSession;
-    writeProjectStatus(ROOT, live, { touchLastUpdated: false });
-    console.log(`  ↻ self-heal: PROJECT_STATUS.currentSession ${statusLatest} → ${silMaxSession} (synced from SIL log)`);
+    writeProjectStatus(root, live, { touchLastUpdated: false });
+    console.log(
+      `  ↻ self-heal: PROJECT_STATUS.currentSession ${statusLatest} → ${silMaxSession} (synced from SIL log)`,
+    );
   } catch (e) {
     console.warn(`  ⚠ could not self-heal PROJECT_STATUS.json: ${e.message}`);
   }
 }
-const staleBanner = briefCoherent ? null : [
-  top('⛔ STALE BRIEF — DO NOT TRUST'),
-  row(staleReason),
-  row('Repair: node scripts/render-startup-brief.mjs  (then re-run /start)'),
-  bot(),
-].join('\n');
+const staleBanner = briefCoherent
+  ? null
+  : [
+      top("⛔ STALE BRIEF — DO NOT TRUST"),
+      row(staleReason),
+      row(
+        "Repair: node scripts/render-startup-brief.mjs  (then re-run /start)",
+      ),
+      bot(),
+    ].join("\n");
 
 // ── Build the brief ───────────────────────────────────────────────────────────
-const pct = silTotal > 0 ? `${Math.round(silTotal / silMax * 100)}%` : '?%';
+const pct = silTotal > 0 ? `${Math.round((silTotal / silMax) * 100)}%` : "?%";
+const briefSourceManifest = buildBriefSourceManifest(root);
 
 const lines = [
   `<!-- generated-by: scripts/render-startup-brief.mjs v3.1 -->`,
-  `<!-- generated-at: ${today} (Session ${currentSession - 1} closeout) -->`,
+  `<!-- generated-at: ${new Date().toISOString()} -->`,
+  `<!-- generated-for-session: ${currentSession}; source-closeout-session: ${currentSession - 1} -->`,
   formatBriefSemanticFingerprint(buildBriefSemanticFingerprint(root)),
+  `<!-- brief-sources: ${JSON.stringify(briefSourceManifest)} -->`,
   `<!-- fast-boot-valid-until: next session if within 24h -->`,
   `<!-- brief-coherent: ${briefCoherent} -->`,
   ``,
-  `# Startup Brief — ${status.name || 'Studio Ops'}`,
+  `# Startup Brief — ${status.name || "Studio Ops"}`,
   ``,
-  `> **Fast-boot brief** — generated at Session ${currentSession - 1} closeout · ${today}.`,
+  `> **Fast-boot brief** — rendered for Session ${currentSession} from Session ${currentSession - 1} closeout evidence · ${today}.`,
   `> Valid for next session if started within 24h. For sessions >24h later, load context files fresh (start.md §3).`,
   ``,
   `---`,
@@ -1255,50 +1704,91 @@ const lines = [
   `\`\`\``,
   ...(staleBanner ? [staleBanner, ``] : []),
   renderTitleHeader({
-    name: status.name || 'Studio Ops',
+    name: status.name || "Studio Ops",
     type: status.type,
     lifecycle: status.lifecycle,
     audience: status.audience,
-    vaultStatus: status.vaultStatus || 'FORGE',
+    vaultStatus: status.vaultStatus || "FORGE",
     session: currentSession,
     date: today,
-    mode: (status.sessionMode || 'builder').toUpperCase(),
+    mode: (status.sessionMode || "builder").toUpperCase(),
     owner: status.owner,
   }),
   ``,
   renderLastCompleted(status.lastSessionSummary, {
     expectedSession: currentSession - 1,
-    fallback: status.currentFocus || shippedLine || 'Latest session details unavailable.',
+    fallback:
+      status.currentFocus ||
+      shippedLine ||
+      "Latest session details unavailable.",
+    tests: testsLabel,
+    deploy:
+      status.lastDeployStatus ||
+      (status.audience === "public-unlaunched"
+        ? "NO-GO · staging evidence only"
+        : "No deployment observation recorded"),
   }),
   ``,
   ...(Array.isArray(status.testingSurfaces) && status.testingSurfaces.length
-    ? [renderTestItNow({ name: status.name || 'Studio Ops', testingSurfaces: status.testingSurfaces }), ``]
+    ? [
+        renderTestItNow({
+          name: status.name || "Studio Ops",
+          testingSurfaces: status.testingSurfaces,
+        }),
+        ``,
+      ]
     : []),
   // S126 audit #28: PROJECT_PROFILE lens header
   renderProfileLensHeader(),
   ``,
   // ── SCORE box (v4.0 — 10-category breakdown + sparklines) ──────────────────
-  top('SCORE'),
+  top("SCORE"),
   blank(),
   row(`  ${silTotal}/${silMax}   ${bar24(silTotal, silMax)}   ${pct}`),
-  row(`  SIL v3.0  ·  Avg3: ${avg3Raw ?? '?'}  ·  Velocity ${velocity}${velTrend || '→'}${silStreak >= 2 ? `  ·  Streak ${silStreak}${silStreak >= 8 ? ' 🔥' : silStreak >= 4 ? ' ✦' : ''}` : ''}`),
-  row(`  Last active: ${daysSinceActive}d  ·  Last closeout: ${daysSinceClosedOut}d  ·  (active = newest of SIL/status/handoff)`),
-  row(`  Trend  ${velHistBar || sparkline}  ${velTrend || '→'}  (last ${(velLast5 || []).length || 5} sessions)`),
+  row(
+    `  SIL v3.0  ·  Avg3: ${avg3Raw ?? "?"}  ·  Velocity ${velocity}${velTrend || "→"}${silStreak >= 2 ? `  ·  Streak ${silStreak}${silStreak >= 8 ? " 🔥" : silStreak >= 4 ? " ✦" : ""}` : ""}`,
+  ),
+  row(
+    `  Last active: ${daysSinceActive}d  ·  Last closeout: ${daysSinceClosedOut}d  ·  (active = newest of SIL/status/handoff)`,
+  ),
+  row(
+    `  Trend  ${velHistBar || sparkline}  ${velTrend || "→"}  (last ${(velLast5 || []).length || 5} sessions)`,
+  ),
   blank(),
   row(`  Category         Score  Bar        Spark   Δ`),
   row(`  ─────────────── ────── ────────── ──────── ─`),
   // Original 5 — with multi-session sparkline
-  row(`  Dev Health       ${String(lastDev).padStart(3)}    ${bar10(lastDev)}  ${spark(catHistory.dev).padEnd(8)} ${trend(lastDev, cat3.dev)}`),
-  row(`  Alignment        ${String(lastAlign).padStart(3)}    ${bar10(lastAlign)}  ${spark(catHistory.align).padEnd(8)} ${trend(lastAlign, cat3.align)}`),
-  row(`  Momentum         ${String(lastMomentum).padStart(3)}    ${bar10(lastMomentum)}  ${spark(catHistory.momentum).padEnd(8)} ${trend(lastMomentum, cat3.momentum)}`),
-  row(`  Engagement       ${String(lastEngage).padStart(3)}    ${bar10(lastEngage)}  ${spark(catHistory.engage).padEnd(8)} ${trend(lastEngage, cat3.engage)}`),
-  row(`  Process Qual     ${String(lastProcess).padStart(3)}    ${bar10(lastProcess)}  ${spark(catHistory.process).padEnd(8)} ${trend(lastProcess, cat3.process)}`),
+  row(
+    `  Dev Health       ${String(lastDev).padStart(3)}    ${bar10(lastDev)}  ${spark(catHistory.dev).padEnd(8)} ${trend(lastDev, cat3.dev)}`,
+  ),
+  row(
+    `  Alignment        ${String(lastAlign).padStart(3)}    ${bar10(lastAlign)}  ${spark(catHistory.align).padEnd(8)} ${trend(lastAlign, cat3.align)}`,
+  ),
+  row(
+    `  Momentum         ${String(lastMomentum).padStart(3)}    ${bar10(lastMomentum)}  ${spark(catHistory.momentum).padEnd(8)} ${trend(lastMomentum, cat3.momentum)}`,
+  ),
+  row(
+    `  Engagement       ${String(lastEngage).padStart(3)}    ${bar10(lastEngage)}  ${spark(catHistory.engage).padEnd(8)} ${trend(lastEngage, cat3.engage)}`,
+  ),
+  row(
+    `  Process Qual     ${String(lastProcess).padStart(3)}    ${bar10(lastProcess)}  ${spark(catHistory.process).padEnd(8)} ${trend(lastProcess, cat3.process)}`,
+  ),
   // v3.0 new categories — single snapshot for now, sparkline builds as history accrues
-  row(`  Coherence        ${String(lastCoherence).padStart(3)}    ${bar10(lastCoherence)}  ${'·'.repeat(8)} →`),
-  row(`  Security         ${String(lastSecurity).padStart(3)}    ${bar10(lastSecurity)}  ${'·'.repeat(8)} →`),
-  row(`  Ecosystem        ${String(lastEcosystem).padStart(3)}    ${bar10(lastEcosystem)}  ${'·'.repeat(8)} →`),
-  row(`  Capital          ${String(lastCapital).padStart(3)}    ${bar10(lastCapital)}  ${'·'.repeat(8)} →`),
-  row(`  Automation       ${String(lastAutomation).padStart(3)}    ${bar10(lastAutomation)}  ${'·'.repeat(8)} →`),
+  row(
+    `  Coherence        ${String(lastCoherence).padStart(3)}    ${bar10(lastCoherence)}  ${"·".repeat(8)} →`,
+  ),
+  row(
+    `  Security         ${String(lastSecurity).padStart(3)}    ${bar10(lastSecurity)}  ${"·".repeat(8)} →`,
+  ),
+  row(
+    `  Ecosystem        ${String(lastEcosystem).padStart(3)}    ${bar10(lastEcosystem)}  ${"·".repeat(8)} →`,
+  ),
+  row(
+    `  Capital          ${String(lastCapital).padStart(3)}    ${bar10(lastCapital)}  ${"·".repeat(8)} →`,
+  ),
+  row(
+    `  Automation       ${String(lastAutomation).padStart(3)}    ${bar10(lastAutomation)}  ${"·".repeat(8)} →`,
+  ),
   blank(),
   bot(),
   ``,
@@ -1308,31 +1798,52 @@ const lines = [
   // S181 [audit #2] — was `${testsTotal} passing`, which labelled the TOTAL as
   // PASSING (179 "passing" while 10 failed) — a CANON-031 lying surface that
   // contradicted the SIGNALS block. Show passing/total, matching testsLabel.
-  row(`Tests:    ${typeof status.testsPassing === 'number' ? `${status.testsPassing}/${status.testsTotal ?? '?'}` : (status.testsTotal ?? '?')} passing  ·  Deploy: ${status.lastDeployStatus || 'N/A'}`),
+  row(
+    `Tests:    ${testsLabel}  ·  Deploy: ${status.lastDeployStatus || "N/A"}`,
+  ),
   bot(),
   ``,
   // ── CONTEXT METER (S119 founder directive — was buried, now first-class) ──
-  top('CONTEXT METER'),
+  top("CONTEXT METER"),
   ...(() => {
     // Progress bar — 24 chars filled per used%.
     const fillN = Math.min(24, Math.max(0, Math.round(meterUsedFrac * 24)));
-    const bar = '█'.repeat(fillN) + '░'.repeat(24 - fillN);
-    const tagIcon = meter.recommendation === 'CLOSEOUT' ? '⛔'
-      : meter.recommendation === 'CONSIDER_CLOSEOUT' ? '⚠'
-      : '✓';
-    const liveTag = meter.confidence || (meter.live ? 'live' : 'heuristic');
+    const bar = "█".repeat(fillN) + "░".repeat(24 - fillN);
+    const tagIcon =
+      meter.recommendation === "CLOSEOUT"
+        ? "⛔"
+        : meter.recommendation === "CONSIDER_CLOSEOUT"
+          ? "⚠"
+          : "✓";
+    const liveTag = meter.confidence || (meter.live ? "live" : "heuristic");
     const usedStr = meterUsed.toLocaleString();
     const limitStr = meter.limit.toLocaleString();
     const lines = [
       row(`${tagIcon}  ${bar}  ${String(meterUsedPct).padStart(3)}% used`),
-      row(`   ${usedStr} / ${limitStr} tok  ·  ${meter.agent}${meter.model ? '/' + meter.model : ''}  ·  ${liveTag}`),
+      row(
+        `   ${usedStr} / ${limitStr} tok  ·  ${meter.agent}${meter.model ? "/" + meter.model : ""}  ·  ${liveTag}`,
+      ),
     ];
     if (meter.continueCostPerTurn != null) {
-      const cacheLabel = meter.cacheHitRate != null ? `cache ${Math.round(meter.cacheHitRate * 100)}%` : 'cache n/a';
-      const turnsLabel = meter.turnsToCompact != null && meter.turnsToCompact < 999 ? `${meter.turnsToCompact} turns to compact` : 'compact distant';
-      lines.push(row(`   ~${meter.continueCostPerTurn.toLocaleString()} tok/turn  ·  ${cacheLabel}  ·  ${turnsLabel}`));
+      const cacheLabel =
+        meter.cacheHitRate != null
+          ? `cache ${Math.round(meter.cacheHitRate * 100)}%`
+          : "cache n/a";
+      const turnsLabel =
+        meter.turnsToCompact != null && meter.turnsToCompact < 999
+          ? `${meter.turnsToCompact} turns to compact`
+          : "compact distant";
+      lines.push(
+        row(
+          `   ~${meter.continueCostPerTurn.toLocaleString()} tok/turn  ·  ${cacheLabel}  ·  ${turnsLabel}`,
+        ),
+      );
     }
-    lines.push(row(`   Verdict: ${meter.recommendation}${meter.recommendation === 'CONTINUE' ? '' : '  ← act now'}`));
+    lines.push(
+      row(
+        `   Verdict: ${meter.recommendation}${meter.recommendation === "CONTINUE" ? "" : "  ← act now"}`,
+      ),
+    );
     return lines;
   })(),
   bot(),
@@ -1342,21 +1853,33 @@ const lines = [
   // writeSignalsArtifact below): that file is the single-file producer brief v5's
   // 'signals' computed block was gated on since S209 (v5 resolver already reads it).
   ...writeSignalsArtifact([
-    top('SIGNALS'),
+    top("SIGNALS"),
     row(`${sigTests}  Tests         ${testsLabel}`),
-    row(`${sigVel}  Velocity      ${velocity} ${velTrend}  ·  Debt: ${debtRaw}`),
-    row(`${sigRun}  Runway        ${runwayKnown ? runwayRaw : `UNRECOGNISED — no runway measure in the header field (got prose: "${String(runwayRaw).slice(0, 40)}…")`}`),
+    row(
+      `${sigVel}  Velocity      ${velocity} ${velTrend}  ·  Debt: ${debtRaw}`,
+    ),
+    row(`${sigRun}  Runway        ${runwayRaw}`),
     // Headroom moved to dedicated CONTEXT METER block above (S119).
     row(`${sigCtx}  Context age   ${ctxAge}d`),
-    row(`${sigIgnis}  IGNIS         ${status.ignisScore ?? '?'} ${status.ignisGrade || ''}  ·  ${ignisAge}d old`),
-    row(`${sigTruth}  Truth         ${truthStatus}  ·  Genome: ${status.truthGenome || '?'}`),
+    row(
+      `${sigIgnis}  IGNIS         ${status.ignisScore ?? "?"} ${status.ignisGrade || ""}  ·  ${ignisAge}d old`,
+    ),
+    row(
+      `${sigTruth}  Truth         ${truthStatus}  ·  Genome: ${status.truthGenome || "?"}`,
+    ),
     row(`${sigCompliance}  Compliance   ${complianceDetail}`),
     row(`${sigGenome}  Genome dims   ${genomeDetail}`),
     row(`${sigEntropy}  Entropy       ${entropyLabel}`),
-    row(`${sigCdr}  CDR           ${cdrGap ? `gap detected (${cdrGapDays}d)  — recover at closeout` : 'no gap detected'}`),
+    row(
+      `${sigCdr}  CDR           ${cdrGap ? `gap detected (${cdrGapDays}d)  — recover at closeout` : "no gap detected"}`,
+    ),
     row(`${sigPatterns}  Patterns      ${patternsDetail}`),
-    row(`${sigVer}  Templates     ${versionDrift ? `version drift (start: ${startVer} vs tpl: ${startTplVer})` : `v${startVer || '?'} aligned`}`),
-    row(`${sigRev}  Revenue sig.  ${revGenDate ? `${revAge}d old (${revGenDate})` : 'not found'}${revAge > 7 ? '  ⚠ stale' : ''}`),
+    row(
+      `${sigVer}  Templates     ${versionDrift ? `version drift (start: ${startVer} vs tpl: ${startTplVer})` : `v${startVer || "?"} aligned`}`,
+    ),
+    row(
+      `${sigRev}  Revenue sig.  ${revGenDate ? `${revAge}d old (${revGenDate})` : "not found"}${revAge > 7 ? "  ⚠ stale" : ""}`,
+    ),
     row(`${sigDeploy}  Deploy gaps   ${deployLabel}`),
     row(`${sigDoctor}  Doctor        ${doctorDetail}`),
     row(`${sigCodexTrust}  Codex trust   ${codexTrustDetail}`),
@@ -1377,52 +1900,95 @@ const lines = [
   buildOrchestratorBox(),
   ``,
   // ── PREDICTION ─────────────────────────────────────────────────────────────
-  ...(planFresh && planPredSIL ? [
-    top('PREDICTION  ·  SESSION_PLAN.md'),
-    row(`Next session:  ${planPredSIL}${planTrend ? `  ·  ${planTrend}` : ''}`),
-    row(`Scope cap:     ${planCap ?? scopeCap ?? '?'} tasks`),
-    bot(),
-    ``,
-  ] : []),
-  ...(intentLine ? [
-    top('EXECUTION PLAN'),
-    row(`Intent:        ${intentLine.slice(0, W - 15)}`),
-    ...(repoTouchLine ? [row(`Repo touch:    ${repoTouchLine.slice(0, W - 15)}`)] : []),
-    ...(yieldLine ? [row(`Expected:      ${yieldLine.slice(0, W - 15)}`)] : []),
-    bot(),
-    ``,
-  ] : []),
+  ...(planFresh && planPredSIL
+    ? [
+        top("PREDICTION  ·  SESSION_PLAN.md"),
+        row(
+          `Next session:  ${planPredSIL}${planTrend ? `  ·  ${planTrend}` : ""}`,
+        ),
+        row(`Scope cap:     ${planCap ?? scopeCap ?? "?"} tasks`),
+        bot(),
+        ``,
+      ]
+    : []),
+  ...(intentLine
+    ? [
+        top("EXECUTION PLAN"),
+        row(`Intent:        ${intentLine.slice(0, W - 15)}`),
+        ...(repoTouchLine
+          ? [row(`Repo touch:    ${repoTouchLine.slice(0, W - 15)}`)]
+          : []),
+        ...(yieldLine
+          ? [row(`Expected:      ${yieldLine.slice(0, W - 15)}`)]
+          : []),
+        bot(),
+        ``,
+      ]
+    : []),
   // Now/Next/Blocked buckets removed — Unified Genius List is the single
   // recommendation surface. Blocked count surfaces in SIGNALS + GENIUS LIST.
-  ...(topPressure ? [
-    top('HUMAN PRESSURE'),
-    row(`Top item:      ${topPressure.title.slice(0, W - 15)}`),
-    row(`Pressure:      ${topPressure.pressureScore} · ${topPressure.pressureBand}`),
-    row(`Next action:   ${topPressure.nextAgentAction.slice(0, W - 15)}`),
-    bot(),
-    ``,
-  ] : []),
+  ...(topPressure
+    ? [
+        top("HUMAN PRESSURE"),
+        row(`Top item:      ${topPressure.title.slice(0, W - 15)}`),
+        row(
+          `Pressure:      ${topPressure.pressureScore} · ${topPressure.pressureBand}`,
+        ),
+        row(`Next action:   ${topPressure.nextAgentAction.slice(0, W - 15)}`),
+        bot(),
+        ``,
+      ]
+    : []),
+  ...(releasePressure
+    ? [
+        top("RELEASE PRESSURE"),
+        row(`Open gates:    ${releasePressure.count}`),
+        row(`Lead gate:     ${releasePressure.title.slice(0, W - 15)}`),
+        row("Ownership:    verify capability path before escalation"),
+        bot(),
+        ``,
+      ]
+    : []),
   // ── v4.0: SESSION VOICE (personable cue) ────────────────────────────────────
   // Suppressed S116 #623 — low-signal flavor block was pushing brief over the
   // 15KB brief-golden cap. v4.1 spec already drops this. Re-enable behind a
   // flag if needed, but keep brief lean for token-cost reasons.
   ...[],
   // ── v4.0: MOMENTUM METER (velocity + intent + streak + cost) ────────────────
-  top('MOMENTUM METER'),
-  row(`Velocity:   ${velHistBar || '—'}  ${velocity}${velTrend || '→'}  (last 5 sessions)`),
-  row(`Intent:     ${intentPct || '?'}% achieved last 5`),
-  row(`Streak:     ${streak > 0 ? `✓ ${streak} consecutive achieved-intent session${streak > 1 ? 's' : ''}` : '— (last intent not achieved)'}`),
-  ...(cacheHitPct !== null ? [row(`Cache hit:  ${cacheHitPct}%  ${cacheHitPct >= 60 ? '✓ meeting target' : '⚠ below 60% target'}`)] : []),
-  ...(weeklyCost !== null ? [row(`Weekly spend: $${weeklyCost.toFixed(2)}`)] : []),
+  top("MOMENTUM METER"),
+  row(
+    `Velocity:   ${velHistBar || "—"}  ${velocity}${velTrend || "→"}  (last 5 sessions)`,
+  ),
+  row(`Intent:     ${intentPct || "?"}% achieved last 5`),
+  row(
+    `Streak:     ${streak > 0 ? `✓ ${streak} consecutive achieved-intent session${streak > 1 ? "s" : ""}` : "— (last intent not achieved)"}`,
+  ),
+  ...(cacheHitPct !== null
+    ? [
+        row(
+          `Cache hit:  ${cacheHitPct}%  ${cacheHitPct >= 60 ? "✓ meeting target" : "⚠ below 60% target"}`,
+        ),
+      ]
+    : []),
+  ...(weeklyCost !== null
+    ? [row(`Weekly spend: $${weeklyCost.toFixed(2)}`)]
+    : []),
   bot(),
   ``,
   // ── SIL FORECAST (S114 audit #3) ──────────────────────────────────────────
   ...(() => {
     try {
-      const silTxt = fs.readFileSync(path.join(root, 'context', 'SELF_IMPROVEMENT_LOOP.md'), 'utf8');
+      const silTxt = fs.readFileSync(
+        path.join(root, "context", "SELF_IMPROVEMENT_LOOP.md"),
+        "utf8",
+      );
       const sessions = parseSilHistory(silTxt);
       if (!sessions.length) return [];
-      const f = forecastNext(sessions, { velocity, blockerPressure: 87, contextAge: 0 });
+      const f = forecastNext(sessions, {
+        velocity,
+        blockerPressure: 87,
+        contextAge: 0,
+      });
       if (!f) return [];
       // S220 audit #16 — calibration loop: resolve prior forecasts against the
       // actuals now visible in SIL history, record this forecast, show rolling MAE.
@@ -1431,40 +1997,62 @@ const lines = [
         const fl = recordAndResolve(root, {
           forSession: (sessions[0].session ?? 0) + 1,
           forecastTotal: f.totalPredicted,
-          actuals: sessions.map(s => ({ session: s.session, total: s.total })),
+          actuals: sessions.map((s) => ({
+            session: s.session,
+            total: s.total,
+          })),
         });
         const { mae, samples } = rollingMae(fl);
-        maeRow = mae != null
-          ? row(`Calibration: MAE ${mae} over last ${samples} forecasts`)
-          : row(`Calibration: ${samples}/3 samples — uncalibrated`);
-      } catch { /* ledger failure never blocks the brief */ }
+        maeRow =
+          mae != null
+            ? row(`Calibration: MAE ${mae} over last ${samples} forecasts`)
+            : row(`Calibration: ${samples}/3 samples — uncalibrated`);
+      } catch {
+        /* ledger failure never blocks the brief */
+      }
       const diff = f.totalPredicted - sessions[0].total;
-      const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
+      const arrow = diff > 0 ? "↑" : diff < 0 ? "↓" : "→";
       const risky = Object.entries(f.categories)
         .filter(([, x]) => x.delta != null && x.delta <= -3)
-        .sort((a, b) => a[1].delta - b[1].delta).slice(0, 3);
+        .sort((a, b) => a[1].delta - b[1].delta)
+        .slice(0, 3);
       // S124 #10 — actionable mitigations from portfolio/SIL_MITIGATIONS.json
       let mitigationRow = null;
       if (risky.length) {
         try {
-          const mit = JSON.parse(fs.readFileSync(path.join(root, 'portfolio', 'SIL_MITIGATIONS.json'), 'utf8'));
+          const mit = JSON.parse(
+            fs.readFileSync(
+              path.join(root, "portfolio", "SIL_MITIGATIONS.json"),
+              "utf8",
+            ),
+          );
           const [topRiskCat] = risky[0];
           const m = mit.mitigations?.[topRiskCat];
-          if (m?.hint) mitigationRow = row(`Mitigation: ${m.hint.slice(0, 56)}`);
+          if (m?.hint)
+            mitigationRow = row(`Mitigation: ${m.hint.slice(0, 56)}`);
         } catch {}
       }
       return [
-        top('SIL FORECAST (next session)'),
-        row(`Projected:  ${f.totalPredicted}/1000  (${arrow}${Math.abs(diff)} vs current ${sessions[0].total})`),
+        top("SIL FORECAST (next session)"),
+        row(
+          `Projected:  ${f.totalPredicted}/1000  (${arrow}${Math.abs(diff)} vs current ${sessions[0].total})`,
+        ),
+        row(`Evidence:   ${sessions.length} parsed SIL sessions`),
         ...(risky.length
-          ? [row(`At-risk:    ${risky.map(([c, x]) => `${c} Δ${x.delta}`).join(' · ')}`)]
+          ? [
+              row(
+                `At-risk:    ${risky.map(([c, x]) => `${c} Δ${x.delta}`).join(" · ")}`,
+              ),
+            ]
           : [row(`All categories forecast stable or rising.`)]),
         ...(mitigationRow ? [mitigationRow] : []),
         ...(maeRow ? [maeRow] : []),
         bot(),
-        ``
+        ``,
       ];
-    } catch { return []; }
+    } catch {
+      return [];
+    }
   })(),
   // ── GENIUS HIT LIST ────────────────────────────────────────────────────────
   geniusBlock,
@@ -1473,41 +2061,49 @@ const lines = [
   ``,
   `---`,
   ``,
-  `*Generated by \`scripts/render-startup-brief.mjs v3.1\` · Session ${currentSession - 1} closeout · ${today}*`,
+  `*Generated by \`scripts/render-startup-brief.mjs v3.1\` for Session ${currentSession} from Session ${currentSession - 1} closeout evidence · ${today}*`,
   `*Run \`node scripts/ops.mjs doctor\` for live health check · \`node scripts/ops.mjs genius-list\` to refresh hit list*`,
 ];
 
 // S154 audit #4 — enforce per-tile byte budgets at the source. Overflowing
 // tiles are trimmed with an explicit marker (never silently — CANON-031).
-let briefBody = lines.join('\n');
+let briefBody = lines.join("\n");
 try {
-  const { enforceTileBudgets } = await import('./validate-brief-format.mjs');
+  const { enforceTileBudgets } = await import("./validate-brief-format.mjs");
   const r = enforceTileBudgets(briefBody);
   briefBody = r.body;
-  for (const t of r.trimmed) console.log(`  ✂ tile trimmed to budget: ${t.title} (−${t.dropped} lines, cap ${(t.budget / 1024).toFixed(1)}KB)`);
-} catch { /* budget enforcement is advisory at render time */ }
-const emitted = emitBrief(BRIEF_DEST, briefBody, { writeFileSync: (p, b) => fs.writeFileSync(p, b, 'utf8') });
-console.log(`✓ Startup brief → ${BRIEF_DEST.hermetic ? emitted.wrote : 'docs/STARTUP_BRIEF.md'}  (v3.2)`);
-console.log(`  Session ${currentSession} · SIL ${silTotal}/${silMax} · ${pct} · Unblocked ${openNow.length} / Blocked ${openBlocked.length}`);
-console.log(`  Signals: tests ${sigTests}  velocity ${sigVel}  runway ${sigRun}  genome ${sigGenome}  entropy ${sigEntropy}  cdr ${sigCdr}  patterns ${sigPatterns}  templates ${sigVer}  revenue ${sigRev}`);
+  for (const t of r.trimmed)
+    console.log(
+      `  ✂ tile trimmed to budget: ${t.title} (−${t.dropped} lines, cap ${(t.budget / 1024).toFixed(1)}KB)`,
+    );
+} catch {
+  /* budget enforcement is advisory at render time */
+}
+fs.writeFileSync(outputPath, briefBody, "utf8");
+console.log(`✓ Startup brief → docs/STARTUP_BRIEF.md  (v3.2)`);
+console.log(
+  `  Session ${currentSession} · SIL ${silTotal}/${silMax} · ${pct} · Unblocked ${openNow.length} / Blocked ${openBlocked.length}`,
+);
+console.log(
+  `  Signals: tests ${sigTests}  velocity ${sigVel}  runway ${sigRun}  genome ${sigGenome}  entropy ${sigEntropy}  cdr ${sigCdr}  patterns ${sigPatterns}  templates ${sigVer}  revenue ${sigRev}`,
+);
 
 // ── R-H15 (S118 G4): record skill cost telemetry on every /start render ──────
 try {
-  const { recordSkillCost } = await import('./lib/skill-cost-ledger.mjs');
-  const briefBytes = Buffer.byteLength(lines.join('\n'), 'utf8');
-  const estimatedTokens = Math.ceil(briefBytes / 4);
+  const { recordSkillCost } = await import("./lib/skill-cost-ledger.mjs");
+  const briefBytes = Buffer.byteLength(lines.join("\n"), "utf8");
+  const actualTokens = Math.ceil(briefBytes / 4);
   recordSkillCost(root, {
-    skill: 'start',
+    skill: "start",
     sessionId: `S${currentSession}`,
-    estimatedTokens,
-    estimateMethod: 'utf8-bytes/4', estimateScope: 'rendered-brief',
-    tokenSource: 'unmeasured', durationSec: performance.now() / 1000,
-    durationScope: 'renderer-process',
-    status: 'completed',
+    actualTokens,
+    status: "completed",
   });
 } catch (err) {
   // non-fatal — telemetry is advisory
-  process.stderr.write(`  ⚠ skill-cost-ledger record skipped: ${err.message}\n`);
+  process.stderr.write(
+    `  ⚠ skill-cost-ledger record skipped: ${err.message}\n`,
+  );
 }
 
 // ── Audit S119 #11: dual-render mode for measured v5 savings ────────────────
@@ -1516,59 +2112,47 @@ try {
 // (no flag) keeps v3.1 — full cutover blocked on measured-comparable session.
 // S120 audit #12 — v5 now default when `.cache/brief-v5-canonical` flag file
 // exists (set once at promotion). Env override still honored.
-const v5FlagFile = path.join(root, '.cache', 'brief-v5-canonical');
-// S335 [audit #2] — THE DECISION NOW LIVES SOMEWHERE GIT CAN SEE.
-//
-// From S120 to S335 the canonical-brief decision was encoded as the presence of a
-// zero-byte file under .cache/, which .gitignore:17 excludes. Nothing tracked it, no probe
-// asserted it, no test covered it. A cache clear or a fresh clone therefore reverted every
-// /start to the v3.1 brief with no alarm — 15,705 B against v5's 7,062 B, measured by this
-// script's own compare mode, roughly 2,160 extra tokens per session. The only tell was the
-// generated-by header flipping to DRAFT, and nothing reads it.
-//
-// portfolio/CANONICAL_SURFACES.json is tracked, so the decision now survives the cache.
-// The flag file is kept as a legacy override so an existing checkout keeps working.
-function canonicalRendererIsV5() {
+const v5FlagFile = path.join(root, ".cache", "brief-v5-canonical");
+const v5Mode =
+  process.env.STUDIO_BRIEF_V5 ||
+  (process.argv.includes("--v5") ? "1" : null) ||
+  (fs.existsSync(v5FlagFile) ? "1" : "off");
+if (v5Mode !== "off") {
   try {
-    const decl = JSON.parse(fs.readFileSync(path.join(root, 'portfolio', 'CANONICAL_SURFACES.json'), 'utf8'));
-    const surface = (decl.surfaces || []).find((s) => s.id === 'startup-brief');
-    return Boolean(surface && /render-startup-brief-v5\.mjs$/.test(String(surface.canonicalRenderer || '')));
-  } catch { return false; }
-}
-const v5Mode = process.env.STUDIO_BRIEF_V5
-  || (process.argv.includes('--v5') ? '1' : null)
-  || (canonicalRendererIsV5() ? '1' : null)
-  || (fs.existsSync(v5FlagFile) ? '1' : 'off');
-if (v5Mode !== 'off') {
-  try {
-    const v5Path = path.resolve(__dirname, 'render-startup-brief-v5.mjs');
+    const v5Path = path.resolve(__dirname, "render-startup-brief-v5.mjs");
     if (fs.existsSync(v5Path)) {
-      // S333 [audit #4] — tell the child it is running under the ONE entrypoint that
-      // promotes its output, so it stays quiet here and warns everywhere else.
-      const res = spawnSync(node, [v5Path], { cwd: root, stdio: 'inherit', env: { ...process.env, STUDIO_BRIEF_V5_PROMOTER: '1' } });
+      const res = spawnSync(node, [v5Path], { cwd: root, stdio: "inherit" });
       if (res.status === 0) {
-        const v3Bytes = Buffer.byteLength(lines.join('\n'), 'utf8');
-        // S305 — in hermetic mode the v5 child wrote beside STUDIO_BRIEF_OUT (see lib/brief-destination).
-        const v5Dest = decideBriefDestination({ defaultPath: path.join(root, 'docs', 'STARTUP_BRIEF_V5.md'), kind: 'brief-v5' });
-        const v5File = v5Dest.toStdout ? null : v5Dest.path;
-        if (v5File && fs.existsSync(v5File)) {
+        const v3Bytes = Buffer.byteLength(lines.join("\n"), "utf8");
+        const v5File = path.join(root, "docs", "STARTUP_BRIEF_V5.md");
+        if (fs.existsSync(v5File)) {
           const v5Bytes = fs.statSync(v5File).size;
-          const reductionPct = Math.round(((v3Bytes - v5Bytes) / v3Bytes) * 100);
-          console.log(`  ◆ brief-v5 compare: v3=${v3Bytes}b v5=${v5Bytes}b  (${reductionPct}% reduction)`);
-          if (v5Mode === '1' || v5Mode === 'promote') {
+          const reductionPct = Math.round(
+            ((v3Bytes - v5Bytes) / v3Bytes) * 100,
+          );
+          console.log(
+            `  ◆ brief-v5 compare: v3=${v3Bytes}b v5=${v5Bytes}b  (${reductionPct}% reduction)`,
+          );
+          if (v5Mode === "1" || v5Mode === "promote") {
             // S209 [audit #2] — promotion guard. v5 must not overwrite the
             // canonical brief unless it passes the same validator /start uses AND
             // carries no unresolved computed-block stub. This is the safety net
             // that stops a half-built v5 (e.g. an unwired SIGNALS/HUMAN PRESSURE
             // resolver) from silently becoming the founder's primary surface.
-            const v5Text = fs.readFileSync(v5File, 'utf8');
+            const v5Text = fs.readFileSync(v5File, "utf8");
             const hasStub = /\{"script":\s*"/.test(v5Text);
-            const valid = spawnSync(node, [path.join(__dirname, 'validate-brief-format.mjs'), v5File], { cwd: root });
+            const valid = spawnSync(
+              node,
+              [path.join(__dirname, "validate-brief-format.mjs"), v5File],
+              { cwd: root },
+            );
             if (hasStub || valid.status !== 0) {
-              console.error(`  ⚠ brief-v5 promotion BLOCKED — ${hasStub ? 'unresolved computed-block stub' : 'failed validate-brief-format'}; keeping v3.1 canonical.`);
+              console.error(
+                `  ⚠ brief-v5 promotion BLOCKED — ${hasStub ? "unresolved computed-block stub" : "failed validate-brief-format"}; keeping v3.1 canonical.`,
+              );
             } else {
-              emitBrief(BRIEF_DEST, fs.readFileSync(v5File, 'utf8'), { writeFileSync: (p, b) => fs.writeFileSync(p, b, 'utf8') });
-              console.log(`  ◆ brief-v5 promoted → ${BRIEF_DEST.hermetic ? (BRIEF_DEST.path || 'stdout') : 'docs/STARTUP_BRIEF.md'}`);
+              fs.copyFileSync(v5File, outputPath);
+              console.log(`  ◆ brief-v5 promoted → docs/STARTUP_BRIEF.md`);
             }
           }
         }

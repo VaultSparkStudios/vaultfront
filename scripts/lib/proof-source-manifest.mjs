@@ -1,13 +1,13 @@
 // proof-source-manifest.mjs — deterministic byte identity for the source set
 // that a Studio Ops full-suite receipt certifies.
-import crypto from 'node:crypto';
-import fs from 'node:fs';
-import path from 'node:path';
+import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 
 const SOURCE_EXT = /\.(?:mjs|cjs|js|ts|json|ya?ml)$/;
 
 function normalize(rel) {
-  return String(rel || '').replace(/\\/g, '/');
+  return String(rel || "").replace(/\\/g, "/");
 }
 
 function walk(dir, out = []) {
@@ -22,80 +22,79 @@ function walk(dir, out = []) {
 
 export function proofSourceInventory(root) {
   const candidates = [
-    ...walk(path.join(root, 'scripts')),
-    ...walk(path.join(root, 'ignis', 'src')),
-    ...walk(path.join(root, '.github', 'workflows')),
-    ...['package.json', 'ignis/src/package.json']
+    ...walk(path.join(root, "scripts")),
+    ...walk(path.join(root, "ignis", "src")),
+    ...walk(path.join(root, ".github", "workflows")),
+    ...["package.json", "ignis/src/package.json"]
       .map((rel) => path.join(root, rel))
       .filter(fs.existsSync),
-  ].map((absolute) => ({ absolute, path: normalize(path.relative(root, absolute)) }));
-  return [...new Map(candidates.map((row) => [row.path, row])).values()]
-    .sort((a, b) => a.path.localeCompare(b.path));
+  ].map((absolute) => ({
+    absolute,
+    path: normalize(path.relative(root, absolute)),
+  }));
+  return [...new Map(candidates.map((row) => [row.path, row])).values()].sort(
+    (a, b) => a.path.localeCompare(b.path),
+  );
 }
 
 function hashBytes(bytes) {
-  return crypto.createHash('sha256').update(bytes).digest('hex');
+  return crypto.createHash("sha256").update(bytes).digest("hex");
 }
 
 function manifestRoot(files) {
-  const canonical = files.map((row) => `${row.path}\\0${row.sha256}\\n`).join('');
-  return hashBytes(Buffer.from(canonical, 'utf8'));
+  const canonical = files
+    .map((row) => `${row.path}\\0${row.sha256}\\n`)
+    .join("");
+  return hashBytes(Buffer.from(canonical, "utf8"));
 }
 
-export function buildProofSourceManifestFromEntries(entries = []) {
-  const files = [...new Map(entries.map((row) => [normalize(row.path), {
-    path: normalize(row.path),
-    sha256: row.sha256,
-  }])).values()].sort((a, b) => a.path.localeCompare(b.path));
+export function buildProofSourceManifest(root) {
+  const files = proofSourceInventory(root).map(({ absolute, path: rel }) => ({
+    path: rel,
+    sha256: hashBytes(fs.readFileSync(absolute)),
+  }));
   return {
     schemaVersion: 1,
-    algorithm: 'sha256',
+    algorithm: "sha256",
     totalFiles: files.length,
     rootHash: manifestRoot(files),
     files,
   };
 }
 
-export function buildProofSourceManifestForPaths(root, relativePaths = []) {
-  const files = [...new Set(relativePaths.map(normalize))]
-    .sort((a, b) => a.localeCompare(b))
-    .map((rel) => {
-      const absolute = path.resolve(root, rel);
-      const rootPrefix = path.resolve(root) + path.sep;
-      if (absolute !== path.resolve(root) && !absolute.startsWith(rootPrefix)) {
-        throw new Error(`proof source escapes root: ${rel}`);
-      }
-      if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) {
-        throw new Error(`proof source missing: ${rel}`);
-      }
-      return { path: rel, sha256: hashBytes(fs.readFileSync(absolute)) };
-    });
-  return buildProofSourceManifestFromEntries(files);
-}
-
-export function buildProofSourceManifest(root) {
-  return buildProofSourceManifestForPaths(root, proofSourceInventory(root).map((row) => row.path));
-}
-
 export function validateProofSourceManifest(manifest) {
   const errors = [];
-  if (manifest?.schemaVersion !== 1 || manifest?.algorithm !== 'sha256') errors.push('unsupported proof-source manifest schema or algorithm');
-  if (!Array.isArray(manifest?.files)) errors.push('proof-source manifest files missing');
+  if (manifest?.schemaVersion !== 1 || manifest?.algorithm !== "sha256")
+    errors.push("unsupported proof-source manifest schema or algorithm");
+  if (!Array.isArray(manifest?.files))
+    errors.push("proof-source manifest files missing");
   const files = Array.isArray(manifest?.files) ? manifest.files : [];
   const paths = new Set();
   for (const row of files) {
-    if (!row?.path || paths.has(row.path)) errors.push(`missing or duplicate proof-source path: ${row?.path || '(missing)'}`);
-    if (!/^[a-f0-9]{64}$/.test(row?.sha256 || '')) errors.push(`invalid proof-source sha256: ${row?.path || '(missing)'}`);
+    if (!row?.path || paths.has(row.path))
+      errors.push(
+        `missing or duplicate proof-source path: ${row?.path || "(missing)"}`,
+      );
+    if (!/^[a-f0-9]{64}$/.test(row?.sha256 || ""))
+      errors.push(`invalid proof-source sha256: ${row?.path || "(missing)"}`);
     paths.add(row?.path);
   }
-  if (manifest?.totalFiles !== files.length) errors.push(`proof-source totalFiles ${manifest?.totalFiles} != ${files.length}`);
-  if (files.length && manifestRoot(files) !== manifest?.rootHash) errors.push('proof-source rootHash does not authenticate stored entries');
+  if (manifest?.totalFiles !== files.length)
+    errors.push(
+      `proof-source totalFiles ${manifest?.totalFiles} != ${files.length}`,
+    );
+  if (files.length && manifestRoot(files) !== manifest?.rootHash)
+    errors.push("proof-source rootHash does not authenticate stored entries");
   return { ok: errors.length === 0, errors };
 }
 
 export function diffProofSourceManifests(expected, actual, { limit = 8 } = {}) {
-  const before = new Map((expected?.files || []).map((row) => [normalize(row.path), row.sha256]));
-  const after = new Map((actual?.files || []).map((row) => [normalize(row.path), row.sha256]));
+  const before = new Map(
+    (expected?.files || []).map((row) => [normalize(row.path), row.sha256]),
+  );
+  const after = new Map(
+    (actual?.files || []).map((row) => [normalize(row.path), row.sha256]),
+  );
   const added = [];
   const removed = [];
   const changed = [];
@@ -109,18 +108,34 @@ export function diffProofSourceManifests(expected, actual, { limit = 8 } = {}) {
     added: bounded(added),
     removed: bounded(removed),
     changed: bounded(changed),
-    counts: { added: added.length, removed: removed.length, changed: changed.length },
-    truncated: added.length > limit || removed.length > limit || changed.length > limit,
+    counts: {
+      added: added.length,
+      removed: removed.length,
+      changed: changed.length,
+    },
+    truncated:
+      added.length > limit || removed.length > limit || changed.length > limit,
   };
 }
 
 export function formatProofSourceDiff(diff) {
   const parts = [];
-  for (const key of ['added', 'removed', 'changed']) {
+  for (const key of ["added", "removed", "changed"]) {
     const count = diff?.counts?.[key] || 0;
-    if (count) parts.push(`${key} ${count}: ${(diff[key] || []).join(', ')}${diff.truncated ? ' …' : ''}`);
+    if (count)
+      parts.push(
+        `${key} ${count}: ${(diff[key] || []).join(", ")}${diff.truncated ? " …" : ""}`,
+      );
   }
-  return parts.join(' · ') || 'manifest root differs without a file-level delta';
+  return (
+    parts.join(" · ") || "manifest root differs without a file-level delta"
+  );
 }
 
-export default { proofSourceInventory, buildProofSourceManifest, buildProofSourceManifestForPaths, buildProofSourceManifestFromEntries, validateProofSourceManifest, diffProofSourceManifests, formatProofSourceDiff };
+export default {
+  proofSourceInventory,
+  buildProofSourceManifest,
+  validateProofSourceManifest,
+  diffProofSourceManifests,
+  formatProofSourceDiff,
+};

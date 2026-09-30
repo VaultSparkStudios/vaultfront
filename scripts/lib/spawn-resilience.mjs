@@ -26,13 +26,19 @@
 // OS resource-exhaustion codes that a backoff retry can ride out. ENOENT (command
 // genuinely missing) is deliberately EXCLUDED — retrying a missing binary forever
 // would hide a real "node/npx not found", so it must surface as a normal failure.
-export const SPAWN_EXHAUSTION_CODES = new Set(['EAGAIN', 'EMFILE', 'ENFILE', 'ENOMEM', 'UV_EMFILE']);
+export const SPAWN_EXHAUSTION_CODES = new Set([
+  "EAGAIN",
+  "EMFILE",
+  "ENFILE",
+  "ENOMEM",
+  "UV_EMFILE",
+]);
 
 // True iff spawnSync could not create the child due to host resource exhaustion.
 // Pure + total: never throws on null/partial input.
 export function isSpawnExhaustion(res) {
   if (!res || !res.error) return false;
-  return SPAWN_EXHAUSTION_CODES.has(res.error.code || '');
+  return SPAWN_EXHAUSTION_CODES.has(res.error.code || "");
 }
 
 // Deterministic backoff (ms) for the Nth retry: 200,400,800,1600,3200 capped at 5s.
@@ -47,7 +53,11 @@ export function spawnBackoffMs(attempt) {
 // busy-spinning. Best-effort: degrades to a no-op if SharedArrayBuffer is unavailable.
 export function sleepSync(ms) {
   if (!(ms > 0)) return;
-  try { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms); } catch { /* SAB blocked → skip wait */ }
+  try {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+  } catch {
+    /* SAB blocked → skip wait */
+  }
 }
 
 // Resilient wrapper around a caller-supplied spawnSync. Retries ONLY spawn-level
@@ -58,8 +68,15 @@ export function sleepSync(ms) {
 //                            saturated). Caller must NOT count it as pass or fail.
 //   - envBlocked === false → res is a genuine run result (pass or real failure).
 // `sleep` is injectable so unit tests run instantly without real backoff waits.
-export function spawnResilient(spawnSyncFn, cmd, args, opts = {}, { retries = 5, sleep = sleepSync } = {}) {
-  let res, attempt = 0;
+export function spawnResilient(
+  spawnSyncFn,
+  cmd,
+  args,
+  opts = {},
+  { retries = 5, sleep = sleepSync } = {},
+) {
+  let res,
+    attempt = 0;
   for (;;) {
     res = spawnSyncFn(cmd, args, opts);
     if (!isSpawnExhaustion(res) || attempt >= retries) break;

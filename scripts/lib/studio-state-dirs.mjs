@@ -16,6 +16,6 @@
 // Adding a directory here widens BOTH the wipe guard's scope and the context
 // meter's accounting. That coupling is intentional: a directory worth measuring
 // is a directory worth protecting.
-export const STUDIO_STATE_DIRS = ['context', 'docs', 'logs', 'portfolio'];
+export const STUDIO_STATE_DIRS = ["context", "docs", "logs", "portfolio"];
 
 export default { STUDIO_STATE_DIRS };

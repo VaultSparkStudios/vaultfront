@@ -120,10 +120,20 @@ export function assertPartition(checks = []) {
   const counts = partitionCounts(checks);
   if (counts.unclassified !== 0) {
     const orphans = (Array.isArray(checks) ? checks : [])
-      .filter(c => !isSkipped(c) && !isGreen(c) && !isWarning(c) && !isFailing(c) && !isAdvisoryPass(c))
-      .map(c => `${c?.id ?? '<no id>'}(pass=${c?.pass},warn=${c?.warn},skipped=${c?.skipped})`);
+      .filter(
+        (c) =>
+          !isSkipped(c) &&
+          !isGreen(c) &&
+          !isWarning(c) &&
+          !isFailing(c) &&
+          !isAdvisoryPass(c),
+      )
+      .map(
+        (c) =>
+          `${c?.id ?? "<no id>"}(pass=${c?.pass},warn=${c?.warn},skipped=${c?.skipped})`,
+      );
     throw new Error(
-      `doctor-predicates partition violated: ${counts.unclassified} of ${counts.total} check(s) match no state — ${orphans.join(', ')}`
+      `doctor-predicates partition violated: ${counts.unclassified} of ${counts.total} check(s) match no state — ${orphans.join(", ")}`,
     );
   }
   return counts;
@@ -139,75 +149,3 @@ export default {
   partitionCounts,
   assertPartition,
 };
-
-// ── Founder-facing rendering (D-S294.10, closes [SIL:2⛔][S287 #2]) ───────────
-//
-// The partition above made the five states nameable; it did not stop surfaces from
-// re-collapsing them on the way to a human. At S294 three founder-facing answers to
-// one question were live simultaneously — the doctor's own JSON, the startup brief's
-// `N pass · N warn · N fail`, and a mid-session extraction — because each rendered
-// its own arithmetic over the same list. The specific loss: `passing` is
-// `green + advisoryPass` by design, so a brief printing "142 pass" silently absorbs
-// every clean-with-a-note probe, and the note reaches nobody.
-//
-// So the RENDERING is shared too, not just the counting. Any surface showing doctor
-// health calls formatDoctorSummary(); none re-derives a tally.
-
-/**
- * One founder-facing summary line from a check list or a counts object.
- *
- * `advisory` is always shown when non-zero — that is the whole point. It is
- * deliberately NOT folded into `pass`, and deliberately NOT shown as a warning:
- * a clean probe carrying a note must neither disappear nor redden the board.
- *
- * @param {object|Array} input       check list, or a partitionCounts() result
- * @param {{style?: 'line'|'compact'}} opts
- */
-export function formatDoctorSummary(input, { style = 'line' } = {}) {
-  const c = Array.isArray(input) ? partitionCounts(input) : input;
-  const green = c.green ?? 0;
-  const advisory = c.advisoryPass ?? 0;
-  const warning = c.warning ?? 0;
-  const failing = c.failing ?? 0;
-  const skipped = c.skipped ?? 0;
-
-  if (style === 'compact') {
-    // For tight tiles: green/ran, with advisory and warn only when they exist.
-    const bits = [`${green}/${c.ran ?? (green + advisory + warning + failing)}`];
-    if (advisory) bits.push(`+${advisory} adv`);
-    if (warning) bits.push(`${warning} warn`);
-    if (failing) bits.push(`${failing} fail`);
-    return bits.join(' · ');
-  }
-
-  const bits = [`${green} green`];
-  if (advisory) bits.push(`${advisory} advisory-pass`);
-  bits.push(`${warning} warn`, `${failing} fail`);
-  if (skipped) bits.push(`${skipped} skipped`);
-  return bits.join(' · ');
-}
-
-/**
- * The three numbers a founder-facing surface is allowed to claim, named so a caller
- * cannot accidentally print `passing` while calling it "green". Returns the counts
- * plus an explicit `passingIncludesAdvisory` flag, because the one thing that must
- * never be ambiguous is whether the headline number absorbed the notes.
- */
-export function doctorHeadline(input) {
-  const c = Array.isArray(input) ? partitionCounts(input) : input;
-  const measured = (value) => Number.isFinite(value) ? value : null;
-  const green = measured(c.green);
-  const advisoryPass = measured(c.advisoryPass);
-  return {
-    green,
-    advisoryPass,
-    warning: measured(c.warning),
-    failing: measured(c.failing),
-    skipped: measured(c.skipped),
-    ran: measured(c.ran),
-    total: measured(c.total),
-    passing: measured(c.passing) ?? (green != null && advisoryPass != null ? green + advisoryPass : null),
-    passingIncludesAdvisory: true,
-    summary: formatDoctorSummary(c),
-  };
-}

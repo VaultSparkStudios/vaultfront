@@ -23,8 +23,6 @@
 // bounded AGE, not a calendar identity — prefer the full-resolution `ranAt`
 // (persisted since S174) and compare hours; day-identity survives only as the
 // legacy fallback for scores predating `ranAt`.
-import { classifyLiveState } from './live-state-lag.mjs';
-
 export const SCORE_FRESH_MAX_AGE_HOURS = 24;
 
 /**
@@ -37,7 +35,13 @@ export const SCORE_FRESH_MAX_AGE_HOURS = 24;
 export function scoreFreshness(status, today, nowMs = Date.now()) {
   const ds = status?.doctorScore;
   if (!ds || !ds.date) {
-    return { ok: false, date: null, ageDays: null, ageHours: null, reason: 'no doctorScore persisted' };
+    return {
+      ok: false,
+      date: null,
+      ageDays: null,
+      ageHours: null,
+      reason: "no doctorScore persisted",
+    };
   }
   const ranAtMs = ds.ranAt ? new Date(ds.ranAt).getTime() : NaN;
   if (Number.isFinite(ranAtMs)) {
@@ -48,7 +52,9 @@ export function scoreFreshness(status, today, nowMs = Date.now()) {
       date: ds.date,
       ageDays: Math.floor(Math.max(0, ageHours) / 24),
       ageHours: Math.round(ageHours * 10) / 10,
-      reason: ok ? `fresh (${Math.round(ageHours)}h old, bounded ≤${SCORE_FRESH_MAX_AGE_HOURS}h)` : `stale by ${Math.round(ageHours)}h (ran ${ds.ranAt})`,
+      reason: ok
+        ? `fresh (${Math.round(ageHours)}h old, bounded ≤${SCORE_FRESH_MAX_AGE_HOURS}h)`
+        : `stale by ${Math.round(ageHours)}h (ran ${ds.ranAt})`,
     };
   }
   const ageDays = daysBetween(ds.date, today);
@@ -57,7 +63,10 @@ export function scoreFreshness(status, today, nowMs = Date.now()) {
     date: ds.date,
     ageDays,
     ageHours: null,
-    reason: ageDays <= 0 ? 'fresh (same-day, legacy day-granular score)' : `stale by ${ageDays}d (persisted ${ds.date}, today ${today})`,
+    reason:
+      ageDays <= 0
+        ? "fresh (same-day, legacy day-granular score)"
+        : `stale by ${ageDays}d (persisted ${ds.date}, today ${today})`,
   };
 }
 
@@ -78,20 +87,26 @@ export function scoreFreshness(status, today, nowMs = Date.now()) {
  */
 export function readableDoctorScore(value) {
   if (value == null) {
-    return { ok: false, score: null, reason: 'no doctorScore persisted' };
+    return { ok: false, score: null, reason: "no doctorScore persisted" };
   }
-  if (typeof value !== 'object' || Array.isArray(value)) {
+  if (typeof value !== "object" || Array.isArray(value)) {
     return {
       ok: false,
       score: null,
-      reason: `doctorScore is a bare ${Array.isArray(value) ? 'array' : typeof value} (${JSON.stringify(value)}), not the {passing,total,…} object the doctor writes`,
+      reason: `doctorScore is a bare ${Array.isArray(value) ? "array" : typeof value} (${JSON.stringify(value)}), not the {passing,total,…} object the doctor writes`,
     };
   }
-  const missing = ['passing', 'total'].filter((k) => !Number.isFinite(value[k]));
+  const missing = ["passing", "total"].filter(
+    (k) => !Number.isFinite(value[k]),
+  );
   if (missing.length) {
-    return { ok: false, score: null, reason: `doctorScore is missing numeric ${missing.join(' + ')}` };
+    return {
+      ok: false,
+      score: null,
+      reason: `doctorScore is missing numeric ${missing.join(" + ")}`,
+    };
   }
-  return { ok: true, score: value, reason: 'well-formed' };
+  return { ok: true, score: value, reason: "well-formed" };
 }
 
 /**
@@ -104,12 +119,12 @@ export function readableDoctorScore(value) {
  * @returns {boolean}
  */
 export function preflightRefreshesScore(rendererSrc) {
-  if (typeof rendererSrc !== 'string') return false;
+  if (typeof rendererSrc !== "string") return false;
   // Find a spawn argv array that invokes the doctor and carries --update-json.
   // Tolerant of arg order / whitespace; rejects a bare `doctor --fix` preflight.
   const spawnMatch = rendererSrc.match(/\[[^\]]*['"]doctor['"][^\]]*\]/g);
   if (!spawnMatch) return false;
-  return spawnMatch.some(argv => /--update-json/.test(argv));
+  return spawnMatch.some((argv) => /--update-json/.test(argv));
 }
 
 /**
@@ -118,59 +133,23 @@ export function preflightRefreshesScore(rendererSrc) {
  * @param {number} liveFailing   failing count from a current runChecks()
  * @returns {{ ok: boolean, cached: number|null, live: number, reason: string }}
  */
-/**
- * failingCoherent(status, liveFailing, snapshot?)
- *
- * Three states, not two (S340 [audit #3]):
- *   coherent     — the persisted failing count equals the snapshot's.
- *   persist-lag  — they differ, but the snapshot is an AD-HOC run (persisted:false)
- *                  that is genuinely newer than the persisted stamp: the persister
- *                  has not run since the producer. Not a contradiction; closeout's
- *                  `--update-json` clears it. ok:true with the state named, so a
- *                  reader cannot mistake it for a match.
- *   incoherent   — they differ and the snapshot claims to be persisted (or is a
- *                  legacy snapshot with no `persisted` field, which stays STRICT so
- *                  the S173 lie shape — cached 1 vs live 0 after --update-json — is
- *                  still caught).
- * A snapshot that says persisted:false but is OLDER than the persisted stamp is
- * incoherent too: lag can only run forward.
- */
-export function failingCoherent(status, liveFailing, snapshot = null) {
+export function failingCoherent(status, liveFailing) {
   const cached = status?.doctorScore?.failing ?? null;
-  // S340 #2 — the three-state decision now lives in the shared live-state-lag
-  // helper. Only an AD-HOC snapshot (persisted:false) may claim to be newer: a
-  // persisted or legacy snapshot gets no producer timestamp, so a divergence can
-  // never be lag and stays strict (the S173 shape). The helper's 'unknown' maps
-  // to incoherent here, preserving this function's two-verdict ok contract.
-  const adHoc = snapshot && snapshot.persisted === false;
-  const v = classifyLiveState({
-    producer: { name: 'snapshot', value: liveFailing, at: adHoc ? snapshot.generatedAt : undefined },
-    persister: { name: 'persisted doctorScore', value: cached, at: status?.doctorScore?.ranAt },
-    equal: (x, y) => x === y,
-    remedy: 'node scripts/ops.mjs doctor --update-json',
-    label: 'failing',
-  });
-  if (v.state === 'coherent') {
-    return { ok: true, state: 'coherent', cached, live: liveFailing, reason: 'cached failing matches live' };
-  }
-  if (v.state === 'persist-lag') {
-    return {
-      ok: true,
-      state: 'persist-lag',
-      cached,
-      live: liveFailing,
-      reason: `cached ${cached} ≠ snapshot ${liveFailing} failing, but the snapshot (${snapshot.generatedAt}) is an ad-hoc run newer than the persisted stamp (${status.doctorScore.ranAt}) — persist lag, not a contradiction; run: ${v.remedy}`,
-    };
-  }
+  const ok = cached === liveFailing;
   return {
-    ok: false,
-    state: 'incoherent',
+    ok,
     cached,
     live: liveFailing,
-    reason: `cached ${cached} ≠ live ${liveFailing} failing`,
+    reason: ok
+      ? "cached failing matches live"
+      : `cached ${cached} ≠ live ${liveFailing} failing`,
   };
 }
 
 function daysBetween(a, b) {
-  try { return Math.round((new Date(b) - new Date(a)) / 86400000); } catch { return null; }
+  try {
+    return Math.round((new Date(b) - new Date(a)) / 86400000);
+  } catch {
+    return null;
+  }
 }

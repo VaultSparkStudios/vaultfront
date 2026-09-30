@@ -18,13 +18,16 @@
  *   2 — file missing / unreadable
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from "fs";
+import path from "path";
 
 const args = process.argv.slice(2);
-const JSON_OUT = args.includes('--json');
-const pathIdx = args.indexOf('--path');
-const TARGET = pathIdx >= 0 ? args[pathIdx + 1] : path.resolve(process.cwd(), 'context/TASK_BOARD.md');
+const JSON_OUT = args.includes("--json");
+const pathIdx = args.indexOf("--path");
+const TARGET =
+  pathIdx >= 0
+    ? args[pathIdx + 1]
+    : path.resolve(process.cwd(), "context/TASK_BOARD.md");
 
 if (!fs.existsSync(TARGET)) {
   const msg = `TASK_BOARD not found: ${TARGET}`;
@@ -33,7 +36,7 @@ if (!fs.existsSync(TARGET)) {
   process.exit(2);
 }
 
-const src = fs.readFileSync(TARGET, 'utf8');
+const src = fs.readFileSync(TARGET, "utf8");
 const lines = src.split(/\r?\n/);
 
 // Match table rows: `| NNN | ...` where NNN is an integer (task ID column).
@@ -49,8 +52,14 @@ const ids = new Map(); // id -> [{ line, snippet }]
 let inAuditTable = false;
 
 lines.forEach((line, idx) => {
-  if (!/^\s*\|/.test(line)) { inAuditTable = false; return; }
-  if (/^\|\s*audit id\s*\|/i.test(line)) { inAuditTable = true; return; }
+  if (!/^\s*\|/.test(line)) {
+    inAuditTable = false;
+    return;
+  }
+  if (/^\|\s*audit id\s*\|/i.test(line)) {
+    inAuditTable = true;
+    return;
+  }
   if (inAuditTable) return;
   const m = line.match(rowRe);
   if (!m) return;
@@ -73,16 +82,22 @@ if (JSON_OUT) {
 }
 
 if (ok) {
-  console.log(`✓ TASK_BOARD ID integrity — ${total} unique IDs, no duplicates.`);
+  console.log(
+    `✓ TASK_BOARD ID integrity — ${total} unique IDs, no duplicates.`,
+  );
   process.exit(0);
 }
 
-console.error(`✗ TASK_BOARD ID integrity FAIL — ${duplicates.length} duplicate ID(s):`);
+console.error(
+  `✗ TASK_BOARD ID integrity FAIL — ${duplicates.length} duplicate ID(s):`,
+);
 for (const { id, count, rows } of duplicates) {
   console.error(`\n  #${id} (${count}×):`);
   for (const r of rows) {
     console.error(`    line ${r.line}: ${r.snippet}…`);
   }
 }
-console.error(`\n  Fix: renumber the newer row(s) to a fresh unused ID (current max + 1).`);
+console.error(
+  `\n  Fix: renumber the newer row(s) to a fresh unused ID (current max + 1).`,
+);
 process.exit(1);

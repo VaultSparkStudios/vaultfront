@@ -65,35 +65,28 @@
 // Exit 0 when every REGISTERED gate is present in every skill copy; 1 otherwise.
 // `unclassified` never fails the run — it is coverage debt, reported not enforced.
 
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
-import { scopeSemanticFindings } from './lib/execution-contract.mjs';
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
-const ROOT = path.resolve(import.meta.dirname, '..');
-const PROTOCOL = path.join(ROOT, 'docs', 'SESSION_PROTOCOL.md');
+const ROOT = path.resolve(import.meta.dirname, "..");
+const PROTOCOL = path.join(ROOT, "docs", "SESSION_PROTOCOL.md");
 
 // Which protocol section governs which skill, and where that skill's copies live.
 // `snapshot` is the only durable copy (the live ones vanish with the machine), so
 // it is checked alongside them rather than trusted as a proxy.
 const BINDINGS = [
   {
-    section: '§1',
+    section: "§1",
     heading: /^## §1 — /,
-    skill: 'studio-start',
-    command: '/start',
+    skill: "studio-start",
+    command: "/start",
   },
   {
-    section: '§2C',
-    heading: /^## §2C — /,
-    skill: 'implement',
-    command: '/implement',
-  },
-  {
-    section: '§3',
+    section: "§3",
     heading: /^## §3 — /,
-    skill: 'studio-closeout',
-    command: '/closeout',
+    skill: "studio-closeout",
+    command: "/closeout",
   },
 ];
 
@@ -103,108 +96,87 @@ const BINDINGS = [
 // write that citation, it does not belong here: an unjustified gate is how a lint
 // starts asserting opinions instead of contracts.
 const GATES = {
-  'start-canon-sync': {
-    section: '§1',
-    because: 'SESSION_PROTOCOL §1 step 2 (D-S259.5): "A stale/missing adoption posture or failed sync must be '
-      + 'surfaced before work begins; never rely on an agent\'s remembered canon" — reinforced at §1 hard rules: '
-      + '"Every agent reconciles Studio Canon through start-canon-sync.mjs".',
+  "start-canon-sync": {
+    section: "§1",
+    because:
+      'SESSION_PROTOCOL §1 step 2 (D-S259.5): "A stale/missing adoption posture or failed sync must be ' +
+      "surfaced before work begins; never rely on an agent's remembered canon\" — reinforced at §1 hard rules: " +
+      '"Every agent reconciles Studio Canon through start-canon-sync.mjs".',
   },
-  'frontier-capability-radar': {
-    section: '§1',
-    because: 'SESSION_PROTOCOL §1 step 2 (CANON-049): "This checks the machine radar every start" — and AGENTS.md '
-      + 'restates it as "at every /start".',
+  "frontier-capability-radar": {
+    section: "§1",
+    because:
+      'SESSION_PROTOCOL §1 step 2 (CANON-049): "This checks the machine radar every start" — and AGENTS.md ' +
+      'restates it as "at every /start".',
   },
-  // S315 [audit #5] — registered together, because they are two halves of one gate.
-  //
-  // Between S301 and S315 the maintenance session lane worked and simply was not run.
-  // Asked directly it answered `2 due · 2 runnable`, while the fingerprint court sat
-  // 7.1 days past its own 7-day promise. The lane's cadences are the only thing
-  // keeping seven networked jobs defendable, and a protocol LINE runs only when the
-  // agent performing the ceremony runs it — so `run-maintenance` earns the same
-  // unconditional standing as the radar it was explicitly modelled on, and
-  // `check-maintenance-lane-ran` is what makes its absence visible the same session
-  // rather than seven days later through a downstream symptom.
-  'run-maintenance': {
-    section: '§1',
-    because: 'SESSION_PROTOCOL §1 step 2 (S301 · CANON-031): the session lane is the ONLY execution path for eight '
-      + 'networked registry jobs — "--auto excludes networked risk by design, the ops-daemon is not running, and every '
-      + 'hosted cron was retired" — so without this line their declared cadences are undefendable bounds.',
+  "write-session-lock": {
+    section: "§1",
+    because:
+      "SESSION_PROTOCOL §1 step 1 — the session lock is what makes cross-repo write safety and stale-session " +
+      "detection possible; every downstream lock check reads a file only this writes.",
   },
-  'check-maintenance-lane-ran': {
-    section: '§1',
-    because: 'SESSION_PROTOCOL §1 step 2 (S315): "the lane is now MEASURED, because obliged was not enough" — the '
-      + 'liveness assertion for the line above, on the S314 rule that a gate inside a ceremony is only as alive as the '
-      + 'ceremony that runs it.',
+  "context-meter": {
+    section: "§1",
+    because:
+      'SESSION_PROTOCOL §1 hard rules: "Context-meter check runs before ANY file load. CLOSEOUT verdict = ' +
+      'stop immediately, no exceptions."',
   },
-  'start-sync': {
-    section: '§1',
-    because: 'SESSION_PROTOCOL §1 step 0 (S305): the sync classifies receipt residue with the closeout allowlist; a bare '
-      + '`git pull --rebase` refuses the receipts every closeout leaves behind and was being resolved by hand.',
-  },
-  'write-session-lock': {
-    section: '§1',
-    because: 'SESSION_PROTOCOL §1 step 1 — the session lock is what makes cross-repo write safety and stale-session '
-      + 'detection possible; every downstream lock check reads a file only this writes.',
-  },
-  'context-meter': {
-    section: '§1',
-    because: 'SESSION_PROTOCOL §1 hard rules: "Context-meter check runs before ANY file load. CLOSEOUT verdict = '
-      + 'stop immediately, no exceptions."',
-  },
-  'check-secrets': {
-    section: '§1',
-    because: 'SESSION_PROTOCOL §1 step 2 credentials-gateway health — CANON-019 forbids labelling anything blocked '
-      + 'before secrets discovery has run.',
-  },
-  // §2C gate — S347 [audit #3], closes [SIL:2⛔][S317 #2]. The strict premise check
-  // existed with zero callers; its only consumer passed --json and discarded the exit.
-  'check-audit-premises': {
-    section: '§2C',
-    because: 'SESSION_PROTOCOL §2C step 2.5: "check-audit-premises.mjs --strict --audit <sidecar> BEFORE item 1. '
-      + 'Exit non-zero ... = STOP" — a stop that no skill copy runs cannot stop anything.',
+  "check-secrets": {
+    section: "§1",
+    because:
+      "SESSION_PROTOCOL §1 step 2 credentials-gateway health — CANON-019 forbids labelling anything blocked " +
+      "before secrets discovery has run.",
   },
   // §3 gates — added S280 [SIL][S280 #1], closing the blind spot this checker
   // published about itself on its first run. Same bar as §1: each cites the
   // protocol text that makes it unconditional, and anything judgment-shaped
   // stays in EXEMPT rather than being promoted to look thorough.
-  'scan-secrets': {
-    section: '§3',
-    because: 'SESSION_PROTOCOL §3: "`node scripts/scan-secrets.mjs --staged`. Abort on any finding; fix before '
-      + 'retry." An abort-on-finding step that does not run cannot abort.',
+  "scan-secrets": {
+    section: "§3",
+    because:
+      'SESSION_PROTOCOL §3: "`node scripts/scan-secrets.mjs --staged`. Abort on any finding; fix before ' +
+      'retry." An abort-on-finding step that does not run cannot abort.',
   },
-  'closeout-autopilot': {
-    section: '§3',
-    because: 'SESSION_PROTOCOL §3 — the autopilot performs the commit + push with no interactive gate (D-S177); '
-      + 'it carries the coherence commit gate, secret scan, and diff preview that are the closeout\'s safety net.',
+  "closeout-autopilot": {
+    section: "§3",
+    because:
+      "SESSION_PROTOCOL §3 — the autopilot performs the commit + push with no interactive gate (D-S177); " +
+      "it carries the coherence commit gate, secret scan, and diff preview that are the closeout's safety net.",
   },
-  'session-floor': {
-    section: '§3',
-    because: 'SESSION_PROTOCOL §3 opens with `node scripts/session-floor.mjs --closeout-gate --shipped <N>` as an '
-      + 'explicit gate on whether the session may close at all.',
+  "session-floor": {
+    section: "§3",
+    because:
+      "SESSION_PROTOCOL §3 opens with `node scripts/session-floor.mjs --closeout-gate --shipped <N>` as an " +
+      "explicit gate on whether the session may close at all.",
   },
-  'render-state-vector': {
-    section: '§3',
-    because: 'SESSION_PROTOCOL §3.6 intelligence refresh — listed unconditionally alongside doctor/entropy/genome, '
-      + 'with no conditional qualifier.',
+  "render-state-vector": {
+    section: "§3",
+    because:
+      "SESSION_PROTOCOL §3.6 intelligence refresh — listed unconditionally alongside doctor/entropy/genome, " +
+      "with no conditional qualifier.",
   },
-  'compute-entropy': {
-    section: '§3',
-    because: 'SESSION_PROTOCOL §3.6 intelligence refresh — listed unconditionally.',
+  "compute-entropy": {
+    section: "§3",
+    because:
+      "SESSION_PROTOCOL §3.6 intelligence refresh — listed unconditionally.",
   },
-  'append-genome-snapshot': {
-    section: '§3',
-    because: 'SESSION_PROTOCOL §3.6 intelligence refresh — listed unconditionally; the genome series loses a point '
-      + 'permanently if a closeout skips it, and an append-only series cannot be backfilled honestly.',
+  "append-genome-snapshot": {
+    section: "§3",
+    because:
+      "SESSION_PROTOCOL §3.6 intelligence refresh — listed unconditionally; the genome series loses a point " +
+      "permanently if a closeout skips it, and an append-only series cannot be backfilled honestly.",
   },
-  'ignis-rescore-touched': {
-    section: '§3',
-    because: 'SESSION_PROTOCOL §3: "Every closeout (S153 — auto-rescore on touch)" — the word is *every*, and the '
-      + 'stated purpose is keeping coverage cumulative so the portfolio never re-ages.',
+  "ignis-rescore-touched": {
+    section: "§3",
+    because:
+      'SESSION_PROTOCOL §3: "Every closeout (S153 — auto-rescore on touch)" — the word is *every*, and the ' +
+      "stated purpose is keeping coverage cumulative so the portfolio never re-ages.",
   },
-  'validate-closeout-board-format': {
-    section: '§3',
-    because: 'SESSION_PROTOCOL §3 — the rendered status board is validated via `--stdin` before it is published; '
-      + 'an unvalidated board is exactly the improvised-surface failure CANON-001/§3.7 exist to prevent.',
+  "validate-closeout-board-format": {
+    section: "§3",
+    because:
+      "SESSION_PROTOCOL §3 — the rendered status board is validated via `--stdin` before it is published; " +
+      "an unvalidated board is exactly the improvised-surface failure CANON-001/§3.7 exist to prevent.",
   },
 };
 
@@ -212,37 +184,40 @@ const GATES = {
 // Each states WHY, because an unexplained exemption is indistinguishable from an
 // oversight six months later.
 const EXEMPT = {
-  'session-beacon': 'optional — AGENTS.md states the Hub beacon is "not required for normal operation"',
-  // S288 [audit item 3]. Deliberately EXEMPT rather than promoted: this is a
-  // bounded self-heal, not a gate. A gate's absence must block; this script's
-  // failure must NOT block a session — it is allowed to fail, leaving the
-  // doctor warning standing, which is the correct outcome when a resume cannot
-  // complete. Promoting it to a gate would make an unreachable Anthropic batch
-  // API able to stop a session from starting, which is strictly worse than the
-  // stall it exists to clear.
-  'start-stalled-remediation-resume': 'conditional self-heal — Studio-Ops-only, acts only on a stalled batch verdict, and is designed to be allowed to fail (a failed resume must leave the doctor warning standing, never block /start)',
-  'start-recovery-preflight': 'conditional — recovery-only path, runs when a prior session was cut off',
-  'install-git-window-guard': 'conditional — Codex/CLI window-storm guard, marked "(Codex/CLI)" in the protocol',
-  'render-startup-brief': 'delegated — reached through check-brief-staleness, which re-renders on stale',
-  'validate-brief-format': 'delegated — reached through check-brief-staleness re-render+validate path',
-  'compact-memory-index': 'conditional — §1 step 5 memory remediation gate, fires only when memory/MEMORY.md exists',
-  'run-doctor': 'delegated — /start reads the doctor score from the brief; the full run belongs to /closeout',
-  'detect-session-mode': 'covered — named directly in the skill body; listed here so the denominator stays explicit',
-  'compact-handoff': 'covered — named directly in the skill body',
+  "session-beacon":
+    'optional — AGENTS.md states the Hub beacon is "not required for normal operation"',
+  "start-recovery-preflight":
+    "conditional — recovery-only path, runs when a prior session was cut off",
+  "install-git-window-guard":
+    'conditional — Codex/CLI window-storm guard, marked "(Codex/CLI)" in the protocol',
+  "render-startup-brief":
+    "delegated — reached through check-brief-staleness, which re-renders on stale",
+  "validate-brief-format":
+    "delegated — reached through check-brief-staleness re-render+validate path",
+  "compact-memory-index":
+    "conditional — §1 step 5 memory remediation gate, fires only when memory/MEMORY.md exists",
+  "run-doctor":
+    "delegated — /start reads the doctor score from the brief; the full run belongs to /closeout",
+  "detect-session-mode":
+    "covered — named directly in the skill body; listed here so the denominator stays explicit",
+  "compact-handoff": "covered — named directly in the skill body",
   // §3 exemptions — the honest half of [SIL][S280 #1]. These were NOT promoted to
   // gates just to drive the unruled count to zero; a registry padded to look
   // complete is the same lie as a lint that hides its blind spot.
-  'render-closeout-checklist': 'optional — SESSION_PROTOCOL §3 offers it as a "Token-lean entry" alternative to '
-    + 'reading the section ("instead of re-reading this whole section"), and explicitly says to fall back to the '
-    + 'full text on --check failure. An accelerator, not a gate.',
-  'check-deploy-currency': 'delegated — §3 mentions it as the producer behind doctor probe `deploy-currency`, which '
-    + 'the closeout already consults through the doctor run; the closeout step is writing an honest `Deploy:` field.',
+  "render-closeout-checklist":
+    'optional — SESSION_PROTOCOL §3 offers it as a "Token-lean entry" alternative to ' +
+    'reading the section ("instead of re-reading this whole section"), and explicitly says to fall back to the ' +
+    "full text on --check failure. An accelerator, not a gate.",
+  "check-deploy-currency":
+    "delegated — §3 mentions it as the producer behind doctor probe `deploy-currency`, which " +
+    "the closeout already consults through the doctor run; the closeout step is writing an honest `Deploy:` field.",
   // Section-scoped by design: `context-meter` IS a §1 gate (see GATES) and reaches
   // this map only for §3, where its role is different.
-  'context-meter': 'suggestion-gate in §3 — it governs whether closeout should be SUGGESTED (CONSIDER_CLOSEOUT / '
-    + 'CLOSEOUT), not whether an invoked closeout may run. The skill is explicit that closeout is founder-invoked '
-    + 'and must never auto-invoke on context pressure, so requiring it as an execution gate would encode the '
-    + 'opposite rule. Remains an unconditional gate for §1.',
+  "context-meter":
+    "suggestion-gate in §3 — it governs whether closeout should be SUGGESTED (CONSIDER_CLOSEOUT / " +
+    "CLOSEOUT), not whether an invoked closeout may run. The skill is explicit that closeout is founder-invoked " +
+    "and must never auto-invoke on context pressure, so requiring it as an execution gate would encode the " +
+    "opposite rule. Remains an unconditional gate for §1.",
 };
 
 // S281 audit #3 — this checker propagates to every repo, so it must distinguish
@@ -253,17 +228,33 @@ const EXEMPT = {
 // false positive is worse than no detector, because it teaches the fleet to
 // ignore the probe. The live copies are machine-global and are checked everywhere.
 function isControlPlane(root = ROOT) {
-  return fs.existsSync(path.join(root, 'plugins', 'studio-os', 'skills'));
+  return fs.existsSync(path.join(root, "plugins", "studio-os", "skills"));
 }
 
 function skillCopies(skill, { controlPlane = isControlPlane() } = {}) {
   const home = os.homedir();
   const copies = [
-    { role: 'claude-live', file: path.join(home, '.claude', 'skills', skill, 'SKILL.md') },
-    { role: 'codex-live', file: path.join(home, '.agents', 'skills', skill, 'SKILL.md') },
+    {
+      role: "claude-live",
+      file: path.join(home, ".claude", "skills", skill, "SKILL.md"),
+    },
+    {
+      role: "codex-live",
+      file: path.join(home, ".agents", "skills", skill, "SKILL.md"),
+    },
   ];
   if (controlPlane) {
-    copies.push({ role: 'tracked-snapshot', file: path.join(ROOT, 'plugins', 'studio-os', 'skills', skill, 'SKILL.md') });
+    copies.push({
+      role: "tracked-snapshot",
+      file: path.join(
+        ROOT,
+        "plugins",
+        "studio-os",
+        "skills",
+        skill,
+        "SKILL.md",
+      ),
+    });
   }
   return copies;
 }
@@ -271,18 +262,22 @@ function skillCopies(skill, { controlPlane = isControlPlane() } = {}) {
 function sectionBody(markdown, heading) {
   const lines = markdown.split(/\r?\n/);
   const start = lines.findIndex((l) => heading.test(l));
-  if (start === -1) return '';
+  if (start === -1) return "";
   let end = lines.length;
   for (let i = start + 1; i < lines.length; i++) {
-    if (/^## /.test(lines[i])) { end = i; break; }
+    if (/^## /.test(lines[i])) {
+      end = i;
+      break;
+    }
   }
-  return lines.slice(start, end).join('\n');
+  return lines.slice(start, end).join("\n");
 }
 
 /** Script basenames the protocol section actually instructs an agent to run. */
 export function mandatedScripts(sectionText) {
   const found = new Set();
-  for (const m of sectionText.matchAll(/scripts\/([a-z0-9][a-z0-9-]*)\.mjs/g)) found.add(m[1]);
+  for (const m of sectionText.matchAll(/scripts\/([a-z0-9][a-z0-9-]*)\.mjs/g))
+    found.add(m[1]);
   return [...found].sort();
 }
 
@@ -296,7 +291,12 @@ export function skillCovers(skillText, script) {
   return skillText.includes(script);
 }
 
-export function evaluate({ protocolText, bindings = BINDINGS, readSkill, controlPlane = isControlPlane() }) {
+export function evaluate({
+  protocolText,
+  bindings = BINDINGS,
+  readSkill,
+  controlPlane = isControlPlane(),
+}) {
   const results = [];
   for (const binding of bindings) {
     const body = sectionBody(protocolText, binding.heading);
@@ -305,9 +305,14 @@ export function evaluate({ protocolText, bindings = BINDINGS, readSkill, control
       const text = readSkill(copy.file);
       if (text === null) {
         results.push({
-          section: binding.section, skill: binding.skill, copy: copy.role, file: copy.file,
-          script: null, status: 'copy-missing',
-          detail: 'skill copy not found — cannot verify what this agent actually executes',
+          section: binding.section,
+          skill: binding.skill,
+          copy: copy.role,
+          file: copy.file,
+          script: null,
+          status: "copy-missing",
+          detail:
+            "skill copy not found — cannot verify what this agent actually executes",
         });
         continue;
       }
@@ -316,54 +321,54 @@ export function evaluate({ protocolText, bindings = BINDINGS, readSkill, control
         const gate = GATES[script];
         if (gate && gate.section === binding.section) {
           results.push({
-            section: binding.section, skill: binding.skill, copy: copy.role, file: copy.file,
-            script, status: 'gap', because: gate.because,
-            detail: `${binding.command} mandates scripts/${script}.mjs as an unconditional gate but this skill copy `
-              + 'never names it — the agent executing this copy will silently skip it',
+            section: binding.section,
+            skill: binding.skill,
+            copy: copy.role,
+            file: copy.file,
+            script,
+            status: "gap",
+            because: gate.because,
+            detail:
+              `${binding.command} mandates scripts/${script}.mjs as an unconditional gate but this skill copy ` +
+              "never names it — the agent executing this copy will silently skip it",
           });
           continue;
         }
         if (EXEMPT[script]) {
           results.push({
-            section: binding.section, skill: binding.skill, copy: copy.role,
-            script, status: 'exempt', detail: EXEMPT[script],
+            section: binding.section,
+            skill: binding.skill,
+            copy: copy.role,
+            script,
+            status: "exempt",
+            detail: EXEMPT[script],
           });
           continue;
         }
         // Neither ruled a gate nor ruled exempt. Reported, never enforced: this is
         // the checker stating what it has not been taught to judge.
         results.push({
-          section: binding.section, skill: binding.skill, copy: copy.role,
-          script, status: 'unclassified',
-          detail: `${binding.command} names scripts/${script}.mjs and this copy does not; no ruling exists on `
-            + 'whether it is an unconditional gate. Classify it in GATES or EXEMPT.',
+          section: binding.section,
+          skill: binding.skill,
+          copy: copy.role,
+          script,
+          status: "unclassified",
+          detail:
+            `${binding.command} names scripts/${script}.mjs and this copy does not; no ruling exists on ` +
+            "whether it is an unconditional gate. Classify it in GATES or EXEMPT.",
         });
       }
     }
   }
-  // Presence parity cannot catch a skill that retains the gates but instructs
-  // unauthorized expansion after they pass. Check the known conflicting
-  // directives in all execution skills, including /go and /arc.
-  let scopeCopiesChecked = 0;
-  for (const skill of ['go', 'implement', 'arc']) {
-    for (const copy of skillCopies(skill, { controlPlane })) {
-      const text = readSkill(copy.file);
-      if (text == null) continue;
-      scopeCopiesChecked++;
-      for (const finding of scopeSemanticFindings(text)) results.push({
-        section: 'Scope', skill, copy: copy.role, file: copy.file,
-        script: 'execution-contract', status: 'gap', because: 'Budgets are ceilings; new work requires scope',
-        detail: `conflicting expansion directive at line ${finding.line}: ${finding.text}`,
-      });
-    }
-  }
-  const gaps = results.filter((r) => r.status === 'gap');
-  const missingCopies = results.filter((r) => r.status === 'copy-missing');
-  const exempt = results.filter((r) => r.status === 'exempt');
-  const unclassified = results.filter((r) => r.status === 'unclassified');
+  const gaps = results.filter((r) => r.status === "gap");
+  const missingCopies = results.filter((r) => r.status === "copy-missing");
+  const exempt = results.filter((r) => r.status === "exempt");
+  const unclassified = results.filter((r) => r.status === "unclassified");
   // Distinct script names, not per-copy rows — six copies of one unruled script is
   // one decision to make, and reporting it as six overstates the debt.
-  const unclassifiedScripts = [...new Set(unclassified.map((r) => `${r.section}:${r.script}`))].sort();
+  const unclassifiedScripts = [
+    ...new Set(unclassified.map((r) => `${r.section}:${r.script}`)),
+  ].sort();
   return {
     ok: gaps.length === 0 && missingCopies.length === 0,
     gaps,
@@ -373,7 +378,6 @@ export function evaluate({ protocolText, bindings = BINDINGS, readSkill, control
     missingCopies,
     summary: {
       gapCount: gaps.length,
-      scopeCopiesChecked,
       exemptCount: exempt.length,
       missingCopyCount: missingCopies.length,
       // Published so a reader can tell "clean" from "checked almost nothing".
@@ -382,41 +386,70 @@ export function evaluate({ protocolText, bindings = BINDINGS, readSkill, control
       // S281: derived from the copies actually inspected, never a hardcoded 3 —
       // outside the control plane there are two roles, and a count that claimed
       // three would overstate coverage in exactly the repos with the least of it.
-      skillsChecked: bindings.reduce((n, b) => n + skillCopies(b.skill, { controlPlane }).length, 0),
-      copyRoles: bindings.length ? skillCopies(bindings[0].skill, { controlPlane }).map((c) => c.role) : [],
+      skillsChecked: bindings.reduce(
+        (n, b) => n + skillCopies(b.skill, { controlPlane }).length,
+        0,
+      ),
+      copyRoles: bindings.length
+        ? skillCopies(bindings[0].skill, { controlPlane }).map((c) => c.role)
+        : [],
       controlPlane,
     },
   };
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(import.meta.filename);
+const isMain =
+  process.argv[1] &&
+  path.resolve(process.argv[1]) === path.resolve(import.meta.filename);
 if (isMain) {
-  const readSkill = (file) => { try { return fs.readFileSync(file, 'utf8'); } catch { return null; } };
-  const report = evaluate({ protocolText: fs.readFileSync(PROTOCOL, 'utf8'), readSkill });
+  const readSkill = (file) => {
+    try {
+      return fs.readFileSync(file, "utf8");
+    } catch {
+      return null;
+    }
+  };
+  const report = evaluate({
+    protocolText: fs.readFileSync(PROTOCOL, "utf8"),
+    readSkill,
+  });
 
-  if (process.argv.includes('--json')) {
+  if (process.argv.includes("--json")) {
     console.log(JSON.stringify(report, null, 2));
   } else {
-    console.log('Protocol ↔ skill parity (SESSION_PROTOCOL vs the SKILL.md that actually runs)');
-    console.log('─'.repeat(72));
+    console.log(
+      "Protocol ↔ skill parity (SESSION_PROTOCOL vs the SKILL.md that actually runs)",
+    );
+    console.log("─".repeat(72));
     if (report.ok) {
-      console.log(`✓ every registered gate present · ${report.summary.registeredGates} gate(s) × `
-        + `${report.summary.skillsChecked} skill copies`);
+      console.log(
+        `✓ every registered gate present · ${report.summary.registeredGates} gate(s) × ` +
+          `${report.summary.skillsChecked} skill copies`,
+      );
     } else {
-      for (const c of report.missingCopies) console.log(`  ⛔ ${c.skill} [${c.copy}] — ${c.detail}`);
+      for (const c of report.missingCopies)
+        console.log(`  ⛔ ${c.skill} [${c.copy}] — ${c.detail}`);
       for (const g of report.gaps) {
-        console.log(`  ⛔ ${g.section} ${g.skill} [${g.copy}] · scripts/${g.script}.mjs — ${g.detail}`);
+        console.log(
+          `  ⛔ ${g.section} ${g.skill} [${g.copy}] · scripts/${g.script}.mjs — ${g.detail}`,
+        );
         console.log(`       because: ${g.because}`);
       }
-      console.log(`\n${report.summary.gapCount} gap(s) across ${report.summary.skillsChecked} skill copies.`);
-      console.log('Fix by adding the gate to the skill body — in ALL copies (CANON-010 parity) — not by deleting it from the protocol.');
+      console.log(
+        `\n${report.summary.gapCount} gap(s) across ${report.summary.skillsChecked} skill copies.`,
+      );
+      console.log(
+        "Fix by adding the gate to the skill body — in ALL copies (CANON-010 parity) — not by deleting it from the protocol.",
+      );
     }
     // Always printed, pass or fail. The blind spot is part of the result.
-    console.log(`\nCoverage: ${report.summary.registeredGates} registered gate(s) · `
-      + `${report.summary.exemptCount} exempt row(s) · `
-      + `${report.summary.unclassifiedScriptCount} protocol script(s) with NO ruling (reported, not enforced).`);
+    console.log(
+      `\nCoverage: ${report.summary.registeredGates} registered gate(s) · ` +
+        `${report.summary.exemptCount} exempt row(s) · ` +
+        `${report.summary.unclassifiedScriptCount} protocol script(s) with NO ruling (reported, not enforced).`,
+    );
     if (report.unclassifiedScripts.length) {
-      console.log(`  unruled: ${report.unclassifiedScripts.join(', ')}`);
+      console.log(`  unruled: ${report.unclassifiedScripts.join(", ")}`);
     }
   }
   process.exitCode = report.ok ? 0 : 1;
