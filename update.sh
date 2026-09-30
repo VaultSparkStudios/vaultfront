@@ -235,15 +235,21 @@ fi
 write_router_config() {
     local target="$1"
     local output="$2"
+    [[ "$target" =~ ^[a-zA-Z0-9][a-zA-Z0-9_.-]*$ ]] || {
+        echo "Invalid router target" >&2
+        return 2
+    }
     cat > "$output" << EOF
 map \$http_upgrade \$connection_upgrade {
     default upgrade;
     '' close;
 }
+resolver 127.0.0.11 valid=5s ipv6=off;
 server {
     listen 80;
     location / {
-        proxy_pass http://${target}:80;
+        set \$vaultfront_backend ${target};
+        proxy_pass http://\$vaultfront_backend:80;
         proxy_http_version 1.1;
         proxy_set_header Host \$host;
         proxy_set_header X-Forwarded-Proto https;

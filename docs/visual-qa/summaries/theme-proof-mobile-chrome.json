@@ -1,9 +1,9 @@
 {
   "project": "mobile-chrome",
   "localOnly": true,
-  "capturedAt": "2026-08-26T07:28:13.176Z",
+  "capturedAt": "2026-09-30T21:49:04.168Z",
   "source": {
-    "digest": "sha256:9da3851790e17b437a273fa528017e036fb1c7374a3fe395613d9a345e22be3c",
+    "digest": "sha256:272cbbf8280ccfa40a5028e01d1d12be81e7431752593321b106f4c4a5df04c1",
     "files": [
       {
         "path": "config/vaultfront-balance.v1.json",
@@ -12,8 +12,8 @@
       },
       {
         "path": "e2e/theme-visual-proof.spec.ts",
-        "bytes": 60152,
-        "digest": "sha256:81dd3919771ad6e5c6d4de79f93c195bfd09a449b73102c8fa5cbcfd7f74c596"
+        "bytes": 61940,
+        "digest": "sha256:2a3bf94eaf3651668d354aaf289f0f21469f77d6827e61de4c5099f90f36c4c0"
       },
       {
         "path": "index.html",
@@ -42,8 +42,8 @@
       },
       {
         "path": "src/client/CommandCenter.ts",
-        "bytes": 11010,
-        "digest": "sha256:6c0ca3f148c881e1599477902c7fdd7209f37e66c56f2401e55c22c7a3e995df"
+        "bytes": 10970,
+        "digest": "sha256:0dc6f5d49fa5f356d5f9b8c6872f6bbdf7bac35f25c6e7581a0f5d58a7dcb0c0"
       },
       {
         "path": "src/client/ConnectionRecoveryPresenter.ts",
@@ -97,8 +97,8 @@
       },
       {
         "path": "src/client/SeasonPassTrack.ts",
-        "bytes": 9473,
-        "digest": "sha256:bf65a7a379028619505e82ee4617b4e0e21f361ce9c594c5ff366ceaec8401c7"
+        "bytes": 9487,
+        "digest": "sha256:0305095e25e048fead9e488ca8938b3f95d3a5ed6f09564ffb7c1a044ae922fb"
       },
       {
         "path": "src/client/Transport.ts",
@@ -182,8 +182,8 @@
       },
       {
         "path": "src/client/components/PlayPage.ts",
-        "bytes": 5091,
-        "digest": "sha256:e7f8a20a898062c6f35da3fde93bceccacc5ffd643696a17f03e78b70b5caefc"
+        "bytes": 5108,
+        "digest": "sha256:c82ac2516f031a0eee053dd2c82411c135cb5d0f6b7ed1fd99802b3a80b0995a"
       },
       {
         "path": "src/client/components/PredictionLeaguePanel.ts",
@@ -397,8 +397,8 @@
       },
       {
         "path": "src/client/styles.css",
-        "bytes": 20870,
-        "digest": "sha256:c8c3f69672f51ed87bff1371f1f004927d9062c9e4e6452060dd2661ca3a6d12"
+        "bytes": 21164,
+        "digest": "sha256:6e2b1e9d0982ebdbde9d12e49d7515383dd862123ea48bae1cf159a46b8e1aa3"
       },
       {
         "path": "src/client/styles/components/button.css",

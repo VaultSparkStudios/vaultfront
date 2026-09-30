@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "capturedAt": "2026-08-26T07:28:42.238Z",
-  "generatedAt": "2026-08-26T07:28:42.238Z",
+  "capturedAt": "2026-09-30T21:49:14.073Z",
+  "generatedAt": "2026-09-30T21:49:14.073Z",
   "scope": "local-only",
   "claimBoundary": "This is local browser evidence, not live staging parity or founder approval.",
   "themes": ["dark", "light", "competitive"],
   "captures": [
     {
       "file": "artifacts/chromium-vaultfront-play.png",
-      "sha256": "4d115d622da7c4fbb45c26229919cac8ebc8ee9c3259c1b22fa0bcaff6a8c2b6",
+      "sha256": "469dad4eb2541921574519c16bf032fda7332a4e1e48aad7ccabe1be3e2aac17",
       "page": "play",
       "state": "play",
       "theme": "dark",
@@ -17,7 +17,7 @@
     },
     {
       "file": "artifacts/chromium-vaultfront-stats-showcase.png",
-      "sha256": "250d2fc33b4b3475bbc770f3d2809d27d70a60f0326f2315505720a55d38c3b9",
+      "sha256": "72a9ca63b11c7658ea9177c5f0fa980d41ce4201fbdc1a1da336199a13add7e1",
       "page": "stats-showcase",
       "state": "stats-showcase",
       "theme": "dark",
@@ -26,7 +26,7 @@
     },
     {
       "file": "artifacts/chromium-vaultfront-command-center.png",
-      "sha256": "cee776c41e89d3e5c433104fb792c5369ce6fdb5a7fd9e3ea1f59776c530b20e",
+      "sha256": "7c86cc385baf4e2248c7c29495355c25a8bf963bb1fd0484818dd9a0205c1761",
       "page": "command-center",
       "state": "command-center",
       "theme": "dark",
@@ -44,7 +44,7 @@
     },
     {
       "file": "artifacts/chromium-vaultfront-settings.png",
-      "sha256": "4ffeb424422f4d57e25a7b55b76f07f8355571d042c3f5194079ceed64e5826e",
+      "sha256": "acaf761ebf0887883245e788efe445ceebd0f8b090651832d9d281a1dc205372",
       "page": "settings",
       "state": "settings",
       "theme": "dark",
@@ -53,7 +53,7 @@
     },
     {
       "file": "artifacts/chromium-vaultfront-language-modal.png",
-      "sha256": "3139cf5fdec2ab461c9539fc23ebad9febed8d0a73f9982f3a3ebc8b250fb87d",
+      "sha256": "462fba714724ee336c42b35ace375f289ca1565e2a2841133a55669105c6c187",
       "page": "language-modal",
       "state": "language-modal",
       "theme": "dark",
@@ -80,7 +80,7 @@
     },
     {
       "file": "artifacts/chromium-vaultfront-account-handoff.png",
-      "sha256": "61049a4faeec46919edbc6e50651e97d18f19bb63a5b646879ea97d463e323ba",
+      "sha256": "17dbdc0b3eaccc5193a5a5cb74a80514007a1eb9d9c1f83a884fbe0b88d2763a",
       "page": "account-handoff",
       "state": "account-handoff",
       "theme": "dark",
@@ -188,7 +188,7 @@
     },
     {
       "file": "artifacts/chromium-vaultfront-narrator-certified.png",
-      "sha256": "28d628620ba69b212b4cb7b73941d967faef8afe2e45e4b02c8e998389cb4eab",
+      "sha256": "bace636a001aa96c1b60de9428ce9ac1e7e1eb10567772874aa0b58621cd803b",
       "page": "narrator-certified",
       "state": "narrator-certified",
       "theme": "dark",
@@ -224,7 +224,7 @@
     },
     {
       "file": "artifacts/chromium-light-play.png",
-      "sha256": "3a72a85a78ba89ff7909c533a4c074ffd39e9b09e2a23e13bb6b7e1430f17f52",
+      "sha256": "c03054e637e17ce1a0ae660ee562b08225392d2aff448145198a177102e75460",
       "page": "play",
       "state": "play",
       "theme": "light",
@@ -242,7 +242,7 @@
     },
     {
       "file": "artifacts/chromium-light-command-center.png",
-      "sha256": "3615283d5d41d216fb2f4045c6ba7061970520099d1bf074f019423e240bc078",
+      "sha256": "11a9b4bad7c0517239abe0217190a43065f49a915f7b2c2c9ac2f9e235284881",
       "page": "command-center",
       "state": "command-center",
       "theme": "light",
@@ -260,7 +260,7 @@
     },
     {
       "file": "artifacts/chromium-light-settings.png",
-      "sha256": "b8cca14778f20125af992c44431b74242ba65e88699f92243bddd60145fe0911",
+      "sha256": "eb8480ecc4b29228e68c2ecfbb730b4a4bb915e8f18f3018b484ac51658b42a1",
       "page": "settings",
       "state": "settings",
       "theme": "light",
@@ -269,7 +269,7 @@
     },
     {
       "file": "artifacts/chromium-light-language-modal.png",
-      "sha256": "66ef1482a0721151bd9152a1495ee7e37a3c0c53ad7531ff6656a39300aa5120",
+      "sha256": "85cdda430ecec441d49007b8956277cd5876d8237f0b4ebd606e1416326f8390",
       "page": "language-modal",
       "state": "language-modal",
       "theme": "light",
@@ -296,7 +296,7 @@
     },
     {
       "file": "artifacts/chromium-light-account-handoff.png",
-      "sha256": "abf6186ed681ee479bf7775d165d7285e5645d264238b35ab0f96bd8c388e73e",
+      "sha256": "c25a51bd255efb93c08150ffb26ffa091e5ec98330f249fbd17aa768bd6370f4",
       "page": "account-handoff",
       "state": "account-handoff",
       "theme": "light",
@@ -404,7 +404,7 @@
     },
     {
       "file": "artifacts/chromium-light-narrator-certified.png",
-      "sha256": "935b673655d88f103952cfb3c8ca50490a75b25a4019b4c787907ee964a7ec03",
+      "sha256": "e7d8ce17d61e108cf49639930403b9b4217a6bb3aa8d3feba3f8ff4ea0d3498f",
       "page": "narrator-certified",
       "state": "narrator-certified",
       "theme": "light",
@@ -440,7 +440,7 @@
     },
     {
       "file": "artifacts/chromium-competitive-play.png",
-      "sha256": "3d6f859d6a478886fc7c859dd9ef93e0c27dce5cf006af6bf5958d4f545a301c",
+      "sha256": "42094918a857494ace62518a10e02f6215a291f69f804ce9ba1b2159396347fb",
       "page": "play",
       "state": "play",
       "theme": "competitive",
@@ -458,7 +458,7 @@
     },
     {
       "file": "artifacts/chromium-competitive-command-center.png",
-      "sha256": "21f8d2591695d1edaa695d131ec4d06f172b838e14f286e7618cc915129b692d",
+      "sha256": "8c9ca5ec53ae6c1c990b1fb2f7256630e9ebcdda63d2a9e46b3a1aa672b3b1e7",
       "page": "command-center",
       "state": "command-center",
       "theme": "competitive",
@@ -476,7 +476,7 @@
     },
     {
       "file": "artifacts/chromium-competitive-settings.png",
-      "sha256": "ef89244daee99242e70df6ec5f7dcd5995c8c06510e92ff0c2deb9b853eaff0f",
+      "sha256": "74f58de04a33f5cc3799ad1a9e2314d4060f88b92944b1187775fa99cee7540e",
       "page": "settings",
       "state": "settings",
       "theme": "competitive",
@@ -485,7 +485,7 @@
     },
     {
       "file": "artifacts/chromium-competitive-language-modal.png",
-      "sha256": "2c92e2577cb4c68bbe464dc1b9a66f19c938d6d9c2f76dd612f98abc4c6fca4a",
+      "sha256": "817c1a6a130d9ee062da89dbe570d93cbba3475b2f3269bb711303da19bf5572",
       "page": "language-modal",
       "state": "language-modal",
       "theme": "competitive",
@@ -512,7 +512,7 @@
     },
     {
       "file": "artifacts/chromium-competitive-account-handoff.png",
-      "sha256": "e51e154bc6b8ea642efaca1210fdf0b694cd183b6a7266a8f977c084ee9be16b",
+      "sha256": "385ec126a8dd2a7eb74373d77028537b9d90bc2aa535a8ca8cdc46c760a14fe1",
       "page": "account-handoff",
       "state": "account-handoff",
       "theme": "competitive",
@@ -620,7 +620,7 @@
     },
     {
       "file": "artifacts/chromium-competitive-narrator-certified.png",
-      "sha256": "d3c92a05b4613652f855159470824359bc5fd8da1b8ff741dbdec28c12ce2d71",
+      "sha256": "92e188ba6180961b394382820d71f7425ca7d9f2145589120fbd8115d4b12c72",
       "page": "narrator-certified",
       "state": "narrator-certified",
       "theme": "competitive",
@@ -656,7 +656,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-vaultfront-play.png",
-      "sha256": "b1139e2c0f9a955fb8423a486961a63b67b79f69812c46a7ad8bb2a8dc5b0cd8",
+      "sha256": "3786b8fbe7219bcda7b4555092ad20d9edfac96655bf6960c844511306892e23",
       "page": "play",
       "state": "play",
       "theme": "dark",
@@ -665,7 +665,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-vaultfront-stats-showcase.png",
-      "sha256": "685bcdcc9286057c929f1eb46f3307ef462e065f8b4ea8f16fd735c4397aa9ae",
+      "sha256": "bf2ea2e0e5e1f5324b14dc46cce29b1fec33b3115be56e9e30c380df7daee945",
       "page": "stats-showcase",
       "state": "stats-showcase",
       "theme": "dark",
@@ -674,7 +674,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-vaultfront-command-center.png",
-      "sha256": "0732dc1bcb30fb68b74122046837cddd9b99cff49110fdbc30a11d899f8afe30",
+      "sha256": "439d7a34b98b4606de698a26d06391efb24c23dffcaf7f3ff238ba2f86c9c074",
       "page": "command-center",
       "state": "command-center",
       "theme": "dark",
@@ -710,7 +710,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-vaultfront-accessible-modal.png",
-      "sha256": "bbdb62def6c9f2f788a259921edb92e111c53e0e974314f76fca2393e713426c",
+      "sha256": "5a1d0b477a82d04ba8f886b1e50f90fd2d100990950daba4db214f23eb4e1217",
       "page": "accessible-modal",
       "state": "accessible-modal",
       "theme": "dark",
@@ -719,7 +719,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-vaultfront-postmatch.png",
-      "sha256": "ff9172654eac1d3dbd314e81759b113438c18042e8189f96aaf94c5728280ce5",
+      "sha256": "5ddbeaf501c43e18c373ffeba3285793bf1aeaf566cb4c9b2dc497580724cc71",
       "page": "postmatch",
       "state": "postmatch",
       "theme": "dark",
@@ -728,7 +728,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-vaultfront-account-handoff.png",
-      "sha256": "b6c4b21970cdd9e408d00114ce0931c510e0715be41db1a6883c216cf1620d3d",
+      "sha256": "76a4cbd40272bae31138650c9b3618e06ae6f4b0afe30a3cb81bd77fceb9605a",
       "page": "account-handoff",
       "state": "account-handoff",
       "theme": "dark",
@@ -782,7 +782,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-vaultfront-prematch-ready.png",
-      "sha256": "7cf879a548ee507374b196f9756184ef566a20690891278718fab0905237e12c",
+      "sha256": "4ec338f983cd9683be7426e3c70abb8158bb2ba0eaeb341654e435349ca61ab7",
       "page": "prematch-ready",
       "state": "prematch-ready",
       "theme": "dark",
@@ -872,7 +872,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-light-play.png",
-      "sha256": "62264fd280e600e6ef1e040d52229ae5e27837b996a9730821dbe555a2008205",
+      "sha256": "1d90b7ab9ba01b4b9dac492b75c8136eea62698dad4e1703514bd634e9fb80b9",
       "page": "play",
       "state": "play",
       "theme": "light",
@@ -881,7 +881,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-light-stats-showcase.png",
-      "sha256": "7d7a5659c3d2095959dbfe473c4495f97c7f9e61dab93cf1788aae3bc3a909a3",
+      "sha256": "ce3e9499c7b2e94705c7c91d7566c784d6aff4456b152ab9fc8b1daecb7542f2",
       "page": "stats-showcase",
       "state": "stats-showcase",
       "theme": "light",
@@ -890,7 +890,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-light-command-center.png",
-      "sha256": "74390b29c8834259a5ad676b55541837ebb4509db801f63a1ee07bf790d12e00",
+      "sha256": "5a86a5894f2f33194e8f97c9b533ac4e8845ad6080576cc9d95c228a22ec0e37",
       "page": "command-center",
       "state": "command-center",
       "theme": "light",
@@ -926,7 +926,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-light-accessible-modal.png",
-      "sha256": "507b61487fb2955be789591afd6beaa48ac55b6249bb47bbb2017c00b42ddbcc",
+      "sha256": "6e3d97fa7cb2e970bf9b8fcd17ea270992da9f1da269846dc95eb35d1c38bb85",
       "page": "accessible-modal",
       "state": "accessible-modal",
       "theme": "light",
@@ -944,7 +944,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-light-account-handoff.png",
-      "sha256": "92aed34997cd6bbcb6f69ceb6ad5dc59172a879507c67ad4a2c925a2c1a19960",
+      "sha256": "edef2b706c7a555fc39468e878d7d28e148043d50c253a5879f921045524d120",
       "page": "account-handoff",
       "state": "account-handoff",
       "theme": "light",
@@ -953,7 +953,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-light-multi-tab-collision.png",
-      "sha256": "1c4503011b4fcd2659e39d200c2dc5c4ed577d1c829f2716924bd682bc99473e",
+      "sha256": "0e8a4e2aa6a14f4a647b0305153e27a0a9edf95407ace6f07a63c25264140933",
       "page": "multi-tab-collision",
       "state": "multi-tab-collision",
       "theme": "light",
@@ -998,7 +998,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-light-prematch-ready.png",
-      "sha256": "fd9ab2be482f766aada9fa06ff0e66e7e1c405ae92961c29749a14266c92c7ce",
+      "sha256": "49061729975634450bd047d6b884053b9a55b0139b26922063b734c998a1950a",
       "page": "prematch-ready",
       "state": "prematch-ready",
       "theme": "light",
@@ -1088,7 +1088,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-competitive-play.png",
-      "sha256": "93bdb3c71febd6f79293157ef8af124f6a0f92db862f2051c9c0bdbbecfaff5f",
+      "sha256": "2464836e129317945e9542f646ce2c7056db9de6a88219110129f5861077d4c7",
       "page": "play",
       "state": "play",
       "theme": "competitive",
@@ -1106,7 +1106,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-competitive-command-center.png",
-      "sha256": "ad62ad85559febe5f40021050183de90cfc366d6e47288faff5cd2fabc47a1bf",
+      "sha256": "dc6d2e6b3b654663344a1802744d955733e981367c3fa75aaf196d19f089abe0",
       "page": "command-center",
       "state": "command-center",
       "theme": "competitive",
@@ -1142,7 +1142,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-competitive-accessible-modal.png",
-      "sha256": "e3d5d6a83465e54e15d940037abbcbb3b542fecd81aaa73401c3e0102835b3cb",
+      "sha256": "44079c68789ad61c7ade56180d5318b455083a5a3b673960fd71b49e295bba7a",
       "page": "accessible-modal",
       "state": "accessible-modal",
       "theme": "competitive",
@@ -1160,7 +1160,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-competitive-account-handoff.png",
-      "sha256": "2e062732c5e79eef6680f04dab358722065c701513e003d4b072c7e7e4da8a1d",
+      "sha256": "953193b77ccc3733b9c4680be3f60f96d9be9fd8c53bacb714eb47812870add5",
       "page": "account-handoff",
       "state": "account-handoff",
       "theme": "competitive",
@@ -1214,7 +1214,7 @@
     },
     {
       "file": "artifacts/mobile-chrome-competitive-prematch-ready.png",
-      "sha256": "310faeb4332604c9b9e71f5ad042a2cdbeb03f532b96ba3b6d355a4af744b71b",
+      "sha256": "887795b37b13be5be145e891584d68ab54ee8689dbbfac2a2d2d8b1ae287ed97",
       "page": "prematch-ready",
       "state": "prematch-ready",
       "theme": "competitive",
@@ -1307,23 +1307,23 @@
     "renderedPixelsReviewed": true,
     "reviewer": "codex/image-capable-render-review",
     "findings": [
-      "The current 24-surface desktop/mobile matrix passed across VaultFront, Light, and Competitive themes. The Session 105 Play and Alpha Pulse cells were pixel-reviewed in all six theme/viewport combinations after the asynchronous landing-layout stabilization; the intentional lobby loading card, contributor corridor, controls, and text remain unclipped and readable."
+      "The Session 112 24-surface desktop/mobile matrix passed across VaultFront, Light, and Competitive themes. The Play, Alpha Pulse, settings, and gameplay-state captures were reviewed for contrast, clipping, and readable controls."
     ],
     "fixesApplied": [
-      "Reserved the complete three-metric Alpha corridor before its signed feed resolves, replaced the zero-height lobby grid with a same-footprint truthful loading card, warmed the immutable instance-bound HTML shell before the public listener opens, and prevented the visual harness from redefining an already-registered modal; the full matrix has no open overflow, contrast, clipping, or layout defect."
+      "Aligned the light theme mobile header with its dark blue wordmark and hamburger control, then added a computed contrast assertion to the browser matrix."
     ],
     "blockingDefectsOpen": 0
   },
   "comparisonBase": {
     "source": "git:HEAD:docs/visual-qa/LATEST.json",
-    "gitRevision": "2c5eb42df9395b65dc6d9ab455e2e928a32e8957",
-    "capturedAt": "2026-08-26T06:55:22.544Z",
-    "sourceDigest": "sha256:c7f254993341bfa761390cf66520d55c322a712aeea9096f50efecec97965985"
+    "gitRevision": "eb7f01f5b14aa7e3c409eb339efdcc13cc744a9d",
+    "capturedAt": "2026-08-26T07:28:42.238Z",
+    "sourceDigest": "sha256:9da3851790e17b437a273fa528017e036fb1c7374a3fe395613d9a345e22be3c"
   },
   "source": {
-    "gitRevision": "eb7f01f5b14aa7e3c409eb339efdcc13cc744a9d",
+    "gitRevision": "3cebbcfa292bd9796e630729d9d6d6cfee805483",
     "dirty": true,
-    "digest": "sha256:9da3851790e17b437a273fa528017e036fb1c7374a3fe395613d9a345e22be3c",
+    "digest": "sha256:272cbbf8280ccfa40a5028e01d1d12be81e7431752593321b106f4c4a5df04c1",
     "files": [
       {
         "path": "config/vaultfront-balance.v1.json",
@@ -1332,8 +1332,8 @@
       },
       {
         "path": "e2e/theme-visual-proof.spec.ts",
-        "bytes": 60152,
-        "digest": "sha256:81dd3919771ad6e5c6d4de79f93c195bfd09a449b73102c8fa5cbcfd7f74c596"
+        "bytes": 61940,
+        "digest": "sha256:2a3bf94eaf3651668d354aaf289f0f21469f77d6827e61de4c5099f90f36c4c0"
       },
       {
         "path": "index.html",
@@ -1362,8 +1362,8 @@
       },
       {
         "path": "src/client/CommandCenter.ts",
-        "bytes": 11010,
-        "digest": "sha256:6c0ca3f148c881e1599477902c7fdd7209f37e66c56f2401e55c22c7a3e995df"
+        "bytes": 10970,
+        "digest": "sha256:0dc6f5d49fa5f356d5f9b8c6872f6bbdf7bac35f25c6e7581a0f5d58a7dcb0c0"
       },
       {
         "path": "src/client/ConnectionRecoveryPresenter.ts",
@@ -1417,8 +1417,8 @@
       },
       {
         "path": "src/client/SeasonPassTrack.ts",
-        "bytes": 9473,
-        "digest": "sha256:bf65a7a379028619505e82ee4617b4e0e21f361ce9c594c5ff366ceaec8401c7"
+        "bytes": 9487,
+        "digest": "sha256:0305095e25e048fead9e488ca8938b3f95d3a5ed6f09564ffb7c1a044ae922fb"
       },
       {
         "path": "src/client/Transport.ts",
@@ -1502,8 +1502,8 @@
       },
       {
         "path": "src/client/components/PlayPage.ts",
-        "bytes": 5091,
-        "digest": "sha256:e7f8a20a898062c6f35da3fde93bceccacc5ffd643696a17f03e78b70b5caefc"
+        "bytes": 5108,
+        "digest": "sha256:c82ac2516f031a0eee053dd2c82411c135cb5d0f6b7ed1fd99802b3a80b0995a"
       },
       {
         "path": "src/client/components/PredictionLeaguePanel.ts",
@@ -1717,8 +1717,8 @@
       },
       {
         "path": "src/client/styles.css",
-        "bytes": 20870,
-        "digest": "sha256:c8c3f69672f51ed87bff1371f1f004927d9062c9e4e6452060dd2661ca3a6d12"
+        "bytes": 21164,
+        "digest": "sha256:6e2b1e9d0982ebdbde9d12e49d7515383dd862123ea48bae1cf159a46b8e1aa3"
       },
       {
         "path": "src/client/styles/components/button.css",
@@ -1802,12 +1802,12 @@
       {
         "path": "docs/visual-qa/summaries/theme-proof-chromium.json",
         "bytes": 50550,
-        "digest": "sha256:84e972d18dbca1671832e3d02147afeb32838981c97452d516924ea74da50f73"
+        "digest": "sha256:804eb46767dc8a2c392ce224a4d42e06d377ba8b8d9ed0da91c6fddd401f6c84"
       },
       {
         "path": "docs/visual-qa/summaries/theme-proof-mobile-chrome.json",
         "bytes": 50546,
-        "digest": "sha256:dcbab7661ae4592f67d39ccd59e969ecf1f521e2649bcbb9ada441392fa35e90"
+        "digest": "sha256:06370a338ca5e8de025e18e4c9db8b8f93e8f9b155cbebdbd956b0f85c653bc6"
       }
     ],
     "artifacts": [
@@ -1816,24 +1816,24 @@
         "theme": "vaultfront",
         "surface": "play",
         "path": "docs/visual-qa/artifacts/chromium-vaultfront-play.png",
-        "bytes": 541263,
-        "digest": "sha256:4d115d622da7c4fbb45c26229919cac8ebc8ee9c3259c1b22fa0bcaff6a8c2b6"
+        "bytes": 536863,
+        "digest": "sha256:469dad4eb2541921574519c16bf032fda7332a4e1e48aad7ccabe1be3e2aac17"
       },
       {
         "project": "chromium",
         "theme": "vaultfront",
         "surface": "stats-showcase",
         "path": "docs/visual-qa/artifacts/chromium-vaultfront-stats-showcase.png",
-        "bytes": 85634,
-        "digest": "sha256:250d2fc33b4b3475bbc770f3d2809d27d70a60f0326f2315505720a55d38c3b9"
+        "bytes": 87891,
+        "digest": "sha256:72a9ca63b11c7658ea9177c5f0fa980d41ce4201fbdc1a1da336199a13add7e1"
       },
       {
         "project": "chromium",
         "theme": "vaultfront",
         "surface": "command-center",
         "path": "docs/visual-qa/artifacts/chromium-vaultfront-command-center.png",
-        "bytes": 183244,
-        "digest": "sha256:cee776c41e89d3e5c433104fb792c5369ce6fdb5a7fd9e3ea1f59776c530b20e"
+        "bytes": 163797,
+        "digest": "sha256:7c86cc385baf4e2248c7c29495355c25a8bf963bb1fd0484818dd9a0205c1761"
       },
       {
         "project": "chromium",
@@ -1848,16 +1848,16 @@
         "theme": "vaultfront",
         "surface": "settings",
         "path": "docs/visual-qa/artifacts/chromium-vaultfront-settings.png",
-        "bytes": 359855,
-        "digest": "sha256:4ffeb424422f4d57e25a7b55b76f07f8355571d042c3f5194079ceed64e5826e"
+        "bytes": 359842,
+        "digest": "sha256:acaf761ebf0887883245e788efe445ceebd0f8b090651832d9d281a1dc205372"
       },
       {
         "project": "chromium",
         "theme": "vaultfront",
         "surface": "language-modal",
         "path": "docs/visual-qa/artifacts/chromium-vaultfront-language-modal.png",
-        "bytes": 479154,
-        "digest": "sha256:3139cf5fdec2ab461c9539fc23ebad9febed8d0a73f9982f3a3ebc8b250fb87d"
+        "bytes": 479260,
+        "digest": "sha256:462fba714724ee336c42b35ace375f289ca1565e2a2841133a55669105c6c187"
       },
       {
         "project": "chromium",
@@ -1880,8 +1880,8 @@
         "theme": "vaultfront",
         "surface": "account-handoff",
         "path": "docs/visual-qa/artifacts/chromium-vaultfront-account-handoff.png",
-        "bytes": 40800,
-        "digest": "sha256:61049a4faeec46919edbc6e50651e97d18f19bb63a5b646879ea97d463e323ba"
+        "bytes": 40799,
+        "digest": "sha256:17dbdc0b3eaccc5193a5a5cb74a80514007a1eb9d9c1f83a884fbe0b88d2763a"
       },
       {
         "project": "chromium",
@@ -1976,8 +1976,8 @@
         "theme": "vaultfront",
         "surface": "narrator-certified",
         "path": "docs/visual-qa/artifacts/chromium-vaultfront-narrator-certified.png",
-        "bytes": 74125,
-        "digest": "sha256:28d628620ba69b212b4cb7b73941d967faef8afe2e45e4b02c8e998389cb4eab"
+        "bytes": 73934,
+        "digest": "sha256:bace636a001aa96c1b60de9428ce9ac1e7e1eb10567772874aa0b58621cd803b"
       },
       {
         "project": "chromium",
@@ -2008,8 +2008,8 @@
         "theme": "light",
         "surface": "play",
         "path": "docs/visual-qa/artifacts/chromium-light-play.png",
-        "bytes": 504257,
-        "digest": "sha256:3a72a85a78ba89ff7909c533a4c074ffd39e9b09e2a23e13bb6b7e1430f17f52"
+        "bytes": 504753,
+        "digest": "sha256:c03054e637e17ce1a0ae660ee562b08225392d2aff448145198a177102e75460"
       },
       {
         "project": "chromium",
@@ -2024,8 +2024,8 @@
         "theme": "light",
         "surface": "command-center",
         "path": "docs/visual-qa/artifacts/chromium-light-command-center.png",
-        "bytes": 196753,
-        "digest": "sha256:3615283d5d41d216fb2f4045c6ba7061970520099d1bf074f019423e240bc078"
+        "bytes": 171676,
+        "digest": "sha256:11a9b4bad7c0517239abe0217190a43065f49a915f7b2c2c9ac2f9e235284881"
       },
       {
         "project": "chromium",
@@ -2040,16 +2040,16 @@
         "theme": "light",
         "surface": "settings",
         "path": "docs/visual-qa/artifacts/chromium-light-settings.png",
-        "bytes": 297434,
-        "digest": "sha256:b8cca14778f20125af992c44431b74242ba65e88699f92243bddd60145fe0911"
+        "bytes": 297177,
+        "digest": "sha256:eb8480ecc4b29228e68c2ecfbb730b4a4bb915e8f18f3018b484ac51658b42a1"
       },
       {
         "project": "chromium",
         "theme": "light",
         "surface": "language-modal",
         "path": "docs/visual-qa/artifacts/chromium-light-language-modal.png",
-        "bytes": 361389,
-        "digest": "sha256:66ef1482a0721151bd9152a1495ee7e37a3c0c53ad7531ff6656a39300aa5120"
+        "bytes": 361422,
+        "digest": "sha256:85cdda430ecec441d49007b8956277cd5876d8237f0b4ebd606e1416326f8390"
       },
       {
         "project": "chromium",
@@ -2073,7 +2073,7 @@
         "surface": "account-handoff",
         "path": "docs/visual-qa/artifacts/chromium-light-account-handoff.png",
         "bytes": 39427,
-        "digest": "sha256:abf6186ed681ee479bf7775d165d7285e5645d264238b35ab0f96bd8c388e73e"
+        "digest": "sha256:c25a51bd255efb93c08150ffb26ffa091e5ec98330f249fbd17aa768bd6370f4"
       },
       {
         "project": "chromium",
@@ -2168,8 +2168,8 @@
         "theme": "light",
         "surface": "narrator-certified",
         "path": "docs/visual-qa/artifacts/chromium-light-narrator-certified.png",
-        "bytes": 71100,
-        "digest": "sha256:935b673655d88f103952cfb3c8ca50490a75b25a4019b4c787907ee964a7ec03"
+        "bytes": 70765,
+        "digest": "sha256:e7d8ce17d61e108cf49639930403b9b4217a6bb3aa8d3feba3f8ff4ea0d3498f"
       },
       {
         "project": "chromium",
@@ -2200,8 +2200,8 @@
         "theme": "competitive",
         "surface": "play",
         "path": "docs/visual-qa/artifacts/chromium-competitive-play.png",
-        "bytes": 536459,
-        "digest": "sha256:3d6f859d6a478886fc7c859dd9ef93e0c27dce5cf006af6bf5958d4f545a301c"
+        "bytes": 537101,
+        "digest": "sha256:42094918a857494ace62518a10e02f6215a291f69f804ce9ba1b2159396347fb"
       },
       {
         "project": "chromium",
@@ -2216,8 +2216,8 @@
         "theme": "competitive",
         "surface": "command-center",
         "path": "docs/visual-qa/artifacts/chromium-competitive-command-center.png",
-        "bytes": 175954,
-        "digest": "sha256:21f8d2591695d1edaa695d131ec4d06f172b838e14f286e7618cc915129b692d"
+        "bytes": 151518,
+        "digest": "sha256:8c9ca5ec53ae6c1c990b1fb2f7256630e9ebcdda63d2a9e46b3a1aa672b3b1e7"
       },
       {
         "project": "chromium",
@@ -2232,16 +2232,16 @@
         "theme": "competitive",
         "surface": "settings",
         "path": "docs/visual-qa/artifacts/chromium-competitive-settings.png",
-        "bytes": 336703,
-        "digest": "sha256:ef89244daee99242e70df6ec5f7dcd5995c8c06510e92ff0c2deb9b853eaff0f"
+        "bytes": 336812,
+        "digest": "sha256:74f58de04a33f5cc3799ad1a9e2314d4060f88b92944b1187775fa99cee7540e"
       },
       {
         "project": "chromium",
         "theme": "competitive",
         "surface": "language-modal",
         "path": "docs/visual-qa/artifacts/chromium-competitive-language-modal.png",
-        "bytes": 419548,
-        "digest": "sha256:2c92e2577cb4c68bbe464dc1b9a66f19c938d6d9c2f76dd612f98abc4c6fca4a"
+        "bytes": 419842,
+        "digest": "sha256:817c1a6a130d9ee062da89dbe570d93cbba3475b2f3269bb711303da19bf5572"
       },
       {
         "project": "chromium",
@@ -2264,8 +2264,8 @@
         "theme": "competitive",
         "surface": "account-handoff",
         "path": "docs/visual-qa/artifacts/chromium-competitive-account-handoff.png",
-        "bytes": 40841,
-        "digest": "sha256:e51e154bc6b8ea642efaca1210fdf0b694cd183b6a7266a8f977c084ee9be16b"
+        "bytes": 40840,
+        "digest": "sha256:385ec126a8dd2a7eb74373d77028537b9d90bc2aa535a8ca8cdc46c760a14fe1"
       },
       {
         "project": "chromium",
@@ -2360,8 +2360,8 @@
         "theme": "competitive",
         "surface": "narrator-certified",
         "path": "docs/visual-qa/artifacts/chromium-competitive-narrator-certified.png",
-        "bytes": 75563,
-        "digest": "sha256:d3c92a05b4613652f855159470824359bc5fd8da1b8ff741dbdec28c12ce2d71"
+        "bytes": 75768,
+        "digest": "sha256:92e188ba6180961b394382820d71f7425ca7d9f2145589120fbd8115d4b12c72"
       },
       {
         "project": "chromium",
@@ -2392,24 +2392,24 @@
         "theme": "vaultfront",
         "surface": "play",
         "path": "docs/visual-qa/artifacts/mobile-chrome-vaultfront-play.png",
-        "bytes": 722986,
-        "digest": "sha256:b1139e2c0f9a955fb8423a486961a63b67b79f69812c46a7ad8bb2a8dc5b0cd8"
+        "bytes": 722344,
+        "digest": "sha256:3786b8fbe7219bcda7b4555092ad20d9edfac96655bf6960c844511306892e23"
       },
       {
         "project": "mobile-chrome",
         "theme": "vaultfront",
         "surface": "stats-showcase",
         "path": "docs/visual-qa/artifacts/mobile-chrome-vaultfront-stats-showcase.png",
-        "bytes": 259154,
-        "digest": "sha256:685bcdcc9286057c929f1eb46f3307ef462e065f8b4ea8f16fd735c4397aa9ae"
+        "bytes": 259262,
+        "digest": "sha256:bf2ea2e0e5e1f5324b14dc46cce29b1fec33b3115be56e9e30c380df7daee945"
       },
       {
         "project": "mobile-chrome",
         "theme": "vaultfront",
         "surface": "command-center",
         "path": "docs/visual-qa/artifacts/mobile-chrome-vaultfront-command-center.png",
-        "bytes": 555346,
-        "digest": "sha256:0732dc1bcb30fb68b74122046837cddd9b99cff49110fdbc30a11d899f8afe30"
+        "bytes": 507703,
+        "digest": "sha256:439d7a34b98b4606de698a26d06391efb24c23dffcaf7f3ff238ba2f86c9c074"
       },
       {
         "project": "mobile-chrome",
@@ -2440,24 +2440,24 @@
         "theme": "vaultfront",
         "surface": "accessible-modal",
         "path": "docs/visual-qa/artifacts/mobile-chrome-vaultfront-accessible-modal.png",
-        "bytes": 48524,
-        "digest": "sha256:bbdb62def6c9f2f788a259921edb92e111c53e0e974314f76fca2393e713426c"
+        "bytes": 48506,
+        "digest": "sha256:5a1d0b477a82d04ba8f886b1e50f90fd2d100990950daba4db214f23eb4e1217"
       },
       {
         "project": "mobile-chrome",
         "theme": "vaultfront",
         "surface": "postmatch",
         "path": "docs/visual-qa/artifacts/mobile-chrome-vaultfront-postmatch.png",
-        "bytes": 263960,
-        "digest": "sha256:ff9172654eac1d3dbd314e81759b113438c18042e8189f96aaf94c5728280ce5"
+        "bytes": 263983,
+        "digest": "sha256:5ddbeaf501c43e18c373ffeba3285793bf1aeaf566cb4c9b2dc497580724cc71"
       },
       {
         "project": "mobile-chrome",
         "theme": "vaultfront",
         "surface": "account-handoff",
         "path": "docs/visual-qa/artifacts/mobile-chrome-vaultfront-account-handoff.png",
-        "bytes": 175609,
-        "digest": "sha256:b6c4b21970cdd9e408d00114ce0931c510e0715be41db1a6883c216cf1620d3d"
+        "bytes": 175647,
+        "digest": "sha256:76a4cbd40272bae31138650c9b3618e06ae6f4b0afe30a3cb81bd77fceb9605a"
       },
       {
         "project": "mobile-chrome",
@@ -2505,7 +2505,7 @@
         "surface": "prematch-ready",
         "path": "docs/visual-qa/artifacts/mobile-chrome-vaultfront-prematch-ready.png",
         "bytes": 138296,
-        "digest": "sha256:7cf879a548ee507374b196f9756184ef566a20690891278718fab0905237e12c"
+        "digest": "sha256:4ec338f983cd9683be7426e3c70abb8158bb2ba0eaeb341654e435349ca61ab7"
       },
       {
         "project": "mobile-chrome",
@@ -2584,24 +2584,24 @@
         "theme": "light",
         "surface": "play",
         "path": "docs/visual-qa/artifacts/mobile-chrome-light-play.png",
-        "bytes": 689904,
-        "digest": "sha256:62264fd280e600e6ef1e040d52229ae5e27837b996a9730821dbe555a2008205"
+        "bytes": 689779,
+        "digest": "sha256:1d90b7ab9ba01b4b9dac492b75c8136eea62698dad4e1703514bd634e9fb80b9"
       },
       {
         "project": "mobile-chrome",
         "theme": "light",
         "surface": "stats-showcase",
         "path": "docs/visual-qa/artifacts/mobile-chrome-light-stats-showcase.png",
-        "bytes": 244419,
-        "digest": "sha256:7d7a5659c3d2095959dbfe473c4495f97c7f9e61dab93cf1788aae3bc3a909a3"
+        "bytes": 244440,
+        "digest": "sha256:ce3e9499c7b2e94705c7c91d7566c784d6aff4456b152ab9fc8b1daecb7542f2"
       },
       {
         "project": "mobile-chrome",
         "theme": "light",
         "surface": "command-center",
         "path": "docs/visual-qa/artifacts/mobile-chrome-light-command-center.png",
-        "bytes": 585810,
-        "digest": "sha256:74390b29c8834259a5ad676b55541837ebb4509db801f63a1ee07bf790d12e00"
+        "bytes": 527024,
+        "digest": "sha256:5a86a5894f2f33194e8f97c9b533ac4e8845ad6080576cc9d95c228a22ec0e37"
       },
       {
         "project": "mobile-chrome",
@@ -2632,8 +2632,8 @@
         "theme": "light",
         "surface": "accessible-modal",
         "path": "docs/visual-qa/artifacts/mobile-chrome-light-accessible-modal.png",
-        "bytes": 48098,
-        "digest": "sha256:507b61487fb2955be789591afd6beaa48ac55b6249bb47bbb2017c00b42ddbcc"
+        "bytes": 48091,
+        "digest": "sha256:6e3d97fa7cb2e970bf9b8fcd17ea270992da9f1da269846dc95eb35d1c38bb85"
       },
       {
         "project": "mobile-chrome",
@@ -2648,16 +2648,16 @@
         "theme": "light",
         "surface": "account-handoff",
         "path": "docs/visual-qa/artifacts/mobile-chrome-light-account-handoff.png",
-        "bytes": 173559,
-        "digest": "sha256:92aed34997cd6bbcb6f69ceb6ad5dc59172a879507c67ad4a2c925a2c1a19960"
+        "bytes": 173592,
+        "digest": "sha256:edef2b706c7a555fc39468e878d7d28e148043d50c253a5879f921045524d120"
       },
       {
         "project": "mobile-chrome",
         "theme": "light",
         "surface": "multi-tab-collision",
         "path": "docs/visual-qa/artifacts/mobile-chrome-light-multi-tab-collision.png",
-        "bytes": 108876,
-        "digest": "sha256:1c4503011b4fcd2659e39d200c2dc5c4ed577d1c829f2716924bd682bc99473e"
+        "bytes": 108880,
+        "digest": "sha256:0e8a4e2aa6a14f4a647b0305153e27a0a9edf95407ace6f07a63c25264140933"
       },
       {
         "project": "mobile-chrome",
@@ -2697,7 +2697,7 @@
         "surface": "prematch-ready",
         "path": "docs/visual-qa/artifacts/mobile-chrome-light-prematch-ready.png",
         "bytes": 151587,
-        "digest": "sha256:fd9ab2be482f766aada9fa06ff0e66e7e1c405ae92961c29749a14266c92c7ce"
+        "digest": "sha256:49061729975634450bd047d6b884053b9a55b0139b26922063b734c998a1950a"
       },
       {
         "project": "mobile-chrome",
@@ -2776,8 +2776,8 @@
         "theme": "competitive",
         "surface": "play",
         "path": "docs/visual-qa/artifacts/mobile-chrome-competitive-play.png",
-        "bytes": 724946,
-        "digest": "sha256:93bdb3c71febd6f79293157ef8af124f6a0f92db862f2051c9c0bdbbecfaff5f"
+        "bytes": 724895,
+        "digest": "sha256:2464836e129317945e9542f646ce2c7056db9de6a88219110129f5861077d4c7"
       },
       {
         "project": "mobile-chrome",
@@ -2792,8 +2792,8 @@
         "theme": "competitive",
         "surface": "command-center",
         "path": "docs/visual-qa/artifacts/mobile-chrome-competitive-command-center.png",
-        "bytes": 540237,
-        "digest": "sha256:ad62ad85559febe5f40021050183de90cfc366d6e47288faff5cd2fabc47a1bf"
+        "bytes": 479388,
+        "digest": "sha256:dc6d2e6b3b654663344a1802744d955733e981367c3fa75aaf196d19f089abe0"
       },
       {
         "project": "mobile-chrome",
@@ -2824,8 +2824,8 @@
         "theme": "competitive",
         "surface": "accessible-modal",
         "path": "docs/visual-qa/artifacts/mobile-chrome-competitive-accessible-modal.png",
-        "bytes": 48636,
-        "digest": "sha256:e3d5d6a83465e54e15d940037abbcbb3b542fecd81aaa73401c3e0102835b3cb"
+        "bytes": 48616,
+        "digest": "sha256:44079c68789ad61c7ade56180d5318b455083a5a3b673960fd71b49e295bba7a"
       },
       {
         "project": "mobile-chrome",
@@ -2840,8 +2840,8 @@
         "theme": "competitive",
         "surface": "account-handoff",
         "path": "docs/visual-qa/artifacts/mobile-chrome-competitive-account-handoff.png",
-        "bytes": 176321,
-        "digest": "sha256:2e062732c5e79eef6680f04dab358722065c701513e003d4b072c7e7e4da8a1d"
+        "bytes": 176367,
+        "digest": "sha256:953193b77ccc3733b9c4680be3f60f96d9be9fd8c53bacb714eb47812870add5"
       },
       {
         "project": "mobile-chrome",
@@ -2889,7 +2889,7 @@
         "surface": "prematch-ready",
         "path": "docs/visual-qa/artifacts/mobile-chrome-competitive-prematch-ready.png",
         "bytes": 138921,
-        "digest": "sha256:310faeb4332604c9b9e71f5ad042a2cdbeb03f532b96ba3b6d355a4af744b71b"
+        "digest": "sha256:887795b37b13be5be145e891584d68ab54ee8689dbbfac2a2d2d8b1ae287ed97"
       },
       {
         "project": "mobile-chrome",
@@ -2969,9 +2969,9 @@
     {
       "project": "chromium",
       "localOnly": true,
-      "capturedAt": "2026-08-26T07:28:26.116Z",
+      "capturedAt": "2026-09-30T21:48:25.372Z",
       "source": {
-        "digest": "sha256:9da3851790e17b437a273fa528017e036fb1c7374a3fe395613d9a345e22be3c",
+        "digest": "sha256:272cbbf8280ccfa40a5028e01d1d12be81e7431752593321b106f4c4a5df04c1",
         "files": [
           {
             "path": "config/vaultfront-balance.v1.json",
@@ -2980,8 +2980,8 @@
           },
           {
             "path": "e2e/theme-visual-proof.spec.ts",
-            "bytes": 60152,
-            "digest": "sha256:81dd3919771ad6e5c6d4de79f93c195bfd09a449b73102c8fa5cbcfd7f74c596"
+            "bytes": 61940,
+            "digest": "sha256:2a3bf94eaf3651668d354aaf289f0f21469f77d6827e61de4c5099f90f36c4c0"
           },
           {
             "path": "index.html",
@@ -3010,8 +3010,8 @@
           },
           {
             "path": "src/client/CommandCenter.ts",
-            "bytes": 11010,
-            "digest": "sha256:6c0ca3f148c881e1599477902c7fdd7209f37e66c56f2401e55c22c7a3e995df"
+            "bytes": 10970,
+            "digest": "sha256:0dc6f5d49fa5f356d5f9b8c6872f6bbdf7bac35f25c6e7581a0f5d58a7dcb0c0"
           },
           {
             "path": "src/client/ConnectionRecoveryPresenter.ts",
@@ -3065,8 +3065,8 @@
           },
           {
             "path": "src/client/SeasonPassTrack.ts",
-            "bytes": 9473,
-            "digest": "sha256:bf65a7a379028619505e82ee4617b4e0e21f361ce9c594c5ff366ceaec8401c7"
+            "bytes": 9487,
+            "digest": "sha256:0305095e25e048fead9e488ca8938b3f95d3a5ed6f09564ffb7c1a044ae922fb"
           },
           {
             "path": "src/client/Transport.ts",
@@ -3150,8 +3150,8 @@
           },
           {
             "path": "src/client/components/PlayPage.ts",
-            "bytes": 5091,
-            "digest": "sha256:e7f8a20a898062c6f35da3fde93bceccacc5ffd643696a17f03e78b70b5caefc"
+            "bytes": 5108,
+            "digest": "sha256:c82ac2516f031a0eee053dd2c82411c135cb5d0f6b7ed1fd99802b3a80b0995a"
           },
           {
             "path": "src/client/components/PredictionLeaguePanel.ts",
@@ -3365,8 +3365,8 @@
           },
           {
             "path": "src/client/styles.css",
-            "bytes": 20870,
-            "digest": "sha256:c8c3f69672f51ed87bff1371f1f004927d9062c9e4e6452060dd2661ca3a6d12"
+            "bytes": 21164,
+            "digest": "sha256:6e2b1e9d0982ebdbde9d12e49d7515383dd862123ea48bae1cf159a46b8e1aa3"
           },
           {
             "path": "src/client/styles/components/button.css",
@@ -4183,9 +4183,9 @@
     {
       "project": "mobile-chrome",
       "localOnly": true,
-      "capturedAt": "2026-08-26T07:28:13.176Z",
+      "capturedAt": "2026-09-30T21:49:04.168Z",
       "source": {
-        "digest": "sha256:9da3851790e17b437a273fa528017e036fb1c7374a3fe395613d9a345e22be3c",
+        "digest": "sha256:272cbbf8280ccfa40a5028e01d1d12be81e7431752593321b106f4c4a5df04c1",
         "files": [
           {
             "path": "config/vaultfront-balance.v1.json",
@@ -4194,8 +4194,8 @@
           },
           {
             "path": "e2e/theme-visual-proof.spec.ts",
-            "bytes": 60152,
-            "digest": "sha256:81dd3919771ad6e5c6d4de79f93c195bfd09a449b73102c8fa5cbcfd7f74c596"
+            "bytes": 61940,
+            "digest": "sha256:2a3bf94eaf3651668d354aaf289f0f21469f77d6827e61de4c5099f90f36c4c0"
           },
           {
             "path": "index.html",
@@ -4224,8 +4224,8 @@
           },
           {
             "path": "src/client/CommandCenter.ts",
-            "bytes": 11010,
-            "digest": "sha256:6c0ca3f148c881e1599477902c7fdd7209f37e66c56f2401e55c22c7a3e995df"
+            "bytes": 10970,
+            "digest": "sha256:0dc6f5d49fa5f356d5f9b8c6872f6bbdf7bac35f25c6e7581a0f5d58a7dcb0c0"
           },
           {
             "path": "src/client/ConnectionRecoveryPresenter.ts",
@@ -4279,8 +4279,8 @@
           },
           {
             "path": "src/client/SeasonPassTrack.ts",
-            "bytes": 9473,
-            "digest": "sha256:bf65a7a379028619505e82ee4617b4e0e21f361ce9c594c5ff366ceaec8401c7"
+            "bytes": 9487,
+            "digest": "sha256:0305095e25e048fead9e488ca8938b3f95d3a5ed6f09564ffb7c1a044ae922fb"
           },
           {
             "path": "src/client/Transport.ts",
@@ -4364,8 +4364,8 @@
           },
           {
             "path": "src/client/components/PlayPage.ts",
-            "bytes": 5091,
-            "digest": "sha256:e7f8a20a898062c6f35da3fde93bceccacc5ffd643696a17f03e78b70b5caefc"
+            "bytes": 5108,
+            "digest": "sha256:c82ac2516f031a0eee053dd2c82411c135cb5d0f6b7ed1fd99802b3a80b0995a"
           },
           {
             "path": "src/client/components/PredictionLeaguePanel.ts",
@@ -4579,8 +4579,8 @@
           },
           {
             "path": "src/client/styles.css",
-            "bytes": 20870,
-            "digest": "sha256:c8c3f69672f51ed87bff1371f1f004927d9062c9e4e6452060dd2661ca3a6d12"
+            "bytes": 21164,
+            "digest": "sha256:6e2b1e9d0982ebdbde9d12e49d7515383dd862123ea48bae1cf159a46b8e1aa3"
           },
           {
             "path": "src/client/styles/components/button.css",

@@ -1,6 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { normalizeAuditItemStatus } from "../../scripts/lib/audit-sidecar.mjs";
 import { spawnSync } from "../../scripts/lib/safe-spawn.mjs";
 import { PROCESS_INTEGRATION_TIMEOUT_MS } from "../helpers/processBudget";
 
@@ -67,20 +68,12 @@ describe("Studio /go helper scripts", () => {
     PROCESS_INTEGRATION_TIMEOUT_MS,
   );
 
-  it(
-    "normalizes audit blockers into the public externally-blocked status",
-    () => {
-      const result = runNode(["scripts/generate-genius-list.mjs", "--json"]);
-      const payload = JSON.parse(result.stdout);
-      const blockedItems = payload.items.filter(
-        (item: { auditSlug: string }) =>
-          item.auditSlug === "authenticated-human-alpha-observation",
-      );
-
-      expect(blockedItems).toMatchObject([
-        { status: "externally-blocked", blocked: true },
-      ]);
-    },
-    PROCESS_INTEGRATION_TIMEOUT_MS,
-  );
+  it("normalizes audit blockers into the public externally-blocked status", () => {
+    expect(normalizeAuditItemStatus("blocked")).toBe("externally-blocked");
+    expect(normalizeAuditItemStatus("human-blocked")).toBe(
+      "externally-blocked",
+    );
+    expect(normalizeAuditItemStatus("shipped")).toBe("done");
+    expect(normalizeAuditItemStatus("pending")).toBe("unblocked");
+  });
 });

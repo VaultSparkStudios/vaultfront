@@ -16,7 +16,10 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { findLatestAuditSidecar } from "./lib/audit-sidecar.mjs";
+import {
+  findLatestAuditSidecar,
+  normalizeAuditItemStatus,
+} from "./lib/audit-sidecar.mjs";
 import { renderGeniusBrief } from "./lib/genius-brief.mjs";
 import { GENIUS_CACHE_SCHEMA_VERSION } from "./lib/genius-cache.mjs";
 
@@ -100,15 +103,7 @@ const auditSource = latestAuditInfo
   : null;
 const auditCandidates = (latestAuditInfo?.audit?.items ?? []).map(
   (auditItem) => {
-    const rawStatus = String(auditItem.status ?? "pending").toLowerCase();
-    const mappedStatus =
-      rawStatus === "shipped" || rawStatus === "done"
-        ? "done"
-        : rawStatus === "pending"
-          ? "unblocked"
-          : rawStatus === "blocked" || rawStatus === "human-blocked"
-            ? "externally-blocked"
-            : rawStatus;
+    const mappedStatus = normalizeAuditItemStatus(auditItem.status);
     return item({
       title: auditItem.title ?? auditItem.slug ?? "Untitled audit item",
       summary: auditItem.why ?? auditItem.summary ?? "Audit-ranked work item.",

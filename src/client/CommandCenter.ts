@@ -176,7 +176,7 @@ export class CommandCenter extends LitElement {
 
           <div class="mb-6 grid gap-3 sm:grid-cols-2">
             <button
-              class="group rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+              class="group rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 disabled:cursor-not-allowed"
               style="border-color:var(--vf-border-soft);background:color-mix(in srgb,var(--vf-accent) 10%,var(--vf-glass));color:var(--vf-panel-text)"
               ?disabled=${!this.persistentId}
               @click=${this.openClans}
@@ -194,7 +194,7 @@ export class CommandCenter extends LitElement {
               >
             </button>
             <button
-              class="group rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+              class="group rounded-2xl border p-5 text-left transition hover:-translate-y-0.5 disabled:cursor-not-allowed"
               style="border-color:var(--vf-border-soft);background:color-mix(in srgb,var(--vf-warm) 10%,var(--vf-glass));color:var(--vf-panel-text)"
               ?disabled=${!this.persistentId}
               @click=${this.openTournaments}

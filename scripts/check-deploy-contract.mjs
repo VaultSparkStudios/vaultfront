@@ -277,6 +277,15 @@ check(
   "router reload failure is not returned to the rollback boundary",
 );
 check(
+  update.includes("resolver 127.0.0.11 valid=5s ipv6=off;") &&
+    update.includes("proxy_pass http://\\$vaultfront_backend:80;"),
+  "project router does not re-resolve the app after a container restart",
+);
+check(
+  update.includes('[[ "$target" =~ ^[a-zA-Z0-9][a-zA-Z0-9_.-]*$ ]]'),
+  "project router target is not validated before Nginx config generation",
+);
+check(
   !/docker\s+image\s+prune\s+-a/u.test(update),
   "remote updater still prunes every unused image",
 );

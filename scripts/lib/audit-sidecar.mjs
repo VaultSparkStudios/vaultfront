@@ -1,6 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 
+export function normalizeAuditItemStatus(value) {
+  const status = String(value ?? "pending").toLowerCase();
+  if (status === "shipped" || status === "done") return "done";
+  if (status === "pending") return "unblocked";
+  if (status === "blocked" || status === "human-blocked")
+    return "externally-blocked";
+  return status;
+}
+
 export function sidecarPath(root, date) {
   return path.join(root, "docs", `AUDIT_${date}.json`);
 }

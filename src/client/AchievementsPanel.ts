@@ -136,7 +136,7 @@ export class AchievementsPanel extends LitElement {
       color: #6ee7b7;
     }
     .empty {
-      color: #64748b;
+      color: var(--vf-panel-muted);
       text-align: center;
       padding: 40px;
       font-size: 0.9rem;

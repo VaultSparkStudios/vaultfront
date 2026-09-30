@@ -166,7 +166,7 @@ export class SeasonPassTrack extends LitElement {
       pointer-events: none;
     }
     .empty {
-      color: #64748b;
+      color: var(--vf-panel-muted);
       font-size: 0.82rem;
       padding: 12px 0;
     }

@@ -15,6 +15,12 @@ const log = logger.child({ comp: "db/pool" });
 
 export let pool: Pool | null = null;
 
+const INITIAL_RETRY_MS = 1_000;
+const MAX_RETRY_MS = 30_000;
+let retryDelayMs = INITIAL_RETRY_MS;
+let retryTimer: NodeJS.Timeout | null = null;
+let currentCandidate: Pool | null = null;
+
 export type DatabaseState = "disabled" | "connecting" | "ready" | "failed";
 
 export interface DatabasePosture {
@@ -45,30 +51,58 @@ export function databaseAllowsRequest(
   database: DatabasePosture,
   method: string,
 ): boolean {
-  if (!database.configured || database.state !== "failed") return true;
+  if (!database.configured || database.state === "ready") return true;
   return ["GET", "HEAD", "OPTIONS"].includes(method.toUpperCase());
+}
+
+function scheduleReconnect(): void {
+  if (retryTimer || !posture.configured) return;
+  const delay = retryDelayMs;
+  retryDelayMs = Math.min(retryDelayMs * 2, MAX_RETRY_MS);
+  retryTimer = setTimeout(() => {
+    retryTimer = null;
+    void initializeDatabase();
+  }, delay);
+  retryTimer.unref?.();
+}
+
+function markFailed(candidate: Pool, error: unknown): void {
+  if (currentCandidate !== candidate) return;
+  currentCandidate = null;
+  if (pool === candidate) pool = null;
+  posture = {
+    ...posture,
+    state: "failed",
+    observedAt: new Date().toISOString(),
+    failureCode: error instanceof Error ? error.name : "connection-error",
+    fallbackAllowed: false,
+  };
+  log.error("Postgres unavailable; persistent features fail closed", {
+    err: String(error),
+  });
+  void candidate.end().catch(() => undefined);
+  scheduleReconnect();
 }
 
 async function initializeDatabase(): Promise<DatabasePosture> {
   if (!process.env.DATABASE_URL) return getDatabasePosture();
+  if (currentCandidate || pool) return getDatabasePosture();
   const candidate = new Pool({ connectionString: process.env.DATABASE_URL });
+  currentCandidate = candidate;
+  posture = {
+    ...posture,
+    state: "connecting",
+    observedAt: new Date().toISOString(),
+    fallbackAllowed: false,
+  };
 
-  candidate.on("error", (err) => {
-    posture = {
-      ...posture,
-      state: "failed",
-      observedAt: new Date().toISOString(),
-      failureCode: err.name || "pool-error",
-      fallbackAllowed: false,
-    };
-    pool = null;
-    log.error("Postgres pool error", { err: String(err) });
-    void candidate.end().catch(() => undefined);
-  });
+  candidate.on("error", (err) => markFailed(candidate, err));
 
   try {
     await candidate.query("SELECT 1");
+    if (currentCandidate !== candidate) return getDatabasePosture();
     pool = candidate;
+    retryDelayMs = INITIAL_RETRY_MS;
     const connectedAt = new Date().toISOString();
     posture = {
       ...posture,
@@ -80,18 +114,7 @@ async function initializeDatabase(): Promise<DatabasePosture> {
     };
     log.info("Postgres pool connected", { url: redactUrl() });
   } catch (err) {
-    pool = null;
-    posture = {
-      ...posture,
-      state: "failed",
-      observedAt: new Date().toISOString(),
-      failureCode: err instanceof Error ? err.name : "connection-error",
-      fallbackAllowed: false,
-    };
-    log.error("Postgres pool connect failed; persistent features fail closed", {
-      err: String(err),
-    });
-    await candidate.end().catch(() => undefined);
+    markFailed(candidate, err);
   }
   return getDatabasePosture();
 }

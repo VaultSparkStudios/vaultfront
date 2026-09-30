@@ -18,7 +18,7 @@ export class PlayPage extends LitElement {
         <div class="vf-main-content flex flex-col gap-2 min-h-0">
           <!-- Mobile: Fixed top bar -->
           <div
-            class="lg:hidden fixed left-0 right-0 top-0 z-40 pt-[env(safe-area-inset-top)] bg-gradient-to-r from-slate-950 via-slate-900 to-[#0c2a38] border-b border-cyan-400/25"
+            class="vf-mobile-topbar lg:hidden fixed left-0 right-0 top-0 z-40 pt-[env(safe-area-inset-top)] bg-gradient-to-r from-slate-950 via-slate-900 to-[#0c2a38] border-b border-cyan-400/25"
           >
             <div
               class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center h-14 px-2 gap-2"

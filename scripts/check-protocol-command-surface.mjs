@@ -40,6 +40,10 @@ const OPTIONAL_STANDALONE = new Set([
   "render-closeout-brief.mjs",
   "propagate-agents-sections.mjs",
   "sync-agent-skills.mjs",
+  "start-sync.mjs",
+  "check-maintenance-lane-ran.mjs",
+  "check-release-proof.mjs",
+  "check-audit-premises.mjs",
 ]);
 const missingOps = [...documentedOps].filter(
   (command) =>

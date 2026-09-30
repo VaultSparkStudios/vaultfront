@@ -79,6 +79,22 @@ test("three themes retain readable page, panel, and settings surfaces", async ({
       theme,
     );
 
+    if (testInfo.project.name === "mobile-chrome" && theme === "light") {
+      const topbarPalette = await page.evaluate(() => ({
+        background: getComputedStyle(
+          document.querySelector(".vf-mobile-topbar") as HTMLElement,
+        ).backgroundColor,
+        foreground: getComputedStyle(
+          document.querySelector(
+            ".vf-mobile-topbar .vf-brand-wordmark",
+          ) as HTMLElement,
+        ).webkitTextFillColor,
+      }));
+      expect(
+        contrast(topbarPalette.foreground, topbarPalette.background),
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+
     const tokens = await page.evaluate(() => {
       const style = getComputedStyle(document.documentElement);
       return Object.fromEntries(
@@ -178,6 +194,35 @@ test("three themes retain readable page, panel, and settings surfaces", async ({
     expect(commandCenterMetrics.controlHeight).toBeGreaterThanOrEqual(44);
     expect(commandCenterMetrics.background).toContain("gradient");
     expect(commandCenterMetrics.color).not.toBe("");
+    const commandCenterReadability = await commandCenter.evaluate((element) => {
+      const root = element.querySelector<HTMLElement>(
+        "[data-vf-command-center]",
+      );
+      const emptyMessages = ["achievements-panel", "season-pass-track"].map(
+        (selector) => {
+          const host = root?.querySelector(selector);
+          const empty = host?.shadowRoot?.querySelector<HTMLElement>(".empty");
+          return empty ? getComputedStyle(empty).color : null;
+        },
+      );
+      return {
+        background: getComputedStyle(document.documentElement)
+          .getPropertyValue("--vf-bg-deep")
+          .trim(),
+        emptyMessages,
+        disabledOpacities: [
+          ...(root?.querySelectorAll<HTMLButtonElement>("button:disabled") ??
+            []),
+        ].map((button) => getComputedStyle(button).opacity),
+      };
+    });
+    expect(commandCenterReadability.emptyMessages).not.toContain(null);
+    for (const color of commandCenterReadability.emptyMessages) {
+      expect(
+        contrast(color!, commandCenterReadability.background),
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+    expect(commandCenterReadability.disabledOpacities).not.toContain("0.5");
     const fortuneMetrics = await commandCenter.evaluate(async (element) => {
       const root = element.querySelector<HTMLElement>(
         "[data-vf-command-center]",

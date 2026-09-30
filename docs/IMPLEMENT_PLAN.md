@@ -1,3 +1,18 @@
+# Session 112 Implementation Plan
+
+Source: `docs/AUDIT_2026-09-30.json`
+
+1. [x] Restore the existing staging revision after diagnosing the live 503: isolate PostgreSQL reachability, restart the failed game process, then rebind the project router and verify public HTTP 200.
+2. [ ] Complete #249 and #250 together: bounded database pool recovery, fail-closed writes, Docker DNS router rebinding, focused tests, deployment contract, and an app-only restart drill.
+3. [ ] Complete #251: reconcile the 109-file Studio protocol propagation with VaultFront's actual source trees, fix every real formatting and test failure, and notify the Studio Ops owner through signed Ark cargo.
+4. [ ] Complete #252: verify current build and provider CI, push directly to main after public sanitization, deploy the exact candidate to stable staging, inspect the 27-cell visual/performance proof, and observe rollback/restoration.
+5. [ ] Re-run canonical production admission. Promote only when Zoho reply identity, authenticated Obelisk, three genuine authenticated human Alpha sessions, one positive live payment, and portable exact-artifact approval are all current and verified.
+6. [ ] Run full ordered closeout and reconcile the recovery debt from post-S111 commits, automated dependency updates, and propagation.
+
+Gameplay tuning stays evidence-bound: no Capture-to-Breach balance or progression change is selected without genuine human timing, dropout, and continuation data.
+
+---
+
 # Session 111 Implementation Plan
 
 Source: `docs/AUDIT_2026-08-25.json`
