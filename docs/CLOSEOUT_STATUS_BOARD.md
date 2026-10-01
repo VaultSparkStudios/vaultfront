@@ -1,27 +1,27 @@
 <!-- generated-by: scripts/render-closeout-board.mjs v1.1 -->
-<!-- generated-at: 2026-08-26 (Session 111 closeout) -->
+<!-- generated-at: 2026-10-01 (Session 112 closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
-╔══ SESSION CLOSEOUT · VaultFront · S111 ════════════════════════╗
-║  Date: 2026-08-26  ·  SIL: 997/1000  ·  Velocity: 1 down         ║
+╔══ SESSION CLOSEOUT · VaultFront · S112 ════════════════════════╗
+║  Date: 2026-10-01  ·  SIL: 995/1000  ·  Velocity: 4 down         ║
 ║  Mode: FOUNDER  ·  Agent: codex                                  ║
 ║  Live:  preview  →  https://vaultfront.io                        ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WHAT SHIPPED ════════════════════════════════════════════════╗
-║  ✓ Implementation: audit item 248 is shipped. CANON-041 is now   ║
-║  ✓ Exact revision: `7fbaedcdd83be3a58b4865c5ce863dff8d14d963` p  ║
-║  ✓ Staging: `https://staging.vaultfront.io` is healthy at immut  ║
-║  ✓ Rendered proof: 144 source-bound artifacts cover VaultFront,  ║
-║  ✓ Verification authority: provider CI is the aggregate authori  ║
+║  ✓ Implementation: audit items 249–252 are shipped. Bounded dat  ║
+║  ✓ Exact revision: `8429bacc620effaaf98e00c217d2f472245b51e2` p  ║
+║  ✓ Staging: `https://staging.vaultfront.io` serves the exact re  ║
+║  ✓ Recovery: game-only restart recovered public 200 without res  ║
+║  ✓ Rollback: validation `36793998771` and drill `36794269177` s  ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ SCORES · SIL 997/1000 ═══════════════════════════════════════╗
+╔══ SCORES · SIL 995/1000 ═══════════════════════════════════════╗
 ║    Dev Health         100  ██████████                            ║
-║    Alignment          100  ██████████                            ║
+║    Alignment          99   ██████████                            ║
 ║    Momentum           100  ██████████                            ║
 ║    Engagement         98   ██████████                            ║
-║    Process Qual       100  ██████████                            ║
+║    Process Qual       99   ██████████                            ║
 ║    Coherence          99   ██████████                            ║
 ║    Security           100  ██████████                            ║
 ║    Ecosystem          100  ██████████                            ║
@@ -32,16 +32,16 @@
 ║  · context/CURRENT_STATE.md                                      ║
 ║  · context/TASK_BOARD.md                                         ║
 ║  · context/LATEST_HANDOFF.md                                     ║
-║  ✓ logs/WORK_LOG.md                                              ║
-║  ✓ context/DECISIONS.md                                          ║
+║  · logs/WORK_LOG.md                                              ║
+║  · context/DECISIONS.md                                          ║
 ║  · context/SELF_IMPROVEMENT_LOOP.md                              ║
 ║  · docs/CREATIVE_DIRECTION_RECORD.md                             ║
 ║  · context/TRUTH_AUDIT.md                                        ║
-║  ✓ context/PROJECT_STATUS.json                                   ║
+║  · context/PROJECT_STATUS.json                                   ║
 ║  · agent memory (~/.claude/projects/<slug>/memory/)              ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 6 files  ·  M:6 A:0 D:0 ?:0                            ║
+║  Changes: 0 files  ·  M:0 A:0 D:0 ?:0                            ║
 ║  Ahead: 0  ·  Behind: 0                                          ║
 ║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -52,12 +52,12 @@
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
 ║  Doctor:        13/13                                            ║
 ║  Compliance:    49/49                                            ║
-║  Tests:         291/291                                          ║
+║  Tests:         292/292                                          ║
 ║  Validation:    full-fresh                                       ║
-║  IGNIS:         19d ago                                          ║
+║  IGNIS:         54d ago                                          ║
 ║  Truth:         green                                            ║
-║  Sanitization:  13d ago                                          ║
-║  Shell hygiene: 20 started · 20 closed · 0 running               ║
+║  Sanitization:  1d ago                                           ║
+║  Shell hygiene: 7 started · 7 closed · 0 running                 ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ NEXT SESSION ════════════════════════════════════════════════╗
 ║  #1: Unified Genius List exhausted                               ║
@@ -65,4 +65,4 @@
 ╚════════════════════════════════════════════════════════════════╝
 ```
 
-_Generated by `scripts/render-closeout-board.mjs v1.1`_
+*Generated by `scripts/render-closeout-board.mjs v1.1`*
