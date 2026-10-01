@@ -115,11 +115,11 @@ function projectName() {
 }
 
 /**
- * Canonical live URL surface — picks the most authoritative URL from registry.
+ * Canonical production URL surface — picks the configured URL from registry.
  * Order: runtimeUrl → liveUrl → deployedUrl → stagingUrl (with badge).
  * Returns null for FORGE projects without any URL (suppress empty line).
  * Used by SESSION CLOSEOUT block per founder directive S114: one-click jump
- * to live project from the closeout brief.
+ * to the production target. A configured URL is not proof of availability.
  */
 function canonicalLiveUrl() {
   const status = readJson(STATUS_PATH);
@@ -142,7 +142,11 @@ function canonicalLiveUrl() {
     const url = candidates[0];
     const vs = (entry?.vaultStatus || "").toUpperCase();
     const isLive = vs === "SPARKED";
-    return { url, badge: isLive ? "🌐 LIVE" : "preview", type: "production" };
+    return {
+      url,
+      badge: isLive ? "🌐 LIVE" : "configured target",
+      type: "production",
+    };
   }
   // Fallback to staging if SPARKED is in-flight
   if (entry?.stagingUrl)
@@ -189,7 +193,7 @@ function deploymentRows() {
   let live;
   if (liveUrl && vs === "SPARKED") live = `${liveUrl}  ·  🌐 LIVE (SPARKED)`;
   else if (liveUrl)
-    live = `${liveUrl}  ·  preview/${vs || "FORGE"} (not yet SPARKED)`;
+    live = `${liveUrl}  ·  configured/${vs || "FORGE"} (not yet SPARKED)`;
   else if (vs === "VAULTED") live = "N/A — VAULTED (paused)";
   else live = "N/A — pre-deploy (FORGE)";
 
@@ -530,7 +534,7 @@ function render() {
   );
   const live = canonicalLiveUrl();
   if (live) {
-    lines.push(row(`Live:  ${live.badge}  →  ${live.url}`));
+    lines.push(row(`Production URL:  ${live.badge}  →  ${live.url}`));
   }
   lines.push(bottom());
 
@@ -579,7 +583,7 @@ function render() {
   const deploy = deploymentRows();
   lines.push(top("DEPLOYMENT"));
   lines.push(row(`Staging:  ${deploy.staging.slice(0, W - 10)}`));
-  lines.push(row(`Live:     ${deploy.live.slice(0, W - 10)}`));
+  lines.push(row(`Production URL:  ${deploy.live.slice(0, W - 20)}`));
   lines.push(bottom());
 
   // 6. POST-SESSION SIGNALS

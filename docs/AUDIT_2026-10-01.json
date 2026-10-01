@@ -1,0 +1,209 @@
+{
+  "schemaVersion": "1.0",
+  "session": 114,
+  "generatedBy": "codex",
+  "generatedAt": "2026-10-01T16:34:00Z",
+  "project": {
+    "slug": "vaultfront",
+    "name": "VaultFront",
+    "type": "game",
+    "audience": "public-unlaunched",
+    "stage": "FORGE",
+    "stagingType": "stable-owned-subdomain"
+  },
+  "summary": "Live staging is healthy at the certified game revision, while production returns HTTP 503 and canonical admission still lacks five independent observations. This audit selects two verified session-truth defects and the exact-candidate verification/deployment work authorized for this arc. It rejects gameplay and monetization retunes until authenticated human evidence exists.",
+  "axes": {
+    "featureDepth": 1.5,
+    "innovation": 1.5,
+    "ux": 2,
+    "feedbackLoop": 2,
+    "gamification": 3,
+    "aiIntegration": 1.5,
+    "security": 3,
+    "speedOrganization": 3,
+    "tokenApiReduction": 2
+  },
+  "specialtyReviews": {
+    "gameLoop": {
+      "loopTightness": 90,
+      "progressionCurve": 82,
+      "sessionEngagement": null,
+      "retentionHooks": null,
+      "soulFidelity": null,
+      "reason": "The implemented Capture → Convoy → Breach → certified dividend loop is code-derived. Live Alpha Gate remains not-started with zero accepted human events, and the public SOUL has no creative pillars; human engagement, retention, and Soul fidelity cannot be scored honestly.",
+      "nextMoves": [
+        "Verify a complete authenticated Obelisk journey and recruit three genuine Alpha participants.",
+        "Measure the ordered Capture-to-decisive-delivery timeline, dropout, and post-match continuation.",
+        "Tune only the observed bottleneck, then repeat the certified loop and visual proof."
+      ]
+    },
+    "release": {
+      "decision": "NO-GO",
+      "reason": "At 2026-10-01T16:33Z staging returned HTTP 200 and the exact certified game SHA, while production returned HTTP 503. Live readiness named missing project-domain reply-as, authenticated Obelisk, three authenticated human sessions, positive live revenue, and portable exact-artifact founder approval."
+    }
+  },
+  "candidateReview": {
+    "sampledSurfaces": [
+      "scripts/check-writeback-currency.mjs",
+      "scripts/render-closeout-board.mjs",
+      "scripts/validate-closeout-board-format.mjs",
+      "docs/CLOSEOUT_STATUS_BOARD.md",
+      "context/GAME_LOOP.md",
+      "context/PROJECT_STATUS.json",
+      "scripts/release-admission.mjs",
+      "docs/RELEASE_GATE_2026-09-30.md"
+    ],
+    "preverification": "The local write-back probe flags two commits that changed only the generated closeout status board after S113's complete SIL/write-back commit. The board labels https://vaultfront.io as Live/preview although a fresh HEAD request returned 503. Live staging readiness returned releaseStatus blocked with five named missing observations.",
+    "rejectedCandidates": [
+      {
+        "axis": "feature depth / gamification / innovation",
+        "candidate": "Retune convoy rewards or Breach duration",
+        "reason": "The certified balance and progression paths already exist; zero authenticated human events leave no observed bottleneck."
+      },
+      {
+        "axis": "UX / feedback loop",
+        "candidate": "Redesign first-match guidance",
+        "reason": "The 27-cell staged surface is passing, and there are no human timing/dropout observations to target a redesign."
+      },
+      {
+        "axis": "AI integration / token reduction",
+        "candidate": "Enable remote coaching",
+        "reason": "The deterministic local baseline is cost neutral and the Alpha Gate has no human evidence supporting additional provider spend."
+      },
+      {
+        "axis": "security",
+        "candidate": "Mint synthetic release claims to exercise promotion",
+        "reason": "Release claims require their independent authorities; a synthetic human, payment, mail, identity, or founder claim would be invalid."
+      }
+    ]
+  },
+  "items": [
+    {
+      "id": 253,
+      "slug": "generated-closeout-writeback-classification",
+      "tier": "hot",
+      "axis": "speed / organization / feedback loop",
+      "effortHours": 1.5,
+      "impact": 7,
+      "innovation": 5,
+      "priority": 19.35,
+      "status": "shipped",
+      "title": "Classify generated closeout board commits as receipts",
+      "why": "The write-back probe falsely reports unfinished session work after a complete S113 closeout because the board is generated and committed after the SIL anchor. This causes needless recovery work at the next start.",
+      "coreLoopStep": "verified release observation → accurate session memory → safe next player-facing change",
+      "recipe": "Add only the generated closeout board path to the probe's generated-path allowlist, prove board-only commits remain non-substantive and mixed board-plus-code commits still count as debt, and ship the recurrence to the Studio Ops owner through Ark.",
+      "selectedDepth": "L3",
+      "executionLog": [
+        {
+          "at": "2026-10-01",
+          "status": "shipped",
+          "note": "The live write-back probe now reports current; 2 focused thread-pool assertions prove board-only churn is excluded and a mixed code commit remains debt. Signed Ark cargo 01K3S5SKJ0BD0683DC7005976E asks Studio Ops to carry the fix."
+        }
+      ],
+      "premise": {
+        "claim": "The generated closeout board is not in the generated-path allowlist",
+        "adapter": "file-content",
+        "target": "scripts/check-writeback-currency.mjs",
+        "pattern": "CLOSEOUT_STATUS_BOARD",
+        "operator": "eq",
+        "expected": false
+      },
+      "ladder": {
+        "L1": {
+          "effortHours": 0.3,
+          "recipe": "Document the false-positive source."
+        },
+        "L2": {
+          "effortHours": 0.8,
+          "recipe": "Classify the generated board path and rerun the live probe."
+        },
+        "L3": {
+          "effortHours": 1.5,
+          "recipe": "Add mixed-commit regression coverage, rerun the live probe, and send a signed Ark recurrence to the propagation owner."
+        }
+      }
+    },
+    {
+      "id": 254,
+      "slug": "production-url-status-truth",
+      "tier": "hot",
+      "axis": "UX / security / feedback loop",
+      "effortHours": 1.5,
+      "impact": 8,
+      "innovation": 4,
+      "priority": 17.7,
+      "status": "shipped",
+      "title": "Make closeout production URL labeling honest",
+      "why": "The current board says Live: preview → https://vaultfront.io and repeats Live in deployment, but the apex currently returns HTTP 503 and the project remains FORGE/NO-GO. A URL field alone cannot prove a live experience.",
+      "coreLoopStep": "release status → player entry → first certified match",
+      "recipe": "Label the configured apex as a production URL rather than a live service, show the FORGE/no-go state without implying reachability, and verify the rendered board remains canonical.",
+      "selectedDepth": "L2",
+      "executionLog": [
+        {
+          "at": "2026-10-01",
+          "status": "shipped",
+          "note": "The board now identifies the apex as a configured production target and FORGE rather than a live preview. The rendered canonical board validator passed; a fresh HEAD observation still returned 503."
+        }
+      ],
+      "premise": {
+        "claim": "The board renderer calls a configured non-SPARKED apex Live",
+        "adapter": "file-content",
+        "target": "scripts/render-closeout-board.mjs",
+        "pattern": "Live:  ",
+        "operator": "eq",
+        "expected": true
+      },
+      "ladder": {
+        "L1": {
+          "effortHours": 0.3,
+          "recipe": "Change the top-row label to Production URL."
+        },
+        "L2": {
+          "effortHours": 1.5,
+          "recipe": "Change both top and deployment labels, render the real board, and validate it against the canonical format and current FORGE state."
+        },
+        "L3": {
+          "effortHours": 2.5,
+          "recipe": "Extract and test a reusable availability-state mapper with separately timestamped runtime observations."
+        }
+      }
+    },
+    {
+      "id": 255,
+      "slug": "session-114-exact-staging-and-admission",
+      "tier": "hot",
+      "axis": "release / feedback loop / security",
+      "effortHours": 4,
+      "impact": 10,
+      "innovation": 4,
+      "priority": 15.47,
+      "status": "pending",
+      "title": "Verify and deploy this arc's exact main candidate",
+      "why": "The user authorized a direct main push and full deployment. The live staging game is healthy but pinned to the prior game SHA; new main commits need exact CI and staging evidence before production can be considered. Five external release observations currently block promotion.",
+      "coreLoopStep": "verified build → stable staging entry → certified match → release decision",
+      "recipe": "Run relevant local and provider checks, sanitize and push main, deploy and observe the exact candidate on stable staging, then rerun canonical production admission. Promote only on a genuine all-green result; otherwise retain the five named open gates with live evidence.",
+      "selectedDepth": "L3",
+      "premise": {
+        "claim": "The stable staging commit differs from current main",
+        "adapter": "deploy-receipt",
+        "target": "staging",
+        "operator": "eq",
+        "expected": true
+      },
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Recheck staging and admission with current live evidence."
+        },
+        "L2": {
+          "effortHours": 2,
+          "recipe": "Push the audited candidate and deploy exact stable staging after CI."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Prove CI, exact staging, health, rendered observation, rollback readiness, and canonical promotion admission; promote only if all authorities pass."
+        }
+      }
+    }
+  ]
+}

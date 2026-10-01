@@ -7,7 +7,7 @@
 ╔══ SESSION CLOSEOUT · VaultFront · S113 ════════════════════════╗
 ║  Date: 2026-10-01  ·  SIL: 990/1000  ·  Velocity: 0 flat         ║
 ║  Mode: FOUNDER  ·  Agent: codex                                  ║
-║  Live:  preview  →  https://vaultfront.io                        ║
+║  Production URL:  configured target  →  https://vaultfront.io    ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WHAT SHIPPED ════════════════════════════════════════════════╗
 ║  ✓ Intent: founder-requested `/closeout`, commit and push to `m  ║
@@ -38,22 +38,22 @@
 ║  · agent memory (~/.claude/projects/<slug>/memory/)              ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 0 files  ·  M:0 A:0 D:0 ?:0                            ║
+║  Changes: 6 files  ·  M:3 A:0 D:0 ?:3                            ║
 ║  Ahead: 0  ·  Behind: 0                                          ║
 ║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ DEPLOYMENT ══════════════════════════════════════════════════╗
 ║  Staging:  https://staging.vaultfront.io  ·  stable-owned-subdo  ║
-║  Live:     https://vaultfront.io  ·  preview/FORGE (not yet SPA  ║
+║  Production URL:  https://vaultfront.io  ·  configured/FORGE     ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
 ║  Doctor:        13/13                                            ║
 ║  Compliance:    49/49                                            ║
 ║  Tests:         292/292                                          ║
 ║  Validation:    full-fresh                                       ║
-║  IGNIS:         54d ago                                          ║
+║  IGNIS:         55d ago                                          ║
 ║  Truth:         green                                            ║
-║  Sanitization:  1d ago                                           ║
+║  Sanitization:  2d ago                                           ║
 ║  Shell hygiene: 0 started · 0 closed · 0 running                 ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ NEXT SESSION ════════════════════════════════════════════════╗

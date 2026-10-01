@@ -59,6 +59,7 @@ export const GENERATED_PATH_RES = [
   /^reports?\//i,
   /^docs\/AUDIT_\d{4}-\d{2}-\d{2}-routine\./i,
   /^docs\/STARTUP_BRIEF/i,
+  /^docs\/CLOSEOUT_STATUS_BOARD\.md$/i,
   /^docs\/FRONTIER_CAPABILITY_RADAR\.md$/i,
   /^docs\/CLOSEOUT_CHECKLIST\.md$/i,
   /\.lock$/i,
