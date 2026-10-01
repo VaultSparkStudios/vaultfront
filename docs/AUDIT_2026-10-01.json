@@ -11,7 +11,7 @@
     "stage": "FORGE",
     "stagingType": "stable-owned-subdomain"
   },
-  "summary": "Live staging is healthy at the certified game revision, while production returns HTTP 503 and canonical admission still lacks five independent observations. This audit selects two verified session-truth defects and the exact-candidate verification/deployment work authorized for this arc. It rejects gameplay and monetization retunes until authenticated human evidence exists.",
+  "summary": "Live staging is healthy at the certified game revision, while production returns HTTP 503 and canonical admission still lacks five independent observations. This audit selects two verified session-truth defects, one newly disclosed development dependency advisory, and the exact-candidate verification/deployment work authorized for this arc. It rejects gameplay and monetization retunes until authenticated human evidence exists.",
   "axes": {
     "featureDepth": 1.5,
     "innovation": 1.5,
@@ -51,9 +51,11 @@
       "context/GAME_LOOP.md",
       "context/PROJECT_STATUS.json",
       "scripts/release-admission.mjs",
+      "package.json",
+      "package-lock.json",
       "docs/RELEASE_GATE_2026-09-30.md"
     ],
-    "preverification": "The local write-back probe flags two commits that changed only the generated closeout status board after S113's complete SIL/write-back commit. The board labels https://vaultfront.io as Live/preview although a fresh HEAD request returned 503. Live staging readiness returned releaseStatus blocked with five named missing observations.",
+    "preverification": "The local write-back probe flags two commits that changed only the generated closeout status board after S113's complete SIL/write-back commit. The board labels https://vaultfront.io as Live/preview although a fresh HEAD request returned 503. Live staging readiness returned releaseStatus blocked with five named missing observations. After the first main push, GitHub alert 102 identified a moderate advisory in the eslint → minimatch → brace-expansion development chain; package.json pinned affected 5.0.9.",
     "rejectedCandidates": [
       {
         "axis": "feature depth / gamification / innovation",
@@ -78,6 +80,44 @@
     ]
   },
   "items": [
+    {
+      "id": 256,
+      "slug": "patched-brace-expansion-development-override",
+      "tier": "hot",
+      "axis": "security / organization",
+      "effortHours": 1,
+      "impact": 9,
+      "innovation": 4,
+      "priority": 22.71,
+      "status": "pending",
+      "title": "Replace the vulnerable development-only brace-expansion override",
+      "why": "GitHub Dependabot alert 102 reports GHSA-q2hr-2g5m-vwhr against the repository's pinned 5.0.9. npm ls traces it only through eslint → minimatch, while GitHub's reviewed advisory names 5.0.12 as patched.",
+      "coreLoopStep": "trusted build tooling → verified release artifact → safe player entry",
+      "recipe": "Verify package trust, registry provenance and patched range; change only the existing override to 5.0.12, update the lockfile with scripts disabled, prove the installed tree and audit are clean, and rerun lint and exact provider checks.",
+      "selectedDepth": "L2",
+      "premise": {
+        "claim": "The development-only override is pinned to vulnerable 5.0.9",
+        "adapter": "file-content",
+        "target": "package.json",
+        "pattern": "\"brace-expansion\": \"5.0.9\"",
+        "operator": "eq",
+        "expected": true
+      },
+      "ladder": {
+        "L1": {
+          "effortHours": 0.3,
+          "recipe": "Record the development-only exposure and patched version."
+        },
+        "L2": {
+          "effortHours": 1,
+          "recipe": "Update the exact override and lockfile, verify signed registry provenance, npm audit, installed version, lint, and provider CI."
+        },
+        "L3": {
+          "effortHours": 2,
+          "recipe": "Also characterize untrusted-pattern reachability in the build tools and add a targeted version floor gate."
+        }
+      }
+    },
     {
       "id": 253,
       "slug": "generated-closeout-writeback-classification",
