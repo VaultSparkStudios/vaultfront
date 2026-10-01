@@ -15,19 +15,19 @@ Last session: 2026-09-30 Session 112 staging recovery and exact release admissio
 
 Shipped all four verified audit items, restored a five-week staging outage, and completed exact CI, browser observation, promotion validation, and immutable-image rollback/restoration. Production remained fail-closed on five independent observations rather than turning operational authorization into launch approval.
 
-| Category              | Score | Evidence |
-| --------------------- | ----: | -------- |
-| Dev Health            |   100 | Exact CI passed 292 files / 1,523 assertions, E2E, contracts, build, staging, 27-cell observation, and rollback/restoration. |
-| Creative Alignment    |    99 | Recovery preserves the certified extraction loop and three intended themes; no unsupported balance or Soul claim was added. |
-| Momentum              |   100 | Audit items 249–252 shipped at their selected depths and the exact staging corridor was restored. |
-| Engagement            |    98 | Live responsive and interaction thresholds pass, while retention remains unmeasured without genuine human Alpha sessions. |
-| Process Quality       |    99 | A tag-sourced rollback candidate was rejected by the release contract, then replaced with two admissible main-sourced images; the earlier attempt remains disclosed. |
-| Cross-Repo Coherence  |    99 | Incompatible propagation was quarantined locally and signed Ark cargo informed Studio Ops without sibling file edits. |
-| Security Posture      |   100 | Fail-closed writes, provenance-bound release claims, zero production dependency audit findings, secret scan, and no red-gate bypass. |
-| Ecosystem Integration |   100 | CI, immutable staging, signed visual/footer observations, promotion validation, and rollback share exact run-bound evidence. |
-| Capital Efficiency    |   100 | Existing host and browser infrastructure was reused; no paid or synthetic release substitute was introduced. |
-| Automation Coverage   |   100 | Pool failure transitions, dynamic router contract, provider checks, 27-cell browser matrix, and image rollback/restoration execute. |
-| **Total**             | **995/1000** | Exact category sum; staging success does not claim production launch. |
+| Category              |        Score | Evidence                                                                                                                                                             |
+| --------------------- | -----------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev Health            |          100 | Exact CI passed 292 files / 1,523 assertions, E2E, contracts, build, staging, 27-cell observation, and rollback/restoration.                                         |
+| Creative Alignment    |           99 | Recovery preserves the certified extraction loop and three intended themes; no unsupported balance or Soul claim was added.                                          |
+| Momentum              |          100 | Audit items 249–252 shipped at their selected depths and the exact staging corridor was restored.                                                                    |
+| Engagement            |           98 | Live responsive and interaction thresholds pass, while retention remains unmeasured without genuine human Alpha sessions.                                            |
+| Process Quality       |           99 | A tag-sourced rollback candidate was rejected by the release contract, then replaced with two admissible main-sourced images; the earlier attempt remains disclosed. |
+| Cross-Repo Coherence  |           99 | Incompatible propagation was quarantined locally and signed Ark cargo informed Studio Ops without sibling file edits.                                                |
+| Security Posture      |          100 | Fail-closed writes, provenance-bound release claims, zero production dependency audit findings, secret scan, and no red-gate bypass.                                 |
+| Ecosystem Integration |          100 | CI, immutable staging, signed visual/footer observations, promotion validation, and rollback share exact run-bound evidence.                                         |
+| Capital Efficiency    |          100 | Existing host and browser infrastructure was reused; no paid or synthetic release substitute was introduced.                                                         |
+| Automation Coverage   |          100 | Pool failure transitions, dynamic router contract, provider checks, 27-cell browser matrix, and image rollback/restoration execute.                                  |
+| **Total**             | **995/1000** | Exact category sum; staging success does not claim production launch.                                                                                                |
 
 **Game rubric:** Loop Tightness 90 (provisional) · Retention Hook 65 (provisional) · Soul Fidelity N/A pending explicit criteria and human evidence · Velocity 4. Gameplay balance was unchanged.
 

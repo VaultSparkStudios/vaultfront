@@ -865,6 +865,7 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Decision:** Make `selectLatestSessionHandoff` recognize both `Where We Left Off` and `Session Intent` markers, choose the highest session number, and return the contiguous block beginning at that session's earliest marker.
 
 **Why:** Selecting only from the latest Intent marker discarded its preceding closeout facts, so the Session 111 board silently rendered Session 108's shipped bullets. A direct exact assertion passes; the focused Vitest attempt failed to start its worker and executed zero tests, so provider CI is required before the tooling change is called aggregate-green.
+
 ## 2026-09-30 — Session 112 staging recovery and release-source decisions
 
 ### Recover configured persistence without admitting unsafe writes
