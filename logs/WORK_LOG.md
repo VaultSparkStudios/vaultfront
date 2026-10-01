@@ -554,3 +554,13 @@ Session 89 closeout tooling incident: invoking the Studio Ops closeout-board ren
 - Intelligence refresh: local state vector, doctor 13/13, entropy 0.106, and genome 24/25 refreshed. The stale IGNIS score is Studio-Ops-owned; Ark request `01K0UHRS0GE25842F806C4E54B` asks for a fresh project score without writing a sibling tree.
 - Closeout root-fix: repaired the handoff selector that paired Session 111's Intent with Session 108's shipped block. The exact pure-module assertion passes; focused Vitest failed at worker startup with zero tests executed, so provider CI remains the aggregate authority. Final hygiene reconciled 20 tracked tasks/processes, including a doctor-owned development-server child stopped by verified PID lineage, with zero remaining.
 - CDR reviewed — no new creative direction this session.
+## 2026-09-30 — Session 112 staging recovery and exact release chain
+
+- Goal: Run the full arc, push direct to main, restore staging, and promote only through all canonical production gates.
+- Recovery: Diagnosed five-week staging 503 as terminal database pool failure plus static router DNS. Added bounded retry/fail-closed behavior and dynamic Docker DNS routing; an app-only restart recovered public health without router restart after a brief boot-time 503.
+- Implementation: Shipped audit items 249–252, repaired incompatible propagation and provider CI, aligned dependency peers, and sent signed Ark recurrence cargo `01K3Q7CB30696610376E88F928`.
+- Verification: Exact `8429bacc` passed CI `36785710707` (292 files / 1,523 assertions), E2E `36785710727`, staging deploy `36793728506`, signed 27-cell observation `36793985784` (zero findings; worst LCP 1,228 ms, INP 144 ms, CLS 0.0151), and apex promotion dry-run `36787435888`. Local source-bound proof covers 144 artifacts across three themes.
+- Release drill: A tag-sourced older-code attestation was correctly rejected. Two distinct main-sourced images of the repaired revision passed validation `36793998771` and rollback/restoration `36794269177`; the newer image was restored healthy in 33,702 ms.
+- Claim boundary: Exact canonical admission still rejects Zoho reply identity, authenticated Obelisk, three genuine authenticated human Alpha sessions, positive live revenue, and portable exact-artifact founder approval. Production remains HTTP 503 / NO-GO; no shared-host database outage, real-human, payment, or approval evidence was fabricated.
+
+---

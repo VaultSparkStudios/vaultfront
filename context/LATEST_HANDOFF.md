@@ -1,3 +1,18 @@
+## Where We Left Off — Session 112 closeout (2026-09-30)
+
+- Implementation: audit items 249–252 are shipped. Bounded database recovery and dynamic Docker DNS routing repaired the staging outage; protocol/CI drift was fixed and reported to Studio Ops by signed Ark cargo `01K3Q7CB30696610376E88F928`.
+- Exact revision: `8429bacc620effaaf98e00c217d2f472245b51e2` passed CI `36785710707` (292 files / 1,523 assertions), E2E `36785710727`, staging dry-run `36786295782`, staging deploy `36793728506`, signed observation `36793985784`, and promotion dry-run `36787435888`.
+- Staging: `https://staging.vaultfront.io` serves the exact revision with 2/2 healthy workers at restored immutable image `sha256:0d8ad109a33933c8db051b05c3f4b8100d552288136b02469bcd9e01c656be5e`. Live observation passed 27/27 cells, zero findings, worst LCP 1,228 ms, INP 144 ms, CLS 0.0151; the local three-theme receipt binds 144 artifacts.
+- Recovery: game-only restart recovered public 200 without restarting the router after a brief boot-time 503. The database loss-and-recovery path was simulated in focused tests; no shared-host database outage was induced.
+- Rollback: validation `36793998771` and drill `36794269177` switched two distinct main-sourced images of the same code revision and restored the newer image healthy in 33,702 ms. A prior tag-sourced attempt failed the source-ref gate before admission and is not counted as code-revision rollback proof.
+- Release: canonical production admission rejected five absent gates: Zoho reply identity, authenticated Obelisk, three distinct genuine authenticated human Alpha sessions, positive live revenue, and portable exact-artifact founder approval. Production remains HTTP 503 and was not mutated.
+- Deploy: exact candidate deployed and restored on stable staging; production pending — deferred on the five canonical authority observations.
+- Next: obtain and independently verify those five genuine observations, refresh freshness-bounded staging receipts if needed, rerun exact canonical admission, then promote only if all gates pass.
+
+## Session Intent — Session 112 (2026-09-30)
+
+Run the complete `/arc`, commit and push directly to `main`, recover and deploy the exact candidate through stable staging, and promote production only if every independent canonical release gate is genuinely green. Result: agent-addressable implementation and staging work achieved; production promotion remains blocked by independent missing proofs.
+
 ## Where We Left Off — Session 111 closeout (2026-08-26)
 
 - Implementation: audit item 248 is shipped. CANON-041 is now an executable 27-cell matrix; the safe-area-aware mobile drawer, tablet controls, language modal, and evidence signer all share the same viewport/orientation contract.

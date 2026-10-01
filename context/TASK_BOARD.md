@@ -4,6 +4,11 @@ Public-safe roadmap only. Detailed backlog sequencing is maintained privately.
 
 ## Now — production evidence corridor
 
+- [done] Session 112 shipped audit items 249–252: bounded persistence recovery, Docker DNS router recovery, project gate repair, and exact immutable staging release evidence.
+- [done] Exact `8429bacc` passed CI `36785710707`, E2E `36785710727`, staging `36793728506`, signed 27-cell observation `36793985784`, promotion dry-run `36787435888`, and image rollback/restoration `36794269177`.
+- [done] Game-only restart recovered public health through the untouched project router; a brief boot-time 503 was observed before two workers returned healthy.
+- [BLOCKER] Production deployment deferred: exact canonical admission still lacks Zoho reply-as, authenticated Obelisk, three genuine authenticated human Alpha sessions, positive live revenue, and portable exact-artifact founder approval. The five proofs require real authority; no synthetic substitute is accepted.
+
 - [done] Session 111 exact candidate `7fbaedcd` passed CI `32943036547`, E2E `32943036503`, Release `32943036515`, staging `32943456027`, 27-cell observation `32943706016`, promotion dry-run `32944257053`, rollback dry-run `32944355303`, and rollback/restoration `32944435452`.
 - [done] Record canonical CANON-041 mobile parity across the complete three-theme, 27-cell viewport/orientation matrix; zero findings and zero drawer invariant failures were observed.
 - [done] Session 110 exact candidate `85ac5ff7` passed CI `32910564760`, E2E `32910564784`, Release `32910564773`, staging `32911008849`, observation `32911217105`, promotion dry-run `32911405984`, rollback validation `32911479205`, and rollback/restoration `32911552613`.
@@ -21,6 +26,13 @@ Public-safe roadmap only. Detailed backlog sequencing is maintained privately.
 - [ ] Collect at least three distinct authenticated human Alpha sessions and one real checkout/supporter revenue observation.
 - [ ] Complete and retain an authenticated Obelisk callback/session/identity/logout journey; the required relying-party identity values remain unavailable.
 - [ ] Install a trusted purpose-scoped founder approval writer for the exact SHA and image.
+
+## Completed (2026-09-30 — Session 112 staging recovery and release admission)
+
+- [done] Restored persistence liveness and routing after diagnosing the five-week staging outage; bounded simulated database-loss tests and an app-only live restart exercise the repaired contracts.
+- [done] Quarantined incompatible Studio propagation, retained the repaired September protocol, aligned dependencies, and sent signed Ark cargo `01K3Q7CB30696610376E88F928` to the owner.
+- [done] Passed 292 provider test files / 1,523 assertions, 27/27 live parity cells with zero findings, 144 hash-bound local visual artifacts, signed image rollback/restoration, and exact public revision/health checks.
+- [deferred] Production remains HTTP 503 / NO-GO on five independent authority observations; canonical admission rejected before mutation.
 
 ## Completed (2026-08-26 — Session 111 canonical mobile parity and exact release admission)
 
@@ -162,6 +174,8 @@ daily-challenge-system (DailyChallengeStore + HUD card), vault-intelligence-mark
 (intel-purchase endpoint + canvas tooltip), token-oracle-cache (5-min LRU).
 
 ## Follow-ups
+
+- [ ] Make the pre-commit formatter respect append-only context files so a closeout can use the hook without rewriting prior DECISIONS, SIL, or WORK_LOG entries; retain direct validation and exact hosted CI until then.
 
 - No pending unblocked local work. Session 101 exhausted all eight live audit findings and all 70 second-order innovations; production-only observations remain release gates, not implementation tasks.
 

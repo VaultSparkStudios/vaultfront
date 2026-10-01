@@ -2,6 +2,15 @@
 
 # Truth Audit
 
+## 2026-09-30 — Session 112 staging recovery and release truth
+
+- Work truth: audit items 249–252 are shipped. The database retry path is covered by simulated initial and later failure transitions, and the app-only restart observed public recovery through the untouched router after a brief boot-time 503. A real shared-host database outage was not induced.
+- Provider truth: exact revision `8429bacc620effaaf98e00c217d2f472245b51e2` passed CI `36785710707` with 292 files / 1,523 assertions, E2E `36785710727`, staging dry-run `36786295782`, and current staging deploy `36793728506`.
+- Visual truth: signed observer `36793985784` passed 27/27 live cells with zero findings, worst LCP 1,228 ms, INP 144 ms, CLS 0.0151. The local source-bound receipt covers 144 inspected artifacts across three themes and desktop/mobile.
+- Rollback truth: the older tag-sourced attestation failed `run-source-ref-mismatch` before admission. Two distinct images of the same main-sourced repaired revision then passed validation `36793998771` and drill `36794269177`; current image `sha256:0d8ad109a33933c8db051b05c3f4b8100d552288136b02469bcd9e01c656be5e` was restored healthy in 33,702 ms. This proves image restoration, not rollback to different code.
+- Release truth: exact canonical admission rejects contactEmail, obeliskIdentity, revenueObservation, founderApproval, and alphaHumanEvidence. Zoho and Obelisk verification capabilities are missing their required values, Stripe checkout is ready but no positive live receipt exists, and the genuine human gate is not started. Production remains HTTP 503 and was not mutated.
+- Cross-repo truth: signed Ark cargo `01K3Q7CB30696610376E88F928` reported the incompatible 109-file propagation; no sibling source file was edited.
+
 ## 2026-08-25 — Session 110 startup and immutable-release truth
 
 - Work truth: audit items 245–247 are shipped. The startup brief source manifest and `.cache/` tooling boundary are regression-tested; innovation remains honestly exhausted at 70/70.

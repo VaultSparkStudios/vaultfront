@@ -1,0 +1,105 @@
+{
+  "schemaVersion": "1.3",
+  "project": "vaultfront",
+  "date": "2026-09-30",
+  "session": 112,
+  "agent": "codex",
+  "kind": "full-arc-staging-recovery-and-exact-release-admission",
+  "mission": "Recover staging, complete the audited implementation, push directly to main, deploy and observe the exact revision, and promote only through all independent production gates",
+  "intentResult": "partial",
+  "intentNote": "All four agent-addressable audit items, exact staging deployment, observation, and image restoration completed. Production promotion correctly stopped before mutation because five independent authority observations remain absent.",
+  "sil": {
+    "score": 995,
+    "max": 1000,
+    "velocity": 4,
+    "categories": {
+      "devHealth": 100,
+      "creativeAlignment": 99,
+      "momentum": 100,
+      "engagement": 98,
+      "processQuality": 99,
+      "crossRepoCoherence": 99,
+      "securityPosture": 100,
+      "ecosystemIntegration": 100,
+      "capitalEfficiency": 100,
+      "automationCoverage": 100
+    },
+    "gameRubric": {
+      "loopTightness": 90,
+      "retentionHook": 65,
+      "soulFidelity": null,
+      "velocity": 4,
+      "scope": "provisional implementation review; no genuine authenticated human corpus or explicit Soul criteria"
+    }
+  },
+  "implementation": {
+    "auditItemsShipped": [249, 250, 251, 252],
+    "auditItemsTotal": 4,
+    "innovationLedger": "70/70",
+    "changes": [
+      "bounded-configured-database-recovery",
+      "dynamic-docker-dns-project-router",
+      "propagation-and-provider-gate-repair",
+      "exact-immutable-staging-release-chain"
+    ]
+  },
+  "verification": {
+    "revision": "8429bacc620effaaf98e00c217d2f472245b51e2",
+    "imageDigest": "sha256:0d8ad109a33933c8db051b05c3f4b8100d552288136b02469bcd9e01c656be5e",
+    "providerCiRunId": 36785710707,
+    "e2eRunId": 36785710727,
+    "stagingDryRunId": 36786295782,
+    "stagingRunId": 36793728506,
+    "observationRunId": 36793985784,
+    "promotionDryRunId": 36787435888,
+    "rollbackValidationRunId": 36793998771,
+    "rollbackRunId": 36794269177,
+    "liveParity": {
+      "cells": 27,
+      "findings": 0,
+      "worstLcpMs": 1228,
+      "worstInpMs": 144,
+      "worstCls": 0.0151
+    },
+    "themeProof": {
+      "artifacts": 144,
+      "sourceDigest": "sha256:272cbbf8280ccfa40a5028e01d1d12be81e7431752593321b106f4c4a5df04c1",
+      "receiptDigest": "sha256:daec8f2ad00ad88eed6c9b2b8c1393d981894df4e999612fa7277ecc72cb29cd"
+    },
+    "aggregateAuthority": "exact-revision provider CI (292 files / 1,523 assertions); E2E, signed live observation, and main-sourced immutable-image rollback/restoration",
+    "rollbackScope": "two distinct immutable images of the same repaired main revision; image switching and restoration, not prior-code reversal",
+    "databaseRecoveryScope": "focused initial and later failure simulation plus healthy exact live staging; no shared-host database outage induced"
+  },
+  "releaseGate": {
+    "status": "no-go",
+    "stagingStatus": "go",
+    "productionPromoted": false,
+    "productionStatus": "HTTP 503",
+    "passingGates": [
+      "staging",
+      "healthObservation",
+      "stagingParity",
+      "themeReadability",
+      "footerManifest",
+      "rollbackObservation",
+      "costNeutral"
+    ],
+    "blockedGates": [
+      "contactEmail",
+      "obeliskIdentity",
+      "alphaHumanEvidence",
+      "revenueObservation",
+      "founderApproval"
+    ]
+  },
+  "hygiene": {
+    "scaffold": {
+      "tasks": 6,
+      "done": 6,
+      "inProgress": 0,
+      "open": 0
+    },
+    "productionMutation": false,
+    "crossRepoSourceEdits": false
+  }
+}

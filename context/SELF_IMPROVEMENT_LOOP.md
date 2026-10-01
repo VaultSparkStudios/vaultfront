@@ -4,12 +4,40 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 997/1000 | Velocity: 1 | Debt: ↓ | Velocity trend: →
-Avgs — 3: 996.3 | 5: 996.2 | 10: 996.1 | 25: 996.0 | all: 993.7 | Last 5: 997 → 996 → 996 → 996 → 996 | Intent rate: 100%
-Categories: Dev 100 | Align 100 | Momentum 100 | Engage 98 | Process 100 | Coherence 99 | Security 100 | Ecosystem 100 | Capital 100 | Automation 100
-Last session: 2026-08-26 Session 111 canonical mobile parity and exact staging admission
+Total: 995/1000 | Velocity: 4 | Debt: ↓ | Velocity trend: ↑
+Avgs — 3: 996.0 | 5: 996.0 | 10: 995.8 | 25: 996.6 | all: 993.7 | Last 5: 995 → 997 → 996 → 996 → 996 | Intent rate: 100%
+Categories: Dev 100 | Align 99 | Momentum 100 | Engage 98 | Process 99 | Coherence 99 | Security 100 | Ecosystem 100 | Capital 100 | Automation 100
+Last session: 2026-09-30 Session 112 staging recovery and exact release admission
 
 <!-- rolling-status-end -->
+
+## 2026-09-30 — Session 112 | Total: 995/1000 | Velocity: 4
+
+Shipped all four verified audit items, restored a five-week staging outage, and completed exact CI, browser observation, promotion validation, and immutable-image rollback/restoration. Production remained fail-closed on five independent observations rather than turning operational authorization into launch approval.
+
+| Category              | Score | Evidence |
+| --------------------- | ----: | -------- |
+| Dev Health            |   100 | Exact CI passed 292 files / 1,523 assertions, E2E, contracts, build, staging, 27-cell observation, and rollback/restoration. |
+| Creative Alignment    |    99 | Recovery preserves the certified extraction loop and three intended themes; no unsupported balance or Soul claim was added. |
+| Momentum              |   100 | Audit items 249–252 shipped at their selected depths and the exact staging corridor was restored. |
+| Engagement            |    98 | Live responsive and interaction thresholds pass, while retention remains unmeasured without genuine human Alpha sessions. |
+| Process Quality       |    99 | A tag-sourced rollback candidate was rejected by the release contract, then replaced with two admissible main-sourced images; the earlier attempt remains disclosed. |
+| Cross-Repo Coherence  |    99 | Incompatible propagation was quarantined locally and signed Ark cargo informed Studio Ops without sibling file edits. |
+| Security Posture      |   100 | Fail-closed writes, provenance-bound release claims, zero production dependency audit findings, secret scan, and no red-gate bypass. |
+| Ecosystem Integration |   100 | CI, immutable staging, signed visual/footer observations, promotion validation, and rollback share exact run-bound evidence. |
+| Capital Efficiency    |   100 | Existing host and browser infrastructure was reused; no paid or synthetic release substitute was introduced. |
+| Automation Coverage   |   100 | Pool failure transitions, dynamic router contract, provider checks, 27-cell browser matrix, and image rollback/restoration execute. |
+| **Total**             | **995/1000** | Exact category sum; staging success does not claim production launch. |
+
+**Game rubric:** Loop Tightness 90 (provisional) · Retention Hook 65 (provisional) · Soul Fidelity N/A pending explicit criteria and human evidence · Velocity 4. Gameplay balance was unchanged.
+
+**Top win:** A dead staging deployment now recovers database and router connectivity through bounded, tested paths, and the exact repaired image is observable and restorable.
+
+**Top gap:** Zoho reply identity, authenticated Obelisk, three genuine humans, positive live revenue, and portable exact-artifact approval remain absent.
+
+**Commitments:** [SIL:1] keep configured writes fail-closed while retrying persistence; [SIL:2] require main-sourced image attestations for rollback; [SIL:3] preserve the five independent production evidence gates.
+
+**Honest refusal:** No real database outage was induced on the shared host; the image drill is not presented as prior-code reversal; production was not promoted from a red gate.
 
 ## 2026-08-26 — Session 111 | Total: 997/1000 | Velocity: 1
 

@@ -77,12 +77,19 @@
       "impact": 10,
       "innovation": 8,
       "priority": 30.95,
-      "status": "pending",
+      "status": "shipped",
       "title": "Recover configured persistence after a transient database outage",
       "why": "The live workers remained persistence-failed for five weeks although PostgreSQL now accepts the same runtime credential. pool.ts had a one-shot initialization and nullified the pool on error with no retry; the game stayed HTTP 503 until a manual restart.",
       "coreLoopStep": "available certified match → durable result → trustworthy reward",
       "recipe": "Keep mutation admission fail-closed while configured persistence is unavailable, retry connections with bounded backoff and one active attempt, restore the exported pool only after SELECT 1, and simulate initial failure plus post-connect loss and recovery in a focused test. Then deploy and observe exact staging.",
       "selectedDepth": "L3",
+      "executionLog": [
+        {
+          "at": "2026-09-30",
+          "status": "shipped",
+          "note": "Bounded, coalesced initial and idle-pool retries restore only after SELECT 1; configured writes fail closed. Focused initial-outage and post-connect-loss tests pass, exact CI is green, and the repaired candidate was observed healthy on live staging. A real database outage was not induced on the shared host."
+        }
+      ],
       "ladder": {
         "L1": {
           "effortHours": 1,
@@ -107,12 +114,19 @@
       "impact": 10,
       "innovation": 7,
       "priority": 35,
-      "status": "pending",
+      "status": "shipped",
       "title": "Keep staging routing healthy when its game container restarts",
       "why": "After the game restarted and returned internal HTTP 200, the project router still returned 502. update.sh writes a static hostname in proxy_pass, which Nginx resolves only at startup or reload.",
       "coreLoopStep": "player opens stable staging → reaches a healthy certified match",
       "recipe": "Resolve the admitted container name through Docker DNS on each request with a bounded cache, validate the target name before config generation, run nginx -t through the existing deployment path, then restart the staged game container and verify the router and public health recover without a router restart.",
       "selectedDepth": "L3",
+      "executionLog": [
+        {
+          "at": "2026-09-30",
+          "status": "shipped",
+          "note": "Dynamic Docker DNS upstream and target validation pass the deploy contract. On the exact staging image, a game-only restart briefly returned 503 during boot, then the unchanged router served public health 200 and the exact commit with both workers fresh."
+        }
+      ],
       "ladder": {
         "L1": {
           "effortHours": 0.5,
@@ -137,12 +151,19 @@
       "impact": 9,
       "innovation": 5,
       "priority": 19.38,
-      "status": "pending",
+      "status": "shipped",
       "title": "Restore project gates after protocol and dependency drift",
       "why": "The latest three main CI runs failed real formatting or test jobs. Today's 109-file propagated update broke the doctor import and scanned eight nonexistent Studio Ops roots. New unformatted paths fail the repository ratchet.",
       "coreLoopStep": "trusted source → verified build → safe player access",
       "recipe": "Quarantine the incompatible 109-file propagation batch, retain and repair the September protocol content, format every newly introduced path, fix the actual provider test failures without suppressions, and ship a signed Ark recurrence to the propagation owner. Require a green exact-SHA CI run before staging deployment.",
       "selectedDepth": "L2",
+      "executionLog": [
+        {
+          "at": "2026-09-30",
+          "status": "shipped",
+          "note": "Reverted the incompatible propagation commit, repaired retained protocol gates and dependency peers, passed full provider CI 36785710707 plus E2E 36785710727 on SHA 8429bacc, and sent signed Studio Ops Ark cargo 01K3Q7CB30696610376E88F928."
+        }
+      ],
       "ladder": {
         "L1": {
           "effortHours": 1,
@@ -167,12 +188,19 @@
       "impact": 10,
       "innovation": 5,
       "priority": 19.34,
-      "status": "pending",
+      "status": "shipped",
       "title": "Deploy and observe the exact repaired revision on stable staging",
       "why": "The restored staging image is August's 7fbaedcd, while main has newer protocol and dependency commits. The incompatible local propagation batch was reverted. The old 27-cell visual, health, rollback, and promotion receipts cannot prove the new candidate.",
       "coreLoopStep": "safe public entry → current certified gameplay → observable release",
       "recipe": "After exact CI passes, dispatch staging dry-run and immutable live deploy for the pushed SHA; verify commit.txt, product smoke, signed 27-cell observation, theme/footer parity, rollback/restoration, and production admission. Promote only if all independent current gates are genuinely green.",
       "selectedDepth": "L3",
+      "executionLog": [
+        {
+          "at": "2026-09-30",
+          "status": "shipped",
+          "note": "SHA 8429bacc passed CI 36785710707, E2E 36785710727, staging dry-run 36786295782, deploys 36786405837 and 36793728506, signed 27-cell observations 36787410143 and 36793985784, apex promotion dry-run 36787435888, main-sourced image rollback validation 36793998771, and rollback/restoration 36794269177. Two distinct immutable images held the same repaired code revision; this drills image switching, not prior-code reversal. Canonical release admission returned NO-GO on five independent missing proofs, so production was not mutated."
+        }
+      ],
       "ladder": {
         "L1": {
           "effortHours": 1,
