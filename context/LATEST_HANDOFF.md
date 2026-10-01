@@ -463,3 +463,15 @@ Recover the prior write-back gap, execute the complete `/arc`, commit and push d
 ## Session Intent — Session 110 (2026-08-25)
 
 Run the complete `/arc`, commit and push directly to `main`, deploy the exact candidate through stable staging, and promote production only if every mandatory release gate is genuinely green. The founder's operational authorization permits safe deployment actions but does not substitute for portable exact-artifact approval or the other independent observations.
+
+## Where We Left Off — Session 113 closeout (2026-09-30)
+
+- Intent: founder-requested `/closeout`, commit and push to `main`, and deploy. Session 112 had already shipped and staged the game changes; Session 113 records a fresh release audit and closeout without changing game code.
+- Live audit: staging readiness at 2026-10-01T01:50:50Z returned `releaseStatus: blocked`; Zoho reply-as, authenticated Obelisk, real payment, portable exact-artifact approval, and genuine human Alpha evidence are absent. Alpha status is `not-started` with zero distinct human sessions. The production apex returned HTTP 503.
+- Credential audit: `zoho.mail.admin` still lacks four required values and `obelisk.identity.verify` lacks three relying-party values. The Obelisk owner was previously notified by signed Ark baton; no relying-party origin is registered yet.
+- Deploy: stable staging remains the verified candidate; production pending — deferred on five canonical authority observations. Do not treat the direct deploy request as a substitute for those observations.
+- Next: obtain and independently verify all five genuine proofs, refresh any expired staging evidence, rerun exact canonical admission, then promote only if all gates pass.
+
+## Session Intent — Session 113 (2026-09-30)
+
+Run the explicitly requested closeout, update memory and repository context, commit and push directly to `main`, and deploy only through the canonical production admission. Result: closeout and direct-main delivery in progress; production promotion remains blocked by unchanged independent release gates.

@@ -897,3 +897,9 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Decision:** Set `HUSKY=0` for the Session 112 writeback commit, bypassing `.husky/pre-commit`'s `lint-staged` formatter. Run staged secret scanning, doctor, semantic brief validation, focused Prettier checks on new files, `git diff --check`, and exact provider CI instead. Track the hook configuration as a follow-up for append-only context files.
 
 **Why:** The hook runs `prettier --write` on every staged file, including `DECISIONS.md`, `SELF_IMPROVEMENT_LOOP.md`, and `WORK_LOG.md`. Rewriting historical entries would violate their append-only contract. The full local Prettier ratchet was stopped after a Windows process-host stall; exact hosted CI remains the aggregate formatting authority after push.
+
+## 2026-09-30 — Session 113 release admission reaffirmed
+
+**Decision:** Honor the founder's direct-main commit and deploy request through `/closeout`, but defer production promotion while the canonical live readiness result remains blocked. Preserve the exact five missing observations as separate release gates; do not derive portable approval from the chat instruction.
+
+**Why:** The 2026-10-01T01:50:50Z live response still lacks Zoho reply-as, authenticated Obelisk, genuine human Alpha, positive live revenue, and purpose-scoped exact-artifact approval. Production remains HTTP 503. A documentation commit does not change the tested game artifact or provide those external observations.

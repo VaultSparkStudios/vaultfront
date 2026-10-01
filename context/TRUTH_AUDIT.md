@@ -2,6 +2,14 @@
 
 # Truth Audit
 
+## 2026-09-30 — Session 113 renewed release audit
+
+- Chronology truth: Session 112's product and staging work was already committed and pushed; Session 113 changed no game code or live artifact before this closeout.
+- Live truth: readiness observed at 2026-10-01T01:50:50Z reports `releaseStatus: blocked` on contactEmail, obeliskIdentity, revenueObservation, founderApproval, and alphaHumanEvidence. Alpha status is `not-started`, distinct authenticated human sessions are zero, and the production apex returns HTTP 503.
+- Capability truth: `zoho.mail.admin` and `obelisk.identity.verify` are still MISSING. No Zoho reply-as, authenticated relying-party journey, positive payment, human Alpha corpus, or portable exact-artifact approval is inferred from operational authorization.
+- Deployment truth: the direct deploy request is recorded, but production was not mutated because canonical admission is red. Existing staging evidence is time-bounded and must be refreshed before later promotion if expired.
+- Derived-state limit: the shared state-vector renderer shows `velocity: null` for this session's explicit zero and `openBlocked: 0` despite the task board's `[BLOCKER]` lines. The SIL and live release record retain the authoritative zero velocity and five release gates; the renderer discrepancy is not relabeled as green.
+
 ## 2026-09-30 — Session 112 staging recovery and release truth
 
 - Work truth: audit items 249–252 are shipped. The database retry path is covered by simulated initial and later failure transitions, and the app-only restart observed public recovery through the untouched router after a brief boot-time 503. A real shared-host database outage was not induced.

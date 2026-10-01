@@ -4,6 +4,8 @@ Public-safe roadmap only. Detailed backlog sequencing is maintained privately.
 
 ## Now — production evidence corridor
 
+- [done] Session 113 rechecked live readiness at 2026-10-01T01:50:50Z, both identity/mail capabilities, and the production apex; canonical admission remains blocked on the same five independent proofs and production returns HTTP 503.
+- [BLOCKER] Production deploy requested again but deferred: obtain genuine Zoho reply-as, authenticated Obelisk, three distinct authenticated human Alpha sessions, positive live revenue, and portable exact-artifact founder approval before rerunning admission. Refresh time-bounded staging receipts if they expire.
 - [done] Session 112 shipped audit items 249–252: bounded persistence recovery, Docker DNS router recovery, project gate repair, and exact immutable staging release evidence.
 - [done] Exact `8429bacc` passed CI `36785710707`, E2E `36785710727`, staging `36793728506`, signed 27-cell observation `36793985784`, promotion dry-run `36787435888`, and image rollback/restoration `36794269177`.
 - [done] Game-only restart recovered public health through the untouched project router; a brief boot-time 503 was observed before two workers returned healthy.
