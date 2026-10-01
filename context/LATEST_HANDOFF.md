@@ -1,3 +1,14 @@
+## Where We Left Off — Session 114 closeout (2026-10-01)
+
+- Implementation: audit #253, #254, and #256 shipped. Generated-board-only commits no longer create false write-back debt, the configured apex no longer reads as live, and the patched development-only `brace-expansion` 5.0.12 closes GitHub alert 102. Gameplay and balance were unchanged.
+- Exact revision: direct-main `6bacecb10689f4bc73bef5f68d5ad98a9e86fc60` passed local 293 files / 1,525 assertions, 168 contract checks, lint, build, format, dependency and secret scans; provider CI `36899078551`, E2E `36899078530`, Release `36899078504`, and staging dry-run `36899257516` succeeded.
+- Host recovery: initial live staging `36899792278` pushed the image but failed exit 75 before attestation because the Docker guard saw less than 15 GiB root free space and a deliberate containerd cutover lock. Signed Ark questions `01K3S8TMNDB88FE30A38CB45C4` and `01K3S9077M5C98B9D93E828DA1` informed Studio Ops. The lock later released and root free space rose to about 99 billion bytes; staging recovered on the prior image before the exact retry.
+- Staging: successful live deploy `36919500328` serves exact `6bacecb1` at immutable image `sha256:bd0886f5ff988224e2af950a8c69a1b7e5511ea6d4d1692e9a012dc9a634f852`. Signed observation `36919752125` passed 27/27 cells with zero findings; worst LCP 1,344 ms, INP 152 ms, CLS 0.0151. Apex promotion dry-run `36919835781` passed without mutation.
+- Rollback: validation `36920451050` admitted the prior main-sourced staging image, and drill `36920594091` observed rollback to that older code revision and restoration to `6bacecb1` healthy. Current live readiness passes exact staging, health, parity, theme/footer, and rollback gates.
+- Release: readiness at 2026-10-01T20:29:23Z rejects exactly five independent proofs: Zoho project-domain human reply-as, authenticated Obelisk, three distinct genuine authenticated human Alpha sessions, positive live revenue, and portable exact-artifact founder approval. Production returned HTTP 503 and was not mutated. General session authorization is not the portable release claim.
+- Deploy: exact candidate deployed and restored on stable staging; production pending — deferred on the five authority-owned gates. Audit #255 remains deferred only at production admission.
+- Next: collect those five genuine observations, refresh expiring exact staging receipts, rerun canonical admission, and promote only on an all-green result.
+
 ## Where We Left Off — Session 112 closeout (2026-09-30)
 
 - Implementation: audit items 249–252 are shipped. Bounded database recovery and dynamic Docker DNS routing repaired the staging outage; protocol/CI drift was fixed and reported to Studio Ops by signed Ark cargo `01K3Q7CB30696610376E88F928`.

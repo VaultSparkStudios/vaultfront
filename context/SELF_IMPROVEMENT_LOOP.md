@@ -4,12 +4,40 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 990/1000 | Velocity: 0 | Debt: → | Velocity trend: ↓
-Avgs — 3: 994.0 | 5: 994.8 | 10: 995.2 | 25: 996.3 | all: 993.6 | Last 5: 990 → 995 → 997 → 996 → 996 | Intent rate: 100%
-Categories: Dev 100 | Align 99 | Momentum 95 | Engage 98 | Process 99 | Coherence 99 | Security 100 | Ecosystem 100 | Capital 100 | Automation 100
-Last session: 2026-09-30 Session 113 founder-requested closeout and release recheck
+Total: 994/1000 | Velocity: 3 | Debt: → | Velocity trend: ↑
+Avgs — 3: 993.0 | 5: 994.4 | 10: 995.2 | 25: 996.2 | all: 993.7 | Last 5: 994 → 990 → 995 → 997 → 996 | Intent rate: 100%
+Categories: Dev 100 | Align 99 | Momentum 99 | Engage 98 | Process 99 | Coherence 99 | Security 100 | Ecosystem 100 | Capital 100 | Automation 100
+Last session: 2026-10-01 Session 114 exact staging, signed observation, and rollback; production NO-GO
 
 <!-- rolling-status-end -->
+
+## 2026-10-01 — Session 114 | Total: 994/1000 | Velocity: 3
+
+Three audit outcomes shipped: generated board commits no longer create false write-back debt, the configured production URL is labeled honestly, and the development-only dependency advisory is patched. Exact main CI, E2E, and Release checks passed. The first staging attempt failed under the shared-host guard and cutover; after owner-controlled recovery, exact staging, signed 27-cell observation, promotion validation, and observed rollback/restoration passed. Production remained untouched.
+
+| Category              |        Score | Evidence                                                                                                                         |
+| --------------------- | -----------: | -------------------------------------------------------------------------------------------------------------------------------- |
+| Dev Health            |          100 | Local 293 files / 1,525 assertions and exact provider CI, E2E, contracts, build, lint, and format pass.                          |
+| Creative Alignment    |           99 | No unsupported mechanic, balance, Soul, or player-engagement claim was added.                                                    |
+| Momentum              |           99 | Three audit outcomes shipped and exact staging plus rollback/restoration completed; production remains deferred.                 |
+| Engagement            |           98 | Genuine human Alpha and retention evidence remain absent.                                                                        |
+| Process Quality       |           99 | The failed first deploy was retained, then fresh exact staging and signed observation were recorded after host recovery.         |
+| Cross-Repo Coherence  |           99 | Two signed Ark questions and one pattern-share went to the Studio Ops owner; no sibling source was edited.                       |
+| Security Posture      |          100 | Patched dependency, zero npm audit vulnerabilities, zero staged secret findings, and release admission stayed fail-closed.       |
+| Ecosystem Integration |          100 | Immutable staging, signed visual/footer evidence, promotion dry-run, and image rollback/restoration share exact run-bound proof. |
+| Capital Efficiency    |          100 | Existing infrastructure was used; no new paid service or synthetic payment was initiated.                                        |
+| Automation Coverage   |          100 | Regression, provider, dependency, and release workflow checks identify the exact failure boundary.                               |
+| **Total**             | **994/1000** | Exact category sum; no production launch claim.                                                                                  |
+
+**Game rubric:** Loop Tightness 90 (code-derived provisional) · Retention Hook N/A pending human evidence · Soul Fidelity N/A pending creative criteria · Velocity 3. Gameplay was unchanged.
+
+**Top win:** The exact main candidate recovered from a shared-host cutover into a signed, visually observed staging release with a tested rollback and restoration path.
+
+**Top gap:** Five independent production observations remain absent.
+
+**Commitments:** [SIL:1] Keep generated receipt commits distinct from substantive work; [SIL:2] classify a pushed image as unobserved until stable staging health and signed runtime proof pass; [SIL:3] respect shared-host guards and independent production admission.
+
+**Honest refusal:** No cutover lock or disk guard was bypassed; the first failed deploy was retained in the record, and no staging receipt or chat authorization was substituted for exact production proof.
 
 ## 2026-09-30 — Session 113 | Total: 990/1000 | Velocity: 0
 

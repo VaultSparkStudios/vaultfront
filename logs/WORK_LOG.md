@@ -572,3 +572,14 @@ Session 89 closeout tooling incident: invoking the Studio Ops closeout-board ren
 - Work: Rechecked the live staging readiness response at 2026-10-01T01:50:50Z, the production apex, and Zoho/Obelisk credential capabilities. No game code or immutable staging artifact changed.
 - Release: Readiness remains blocked on five independent observations: project-domain Zoho reply-as, authenticated Obelisk journey, three genuine authenticated human Alpha sessions, positive live revenue, and portable exact-artifact founder approval. The Alpha Gate is not started with zero distinct human sessions; production returned HTTP 503. Production was not mutated.
 - Closeout: Updated public-safe repository state, task board, handoff, truth audit, SIL, audit JSON, and release record; reviewed private CDR and agent memory. Direct-main push and final provider status are recorded by the closeout board.
+
+---
+
+## 2026-10-01 — Session 114 audit, implementation, and deferred deployment
+
+- Goal: Run `/arc`, push directly to main, deploy exact staging, and promote production only when canonical release admission is green.
+- Implementation: Shipped #253 generated-board write-back classification with two regression assertions, #254 honest configured production URL labeling, and #256 patched development-only `brace-expansion` 5.0.12. Sent signed Ark recurrence to Studio Ops.
+- Verification: Local suite 293 files / 1,525 assertions, 168 contracts, lint, build, format, dependency audit, and secret scan passed. Exact main `6bacecb1` passed CI `36899078551`, E2E `36899078530`, Release `36899078504`, and staging dry-run `36899257516`. GitHub alert 102 was fixed.
+- Deployment: Initial staging `36899792278` failed exit 75 under the shared-host storage guard and cutover lock; the failure and two signed Ark owner questions remain recorded. After owner-controlled recovery, exact immutable staging `36919500328`, signed 27-cell observation `36919752125` (zero findings; worst LCP 1,344 ms, INP 152 ms, CLS 0.0151), apex promotion dry-run `36919835781`, and rollback validation/drill `36920451050` / `36920594091` passed. The exact image was restored healthy.
+- Release boundary: Live readiness now passes staging, health, parity, theme/footer, and rollback; audit #255 remains deferred only at production admission. Zoho human reply-as, authenticated Obelisk, three real human Alpha sessions, positive live revenue, and portable exact-artifact founder approval remain independent unmet gates; production HTTP 503 was untouched.
+- Creative direction record reviewed — no new entries this session.

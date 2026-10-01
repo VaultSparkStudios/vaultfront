@@ -903,3 +903,15 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Decision:** Honor the founder's direct-main commit and deploy request through `/closeout`, but defer production promotion while the canonical live readiness result remains blocked. Preserve the exact five missing observations as separate release gates; do not derive portable approval from the chat instruction.
 
 **Why:** The 2026-10-01T01:50:50Z live response still lacks Zoho reply-as, authenticated Obelisk, genuine human Alpha, positive live revenue, and purpose-scoped exact-artifact approval. Production remains HTTP 503. A documentation commit does not change the tested game artifact or provide those external observations.
+
+## 2026-10-01 — Session 114 shared-host deploy boundary
+
+**Decision:** Keep audit #255 deferred after the exact image push failed before staging attestation. Respect the shared-host Docker growth guard and deliberate containerd cutover lock; route the incident to the Studio Ops owner through signed Ark, then retry exact staging and signed observation after host recovery. Do not use the pushed image, prior staging observation, or the founder's session authorization as production admission.
+
+**Why:** The live workflow exited 75, the guard reported root free space below its 15 GiB floor, and the read-only probe found no VaultFront containers while staging and production returned 503. Five additional independent release proofs remain absent. Bypassing the lock, fabricating a runtime receipt, or forcing promotion would break the exact release contract.
+
+### Recovery verified after the cutover
+
+**Decision:** Retry the same exact main candidate after the owner-controlled cutover lock released and Docker storage checks passed. Accept successful immutable staging, signed 27-cell observation, promotion dry-run, and observed rollback/restoration as staging evidence; keep production admission deferred on the five independent authority observations.
+
+**Why:** Runs `36919500328`, `36919752125`, `36919835781`, `36920451050`, and `36920594091` passed for the exact candidate and restored it healthy after a genuine older-code staging rollback. Live readiness at 2026-10-01T20:29:23Z still rejects Zoho reply-as, authenticated Obelisk, three real humans, positive payment, and portable exact-artifact founder approval. The founder's operational deployment authorization does not create those proof records.

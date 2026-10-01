@@ -4,6 +4,9 @@ Public-safe roadmap only. Detailed backlog sequencing is maintained privately.
 
 ## Now — production evidence corridor
 
+- [done] Session 114 shipped audit #253, #254, and #256: generated-board write-back classification, truthful configured-production URL labeling, and the patched development-only `brace-expansion` override. Exact main `6bacecb1` passed CI `36899078551`, E2E `36899078530`, Release `36899078504`, and staging dry-run `36899257516`.
+- [done] Audit #255 exact staging corridor recovered after the failed host-cutover attempt `36899792278`: immutable deploy `36919500328`, signed 27-cell observation `36919752125`, apex promotion dry-run `36919835781`, and rollback validation/drill `36920451050` / `36920594091` passed. The exact `6bacecb1` image was restored healthy; the first failure and signed Ark owner notifications remain recorded.
+- [BLOCKER] Audit #255 production admission remains deferred: the apex returned HTTP 503, while canonical readiness at 2026-10-01T20:29:23Z still lacks Zoho human reply-as, authenticated Obelisk, three genuine authenticated human Alpha sessions, positive live revenue, and portable exact-artifact founder approval. Refresh time-bounded exact staging evidence and rerun admission before promotion.
 - [done] Session 113 rechecked live readiness at 2026-10-01T01:50:50Z, both identity/mail capabilities, and the production apex; canonical admission remains blocked on the same five independent proofs and production returns HTTP 503.
 - [BLOCKER] Production deploy requested again but deferred: obtain genuine Zoho reply-as, authenticated Obelisk, three distinct authenticated human Alpha sessions, positive live revenue, and portable exact-artifact founder approval before rerunning admission. Refresh time-bounded staging receipts if they expire.
 - [done] Session 112 shipped audit items 249–252: bounded persistence recovery, Docker DNS router recovery, project gate repair, and exact immutable staging release evidence.

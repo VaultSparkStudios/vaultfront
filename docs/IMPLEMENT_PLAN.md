@@ -5,9 +5,9 @@ Source: `docs/AUDIT_2026-10-01.json`
 1. [x] Recover the S113 boundary: confirm the SIL commit contains the full write-back and the two later commits contain only generated closeout-board output.
 2. [x] Complete #253: classify the generated board as a receipt, prove a mixed code commit still registers as debt, rerun the live probe, and ship signed Ark cargo to Studio Ops.
 3. [x] Complete #254: label the apex as a configured production target, render and validate the canonical board, and retain the observed HTTP 503 / FORGE status.
-4. [ ] Complete #256, discovered after the first push: replace the vulnerable development-only brace-expansion override with the registry-verified patch; rerun audit, lint, and exact provider checks.
-5. [ ] Complete #255: verify the exact candidate locally and in provider CI, sanitize and push directly to main, deploy stable staging, observe the rendered release surface, then rerun canonical production admission. Promote only if every independent gate is green.
-6. [ ] Run the ordered Session 114 closeout and reconcile every wave and evidence claim.
+4. [x] Complete #256, discovered after the first push: replace the vulnerable development-only brace-expansion override with the registry-verified patch; npm audit, lint, exact provider CI and E2E pass, and GitHub alert 102 is fixed.
+5. [ ] #255 remains deferred only at production admission. The first live deploy `36899792278` failed after image push under the shared-host storage guard and cutover lock; after recovery, exact staging `36919500328`, signed 27-cell observation `36919752125`, apex promotion dry-run `36919835781`, rollback validation `36920451050`, and observed rollback/restoration `36920594091` passed. Current readiness blocks the five independent canonical production proofs; production remains HTTP 503 and untouched.
+6. [x] Run the ordered Session 114 closeout and reconcile every wave and evidence claim.
 
 Core-loop measurement note: this session changes release/session observability and deployment records, not Capture → Convoy → Breach balance or progression. Human engagement and Soul fidelity remain unscored until genuine Alpha evidence exists.
 

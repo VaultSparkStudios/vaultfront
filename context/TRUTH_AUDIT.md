@@ -2,6 +2,14 @@
 
 # Truth Audit
 
+## 2026-10-01 — Session 114 exact candidate and host-cutover truth
+
+- Work truth: audit #253, #254, and #256 are shipped; #255 is deferred. The board-only write-back exclusion is exact, and a mixed code commit remains substantive. No gameplay or UI surface changed.
+- Verification truth: local suite passed 293 files / 1,525 assertions. Exact candidate `6bacecb1` passed provider CI `36899078551`, E2E `36899078530`, Release `36899078504`, and staging dry-run `36899257516`. GitHub Dependabot alert 102 is fixed after the development-only patch.
+- Deployment truth: the first staging run `36899792278` pushed the image but failed before attestation while root space was below the 15 GiB guard floor and a deliberate cutover lock was active. After owner-controlled recovery, exact staging `36919500328` passed at immutable image `sha256:bd0886f5ff988224e2af950a8c69a1b7e5511ea6d4d1692e9a012dc9a634f852`; signed observation `36919752125` passed 27/27 live cells with zero findings; promotion dry-run `36919835781` and rollback validation/drill `36920451050` / `36920594091` passed. The exact candidate was restored healthy. Production remained HTTP 503 and was not mutated.
+- Release truth: current live readiness at 2026-10-01T20:29:23Z passes staging, health, parity, theme/footer, and rollback, while Zoho reply-as, authenticated Obelisk, three real authenticated humans, positive live payment, and portable exact-artifact founder approval remain absent. Operational authorization is not a substitute. Signed Ark questions carried the temporary shared-host failure to Studio Ops.
+- Derived-state limit: the shared state-vector renderer reports `openBlocked: 0` despite the task board's standing `[BLOCKER]` rows. The five live canonical release blockers and task board remain authoritative; the derived count is not launch clearance.
+
 ## 2026-09-30 — Session 113 renewed release audit
 
 - Chronology truth: Session 112's product and staging work was already committed and pushed; Session 113 changed no game code or live artifact before this closeout.

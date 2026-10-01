@@ -1,12 +1,12 @@
 {
   "vectorVersion": "1.0",
   "generatedAt": "2026-10-01",
-  "generatedAtMs": 1790820627240,
-  "session": 113,
-  "vectorHash": "e0c3dabf1e7bce4b",
-  "silTotal": 990,
-  "silAvg3": 994,
-  "velocity": null,
+  "generatedAtMs": 1790888828032,
+  "session": 114,
+  "vectorHash": "f22c19d7ad5022f4",
+  "silTotal": 994,
+  "silAvg3": 993,
+  "velocity": 3,
   "debt": "flat",
   "runway": "unknown",
   "intentRate": "100%",
@@ -33,10 +33,10 @@
   "slug": "vaultfront",
   "type": "game",
   "lifecycle": "alpha",
-  "nextMilestone": "Verify Zoho reply-as, authenticated Obelisk, three genuine authenticated human Alpha sessions, positive live revenue, and portable exact-artifact founder approval before production promotion.",
-  "currentFocus": "Session 113 completed a founder-requested closeout and renewed live release audit; the Session 112 exact staging candidate remains healthy, while production is NO-GO on five independent proofs.",
+  "nextMilestone": "Independently verify Zoho reply-as, authenticated Obelisk, three real human Alpha sessions, positive live revenue, and portable exact-artifact founder approval before production promotion.",
+  "currentFocus": "Session 114 shipped three audit outcomes at exact main 6bacecb1; exact staging, signed 27-cell observation, and rollback/restoration pass. Production remains NO-GO on five independent proofs.",
   "lastShipped": "see LATEST_HANDOFF.md",
   "blockers": [
-    "Production is NO-GO until project-domain human reply-as, a complete authenticated Obelisk journey, at least three distinct authenticated human Alpha sessions, one positive live Stripe receipt, and a portable purpose-scoped exact-artifact founder approval claim are observed."
+    "Production is NO-GO until project-domain Zoho human reply-as, authenticated Obelisk, three distinct authenticated human Alpha sessions, one positive live Stripe receipt, and portable exact-artifact founder approval are observed."
   ]
 }

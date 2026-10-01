@@ -1,3 +1,9 @@
+## Session 114 closeout — exact staging restored, production gated (2026-10-01)
+
+Audit #253, #254, and #256 shipped at exact main `6bacecb10689f4bc73bef5f68d5ad98a9e86fc60`; 293 files / 1,525 assertions, 168 contracts, CI, E2E, Release, build, lint, format, and dependency/security scans passed. The first live staging attempt failed under shared-host storage/cutover guards and is retained in the record. After owner-controlled recovery, exact immutable staging `36919500328`, signed 27-cell observation `36919752125`, apex promotion dry-run `36919835781`, and rollback validation/drill `36920451050` / `36920594091` passed. Staging serves the exact revision healthy after restoration.
+
+Audit #255 remains deferred only at production admission. Live readiness at 2026-10-01T20:29:23Z blocks Zoho human reply-as, authenticated Obelisk, three genuine authenticated human Alpha sessions, positive live revenue, and portable exact-artifact founder approval. Production returned HTTP 503 and was not mutated. See `context/LATEST_HANDOFF.md` and `docs/RELEASE_GATE_2026-10-01.md` for the exact run chain and next steps.
+
 ## Session 112 closeout — staging recovery and exact release chain (2026-09-30)
 
 VaultFront recovered from a five-week staging outage. Configured PostgreSQL persistence now retries initial and later connection loss with bounded backoff while writes stay fail-closed; focused tests simulate both transitions. The project router resolves the live game container through Docker DNS. An app-only staging restart briefly returned 503 during boot, then the untouched router recovered to public 200 with two fresh workers. No real database outage was induced on the shared host.
