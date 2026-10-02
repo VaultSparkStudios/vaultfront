@@ -628,3 +628,6 @@ All ten premise-verified audit items and six executable innovation outcomes ship
 - [done] `dependency-free-github-release-planner` — Replaced the vulnerable Semantic Release/npm graph with a deterministic, serialized, variable-gated proprietary planner and GitHub CLI release step; removed 406 packages and reached zero full-graph vulnerabilities.
 - [done] Verification root-fixes — Centralized bounded subprocess-fixture budgets, made the executable release catalog lint-visible, preserved nonblank telemetry fallbacks, and removed production debug/info/log noise without suppressing warnings or errors.
 - [done] Full proof — 210 files / 1,141 tests; type, lint, format, contracts, balance, production build, Pages, exact transfer/media budgets, full dependency audit, supply-chain scan, Playwright 26/26, CANON-053 36/36, audit 10/10, innovations 59/59, and zero pending unblocked work.
+
+- [done] S115 — Recovered the skipped Session 114 write-back and re-quarantined the repeated seven-file Studio OS sync (affected tests 36/36, Prettier clean).
+- [open] S115 — Pin or owner-fix the Studio OS propagation for those seven files so the quarantine survives the next bot sync.

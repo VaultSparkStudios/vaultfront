@@ -1499,3 +1499,14 @@ capitalEfficiency +7 (oracle/prophecy cache eliminates >80% redundant Haiku call
 The recovery closeout repaired Git metadata, restored the missing public work-log entry, reconciled exact provider receipts, and converted the locally hanging monolithic test command into a deterministic four-shard authority. This is structural process truth, so the scored Session 95 result remains 997/1000 and velocity remains 7 rather than double-counting recovery work.
 
 Game rubric reaffirmed: Loop Tightness 99 | Retention Hook 99 | Soul Fidelity 100 | Velocity 100. No balance, progression, or creative promise changed.
+
+### 2026-10-02 — Session 115 closeout recovery and repeat sync quarantine (score held at 997/1000)
+
+The session recovered the skipped Session 114 write-back and re-quarantined seven incompatible Studio OS files the bot re-applied. This is process truth, so the score is held and velocity is not double-counted. No balance, progression, or creative promise changed.
+
+### Commitments
+
+- [SIL:1] Do not treat a quarantine as durable until propagation is pinned or the owner-side template is repaired; verify main CI after every Studio OS sync.
+- [SIL:2] Never infer the five production proofs from a deploy authorization.
+
+**Honest refusal:** No staging, human, revenue, Obelisk, Zoho, or approval evidence was fabricated; production was not mutated.

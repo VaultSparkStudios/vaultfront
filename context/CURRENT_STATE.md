@@ -1,3 +1,7 @@
+## Session 115 recovery — repeat Studio OS sync quarantined (2026-10-02)
+
+The skipped Session 114 write-back was recovered. The bot re-applied seven incompatible protocol/validator/workflow files; they were restored from `d9fc8ce5` (affected tests 36/36, Prettier clean). Shipped behavior is unchanged; production remains NO-GO on the five independent proofs.
+
 ## Session 114 closeout — exact staging restored, production gated (2026-10-01)
 
 Audit #253, #254, and #256 shipped at exact main `6bacecb10689f4bc73bef5f68d5ad98a9e86fc60`; 293 files / 1,525 assertions, 168 contracts, CI, E2E, Release, build, lint, format, and dependency/security scans passed. The first live staging attempt failed under shared-host storage/cutover guards and is retained in the record. After owner-controlled recovery, exact immutable staging `36919500328`, signed 27-cell observation `36919752125`, apex promotion dry-run `36919835781`, and rollback validation/drill `36920451050` / `36920594091` passed. Staging serves the exact revision healthy after restoration.

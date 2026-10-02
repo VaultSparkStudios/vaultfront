@@ -1,3 +1,10 @@
+## Where We Left Off — Session 115 recovery (2026-10-02)
+
+- Recovered the Session 114 write-back debt (`d9fc8ce5`, board-only change).
+- Re-quarantined the seven Studio OS files the bot re-applied (`01206cd5`, `c450c1ea`); local verification passes. Check provider CI on the new head.
+- Production: not mutated; five independent proofs still absent.
+- Next: pin or owner-fix Studio OS propagation, then the five proofs.
+
 ## Where We Left Off — Session 114 closeout (2026-10-01)
 
 - Implementation: audit #253, #254, and #256 shipped. Generated-board-only commits no longer create false write-back debt, the configured apex no longer reads as live, and the patched development-only `brace-expansion` 5.0.12 closes GitHub alert 102. Gameplay and balance were unchanged.

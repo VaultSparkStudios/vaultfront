@@ -620,3 +620,8 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 - Source-bound rendered proof covers 144 artifacts and six language-modal cells. Promotion dry-run `32944257053`, rollback dry-run `32944355303`, and observed rollback/restoration `32944435452` pass; stable staging is restored to the exact candidate.
 - Local Windows processes stalled before typecheck/test assertions and are not called green. Exact provider CI is the aggregate authority for 1,520 assertions and all unchanged verification gates.
 - Production remains HTTP 503 / NO-GO. Zoho reply identity, authenticated Obelisk, three genuine authenticated human Alpha sessions, positive live revenue, and portable exact-artifact founder approval are absent and were not inferred.
+
+## 2026-10-02 — Session 115 truth refresh
+
+- The Studio OS bot re-applied the seven incompatible files after the Session 114 quarantine; provider CI on `01206cd5` and `c450c1ea` is red (Test, Prettier). They were restored from `d9fc8ce5` and verified locally; provider CI on the new head is pending.
+- Production remains HTTP 503 / NO-GO on the five absent independent proofs; none were inferred.

@@ -584,3 +584,10 @@ Session 89 closeout tooling incident: invoking the Studio Ops closeout-board ren
 - Release boundary: Live readiness now passes staging, health, parity, theme/footer, and rollback; audit #255 remains deferred only at production admission. Zoho human reply-as, authenticated Obelisk, three real human Alpha sessions, positive live revenue, and portable exact-artifact founder approval remain independent unmet gates; production HTTP 503 was untouched.
 - Creative direction record reviewed — no new entries this session.
 - Post-closeout CI recovery: a concurrent seven-file Studio OS sync advanced `main`; rebase and direct push of `76590ac8` exposed five failing propagated protocol/brief tests and formatting in CI `36943311938`. Quarantine commit `41eac151` restored the prior project-proven files and passed the five affected local test files 40/40, provider CI `36950948765` (293/293 files), E2E `36950948738`, and Release `36950948752`. Signed Ark question `01K3SUJ42JB725A529A10EFEB4` requests an owner-side fix; exact staging and production-gate evidence are unchanged.
+
+## Session 115 — closeout recovery and repeat Studio OS sync quarantine (2026-10-02)
+
+- Recovery: Session 114 ended with `d9fc8ce5` (closeout board now shows committed write-backs) pushed but no write-back; the write-back-currency probe reported debt against anchor `2f25655e`. Only generated-board code changed in that commit; no gameplay, balance, or creative direction changed.
+- Incident: the Studio OS bot re-applied the same seven incompatible protocol/validator/workflow files (`01206cd5`, `c450c1ea`); provider CI `36974645490` and `36976486369` failed Test and Prettier. Restored all seven from `d9fc8ce5`; Prettier passes and the four affected test files pass 36/36 locally.
+- Release boundary: production was not touched. It remains gated on the five independent proofs; the founder's deploy authorization does not create them.
+- Creative direction record reviewed — no new entries this session.

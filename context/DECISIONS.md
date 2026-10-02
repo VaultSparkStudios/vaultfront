@@ -923,3 +923,9 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Why:** The propagated validator accepted contradictory or implausible brief evidence; the brief workflow regressed to Node 20 and unpinned actions; CI `36943311938` failed five tests and the Prettier ratchet. The last project-proven files pass the affected tests locally (40/40). Owner-side template repair is needed before a future sync can safely reintroduce the shared changes.
 
 **Verification:** Quarantine commit `41eac151` passed provider CI `36950948765` (293/293 test files and formatting), E2E `36950948738`, and Release `36950948752`. The Studio Ops source-template repair remains owner work through Ark `01K3SUJ42JB725A529A10EFEB4`; VaultFront's exact staging game artifact and five production gates are unchanged.
+
+### Re-quarantine the repeated Studio OS seven-file sync (Session 115)
+
+**Decision:** Restore the same seven protocol, validator, and brief-workflow files from `d9fc8ce5` after bot commits `01206cd5` and `c450c1ea` reintroduced them and failed provider CI. No force push; bot commits stay in history.
+
+**Why:** The Session 114 quarantine had no pin, so the next sync overwrote it. Affected tests pass 36/36 and Prettier is clean on the restored files. Production admission still requires the five independent proofs; the founder's deploy authorization does not substitute for them. A durable fix needs the Studio Ops template repaired or a propagation opt-out for these files.
