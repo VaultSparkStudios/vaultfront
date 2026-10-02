@@ -39,7 +39,7 @@ Three audit outcomes shipped: generated board commits no longer create false wri
 
 **Honest refusal:** No cutover lock or disk guard was bypassed; the first failed deploy was retained in the record, and no staging receipt or chat authorization was substituted for exact production proof.
 
-**Post-closeout CI recovery:** Concurrent Studio OS sync `b4fa8814` broke five protocol/brief assertions and formatting in exact run `36943311938`. Its seven files were quarantined to the last project-proven versions; the affected five-file suite passed 40/40 locally. Signed Ark `01K3SUJ42JB725A529A10EFEB4` asks the Studio Ops owner to repair the source templates. The Session 114 score and velocity remain tied to the original three shipped audit outcomes; recovery is pending fresh provider CI.
+**Post-closeout CI recovery:** Concurrent Studio OS sync `b4fa8814` broke five protocol/brief assertions and formatting in exact run `36943311938`. Quarantine commit `41eac151` restored the last project-proven seven-file set and passed the affected five-file suite 40/40 locally, provider CI `36950948765` (293/293 files), E2E `36950948738`, and Release `36950948752`. Signed Ark `01K3SUJ42JB725A529A10EFEB4` asks the Studio Ops owner to repair the source templates. The Session 114 score and velocity remain tied to the original three shipped audit outcomes.
 
 ## 2026-09-30 — Session 113 | Total: 990/1000 | Velocity: 0
 

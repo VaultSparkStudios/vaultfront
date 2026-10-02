@@ -6,12 +6,12 @@
   "health": "green",
   "currentSession": 114,
   "lastAgent": "codex",
-  "currentFocus": "Session 114 exact main game candidate is healthy on staging after signed 27-cell observation and rollback. A concurrent Studio OS sync caused post-closeout CI failures; seven incompatible files were quarantined pending fresh provider verification.",
+  "currentFocus": "Session 114 exact main game candidate is healthy on staging after signed 27-cell observation and rollback. An incompatible Studio OS sync was quarantined; recovery commit 41eac151 passed provider CI/E2E/Release. Production remains NO-GO on five proofs.",
   "nextMilestone": "Independently verify Zoho reply-as, authenticated Obelisk, three real human Alpha sessions, positive live revenue, and portable exact-artifact founder approval before production promotion.",
   "blockers": [
     "Production is NO-GO until project-domain Zoho human reply-as, authenticated Obelisk, three distinct authenticated human Alpha sessions, one positive live Stripe receipt, and portable exact-artifact founder approval are observed."
   ],
-  "lastUpdated": "2026-10-02",
+  "lastUpdated": "2026-10-01",
   "lifecycle": "alpha",
   "audience": "public-unlaunched",
   "type": "game",
@@ -151,11 +151,11 @@
   ],
   "sessionShellHygiene": {
     "session": 114,
-    "started": 17,
-    "closed": 17,
+    "started": 34,
+    "closed": 34,
     "running": 0,
-    "enumeratedAt": "2026-10-01T23:46:39.513Z",
-    "scope": "All 17 unified exec sessions in Session 114 were polled to completion or stopped after becoming unproductive; yielded edit cells were also awaited. No subagents or intentional background services remain. The local full formatting ratchet stalled and was stopped; focused Prettier verification and exact provider formatting are the authorities."
+    "enumeratedAt": "2026-10-02T01:59:34.665Z",
+    "scope": "At the final precommit enumeration, all 34 unified exec sessions from Session 114 had been polled to completion or stopped after becoming unproductive; yielded edit cells were awaited. No subagents or detached background services remain. The local full formatting ratchet stalled and was stopped; provider Prettier on recovery CI 36950948765 passed."
   },
   "testsLastRun": "2026-10-01",
   "testsLastRunMode": "local-and-exact-provider-ci",
@@ -170,7 +170,7 @@
   },
   "testsDeferred": [],
   "testsBudgetExhausted": false,
-  "lastSessionSummary": "Three audit outcomes shipped and exact staging, signed observation, promotion validation, and rollback/restoration passed. Production remains NO-GO on five independent proofs. Concurrent Studio OS sync b4fa8814 caused five post-closeout CI failures; seven files were quarantined, affected local tests pass 40/40, and a fresh provider run is pending.",
+  "lastSessionSummary": "Session 114 exact main game candidate is healthy on staging after signed 27-cell observation and rollback. An incompatible Studio OS sync was quarantined; recovery commit 41eac151 passed provider CI/E2E/Release. Production remains NO-GO on five proofs.",
   "providerCiStatus": {
     "status": "green",
     "revision": "6bacecb10689f4bc73bef5f68d5ad98a9e86fc60",
@@ -221,6 +221,10 @@
     "failedRunId": 36943311938,
     "failure": "Incompatible Studio OS propagation b4fa8814 introduced five protocol/brief assertion failures and formatting drift",
     "recovery": "Seven files restored from project-proven 6bacecb1; focused five-file local suite passed 40/40; signed Ark 01K3SUJ42JB725A529A10EFEB4 sent to Studio Ops",
-    "finalProviderStatus": "pending"
+    "recoveryRevision": "41eac151d2ed5329d2b9f672df64406a4db4fd26",
+    "recoveryCiRunId": 36950948765,
+    "recoveryE2eRunId": 36950948738,
+    "recoveryReleaseRunId": 36950948752,
+    "finalProviderStatus": "green"
   }
 }

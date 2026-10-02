@@ -4,7 +4,7 @@ Audit #253, #254, and #256 shipped at exact main `6bacecb10689f4bc73bef5f68d5ad9
 
 Audit #255 remains deferred only at production admission. Live readiness at 2026-10-01T20:29:23Z blocks Zoho human reply-as, authenticated Obelisk, three genuine authenticated human Alpha sessions, positive live revenue, and portable exact-artifact founder approval. Production returned HTTP 503 and was not mutated. See `context/LATEST_HANDOFF.md` and `docs/RELEASE_GATE_2026-10-01.md` for the exact run chain and next steps.
 
-A concurrent seven-file Studio OS sync caused five protocol test failures and formatting drift in post-closeout CI `36943311938`. The incompatible batch was quarantined to prior project-proven files; affected tests pass 40/40 locally, and signed Ark `01K3SUJ42JB725A529A10EFEB4` requests an owner-side template repair. Fresh provider CI is still required for this recovery commit.
+A concurrent seven-file Studio OS sync caused five protocol test failures and formatting drift in post-closeout CI `36943311938`. Quarantine commit `41eac151` restored prior project-proven files and passed affected tests 40/40 locally, provider CI `36950948765` (293/293 files), E2E `36950948738`, and Release `36950948752`. Signed Ark `01K3SUJ42JB725A529A10EFEB4` requests an owner-side template repair.
 
 ## Session 112 closeout — staging recovery and exact release chain (2026-09-30)
 

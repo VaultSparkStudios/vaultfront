@@ -58,7 +58,11 @@
       "failedRunId": 36943311938,
       "cause": "Incompatible seven-file Studio OS sync b4fa8814",
       "recovery": "Restored project-proven seven files; five affected local test files pass 40/40; signed Ark 01K3SUJ42JB725A529A10EFEB4 requested owner-side repair",
-      "finalProviderStatus": "pending"
+      "recoveryRevision": "41eac151d2ed5329d2b9f672df64406a4db4fd26",
+      "recoveryCiRunId": 36950948765,
+      "recoveryE2eRunId": 36950948738,
+      "recoveryReleaseRunId": 36950948752,
+      "finalProviderStatus": "green"
     }
   },
   "releaseGate": {
