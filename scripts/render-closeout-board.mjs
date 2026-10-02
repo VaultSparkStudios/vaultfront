@@ -6,7 +6,7 @@
  * checked by validate-closeout-board-format.mjs. Composed from live state:
  *   - PROJECT_STATUS.json (session, SIL category scores)
  *   - LATEST_HANDOFF.md (latest "Where We Left Off" / shipped bullets)
- *   - git status (write-back coverage + uncommitted summary)
+ *   - current-session closeout commits and git status (write-back coverage)
  *   - context/PROJECT_STATUS.json doctor block + tests
  *   - .cache/genius-list.json (next session's #1 hit)
  *
@@ -287,17 +287,29 @@ function gitChangeSummary() {
 }
 
 function agentMemoryRecentlyTouched() {
-  // Check whether agent memory (~/.claude/projects/<slug>/memory) has files
+  // Check whether Claude or Codex agent memory has files
   // modified within the last 24h. Best-effort — cross-platform path resolution
   // varies; absence is reported as "·" rather than failing.
   const home = os?.homedir?.() || process.env.HOME || process.env.USERPROFILE;
   if (!home) return false;
   const slug = path.basename(ROOT);
+  const cutoff = Date.now() - 24 * 3600_000;
+  const codexDir = path.join(home, ".codex", "memories", slug);
+  try {
+    if (
+      fs.existsSync(codexDir) &&
+      fs
+        .readdirSync(codexDir)
+        .some((file) => fs.statSync(path.join(codexDir, file)).mtimeMs > cutoff)
+    )
+      return true;
+  } catch {
+    /* best-effort */
+  }
   // Project memory dirs use a prefix-encoded form; fall back to a glob scan.
   const projectsDir = path.join(home, ".claude", "projects");
   if (!fs.existsSync(projectsDir)) return false;
   try {
-    const cutoff = Date.now() - 24 * 3600_000;
     for (const entry of fs.readdirSync(projectsDir)) {
       if (!entry.includes(slug)) continue;
       const memDir = path.join(projectsDir, entry, "memory");
@@ -313,7 +325,7 @@ function agentMemoryRecentlyTouched() {
   return false;
 }
 
-function writeBackCoverage() {
+function writeBackCoverage(session) {
   const TARGETS = [
     "context/CURRENT_STATE.md",
     "context/TASK_BOARD.md",
@@ -327,6 +339,21 @@ function writeBackCoverage() {
   ];
   const s = sh("git status --short");
   const touched = new Set();
+  const sessionNumber = Number(session);
+  if (Number.isSafeInteger(sessionNumber) && sessionNumber > 0) {
+    const anchor = sh(
+      `git log -1 --format=%H --grep="close session ${sessionNumber}"`,
+    );
+    const sha = anchor.out.trim();
+    if (anchor.code === 0 && /^[a-f0-9]{40}$/.test(sha)) {
+      const committed = sh(`git diff --name-only ${sha}^ HEAD`);
+      if (committed.code === 0) {
+        for (const file of committed.out.split("\n")) {
+          if (TARGETS.includes(file.trim())) touched.add(file.trim());
+        }
+      }
+    }
+  }
   for (const ln of s.out.split("\n")) {
     const fileMatch = ln.match(/^.{2,3}\s+(.+)$/);
     if (!fileMatch) continue;
@@ -336,9 +363,9 @@ function writeBackCoverage() {
     }
   }
   const result = TARGETS.map((t) => ({ file: t, touched: touched.has(t) }));
-  // 10th item (per closeout spec): agent memory at ~/.claude/projects/<slug>/memory/
+  // 10th item (per closeout spec): agent memory outside the project repo.
   result.push({
-    file: "agent memory (~/.claude/projects/<slug>/memory/)",
+    file: "agent memory (~/.codex or ~/.claude)",
     touched: agentMemoryRecentlyTouched(),
   });
   return result;
@@ -512,7 +539,7 @@ function render() {
     shippedSource = "git-log";
   }
   const silRows = silCategoryRows(status);
-  const wb = writeBackCoverage();
+  const wb = writeBackCoverage(session);
   const git = gitChangeSummary();
   const sig = postSessionSignals(status);
   const next = nextSessionHint();

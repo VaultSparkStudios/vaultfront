@@ -1,22 +1,25 @@
 <!-- generated-by: scripts/render-closeout-board.mjs v1.1 -->
-<!-- generated-at: 2026-10-01 (Session 113 closeout) -->
+<!-- generated-at: 2026-10-02 (Session 114 closeout) -->
 
 # Closeout Status Board — VaultFront
 
 ```
-╔══ SESSION CLOSEOUT · VaultFront · S113 ════════════════════════╗
-║  Date: 2026-10-01  ·  SIL: 990/1000  ·  Velocity: 0 flat         ║
+╔══ SESSION CLOSEOUT · VaultFront · S114 ════════════════════════╗
+║  Date: 2026-10-02  ·  SIL: 994/1000  ·  Velocity: 3 flat         ║
 ║  Mode: FOUNDER  ·  Agent: codex                                  ║
 ║  Production URL:  configured target  →  https://vaultfront.io    ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WHAT SHIPPED ════════════════════════════════════════════════╗
-║  ✓ Intent: founder-requested `/closeout`, commit and push to `m  ║
-║  ✓ Live audit: staging readiness at 2026-10-01T01:50:50          ║
+║  ✓ Implementation: audit #253, #254, and #256 shipped. Generate  ║
+║  ✓ Exact revision: direct-main `6bacecb10689f4bc73bef5f68d5ad98  ║
+║  ✓ Host recovery: initial live staging `36899792278` pushed the  ║
+║  ✓ Staging: successful live deploy `36919500328` serves exact `  ║
+║  ✓ Rollback: validation `36920451050` admitted the prior main-s  ║
 ╚════════════════════════════════════════════════════════════════╝
-╔══ SCORES · SIL 990/1000 ═══════════════════════════════════════╗
+╔══ SCORES · SIL 994/1000 ═══════════════════════════════════════╗
 ║    Dev Health         100  ██████████                            ║
 ║    Alignment          99   ██████████                            ║
-║    Momentum           95   ██████████                            ║
+║    Momentum           99   ██████████                            ║
 ║    Engagement         98   ██████████                            ║
 ║    Process Qual       99   ██████████                            ║
 ║    Coherence          99   ██████████                            ║
@@ -26,19 +29,19 @@
 ║    Automation         100  ██████████                            ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ WRITE-BACK STATUS ═══════════════════════════════════════════╗
-║  · context/CURRENT_STATE.md                                      ║
-║  · context/TASK_BOARD.md                                         ║
-║  · context/LATEST_HANDOFF.md                                     ║
-║  · logs/WORK_LOG.md                                              ║
-║  · context/DECISIONS.md                                          ║
-║  · context/SELF_IMPROVEMENT_LOOP.md                              ║
+║  ✓ context/CURRENT_STATE.md                                      ║
+║  ✓ context/TASK_BOARD.md                                         ║
+║  ✓ context/LATEST_HANDOFF.md                                     ║
+║  ✓ logs/WORK_LOG.md                                              ║
+║  ✓ context/DECISIONS.md                                          ║
+║  ✓ context/SELF_IMPROVEMENT_LOOP.md                              ║
 ║  · docs/CREATIVE_DIRECTION_RECORD.md                             ║
-║  · context/TRUTH_AUDIT.md                                        ║
-║  · context/PROJECT_STATUS.json                                   ║
-║  · agent memory (~/.claude/projects/<slug>/memory/)              ║
+║  ✓ context/TRUTH_AUDIT.md                                        ║
+║  ✓ context/PROJECT_STATUS.json                                   ║
+║  ✓ agent memory (~/.codex or ~/.claude)                          ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ GIT STATUS ══════════════════════════════════════════════════╗
-║  Changes: 6 files  ·  M:3 A:0 D:0 ?:3                            ║
+║  Changes: 2 files  ·  M:2 A:0 D:0 ?:0                            ║
 ║  Ahead: 0  ·  Behind: 0                                          ║
 ║  Branch: main                                                    ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -49,12 +52,12 @@
 ╔══ POST-SESSION SIGNALS ════════════════════════════════════════╗
 ║  Doctor:        13/13                                            ║
 ║  Compliance:    49/49                                            ║
-║  Tests:         292/292                                          ║
+║  Tests:         293/293                                          ║
 ║  Validation:    full-fresh                                       ║
 ║  IGNIS:         55d ago                                          ║
 ║  Truth:         green                                            ║
-║  Sanitization:  2d ago                                           ║
-║  Shell hygiene: 0 started · 0 closed · 0 running                 ║
+║  Sanitization:  1d ago                                           ║
+║  Shell hygiene: 34 started · 34 closed · 0 running               ║
 ╚════════════════════════════════════════════════════════════════╝
 ╔══ NEXT SESSION ════════════════════════════════════════════════╗
 ║  #1: Unified Genius List exhausted                               ║
