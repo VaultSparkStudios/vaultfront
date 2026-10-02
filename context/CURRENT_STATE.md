@@ -1,3 +1,7 @@
+## Session 115 staging receipts (2026-10-02)
+
+Exact main `775eeb04` passed provider CI `37055705096` and E2E `37055704999`; live staging deploy `37057133812`, signed observation `37058334061`, and apex promotion dry-run `37058896984` all succeeded. Production was not mutated; a live promotion was not attempted because the five independent proofs remain absent.
+
 ## Session 115 recovery — repeat Studio OS sync quarantined (2026-10-02)
 
 The skipped Session 114 write-back was recovered. The bot re-applied seven incompatible protocol/validator/workflow files; they were restored from `d9fc8ce5` (affected tests 36/36, Prettier clean). Shipped behavior is unchanged; production remains NO-GO on the five independent proofs.

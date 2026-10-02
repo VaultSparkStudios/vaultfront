@@ -591,3 +591,4 @@ Session 89 closeout tooling incident: invoking the Studio Ops closeout-board ren
 - Incident: the Studio OS bot re-applied the same seven incompatible protocol/validator/workflow files (`01206cd5`, `c450c1ea`); provider CI `36974645490` and `36976486369` failed Test and Prettier. Restored all seven from `d9fc8ce5`; Prettier passes and the four affected test files pass 36/36 locally.
 - Release boundary: production was not touched. It remains gated on the five independent proofs; the founder's deploy authorization does not create them.
 - Creative direction record reviewed — no new entries this session.
+- Deployment: Exact main `775eeb04` passed provider CI `37055705096` and E2E `37055704999`; live staging deploy `37057133812`, signed observation `37058334061`, and apex promotion dry-run `37058896984` all succeeded. Production was not mutated; a live promotion was not attempted because the five independent proofs remain absent.

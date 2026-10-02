@@ -625,3 +625,4 @@ Public-safe summary only. Sensitive verification notes are maintained privately.
 
 - The Studio OS bot re-applied the seven incompatible files after the Session 114 quarantine; provider CI on `01206cd5` and `c450c1ea` is red (Test, Prettier). They were restored from `d9fc8ce5` and verified locally; provider CI on the new head is pending.
 - Production remains HTTP 503 / NO-GO on the five absent independent proofs; none were inferred.
+- Exact main `775eeb04` passed provider CI `37055705096` and E2E `37055704999`; live staging deploy `37057133812`, signed observation `37058334061`, and apex promotion dry-run `37058896984` all succeeded. Production was not mutated; a live promotion was not attempted because the five independent proofs remain absent. Provider CI on the quarantine head is green.

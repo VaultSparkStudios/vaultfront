@@ -1,3 +1,8 @@
+## Session 115 deploy receipts (2026-10-02)
+
+- Exact main `775eeb04` passed provider CI `37055705096` and E2E `37055704999`; live staging deploy `37057133812`, signed observation `37058334061`, and apex promotion dry-run `37058896984` all succeeded. Production was not mutated; a live promotion was not attempted because the five independent proofs remain absent.
+- Next: collect the five proofs, then run canonical admission and promote only on an all-green result.
+
 ## Where We Left Off — Session 115 recovery (2026-10-02)
 
 - Recovered the Session 114 write-back debt (`d9fc8ce5`, board-only change).
