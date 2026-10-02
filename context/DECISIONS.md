@@ -915,3 +915,9 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Decision:** Retry the same exact main candidate after the owner-controlled cutover lock released and Docker storage checks passed. Accept successful immutable staging, signed 27-cell observation, promotion dry-run, and observed rollback/restoration as staging evidence; keep production admission deferred on the five independent authority observations.
 
 **Why:** Runs `36919500328`, `36919752125`, `36919835781`, `36920451050`, and `36920594091` passed for the exact candidate and restored it healthy after a genuine older-code staging rollback. Live readiness at 2026-10-01T20:29:23Z still rejects Zoho reply-as, authenticated Obelisk, three real humans, positive payment, and portable exact-artifact founder approval. The founder's operational deployment authorization does not create those proof records.
+
+### Quarantine the incompatible seven-file Studio OS sync
+
+**Decision:** Restore the seven project-proven protocol, validator, and brief-workflow files from implementation SHA `6bacecb1` after bot commit `b4fa8814` failed exact provider CI. Keep the bot commit in history, avoid a force push, and send a signed recurrence to the Studio Ops source owner. Verify the restoration through the five affected test files, formatting, and fresh provider CI before claiming recovery.
+
+**Why:** The propagated validator accepted contradictory or implausible brief evidence; the brief workflow regressed to Node 20 and unpinned actions; CI `36943311938` failed five tests and the Prettier ratchet. The last project-proven files pass the affected tests locally (40/40). Owner-side template repair is needed before a future sync can safely reintroduce the shared changes.

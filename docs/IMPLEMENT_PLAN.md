@@ -8,6 +8,7 @@ Source: `docs/AUDIT_2026-10-01.json`
 4. [x] Complete #256, discovered after the first push: replace the vulnerable development-only brace-expansion override with the registry-verified patch; npm audit, lint, exact provider CI and E2E pass, and GitHub alert 102 is fixed.
 5. [ ] #255 remains deferred only at production admission. The first live deploy `36899792278` failed after image push under the shared-host storage guard and cutover lock; after recovery, exact staging `36919500328`, signed 27-cell observation `36919752125`, apex promotion dry-run `36919835781`, rollback validation `36920451050`, and observed rollback/restoration `36920594091` passed. Current readiness blocks the five independent canonical production proofs; production remains HTTP 503 and untouched.
 6. [x] Run the ordered Session 114 closeout and reconcile every wave and evidence claim.
+7. [ ] Repair the concurrent Studio OS sync after post-closeout CI exposed five protocol/brief assertions and formatting drift: seven incompatible files were quarantined to the last project-proven versions, the affected five-file suite passed 40/40, and signed Ark recurrence `01K3SUJ42JB725A529A10EFEB4` was sent. Fresh provider CI is still required before the recovery is called verified.
 
 Core-loop measurement note: this session changes release/session observability and deployment records, not Capture → Convoy → Breach balance or progression. Human engagement and Soul fidelity remain unscored until genuine Alpha evidence exists.
 

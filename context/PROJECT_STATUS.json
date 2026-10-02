@@ -6,12 +6,12 @@
   "health": "green",
   "currentSession": 114,
   "lastAgent": "codex",
-  "currentFocus": "Session 114 shipped three audit outcomes at exact main 6bacecb1; exact staging, signed 27-cell observation, and rollback/restoration pass. Production remains NO-GO on five independent proofs.",
+  "currentFocus": "Session 114 exact main game candidate is healthy on staging after signed 27-cell observation and rollback. A concurrent Studio OS sync caused post-closeout CI failures; seven incompatible files were quarantined pending fresh provider verification.",
   "nextMilestone": "Independently verify Zoho reply-as, authenticated Obelisk, three real human Alpha sessions, positive live revenue, and portable exact-artifact founder approval before production promotion.",
   "blockers": [
     "Production is NO-GO until project-domain Zoho human reply-as, authenticated Obelisk, three distinct authenticated human Alpha sessions, one positive live Stripe receipt, and portable exact-artifact founder approval are observed."
   ],
-  "lastUpdated": "2026-10-01",
+  "lastUpdated": "2026-10-02",
   "lifecycle": "alpha",
   "audience": "public-unlaunched",
   "type": "game",
@@ -91,7 +91,7 @@
   "sessionMode": "founder",
   "sessionModeAutoShiftedAt": "2026-07-28T04:43:27.874Z",
   "silAvg3": 993,
-  "silVelocity": 0,
+  "silVelocity": 3,
   "silDebt": "flat",
   "silLastSession": "113",
   "auditStatus": "session-113-live-release-recheck; session-112-exact-ci-e2e-staging-27-cell-observation-and-rollback-remain-last-game-artifact-authority; five-production-gates-red",
@@ -122,7 +122,7 @@
   },
   "complianceScore": 49,
   "complianceTotal": 49,
-  "sanitizationLastCleared": "2026-09-30",
+  "sanitizationLastCleared": "2026-10-01",
   "lastSession": 113,
   "bootAmortization": {
     "ratio": 0.21,
@@ -170,7 +170,7 @@
   },
   "testsDeferred": [],
   "testsBudgetExhausted": false,
-  "lastSessionSummary": "Session 114 shipped audit 253, 254, and 256 on main; exact provider verification, staging, 27-cell signed observation, promotion validation, and rollback/restoration passed after host recovery. Audit 255 remains deferred at production admission on five independent proofs; production was untouched.",
+  "lastSessionSummary": "Three audit outcomes shipped and exact staging, signed observation, promotion validation, and rollback/restoration passed. Production remains NO-GO on five independent proofs. Concurrent Studio OS sync b4fa8814 caused five post-closeout CI failures; seven files were quarantined, affected local tests pass 40/40, and a fresh provider run is pending.",
   "providerCiStatus": {
     "status": "green",
     "revision": "6bacecb10689f4bc73bef5f68d5ad98a9e86fc60",
@@ -216,5 +216,11 @@
   "silAvg5": 994.4,
   "silAvg10": 995.2,
   "silAvg25": 996.2,
-  "silAvgAll": 993.7
+  "silAvgAll": 993.7,
+  "postCloseoutCi": {
+    "failedRunId": 36943311938,
+    "failure": "Incompatible Studio OS propagation b4fa8814 introduced five protocol/brief assertion failures and formatting drift",
+    "recovery": "Seven files restored from project-proven 6bacecb1; focused five-file local suite passed 40/40; signed Ark 01K3SUJ42JB725A529A10EFEB4 sent to Studio Ops",
+    "finalProviderStatus": "pending"
+  }
 }
