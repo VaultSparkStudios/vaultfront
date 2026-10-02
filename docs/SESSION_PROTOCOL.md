@@ -27,17 +27,29 @@ When revising a skill, verify all three before shipping. Drift in any of them (a
 
 ## Session lock format
 
-Every session starts by writing `context/.session-lock`:
+Every session starts by writing `context/.session-lock` **through the writer**, never by hand:
+
+```bash
+node scripts/write-session-lock.mjs --agent <claude-code|codex|other> --trigger <founder-mission|recovery|scheduled-routine|ad-hoc>
+```
+
+The writer emits the full contract (S358: this spec previously listed 5 of these 10 fields, and the template bot propagated the short form over projects whose tests require the full one):
 
 ```
 locked_by: agent-session
 session_start: <ISO-8601 UTC>
-agent: <claude-code | codex | other>
+session_id: <n>                      # next session number
+session_source: <derived|explicit>   # how session_id was obtained
+agent: <claude-code | codex | other> # mandatory since v1.0 (CANON-010 parity)
+trigger: <founder-mission | recovery | scheduled-routine | ad-hoc>  # session economics
+model: <runtime model id>            # context-meter contract
+context_limit: <tokens>              # context-meter contract
+context_epoch: <ISO-8601 UTC>        # optional; set when context resets mid-session (compaction)
 project: <basename of cwd>
 note: <optional free-form>
 ```
 
-The `agent` field is mandatory as of protocol v1.0. It lets downstream tooling (studio-conductor, hot-swap, audit logs) know which agent is driving the session.
+`agent`, `trigger`, `model` and `context_limit` are the meter contract: `context-meter.mjs` reads them to size the session and attribute its cost. A hand-written `echo … > context/.session-lock` drops them silently and fails the fail-closed provenance check.
 
 ---
 
@@ -45,19 +57,19 @@ The `agent` field is mandatory as of protocol v1.0. It lets downstream tooling (
 
 Everything else routes itself. Memorize these three:
 
-| Command                   | Section | One-line intent                                                  |
-| ------------------------- | ------- | ---------------------------------------------------------------- |
-| `/start` or `start`       | §1      | Begin every session — lock + load context + render brief         |
-| `/go` or `go`             | §2      | Autonomous sprint through the Unified Genius List at quality bar |
-| `/goal` or `goal`         | §2A     | Durable Codex objective for long-running, verifiable Studio work |
-| `/closeout` or `closeout` | §3      | Write-back + score + commit + push                               |
+| Command | Section | One-line intent |
+|---|---|---|
+| `/start` or `start` | §1 | Begin every session — lock + load context + render brief |
+| `/go` or `go` | §2 | Autonomous sprint through the Unified Genius List at quality bar |
+| `/goal` or `goal` | §2A | Durable Codex objective for long-running, verifiable Studio work |
+| `/closeout` or `closeout` | §3 | Write-back + score + commit + push |
 
 **Universal audit + execute combo (S113):**
 
-| Command                     | Section | One-line intent                                                   |
-| --------------------------- | ------- | ----------------------------------------------------------------- |
-| `/audit` or `audit`         | §4      | Genius-level 9-axis project audit → ranked `docs/AUDIT_<date>.md` |
-| `/implement` or `implement` | §5      | Ship every item from latest AUDIT in optimal-efficiency order     |
+| Command | Section | One-line intent |
+|---|---|---|
+| `/audit` or `audit` | §4 | Genius-level 9-axis project audit → ranked `docs/AUDIT_<date>.md` |
+| `/implement` or `implement` | §5 | Ship every item from latest AUDIT in optimal-efficiency order |
 
 Natural-language invocation works too. Typing "start" without the slash, or saying "begin session" / "let's start", routes the same. For Codex specifically, there is no native slash-command subsystem, so slash-prefixed commands must be matched as plain user text with the leading `/` treated as optional.
 
@@ -69,21 +81,27 @@ Natural-language invocation works too. Typing "start" without the slash, or sayi
 
 ## §1 — `/start` protocol
 
+<!-- execution-contract:start -->
+Complete the selected outcomes and their acceptance checks. Stop when they are verified. Explore and Maintain require an explicitly requested boundary. Budgets are ceilings. Unused tokens, an empty queue, or historical velocity never authorize additional work or greater depth. Partial, blocked, deferred, stale, or unmeasured evidence is not verified completion. Keep remaining authorized work visible. Preserve the user's scope and existing authorization. Apply the gates required by the action. Explicit /start and /closeout keep their canonical protocols.
+Action owners and triggers: docs/EXECUTION_CONTRACT.md.
+<!-- execution-contract:end -->
+
+**Routine delivery:** A bounded task does not implicitly invoke the full startup/audit/closeout cycle. Check ownership before writing, load the relevant brief and task, then read other records only as needed. If a cached summary is needed, run `node scripts/render-startup-brief-v5.mjs --lightweight` from the project and read its actual `docs/STARTUP_BRIEF_V5.md` output; it labels cached evidence and does not refresh maintenance checks or the canonical brief. Record changed decisions, outcome evidence and a short handoff; a routine read-only answer needs no project write-back. Full `/start`, `/arc` and explicit maintenance retain their applicable checks below. Central maintenance debt belongs to Studio Ops unless it is an actual dependency of this deliverable.
+
 **v1.3 — Token-lean, AI-first (S101).** Target: ≤8K tokens consumed by session start. Raw context files are synthesized into the startup brief — they are NOT individually read at startup.
 
 0. **Sync `main` (direct-to-main repos).** Run `node scripts/start-sync.mjs` (Studio Ops) / `node ../vaultspark-studio-ops/scripts/start-sync.mjs` (siblings with the propagated copy). It classifies working-tree residue with the closeout's own receipt allowlist: **clean** → `git pull --rebase`; **receipt-only** (append-only ledgers the last closeout's push/deploy wrote after its final commit) → `git pull --rebase --autostash`, so the receipts ride this session's first commit; **substantive** → it stops and names the files — a prior session's WIP is never auto-stashed. A bare `git pull --rebase` refuses receipt residue ("You have unstaged changes") and that refusal was being resolved by hand every session (S305).
 1. **Run start-recovery preflight, then write session lock.** Before overwriting any existing lock, run `node scripts/start-recovery-preflight.mjs --json` when present. If it reports `possible-cutoff-*`, read the recovery-integrity verdict and use the arc recovery branch before mutating files. Then use the dedicated standalone script — bash `echo` silently fails for dotfiles on Windows, and ops.mjs may not be present in all project repos:
-
    ```
    node scripts/write-session-lock.mjs --agent <claude-code|codex|other> --trigger <founder-mission|recovery|scheduled-routine|ad-hoc>
    node scripts/session-beacon.mjs acquire --agent <claude-code|codex|other> --trigger <same-trigger> --best-effort
    ```
-
    The local lock is the source of truth; the beacon is its remotely visible,
    expiring lease for scheduled-writer admission. A live same-project conflict
    is never best-effort: stop and reconcile it. Network unavailability may warn
    for interactive work, while scheduled writers fail closed through
    `check-scheduled-write-admission.mjs`.
+
 
 2. **Run preflight scripts.** These emit compact stdout — read their printed output only, do not open their output files:
    - **Canon + Ark reconciliation (D-S259.5):** run `node ../vaultspark-studio-ops/scripts/start-canon-sync.mjs --project . --slug <current-repo-slug> --json` (use `node scripts/start-canon-sync.mjs ...` inside Studio Ops). This single gate applies pending propagation, drains signed Ark cargo, refreshes safe adoption suggestions, and checks `context/CANON_ADOPTION.md` against the live `docs/STUDIO_CANON.md`. Studio Ops additionally broadcasts a signed, hash-idempotent `canon-update` snapshot whenever the live Canon fingerprint has changed. A stale/missing adoption posture or failed sync must be surfaced before work begins; never rely on an agent's remembered canon.
@@ -101,12 +119,11 @@ Natural-language invocation works too. Typing "start" without the slash, or sayi
    If any tool is missing, note it and continue.
 
 3. **Context-meter preflight — BEFORE loading any context files:**
-
    ```
    node scripts/context-meter.mjs --json
    ```
    - `CONTINUE` → proceed to step 4.
-   - `CONSIDER_CLOSEOUT` → warn the founder: _"Context already N% used. Recommend fresh terminal."_ Proceed only on explicit founder confirmation.
+   - `CONSIDER_CLOSEOUT` → warn the founder: *"Context already N% used. Recommend fresh terminal."* Proceed only on explicit founder confirmation.
    - `CLOSEOUT` → **stop immediately.** Do not read any context files. Show cached genius list from `.cache/genius-list.json` if available, then prompt for `/closeout`. This terminal is exhausted.
    - **Memory remediation gate (S212):** before rendering/loading the startup brief, run `node scripts/compact-memory-index.mjs --check` if `memory/MEMORY.md` exists. If it exits non-zero, run `node scripts/compact-memory-index.mjs --fix` once, then rerun `--check`. The compactor archives the full original before mutation; if the second check still fails, surface the warning but continue unless the context-meter already said `CLOSEOUT`.
 
@@ -114,7 +131,6 @@ Natural-language invocation works too. Typing "start" without the slash, or sayi
    - Missing or 0–1 entries → route to `/initiate`. Stop.
 
 5. **Load startup brief — THE ONLY CONTEXT READ AT SESSION START.**
-
    ```
    node scripts/render-startup-brief.mjs   # skip if docs/STARTUP_BRIEF.md < 24h old
    node scripts/validate-brief-format.mjs docs/STARTUP_BRIEF.md
@@ -161,7 +177,7 @@ write-back protocol.
 
 ## §2 — `/go` protocol
 
-Meaning: _"Update memory and task board with all Genius List items/ideas and implement all items at the highest/optimal quality."_
+Meaning: *"Update memory and task board with all Genius List items/ideas and implement all items at the highest/optimal quality."*
 
 ### 2.0 Preflight (abort if any fails)
 
@@ -213,7 +229,6 @@ node scripts/cache-genius-list.mjs --write
 ```
 
 Then read `.cache/genius-list.json` (or `docs/GENIUS_LIST.md`). Confirm:
-
 - Item count ≥ 10 (list v3 targets 12)
 - `IGNIS source` is `fallback` or `live`
 - Top 3 items have Final scores > 80
@@ -224,16 +239,15 @@ Empty or corrupted → run `node scripts/ops.mjs doctor` and stop. Upstream brea
 
 Read `context/PROJECT_STATUS.json → type` (or `portfolio/PROJECT_REGISTRY.json` in Founder Mode).
 
-| Project type                      | Offer specialty           | When                                                      |
-| --------------------------------- | ------------------------- | --------------------------------------------------------- |
-| `game`                            | `/game-loop-review`       | No playtest review in 3+ sessions or design items on list |
-| `novel`                           | `/novel-continuity-check` | New chapters landed or CANON items on list                |
-| `app` / `web-app` / `saas`        | `/app-release-gate`       | Project is SPARKED or LAUNCH items on list                |
-| `infrastructure` / `internal-ops` | `/infra-debt-sweep`       | Velocity declining 3+ sessions or DEBT items              |
-| any with placeholder SOUL.md      | `/soul-interview`         | `context/SOUL.md` still has template placeholders         |
+| Project type | Offer specialty | When |
+|---|---|---|
+| `game` | `/game-loop-review` | No playtest review in 3+ sessions or design items on list |
+| `novel` | `/novel-continuity-check` | New chapters landed or CANON items on list |
+| `app` / `web-app` / `saas` | `/app-release-gate` | Project is SPARKED or LAUNCH items on list |
+| `infrastructure` / `internal-ops` | `/infra-debt-sweep` | Velocity declining 3+ sessions or DEBT items |
+| any with placeholder SOUL.md | `/soul-interview` | `context/SOUL.md` still has template placeholders |
 
 Surface the suggestion: `Detected project type: <type>. Before /go, consider /<specialty-skill> — <reason>. Continue? (y/n/switch)`.
-
 - `y` → proceed.
 - `n` → hand off to specialty, stop.
 - `switch` → run specialty first, then resume.
@@ -243,15 +257,13 @@ No relevant specialty → skip silently.
 ### 2.3 Sync net-new items into TASK_BOARD
 
 For each genius-list item not already in `context/TASK_BOARD.md → Unified Genius List`:
-
 - Append a new row with tier, category, status, effort, title.
 - Preserve ranked order (higher Final score = higher table rank).
 - Append-only — never delete or reorder existing rows.
 
 ### 2.4 Capture memory patterns
 
-If the genius list surfaces a _pattern_ across items (e.g. "3 items blocked on the same credential", "2 items converge on the same infra gap", "new category of blocker"), write one memory entry:
-
+If the genius list surfaces a *pattern* across items (e.g. "3 items blocked on the same credential", "2 items converge on the same infra gap", "new category of blocker"), write one memory entry:
 - `project` type for studio-state patterns.
 - `feedback` type for workflow corrections the user endorsed by approving `/go`.
 - Never write memory for individual transient items — only recurring patterns.
@@ -263,25 +275,22 @@ Memory location: per-agent personal memory. For Claude Code that's `~/.claude/pr
 Walk top-to-bottom. For each item:
 
 **Classify:**
-
-| Status                                  | Action                                                                        |
-| --------------------------------------- | ----------------------------------------------------------------------------- |
-| `unblocked`                             | Proceed to execute.                                                           |
-| `human-blocked`                         | Run blocker preflight (§2.6). Do NOT escalate without trying elevated access. |
-| `cross-repo-locked`                     | Skip with note. Add retry hint for the onboard-retry workflow.                |
-| `externally-blocked` / `blocked-on-hub` | Skip. Owned elsewhere.                                                        |
+| Status | Action |
+|---|---|
+| `unblocked` | Proceed to execute. |
+| `human-blocked` | Run blocker preflight (§2.6). Do NOT escalate without trying elevated access. |
+| `cross-repo-locked` | Skip with note. Add retry hint for the onboard-retry workflow. |
+| `externally-blocked` / `blocked-on-hub` | Skip. Owned elsewhere. |
 
 **Gate execution.** Before a risky action, run Founder-Twin and the non-malicious action preflight. If confirmation is still required, state the action class and request one bounded approval instead of repeated one-off prompts:
-
 - Local edits + reversible file writes → proceed without confirm.
 - Committing current repo → proceed via `/closeout` autopilot, not mid-sprint.
-- Committing / pushing to _another_ repo → always confirm + honor `scripts/check-repo-lock.sh`.
+- Committing / pushing to *another* repo → always confirm + honor `scripts/check-repo-lock.sh`.
 - Rotating / creating secrets → always confirm.
 - Opening PRs, posting announcements, cron schedules → always confirm.
 - Destructive commands, package publishes, billing/payment execution, force-pushes, production destructive SQL, and legal/public-promise changes → narrow confirmation only; do not request persistent broad approval.
 
 **Quality bar:**
-
 - Full implementation — no TODOs, no stubs, no half-wired scaffolding.
 - Idempotent — re-running does not duplicate state.
 - Syntax-checked (`node --check`, `npx tsc --noEmit`, etc.) before moving on.
@@ -305,7 +314,7 @@ Blocker genuinely unresolvable without the Studio Owner → tag with age in sess
 
 ### 2.7 Completion target — IMPLEMENT ALL
 
-`/go` implements **every item** on the refreshed genius list at optimal quality. There is no scope cap unless the context-meter demands one.
+`/go` implements the selected genius-list outcomes at the agreed quality and depth. Snapshot that selection before execution. Newly discovered work stays outside this Deliver scope unless the founder includes it.
 
 Between each item, run:
 
@@ -314,23 +323,22 @@ node scripts/context-meter.mjs --json
 ```
 
 Behavior per meter verdict:
-
 - `CONTINUE` → pick the next item and keep going.
-- `CONSIDER_CLOSEOUT` → finish the **current** item cleanly, then prompt the founder once: _"Context N% used. Continue or `/closeout` + fresh session?"_ Default is CONTINUE unless founder redirects.
+- `CONSIDER_CLOSEOUT` → finish the **current** item cleanly, then prompt the founder once: *"Context N% used. Continue or `/closeout` + fresh session?"* Default is CONTINUE unless founder redirects.
 - `CLOSEOUT` → stop immediately. Surface deferred items to handoff. Prompt for `/closeout`.
 
 Prioritize compounding items (sanitizer that unblocks 4 items beats one shallow win). Order within the list is IGNIS-ranked — follow it.
 
-### 2.7.5 Expansion passes — when the list is thin (v1.4)
+### 2.7.5 Explicit exploration after delivery
 
-If ≤2 items remain unblocked, or the founder invokes `/go` consecutively with no primary-list work to do, DO NOT stop. Expand the surface:
+When selected outcomes are verified, stop. Only an explicit Explore request authorizes the following candidate-discovery passes; the request must name its question and boundary. Generating a candidate does not authorize implementing it.
 
 1. **Freshness reclass.** Re-run `node scripts/ops.mjs genius-list`. The freshness pass in `scripts/lib/genius-freshness.mjs` re-validates `cross-repo-locked` / `human-blocked` / `staged` cells against live lock state + capability readiness, automatically unblocking items whose blockers have resolved.
 2. **Elevated-probe pass.** For each remaining `human-blocked` item where the rule in `scripts/lib/blocker-rules.mjs` is NOT `signupUiOnly`, attempt the admin/API path before keeping it blocked (per AGENTS.md "elevated-access blocker rule").
-3. **Innovation pack.** `node scripts/ops.mjs innovation-pack` → `docs/INNOVATION_PACK.md`. Second-order ranked list drawn from: brainstorm orphans · inline TODO/FIXME markers · recently-shipped-but-unpolished code · SIL category regressions · incomplete CAPABILITY_MAP entries · cross-repo silence (≥14d no commits). Walk top candidates with the same quality bar as the primary list.
-4. **Compound refinement.** Open the 3 most recently shipped scripts/features. Propose one concrete refinement each (performance · error surface · docstring · tests · polish). Ship the smallest viable one.
+3. **Innovation pack.** `node scripts/ops.mjs innovation-pack` → `docs/INNOVATION_PACK.md`. Rank candidates relevant to the authorized question; verify their premises before recommending them.
+4. **Refinement review.** Inspect relevant shipped work and propose concrete improvements supported by evidence. Implementation stays within the user's selected Deliver scope.
 
-Each expansion step stops when it produces shippable work. Anything too large for the current session → add to TASK_BOARD with effort + rationale.
+Stop at the requested research boundary and return the findings. Record useful future work without promoting it into this session's implementation scope.
 
 ### 2.8 End-of-sprint summary
 
@@ -362,17 +370,16 @@ Use the returned task-board and memory counts in the sprint summary instead of e
 
 ### 2.9 Dry-run mode (`/go --dry-run`) — S113
 
-When invoked with `--dry-run`, /go skips execution and prints a preview of what _would_ run. Useful for: estimating session effort before committing, sanity-checking the genius list after a refresh, founder visibility into the queue without touching state.
+When invoked with `--dry-run`, /go skips execution and prints a preview of what *would* run. Useful for: estimating session effort before committing, sanity-checking the genius list after a refresh, founder visibility into the queue without touching state.
 
 Behavior:
-
 - Context-meter runs as normal (preview only — does not change state)
 - Genius list refreshed via `node scripts/ops.mjs genius-list`
 - Preview table printed: `[Tier] #N (effort) Title — recommendedModel — blocked? reason`
 - Items grouped: `Will execute · Skipped · Deferred (>4h)`
 - Expansion-pack preview emitted if primary list is thin
 - No TASK_BOARD writes, no commits, no pushes
-- Closes with: _"Dry-run complete — N items would execute. Type `go` to run."_
+- Closes with: *"Dry-run complete — N items would execute. Type `go` to run."*
 
 ### `/go` rules
 
@@ -384,12 +391,15 @@ Behavior:
 - Regenerate the list only when `cache-genius-list.mjs --check` reports stale.
 - Always finish what you start — complete or defer, not both.
 - Implement **all** items unless the context-meter or the founder stops you.
+- **Every automation needs a land step and a measured consumer (S353).** When you create or change anything that produces output on a schedule (cloud routine, workflow, bot, cron lane), name where its output lands and which probe counts the unconsumed backlog. A create step whose output nobody consumes is a defect even when every run succeeds. In S353, 743 routine PRs and 284 Dependabot PRs sat unmerged for months while every run reported success.
+- **Preflight the producer side of bulk outward actions (S353).** Before `--apply` on anything that closes, merges, comments on, or notifies at scale, check who is *subscribed* to those objects as well as the objects themselves. A cloud routine's session wakes on every event on its own PR, runs on its original model, and usually pushes a phone notification. Tell the founder the expected wakes, usage, and notification count, and pace the action over days if the weekly limit matters. In S353, closing 742 routine PRs woke about 742 cloud sessions in one evening.
+- **Fleet config writes: canary, re-read, verify by hash (S343/S353).** For routine prompts, managed-agent specs, and any API that documents a partial update, write one paused member first. Then re-read the live state and compare it against the rendered source (`render-routine-prompts.mjs --check`, `check-managed-agent-model-currency.mjs`). An HTTP 200 is not evidence: S343 found an update that returned 200 and wiped a prompt.
 
 ---
 
 ## §2A — `/goal` protocol
 
-Meaning: _"Turn Studio context into one durable, bounded Codex objective with a verifiable stop condition."_
+Meaning: *"Turn Studio context into one durable, bounded Codex objective with a verifiable stop condition."*
 
 Use `/goal` when the founder wants a long-running project session, unattended progress, or a single explicit objective to persist across turns. `/goal` complements `/go`: `/go` executes the full ranked queue, while `/goal` wraps one bounded objective in Codex's durable goal mechanism.
 
@@ -409,15 +419,12 @@ IF agent = codex:
    [features]
    goals = true
    ```
-2. Build the durable command. **The stop-condition is SATURATION, not completion** — the command's spine is the saturation loop, so Codex keeps working instead of finishing in 10-15 min (founder directive, D-S177.2). The single bounded objective is the _first_ item, not the _only_ item. Template:
+2. Build a durable command around the authorized outcome and its evidence:
    ```text
-   /goal Work continuously on <Studio objective>, then on the next-highest unblocked genius-list items, until the saturation check returns STOP. First read <minimal files>. Work in checkpoints; preserve user changes; run <validation commands> after each checkpoint. After EVERY verified checkpoint you MUST run:
-       node ../vaultspark-studio-ops/scripts/session-floor.mjs --shipped <items-shipped-so-far>
-     • exit 10 (CONTINUE) → you are NOT done: take the next-highest unblocked item (or climb the audit depth ladder on what you just shipped) and keep working. Do not stop; do not /closeout.
-     • exit 0 (STOP) → budget saturated: only now run /closeout.
-   Stop early ONLY for a named blocker or a founder-approval-gated action. Never stop because the first objective feels complete — that wasted-boot finish is exactly what this loop exists to prevent.
+   /goal Complete <requested outcome>. First read <minimal files>. Preserve user changes and relevant safeguards. Verify <acceptance checks>. Continue through remaining authorized work; stop when the outcome is verified. Report a partial handoff if a real dependency or resource ceiling prevents completion. Do not expand scope merely because budget remains.
    ```
-   The loop above is the durable command's backbone — it is NOT optional prose to apply separately. Because Codex executes this command text end-to-end, the saturation contract (§2A.3) must live _inside_ the command, not only in the surrounding section.
+   For an explicitly selected audit, pass its path and session to the shared stopping check. Do not infer authorization from the wider genius list.
+
 3. If `/goal` is unavailable in the current Codex session, continue with the same workflow manually — run the `session-floor.mjs` loop by hand after each checkpoint — and tell the founder the Codex feature flag likely needs to be enabled before the next session.
 
 ### 2A.2 Approval policy
@@ -432,32 +439,22 @@ sandbox_mode = "workspace-write"
 
 Do not recommend full sandbox bypass as the Studio default. Use elevated or unsandboxed modes only in isolated disposable worktrees after explicit founder acceptance.
 
-### 2A.3 Validation and stopping — the saturation contract (S175)
+### 2A.3 Validation and stopping — verified outcomes
 
-- Prefer the repo's existing validation commands from `package.json`, `pyproject.toml`, Makefile, or documented smoke scripts.
-- **Stop on SATURATION, not completion-of-one-objective.** This is the agent-neutral rule that closes the Claude↔Codex gap: Claude Code's `/goal` Stop hook _blocks_ termination until a condition holds, so it runs long; a naive Codex `/goal` stops the moment its single objective feels done — wasting the startup context in a 4-10 minute session. Both agents instead consult **one shared engine**: after each verified checkpoint run
+- Use the existing validation appropriate to the requested deliverable. An inexpensive completed task may stop; unfinished authorized work continues while feasible.
+- For audit-driven work, run `node scripts/session-floor.mjs --audit <selected-audit.json> --session <N> --json` after a verified checkpoint. The selected session-bound audit and execution evidence determine completed, remaining, partial or unknown state. Tokens, commit counts, changed-file counts and historical velocity do not establish acceptance.
+- CONTINUE (exit 10) means authorized work remains. STOP (exit 0) allows stopping, and does not itself mean success: inspect whether the disposition is completed, partial or unknown. Do not mark an unfinished goal complete when a resource ceiling or blocked item ends the run.
+- For ordinary creative tasks, verify the requested artifact and project-specific acceptance checks directly; no new audit scaffold is required merely to finish a scene or melody.
+- Context exhaustion and actual resource ceilings still protect the session. Unmeasured spend must remain unknown and cannot force scope expansion. The configured Claude token-recording hook is not evidence of a blocking stop hook.
 
-  ```bash
-  node ../vaultspark-studio-ops/scripts/session-floor.mjs --shipped + < N > [--budget < N > k]
-  ```
+### 2A.4 Budget directive
 
-  It returns `CONTINUE` (exit 10) or `STOP` (exit 0) from the live signals — context-meter %, items-shipped vs the velocity floor (`silVelocity`), genius-list exhaustion, and any `/goal +Nk` budget floor — plus a **boot-amortization** ratio (`workTokens / startupTokens`) that makes a wasted boot visible.
-  - **While it returns `CONTINUE` you MUST select the next-highest unblocked item (or climb the audit depth ladder on a shipped item) and keep working.** Do not stop with budget remaining.
-  - Stop only when it returns `STOP` (context exhausted · list exhausted+re-verified above the velocity floor · explicit budget floor met), when a **named blocker** prevents completion, or when the next action requires **founder approval**.
+An explicitly requested token budget is a ceiling, not a minimum to consume. The legacy `+Nk` parser remains compatible, but unused budget never requires more work. Only observed spend can establish that a numeric spending limit has been reached; transcript and byte estimates remain labeled estimates. Exploration beyond a completed outcome needs explicit authorization.
 
-- `IF agent = claude-code:` the `/goal` Stop hook already enforces continuation; `session-floor.mjs` is the _same_ verdict surfaced inline so the two agents behave identically.
-- `IF agent = codex:` the loop above IS your continuation mechanism — Codex has no blocking Stop hook, so the floor check is mandatory after every checkpoint, not optional.
-- Use `/goal pause` for risky external actions, approval-sensitive work, or deep context refreshes.
-- Use `/goal resume` after the blocker clears.
-- Use `/goal clear` after the durable objective is complete or obsolete.
-
-### 2A.4 Budget directive (S175)
-
-`/goal +<N>k …` (e.g. `/goal +300k do all`) sets an **output-token floor** for the session. `session-floor.mjs --budget +300k` then returns `CONTINUE` until that floor is met regardless of how "done" the objective feels — the most direct cure for early-finishing. Scale depth to the floor: a bigger budget means more depth-ladder climbing and more verified second-order work, not a longer single objective.
 
 ---
 
-## §2B — `/audit` protocol _(canonical — the SKILL.md is a pointer; S219)_
+## §2B — `/audit` protocol  *(canonical — the SKILL.md is a pointer; S219)*
 
 **Mission:** one combined ranked improvement plan across 9 axes; genius-level, premise-verified, ready for `/implement`.
 
@@ -474,15 +471,16 @@ Do not recommend full sandbox bypass as the Studio default. Use elevated or unsa
 
 ---
 
-## §2C — `/implement` protocol _(canonical — the SKILL.md is a pointer; S219)_
+## §2C — `/implement` protocol  *(canonical — the SKILL.md is a pointer; S219)*
 
 **Mission:** execute the latest audit in optimal-efficiency order, complete-all-means-complete-all.
 
 1. `node scripts/set-active-skill.mjs implement`; overlay via `skill-profile.mjs implement` (successBar = mandatory gates; `runMediumGate(profile.medium, item)` from `scripts/lib/medium-quality-gates.mjs` after each item — failure → BLOCKED with fixHint).
 2. **Source:** latest audit JSON sidecar (`scripts/lib/audit-sidecar.mjs` → `findLatestAuditSidecar`, `appendExecution`); md-parse only if sidecar absent; neither → route to `/audit`. Iterate `audit.items` via `scripts/lib/sprint-runner.mjs` `runSprint()` where applicable.
+2.5. **Premise gate (S347 · closes [SIL:2⛔][S317 #2]):** `node scripts/check-audit-premises.mjs --strict --audit <sidecar>` BEFORE item 1. Exit non-zero (a premise disproven, or NO premise resolved) = STOP: fix or drop the failing items in the sidecar and re-run. Until S347 `--strict` had zero callers, so "this audit verified nothing" could describe a session but never stop one.
 3. **Re-sort for efficiency, NOT raw priority** → `docs/IMPLEMENT_PLAN.md`: group same-axis items · 🔥+low-effort first · foundations before façades · token-cost items LAST (measure after everything settles) · parallel-friendly items burst together.
 4. **Pre-flight:** `node scripts/check-secrets.mjs --for <cap>` per item naming a capability.
-5. **Per item:** surface `[#N · slug] starting` → pick ladder rung by remaining budget (default L2; L3 when ample, L1 when tight) → implement the rung's recipe → **VERIFY before shipped (S175):** run the test surface + confirm the change does what the recipe claims — an unverified `shipped:true` is a lying surface → record IGNIS telemetry (ignisScore/tier/recommendedModel) on the execution-log row → commit bounded scope → **saturation gate:** `node scripts/session-floor.mjs --shipped <N> [--budget +<N>k]` — CONTINUE (exit 10) → next item; list EXHAUSTED with budget left → CLIMB ladders (L2→L3) or `node scripts/ops.mjs innovation-pack`; never stop with budget remaining. STOP (exit 0) → finish cleanly.
+5. **Per item:** identify the selected item, implement its agreed depth, run its relevant acceptance checks, and record actual verification before marking it shipped. Continue through remaining authorized items. When the selected list is complete, stop; an empty list does not require innovation or extra depth. Use the outcome check in §2A.3 for an explicitly selected audit.
 6. **On STOP:** strike shipped items in TASK_BOARD · append SIL sprint entry · stdout summary (shipped/deferred/blocked + priority sum) · append per-item results to the audit's `## Execution Log`.
 
 **Rules:** partial ≠ done (mark BLOCKED with reason) · >2 retries on one item → BLOCKED, continue · never skip an existing test surface · idempotent re-runs (execution log skips shipped) · founder-twin unattended mode runs the queue without intermediate prompts. Render `plan` + `sprint` briefs via `skill-brief.mjs`.
@@ -495,26 +493,13 @@ Do not recommend full sandbox bypass as the Studio default. Use elevated or unsa
 
 ### 3.0 Closeout-suggestion gate (context-aware)
 
-Agents and skills MUST NOT suggest `/closeout` after each small item. `/closeout` is only auto-suggested when:
+An explicit founder closeout executes immediately with an honest record of completed and partial work. During an authorized arc, close out when the requested scope is verified, or preserve a partial handoff when a real dependency or resource limit prevents completion. Do not require spending more tokens before closing.
 
-1. `node scripts/context-meter.mjs` returns `CONSIDER_CLOSEOUT` (pctUsed ≥ 75%) or `CLOSEOUT` (pctUsed ≥ 95%), **and**
-2. The current genius-list item is cleanly completed (no partial state), **and**
-3. The founder has not explicitly told the agent to keep going.
-
-Explicit founder invocation (`closeout` / `/closeout`) always executes immediately regardless of meter state.
-
-**Min-session-value gate (S175 — Codex parity).** Before an _agent-initiated_ (not founder-invoked) `/closeout` during a `/goal` arc, run:
-
-```bash
-node scripts/session-floor.mjs --closeout-gate --shipped <N>
-```
-
-Exit 11 = **REFUSE**: the session is below the velocity floor, has barely touched its context, and its boot-amortization is not yet healthy — closing out now would lock in a wasted boot. Return and implement the unshipped audit items (or climb the depth ladder) first. Exit 0 = allowed. Pass `--founder` when the human typed `/closeout` (always honored). This is the Codex equivalent of Claude Code's blocking Stop hook — it stops Codex from closing out a 4-minute boot-waster.
+For audit-driven agent closeout, the autopilot passes the selected audit path and session to `session-floor.mjs --closeout-gate`. Exit 11 means explicitly authorized work remains. STOP with unknown or partial disposition allows an honest handoff, not a completion claim; inspect the reason. A missing audit, absent measurement or unfinished outcome is not success. Preserve the evidence and use the applicable partial-handoff path. Explicit founder closeout remains honored; it does not convert partial work into completion.
 
 ### 3.0.1 Intent check
 
 Compare actual work to `context/LATEST_HANDOFF.md → Session Intent:`.
-
 - **Achieved** · **Partial** (note scope drift) · **Redirected** (log reason)
 
 Bypass audit: any commit that used `--no-verify` / `--no-gpg-sign` → log in `context/DECISIONS.md` with date, hook bypassed, reason, follow-up task.
@@ -537,13 +522,12 @@ Bypass audit: any commit that used `--no-verify` / `--no-gpg-sign` → log in `c
 ### 3.2 Rolling data + scoring
 
 Compute before scoring:
-
 - **Velocity:** count Now → Done this session, exclude `[SIL]` meta-tasks.
 - **Debt delta:** ↑ net new `[DEBT]` · ↓ net resolved · → unchanged.
 - **Rolling averages** (3/5/10/25/all) from SIL entries.
-- **Sparkline** (last 5 totals): `▁<100 · ▂<200 · ▃<300 · ▄<350 · ▅<400 · ▆<450 · ▇<480 · █480–500`.
+- **Sparkline:** render the last five totals on the current 0–1000 CANON-009 scale; label historical 0–500 entries separately.
 
-Score 5 categories, 0–100 each (Dev Health / Creative Alignment / Momentum / Engagement / Process Quality). Infrastructure vs product projects use different Engagement rubrics — see `AGENTS.md` → _Engagement scoring_.
+Score 10 categories, 0–100 each, total 1000 (Dev Health / Creative Alignment / Momentum / Engagement / Process Quality / Cross-Repo Coherence / Security Posture / Ecosystem Integration / Capital Efficiency / Automation Coverage). Use the existing CANON-009 rubric; project media changes its interpretation and applicable checks, not the scoring contract.
 
 ### 3.3 Human Action Required
 
@@ -551,7 +535,7 @@ Run blocker preflight. Before keeping any item in Human Action Required, run sec
 
 ### 3.4 Next-session pre-load
 
-If fewer than 2 items in `## Now`, move 2–3 from Next. Never leave empty.
+Keep `Now` aligned with remaining authorized work. An empty queue after completion is valid. Offer or record future ideas only when useful; do not promote them into the current scope automatically.
 
 ### 3.4.5 Cross-repo follow-up batons (S153, Orchestrator phase 4)
 
@@ -605,7 +589,6 @@ The `Deploy:` field in Where-We-Left-Off must reflect the real outcome (`deploye
 ### 3.10 Creative Direction Record
 
 Review the full session for human direction. Append to `docs/CREATIVE_DIRECTION_RECORD.md`:
-
 - Any creative direction (features, feel, scope)
 - Brand/tone/quality guidance
 - Canon-affecting decisions
@@ -622,8 +605,8 @@ ADDITIVE ONLY — never edit or delete existing entries. If no direction: note "
    **In-session Wave scaffold reconciliation (CANON-044 — MANDATORY for multi-step work).** Studio agents **MUST** keep a live in-session task-scaffolding list ("Wave" is the default label — Wave 1, Wave 2, Wave 3, …; "Phase" is an accepted synonym) for any multi-step (≥3) / multi-phase / multi-wave arc; it pins progress at the bottom of the session window for the founder and the agent. **Each Wave line is a real item from this project's actual audit/implement plan — not a generic phase label** (e.g. "Wave 3 · fix MEMORY.md truncation", not "Wave 3 · implement"). **A scaffold that is opened MUST be reconciled here:** walk every item, set an honest final state (`✔` done · `◼` in-progress · `◻` open · `⊘` dropped-with-reason), carry any unfinished item onto `TASK_BOARD.md` (Now/Next) so it survives, and report the final tally on the Closeout board's **SCAFFOLD** line (`N tasks · X done · Y in progress · Z open`). Leave nothing `in_progress` and nothing dangling. Agent-neutral: Claude `TaskCreate`/`TaskUpdate`, Codex task list, or a rendered checklist — identical discipline (CANON-010 parity). A half-checked scaffold at session end is a closeout defect, same class as an un-updated handoff.
 
 2. **Enumerate EVERY background shell/task the agent started this session.** Do not rely on memory. Re-list them from the agent's own job ledger:
-   - _IF agent = Claude Code:_ every `run_in_background` Bash call + every `Agent`/Task run — reconcile against the task-completion notifications received this session (and `TaskList` for agentic tasks). Each `b<id>` shell you launched must be accounted for.
-   - _IF agent = Codex / other:_ the agent's background-job/process list (`jobs`, the run table, etc).
+   - *IF agent = Claude Code:* every `run_in_background` Bash call + every `Agent`/Task run — reconcile against the task-completion notifications received this session (and `TaskList` for agentic tasks). Each `b<id>` shell you launched must be accounted for.
+   - *IF agent = Codex / other:* the agent's background-job/process list (`jobs`, the run table, etc).
 
 3. **Actively CLOSE each one — don't just label it.**
    - Completed → confirmed closed (it already exited).
@@ -633,7 +616,7 @@ ADDITIVE ONLY — never edit or delete existing entries. If no direction: note "
 
 The status board's `shells:` row reports `N started · M closed · K running` from the RE-CONFIRMED enumeration. **K must be 0 on a clean closeout** (or every nonzero entry is a founder-flagged let-run, listed with purpose + recommended action).
 
-_Rationale (D-S119.2 · reinforced D-S178.5):_ Founder reported recurring pain of (a) reminding agents to clean up visual/task lists and (b) agents leaving stale or hung background shells at end-of-session — observed acutely in long multi-shell sessions on a loaded box. Enumerate-close-reconfirm is now an explicit, verified gate for ALL agents, not optional prose.
+*Rationale (D-S119.2 · reinforced D-S178.5):* Founder reported recurring pain of (a) reminding agents to clean up visual/task lists and (b) agents leaving stale or hung background shells at end-of-session — observed acutely in long multi-shell sessions on a loaded box. Enumerate-close-reconfirm is now an explicit, verified gate for ALL agents, not optional prose.
 
 ### 3.11 Output: closeout status board
 
@@ -668,7 +651,7 @@ Between §3 step 5 (Brainstorm) and step 6 (Commit), every closeout MUST produce
    - `honestyLedger[]` — `{title, why}` per item the session DECLINED or rejected (rejected-on-verification, refused force-green, honest deferral). A disciplined session's refusals are first-class work; surface them, don't bury them in `blockers`.
    - `silDelta.kind` — `numeric | structural | idle`. A flat score (Δ0) with real work shipped is a **structural** win (coherence/honesty), not idle — set `structural` so the badge reads correctly. Auto-inferred if omitted.
    - `diffStat` — `{files, insertions, deletions, suite, testsDelta, probesDelta}` for the proof-of-work strip.
-   - `amortization` — `{ratio, verdict}` (or `tokens:{startup, work}` and the renderer computes it). From `session-floor.mjs --json`. Makes session efficiency visible at closeout.
+   - `amortization` — `{ratio, verdict}` (or `tokens:{startup, work}` and the renderer computes it). From `session-floor.mjs --json`. Describes resource allocation only; it does not measure outcome quality or productivity.
 5. Run: `node scripts/render-closeout-brief.mjs --input .cache/closeout-brief-<session>.json` (add `--ascii` for narrow/Codex terminals — auto-detected when columns < 95).
 6. Renderer writes `docs/CLOSEOUT_BRIEF_<session>_<date>.md` + prints frame to stdout. The "ready to commit & push?" line is the founder-facing review point for attended sessions; it is **advisory, not a blocking interactive gate** (D-S177) — autopilot commits + pushes without pausing for input (safety net: coherence commit gate + secret scan + diff preview).
 
@@ -681,18 +664,17 @@ Between §3 step 5 (Brainstorm) and step 6 (Commit), every closeout MUST produce
 
 The renderer accepts `kind` field. Each main skill emits its own variant:
 
-| Skill        | kind                                             | When                                                                      |
-| ------------ | ------------------------------------------------ | ------------------------------------------------------------------------- |
-| `/start`     | `orientation`                                    | After preflight, before founder prompt — replaces STARTUP_BRIEF.md stdout |
-| `/audit`     | `audit`                                          | After writing AUDIT JSON sidecar                                          |
-| `/implement` | `plan` (pre-exec) + `sprint` (per round + final) | At preflight gate + each round                                            |
-| `/closeout`  | `closeout`                                       | Step §3.7 above                                                           |
-| `/go`        | `sprint`                                         | At each round boundary                                                    |
+| Skill | kind | When |
+|---|---|---|
+| `/start` | `orientation` | After preflight, before founder prompt — replaces STARTUP_BRIEF.md stdout |
+| `/audit` | `audit` | After writing AUDIT JSON sidecar |
+| `/implement` | `plan` (pre-exec) + `sprint` (per round + final) | At preflight gate + each round |
+| `/closeout` | `closeout` | Step §3.7 above |
+| `/go` | `sprint` | At each round boundary |
 
 Full schema + rubrics per kind: `docs/SKILL_BRIEF_SPEC.md`.
 
 **Cross-agent invocation:**
-
 - Claude Code: skill bodies import `scripts/lib/skill-brief.mjs`
 - Codex: `node -e "import('./scripts/lib/skill-brief.mjs').then(m => console.log(m.render(JSON.parse(process.argv[1]))))" '<json>'`
 - ChatGPT custom GPT: studio-ops MCP tool `skill_brief_render({ brief })`
@@ -732,7 +714,6 @@ Write the answer to `portfolio/PROJECT_REGISTRY.json` → `stack: "A" | "B" | "C
 #### 4.3 — Scaffold context (15 files)
 
 From `docs/templates/project-system/`:
-
 - `AGENTS.md` (PROJECT.template + immediately propagate AGENTS_universal_sections via `node scripts/propagate-agents-sections.mjs --apply` — drops in CANON-006/007/008/011/012/013 + Founder-Twin + `/audit`+`/implement` sections)
 - `CLAUDE.md` (CLAUDE.template)
 - `context/PROJECT_BRIEF.md` · `SOUL.md` · `BRAIN.md` · `CURRENT_STATE.md` · `TASK_BOARD.md` · `LATEST_HANDOFF.md` · `DECISIONS.md` · `SELF_IMPROVEMENT_LOOP.md` · `TRUTH_AUDIT.md` · `PROJECT_STATUS.json` · `FILE_MAP.md`
@@ -764,7 +745,6 @@ From `docs/templates/project-system/`:
 #### 4.7 — Founder-Twin profile (S113)
 
 Add per-project entry to `portfolio/TWIN_PROFILES.json`:
-
 ```json
 "<slug>": {
   "alwaysAsk": ["npm publish", "gh release create"],
@@ -779,7 +759,6 @@ If `medium` ∈ {`game`, `app`, `product`} and `audience` is `public-*`, run a b
 #### 4.9 — Register in PROJECT_REGISTRY.json
 
 Required fields (S113 schema):
-
 ```
 slug · name · medium · type · audience · status · lifecycle · developmentPhase
 vaultStatus (FORGE by default) · stack (A/B/C — NEW S113) · priority · health
@@ -822,6 +801,7 @@ Write a "Bootstrap Baseline" entry in `context/SELF_IMPROVEMENT_LOOP.md` so the 
 ### §5 — `/studio-review` (monthly cross-portfolio review)
 
 1. Read `portfolio/PROJECT_REGISTRY.json` + each project's `context/PROJECT_STATUS.json`.
+   Also read `docs/LADDER_HEALTH.md` (daily `ladder-health-render` job, CANON-052): lifecycle pipeline, deployed-dark F2 backlog, SPARKED-unannounced S0, unreachable URLs. It was built for this review but went unread until S353's consumer probe caught it.
 2. Score 6 categories: Portfolio Balance, Revenue, Hygiene, Coherence, Ops Compliance, Initiation Health.
 3. Diff vs last month's `docs/STUDIO_REVIEW_AUTO_YYYY-MM.md`.
 4. Surface 3 strategic bets.
@@ -845,6 +825,8 @@ Write a "Bootstrap Baseline" entry in `context/SELF_IMPROVEMENT_LOOP.md` so the 
 
 ### §8 — `/intake-credentials` (credential wizard)
 
+For current Hetzner storage, reuse `hetzner.ssh` / `hetzner.cloud-api`; an attached Volume needs no new token or repointed host credential. See `docs/STUDIO_BUILD_STORAGE.md`. A future additional host requires its own capability and verified host identity; never overwrite `HETZNER_HOST` to route legacy production tools elsewhere.
+
 1. Read `secrets/CAPABILITY_MAP.json` for declared capabilities.
 2. Read `secrets/.access.log` for gateway health.
 3. For each `MISSING` capability: ask for the credential, validate via API ping, write to `secrets/<file>.env`.
@@ -854,7 +836,6 @@ Write a "Bootstrap Baseline" entry in `context/SELF_IMPROVEMENT_LOOP.md` so the 
 ### §9 — `/soul-interview` (creative identity discovery)
 
 Five questions, in order. Record the answers into `context/SOUL.md`:
-
 1. "If this project had to have three non-negotiables, what are they?"
 2. "Who is this for? What does a user say to their friend to recommend it?"
 3. "What is the one thing this project does that nothing else does?"
@@ -880,7 +861,7 @@ One-command operational security sweep:
 2. Staging smoke test — `curl -f ${stagingUrl}/_health`.
 3. Secrets completeness — capability map for this project all READY.
 4. Branding compliance — CANON-006 check.
-   4b. **Footer completeness (S187 · [SIL:2 S187 #2])** — footer must cover all header destinations + required legal pages.
+4b. **Footer completeness (S187 · [SIL:2 S187 #2])** — footer must cover all header destinations + required legal pages.
    `node ../vaultspark-studio-ops/scripts/check-footer-completeness.mjs --manifest <footer-manifest.json> --json`.
    Missing manifest → SKIP (document, then create before next release). Footer missing a header link → **red**.
 5. Staging parity — `diff` of staging vs prod config.
@@ -889,7 +870,7 @@ One-command operational security sweep:
    `node ../vaultspark-studio-ops/scripts/responsive-audit.mjs --url ${stagingUrl}` (or local copy).
    - All surfaces at parity → pass; store notes in `docs/RELEASE_PARITY.md` or the release notes.
    - Browser-below-app gap → allowed ONLY with recorded rationale + catch-up/exception plan appended to `context/DECISIONS.md`. Missing rationale → **red**.
-     7b. **CANON-041 mobile-parity + elite-visual hard gate (S180 · D-S180.6 — BLOCKING, no general override)** — for any public-web project, ALL THREE must pass:
+7b. **CANON-041 mobile-parity + elite-visual hard gate (S180 · D-S180.6 — BLOCKING, no general override)** — for any public-web project, ALL THREE must pass:
    - **Desktop↔mobile parity at all times** — every desktop feature/page/flow present + fully usable at ≤360/390/414/768px, portrait + landscape. A desktop-only or mobile-broken feature → **red**.
    - **Mobile nav works (forbidden anti-patterns absent)** — the open mobile menu/drawer scrolls within itself when taller than the screen (no items trapped below the fold); body-scroll-lock released on close; `100dvh` not `100vh`; `env(safe-area-inset-*)`; ≥44px targets; reachable close. A sticky/unscrollable mobile nav → automatic **red** (the specific defect CANON-041 bans).
    - **Elite visual craft** — visually impressive/immersive; purposeful motion + micro-interactions + smooth transitions; `prefers-reduced-motion` respected; 60fps/no-jank; CANON-029-cost-neutral.
@@ -925,7 +906,6 @@ Any red → block launch. Green across the board → mark project ready for SPAR
 ### §15 — `/ask` (plain-English intent router)
 
 Inputs are natural language. Match against this document + the skill registry and:
-
 - **High confidence** (intent → exactly one skill) → invoke the matched skill; log "routed to `/<skill>` because <one sentence>".
 - **Medium** (2–3 skills match) → present top 3 options with one-line rationale each; default to #1 if user says "go".
 - **Low** (no match) → ask one clarifying question. Do not guess.
@@ -960,7 +940,7 @@ Read `AGENTS.md` at repo root → read this file → execute. No agent-specific 
 - **Append-only for specialty protocols.** Adding a new specialty (e.g. `/video-review`) appends a new `§N` section. Existing sections are edited only to clarify or fix bugs, never to reverse decisions silently — use `context/DECISIONS.md` for reversal reasoning.
 - **Version bump** (`<!-- session-protocol-version: -->` at top) when a change is breaking or a new command lands.
 
-_Canonical source: `vaultspark-studio-ops/docs/SESSION_PROTOCOL.md`. Propagated to all registry repos._
+*Canonical source: `vaultspark-studio-ops/docs/SESSION_PROTOCOL.md`. Propagated to all registry repos.*
 
 <!-- BEGIN GENERATED: audit-premise-vocabulary (gen-premise-vocabulary.mjs) -->
 
@@ -971,24 +951,23 @@ below resolves to nothing, and the premise stays `unverified` forever — which 
 as verification and is not. Every premise needs `claim`, `adapter`, `target`,
 `operator` and `expected`.
 
-| adapter               | measures          | needs               |
-| --------------------- | ----------------- | ------------------- |
-| `doctor-probe`        | presence, outcome | `target`            |
-| `doctor-probe-absent` | presence          | `target`            |
-| `doctor-blocking`     | outcome, count    | `target`            |
-| `workflow-schedules`  | count             | `target`            |
-| `tests`               | outcome, count    | `target`            |
-| `file-exists`         | presence          | `target`            |
-| `deploy-receipt`      | presence, outcome | `target`            |
-| `task-lifecycle`      | state             | `target`            |
-| `file-content`        | content           | `target`, `pattern` |
-| `grep`                | content           | `target`, `pattern` |
-| `grep-count`          | content, count    | `target`, `pattern` |
+| adapter | measures | needs |
+|---|---|---|
+| `doctor-probe` | presence, outcome | `target` |
+| `doctor-probe-absent` | presence | `target` |
+| `doctor-blocking` | outcome, count | `target` |
+| `workflow-schedules` | count | `target` |
+| `tests` | outcome, count | `target` |
+| `file-exists` | presence | `target` |
+| `deploy-receipt` | presence, outcome | `target` |
+| `task-lifecycle` | state | `target` |
+| `file-content` | content | `target`, `pattern` |
+| `grep` | content | `target`, `pattern` |
+| `grep-count` | content, count | `target`, `pattern` |
 
 **Operators:** `eq` · `neq` · `lt` · `lte` · `gt` · `gte` · `contains`
 
 **Refused on purpose — a refusal is not a gap:**
-
 - `exit-code` — runs a command to read its exit status — a sidecar must never make the verifier execute arbitrary commands (CANON-024).
 - `cli-json` — shells out and parses the output — same CANON-024 refusal as exit-code, and CLI output is not a stable contract.
 - `command-json` — is cli-json under another name — shelling out and parsing stdout is refused under CANON-024, and renaming the adapter does not change what it does.
