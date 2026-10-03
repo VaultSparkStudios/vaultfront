@@ -929,3 +929,7 @@ Public-safe decisions only. Detailed internal decision history is maintained pri
 **Decision:** Restore the same seven protocol, validator, and brief-workflow files from `d9fc8ce5` after bot commits `01206cd5` and `c450c1ea` reintroduced them and failed provider CI. No force push; bot commits stay in history.
 
 **Why:** The Session 114 quarantine had no pin, so the next sync overwrote it. Affected tests pass 36/36 and Prettier is clean on the restored files. Production admission still requires the five independent proofs; the founder's deploy authorization does not substitute for them. A durable fix needs the Studio Ops template repaired or a propagation opt-out for these files.
+
+## Session 116 — monotonic recovery and explicit release authority
+
+A recovery session may be newer than the scored SIL ledger. Startup now allocates above both recorded identities and advances status only forwards; scored closeout provenance remains separate. The fourth incompatible propagation was restored from CI-proven 71c8afbc and reported via Ark rather than editing its source owner. Existing deployment authorization is preserved, but an agent-authored key or unsigned transcript cannot bootstrap the independent founderApproval authority required by current policy. No gameplay/balance retune was justified by the absent human Alpha corpus.

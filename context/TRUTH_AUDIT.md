@@ -2,6 +2,14 @@
 
 # Truth Audit
 
+## Session 116 — observed release boundary
+
+294 test files / 1,528 assertions; focused 43/43; TypeScript; 168 deployment contracts; normal ESLint/Prettier commit hooks; settings and staged secret scans. CI 37090560182, E2E 37090560069, Release 37090560138, staging validation 37090596607, live staging 37091049592, signed observation 37091282688, promotion validation 37091298148, rollback validation 37091300183, and drill 37091450897 passed for implementation e761c7c6. Worst LCP 1,376 ms, INP 192 ms, CLS 0.0151; 27/27 cells and zero findings. Six final runtime claims verified against exact SHA/image/origin. Desktop and mobile drawer images were inspected in all three themes.
+
+Production is incomplete: genuine Zoho send/receive/reply-as, authenticated Obelisk callback/session/identity/logout, three distinct authenticated human Alpha sessions, positive live revenue, and independently authenticated artifact-bound approval remain absent. Zoho administration lacks four gateway values; Obelisk verification lacks three. Browser admin inventory failed before navigation with CryptUnprotectData 2148073483. Live Stripe completed checkout discovery returned zero sessions with hasMore=false. Existing explicit user deployment consent remains authorized; current policy has no independently trusted witness to convert it into a portable approval claim. An agent-controlled signing key would self-approve, so no authority was invented.
+
+The first aggregate failed because audit status planned was invalid; corrected to pending and full suite reran green. The first local attestation verification used noncanonical repository casing and rejected it; canonical VaultSparkStudios/vaultfront verified unchanged attestation. No failed result was relabeled as success. No UI source changed; CANON-053 changed-file check passed. Historical rows remain historical.
+
 ## 2026-10-01 — Session 114 exact candidate and host-cutover truth
 
 - Work truth: audit #253, #254, and #256 are shipped; #255 is deferred. The board-only write-back exclusion is exact, and a mixed code commit remains substantive. No gameplay or UI surface changed.

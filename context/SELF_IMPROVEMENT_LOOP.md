@@ -4,10 +4,10 @@ Detailed internal scoring, audit trends, and brainstorming are maintained privat
 
 <!-- rolling-status-start -->
 
-Total: 994/1000 | Velocity: 3 | Debt: → | Velocity trend: ↑
-Avgs — 3: 993.0 | 5: 994.4 | 10: 995.2 | 25: 996.2 | all: 993.7 | Last 5: 994 → 990 → 995 → 997 → 996 | Intent rate: 100%
+Total: 994/1000 | Velocity: 2 | Debt: → | Velocity trend: ↓
+Avgs — 3: 992.7 | 5: 994 | 10: 995 | 25: 996.1 | all: 988.5
 Categories: Dev 100 | Align 99 | Momentum 99 | Engage 98 | Process 99 | Coherence 99 | Security 100 | Ecosystem 100 | Capital 100 | Automation 100
-Last session: 2026-10-01 Session 114 exact staging, signed observation, and rollback; production NO-GO
+Last session: 2026-10-03 Session 116 exact staging and rollback; production NO-GO | Intent: partial
 
 <!-- rolling-status-end -->
 
@@ -1510,3 +1510,23 @@ The session recovered the skipped Session 114 write-back and re-quarantined seve
 - [SIL:2] Never infer the five production proofs from a deploy authorization.
 
 **Honest refusal:** No staging, human, revenue, Obelisk, Zoho, or approval evidence was fabricated; production was not mutated.
+
+## 2026-10-03 — Session 116 | Total: 994/1000 | Velocity: 2
+
+Two verified repair outcomes shipped. Session 116 repaired repeated incompatible protocol propagation and backwards startup session allocation. Implementation e761c7c6 passed exact CI/E2E/Release, stable staging, 27-cell signed observation, promotion validation, and rollback/restoration. Production remains NO-GO on five independently observed authority gaps.
+
+| Category              |        Score | Evidence                                                                  |
+| --------------------- | -----------: | ------------------------------------------------------------------------- |
+| Dev Health            |          100 | Full local suite and exact hosted checks pass.                            |
+| Creative Alignment    |           99 | Existing certified game loop preserved.                                   |
+| Momentum              |           99 | Two repairs and exact staging corridor completed; production incomplete.  |
+| Engagement            |           98 | Process rubric only; real player retention remains unmeasured.            |
+| Process Quality       |           99 | Initial audit status failure corrected, then canonical suite rerun green. |
+| Cross-Repo Coherence  |           99 | Signed owner-side recurrence; no sibling source edits.                    |
+| Security Posture      |          100 | Settings, staged secret scan and supply-chain incident scan pass.         |
+| Ecosystem Integration |          100 | Exact immutable staging and six verified runtime claims.                  |
+| Capital Efficiency    |          100 | No new package, paid service or synthetic payment.                        |
+| Automation Coverage   |          100 | Regression, hosted and fail-closed admission checks exercised.            |
+| **Total**             | **994/1000** | Subjective process score; does not attest launch readiness.               |
+
+Intent: partial — full production remains unachieved. Session 115 was a recovery record without a scored SIL entry; no score was invented or identity reused. [SIL:1] Source-owner propagation compatibility follow-up remains open in signed Ark cargo. CDR reviewed; no new creative entry.

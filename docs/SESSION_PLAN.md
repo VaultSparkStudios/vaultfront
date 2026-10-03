@@ -1,16 +1,9 @@
-# Session Plan — Session 90
+# Session Plan — Session 116
 
-## Intent
+- ✔ Wave 1: fresh session, canon, provider, credential and live release audit.
+- ✔ Wave 2: audit 257–258 repaired, tested and pushed to main.
+- ✔ Wave 3 staging: exact immutable deployment, signed 27-cell observation, promotion validation and rollback/restoration.
+- ⊘ Wave 3 production: deferred on five genuine authorities; the durable full-deployment goal remains active.
+- ✔ Arc closeout: write-back records partial intent and leaves the existing deployment authorization intact.
 
-Execute one continuous agent-neutral `/start → /audit → /implement → /closeout` arc. Verify every premise against live code, ship all valid audit items and generated second-order innovations, preserve source-derived observability, and close directly to `main`.
-
-## Completed phases
-
-1. **Start:** pulled `origin/main` first; refreshed Canon, Ark, and context; ran blocker and secrets preflights; rendered the startup brief.
-2. **Audit:** produced the ranked ten-item infrastructure/game/release audit in `docs/AUDIT_2026-08-01.json`.
-3. **Implement:** shipped audit 109–118 and innovations 46–50, then root-fixed every focused, full-suite, and browser red.
-4. **Closeout:** canonical write-back, direct verification, security scan, doctor, commit/push, Ark broadcast, and shell-hygiene proof.
-
-## Release boundary
-
-Public launch remains NO-GO until attributed external staging/parity, project-domain Zoho delivery, native Obelisk, live-web, three-human Alpha, revenue, rollback, and founder-approval observations exist.
+Production is incomplete: genuine Zoho send/receive/reply-as, authenticated Obelisk callback/session/identity/logout, three distinct authenticated human Alpha sessions, positive live revenue, and independently authenticated artifact-bound approval remain absent. Zoho administration lacks four gateway values; Obelisk verification lacks three. Browser admin inventory failed before navigation with CryptUnprotectData 2148073483. Live Stripe completed checkout discovery returned zero sessions with hasMore=false. Existing explicit user deployment consent remains authorized; current policy has no independently trusted witness to convert it into a portable approval claim. An agent-controlled signing key would self-approve, so no authority was invented.

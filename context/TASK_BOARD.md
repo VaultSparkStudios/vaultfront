@@ -1,5 +1,14 @@
 # Task Board
 
+## Session 116 — reconciled release work
+
+- [done] Audit 257: fourth protocol-sync recovery; exact hosted checks pass. Signed Ark 01K3VOTOFF9F11B96B82195846 requests a source-owner compatibility fix.
+- [done] Audit 258: startup preserves recovery session 115, allocates 116, and labels scored closeout 114 separately; regression and real-render checks pass.
+- [done] Audit 259 staging portion: exact implementation deployed, observed, rolled back and restored healthy.
+- [deferred] Audit 259 full production: Production is incomplete: genuine Zoho send/receive/reply-as, authenticated Obelisk callback/session/identity/logout, three distinct authenticated human Alpha sessions, positive live revenue, and independently authenticated artifact-bound approval remain absent. Zoho administration lacks four gateway values; Obelisk verification lacks three. Browser admin inventory failed before navigation with CryptUnprotectData 2148073483. Live Stripe completed checkout discovery returned zero sessions with hasMore=false. Existing explicit user deployment consent remains authorized; current policy has no independently trusted witness to convert it into a portable approval claim. An agent-controlled signing key would self-approve, so no authority was invented.
+
+No new game, balance, or UX scope was added without human evidence.
+
 Public-safe roadmap only. Detailed backlog sequencing is maintained privately.
 
 ## Now — production evidence corridor
