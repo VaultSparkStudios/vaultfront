@@ -1,0 +1,195 @@
+{
+  "schemaVersion": "1.0",
+  "session": 116,
+  "generatedBy": "codex",
+  "generatedAt": "2026-10-03T02:06:25Z",
+  "project": {
+    "slug": "vaultfront",
+    "name": "VaultFront",
+    "type": "game",
+    "audience": "public-unlaunched",
+    "stage": "FORGE",
+    "stagingType": "stable-owned-subdomain"
+  },
+  "summary": "Fresh arc audit found a fourth incompatible protocol propagation, backwards startup session repair, and an exact-staging rollback evidence gap. Production remains unverified and must satisfy the current canonical release admission.",
+  "axes": {
+    "featureDepth": 1.5,
+    "innovation": 1.5,
+    "ux": 2,
+    "feedbackLoop": 2,
+    "gamification": 3,
+    "aiIntegration": 1.5,
+    "security": 3,
+    "speedOrganization": 3,
+    "tokenApiReduction": 2
+  },
+  "candidateReview": {
+    "sampledSurfaces": [
+      "scripts/render-startup-brief.mjs",
+      "tests/scripts/SessionChronology.test.ts",
+      "tests/scripts/BriefBlocks.test.ts",
+      "scripts/validate-brief-format.mjs",
+      ".github/workflows/brief-format-check.yml",
+      "config/release-evidence-trust.json",
+      "src/shared/runtime-release-evidence.mjs",
+      "context/GAME_LOOP.md",
+      "context/SOUL.md"
+    ],
+    "preverification": "Provider CI 37078083142 at fb2d673e fails five protocol assertions and formatting. Startup rendering changed recorded session 115 back to 114. Live readiness at 2026-10-03T02:06:25Z names six unsatisfied gates; production HEAD returns 503.",
+    "rejectedCandidates": [
+      {
+        "axis": "feature depth / gamification / innovation",
+        "candidate": "Retune the Capture → Convoy → Breach reward loop",
+        "reason": "No genuine authenticated Alpha sample establishes a balance bottleneck; preserve existing certified balance authority."
+      },
+      {
+        "axis": "UX / feedback loop",
+        "candidate": "Redesign onboarding",
+        "reason": "No authenticated first-match dropout measurement supports a design change."
+      },
+      {
+        "axis": "AI integration / token reduction",
+        "candidate": "Add AI coaching or another audit runner",
+        "reason": "No measured player benefit or cost savings justify additional scope; reuse existing provider evidence tools."
+      }
+    ]
+  },
+  "specialtyReviews": {
+    "gameLoop": {
+      "loopTightness": 90,
+      "progressionCurve": 82,
+      "sessionEngagement": null,
+      "retentionHooks": null,
+      "soulFidelity": null,
+      "reason": "Code-derived loop remains certified; human Alpha evidence remains not-started and public SOUL lacks creative pillars. Do not infer player engagement from automated runs.",
+      "nextMoves": [
+        "Verify authenticated identity and collect three genuine Alpha journeys.",
+        "Measure capture-to-delivery duration, dropout, and continuation.",
+        "Tune only the measured bottleneck and repeat balance and rendered verification."
+      ]
+    },
+    "release": {
+      "decision": "NO-GO",
+      "reason": "Latest remote CI fails; current staging lacks contact, authenticated identity, rollback, revenue, exact-artifact approval, and human Alpha observations."
+    }
+  },
+  "items": [
+    {
+      "id": 257,
+      "slug": "fourth-protocol-sync-recovery",
+      "tier": "hot",
+      "axis": "security / organization",
+      "effortHours": 1,
+      "impact": 9,
+      "innovation": 4,
+      "priority": 22.71,
+      "status": "pending",
+      "title": "Repair the fourth incompatible protocol sync",
+      "why": "Remote main fb2d673e fails five established semantic contracts and formatting.",
+      "coreLoopStep": "trusted build → safe release → player entry",
+      "recipe": "Restore eight propagated files from exact CI-proven 71c8afbc; run focused semantic contracts and exact provider CI; send recurrence to the source owner via signed Ark.",
+      "selectedDepth": "L2",
+      "premise": {
+        "claim": "Incoming brief workflow dropped the supported runtime floor",
+        "adapter": "file-content",
+        "target": ".github/workflows/brief-format-check.yml",
+        "pattern": "22.13.0",
+        "operator": "eq",
+        "expected": false
+      },
+      "ladder": {
+        "L1": {
+          "effortHours": 0.3,
+          "recipe": "Record the exact provider failure."
+        },
+        "L2": {
+          "effortHours": 1,
+          "recipe": "Restore proven surfaces, test and push exact recovery, and notify source owner."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Coordinate an owner-side compatibility-aware propagation fix through Ark."
+        }
+      },
+      "executionLog": []
+    },
+    {
+      "id": 258,
+      "slug": "monotonic-startup-session",
+      "tier": "hot",
+      "axis": "feedback loop / organization",
+      "effortHours": 1.5,
+      "impact": 8,
+      "innovation": 5,
+      "priority": 22.13,
+      "status": "pending",
+      "title": "Preserve recovery session identity during startup",
+      "why": "Renderer decremented currentSession 115 to 114 because a recovery session had no scored SIL entry.",
+      "coreLoopStep": "accurate release memory → safe next change",
+      "recipe": "Allocate above both scored and recorded sessions, advance status only forwards, retain scored closeout provenance separately, and verify recovery and lagging-status regressions.",
+      "selectedDepth": "L2",
+      "premise": {
+        "claim": "Startup self-heal rewrites any differing recorded session to SIL",
+        "adapter": "file-content",
+        "target": "scripts/render-startup-brief.mjs",
+        "pattern": "statusLatest !== silMaxSession",
+        "operator": "eq",
+        "expected": true
+      },
+      "ladder": {
+        "L1": {
+          "effortHours": 0.3,
+          "recipe": "Document the backwards repair."
+        },
+        "L2": {
+          "effortHours": 1.5,
+          "recipe": "Use monotonic allocation and truthful closeout provenance with regression coverage."
+        },
+        "L3": {
+          "effortHours": 3,
+          "recipe": "Reconcile every allocator across Studio Ops through Ark."
+        }
+      },
+      "executionLog": []
+    },
+    {
+      "id": 259,
+      "slug": "exact-main-full-deployment",
+      "tier": "hot",
+      "axis": "release / security / feedback loop",
+      "effortHours": 4,
+      "impact": 10,
+      "innovation": 4,
+      "priority": 15.47,
+      "status": "pending",
+      "title": "Complete exact main staging and production deployment",
+      "why": "User explicitly authorized direct-main commit, push, and full deployment; current production returns 503 and release admission is red.",
+      "coreLoopStep": "verified artifact → authenticated human match → production",
+      "recipe": "Obtain exact CI, staging, observation and rollback receipts; satisfy genuine mail, identity, human Alpha, revenue and purpose-scoped approval evidence; validate then promote only when admission passes; verify production revision and health.",
+      "selectedDepth": "L3",
+      "premise": {
+        "claim": "Current release record contains unmet authority gates",
+        "adapter": "file-content",
+        "target": "context/PROJECT_STATUS.json",
+        "pattern": "Production is NO-GO",
+        "operator": "eq",
+        "expected": true
+      },
+      "ladder": {
+        "L1": {
+          "effortHours": 1,
+          "recipe": "Refresh live evidence and credential discovery."
+        },
+        "L2": {
+          "effortHours": 2,
+          "recipe": "Push tested candidate and deploy exact stable staging."
+        },
+        "L3": {
+          "effortHours": 4,
+          "recipe": "Verify exact full release corridor and production after all authorities pass."
+        }
+      },
+      "executionLog": []
+    }
+  ]
+}
