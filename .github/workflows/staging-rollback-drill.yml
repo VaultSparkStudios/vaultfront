@@ -39,7 +39,7 @@ jobs:
       SUBDOMAIN: staging
       FQDN: ${{ format('staging.{0}', vars.DOMAIN) }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Validate repository deployment contract
         run: |
@@ -131,7 +131,7 @@ jobs:
           ((DEPLOY_INGRESS_PORT >= 8110 && DEPLOY_INGRESS_PORT <= 8999))
 
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: ghcr.io
           username: ${{ vars.GHCR_USERNAME }}
@@ -274,7 +274,7 @@ jobs:
             "${{ steps.attestations.outputs.restored_image_digest }}"
 
       - name: Retain observed rollback drill
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: staging-rollback-drill-${{ github.run_id }}
           path: |
